@@ -1,0 +1,99 @@
+"""일일 리포트 스케줄러 — APScheduler cron 잡.
+
+평일(월~금) 한국시간 기준:
+  - 14:50 → 마감 전 리포트 (종가베팅 후보)
+  - 16:30 → 마감 후 리포트 (시장 정리)
+
+실행:
+  python -m src.market_report.scheduler            # foreground 데몬
+  python -m src.market_report.scheduler --once pre # 1회 즉시 실행
+"""
+from __future__ import annotations
+
+import argparse
+import asyncio
+import logging
+import signal
+import sys
+from datetime import datetime
+
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
+from apscheduler.triggers.cron import CronTrigger
+
+from src.market_report.pipeline import run_full
+
+logger = logging.getLogger(__name__)
+
+KST = "Asia/Seoul"
+
+
+async def _job(mode: str) -> None:
+    logger.info("scheduled_job_start mode=%s now=%s", mode, datetime.now().isoformat())
+    try:
+        await run_full(mode)  # type: ignore[arg-type]
+        logger.info("scheduled_job_done mode=%s", mode)
+    except Exception as exc:
+        logger.exception("scheduled_job_failed mode=%s error=%s", mode, exc)
+
+
+def build_scheduler() -> AsyncIOScheduler:
+    """평일 14:50 / 16:30 트리거 등록."""
+    scheduler = AsyncIOScheduler(timezone=KST)
+
+    scheduler.add_job(
+        _job, CronTrigger(day_of_week="mon-fri", hour=14, minute=50, timezone=KST),
+        args=["pre_close"], id="report_pre", replace_existing=True,
+        misfire_grace_time=600,
+    )
+    scheduler.add_job(
+        _job, CronTrigger(day_of_week="mon-fri", hour=16, minute=30, timezone=KST),
+        args=["post_close"], id="report_post", replace_existing=True,
+        misfire_grace_time=600,
+    )
+    return scheduler
+
+
+async def run_forever() -> None:
+    scheduler = build_scheduler()
+    scheduler.start()
+
+    logger.info("scheduler_started — 평일 14:50 (마감 전) + 16:30 (마감 후)")
+    for job in scheduler.get_jobs():
+        logger.info("  job=%s next_run=%s", job.id, job.next_run_time)
+
+    stop = asyncio.Event()
+
+    def _shutdown(*_: object) -> None:
+        logger.info("shutdown_signal")
+        stop.set()
+
+    try:
+        signal.signal(signal.SIGINT, _shutdown)
+        signal.signal(signal.SIGTERM, _shutdown)
+    except (ValueError, AttributeError):
+        pass  # Windows에서 일부 시그널 미지원
+
+    await stop.wait()
+    scheduler.shutdown(wait=False)
+    logger.info("scheduler_stopped")
+
+
+def main() -> int:
+    logging.basicConfig(
+        level=logging.INFO,
+        format="%(asctime)s %(levelname)s %(name)s %(message)s",
+    )
+    parser = argparse.ArgumentParser(description="Daily report scheduler")
+    parser.add_argument("--once", choices=["pre", "post"], help="등록된 잡 1회 즉시 실행 후 종료")
+    args = parser.parse_args()
+
+    if args.once:
+        mode = "pre_close" if args.once == "pre" else "post_close"
+        asyncio.run(_job(mode))
+    else:
+        asyncio.run(run_forever())
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())
