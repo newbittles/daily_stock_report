@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Daily Stock Report</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Apple SD Gothic Neo", sans-serif;
+      background: #0f172a;
+      color: #e2e8f0;
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      padding: 2rem;
+      line-height: 1.6;
+    }
+    .card {
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 16px;
+      padding: 3rem 2.5rem;
+      max-width: 560px;
+      width: 100%;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+    }
+    h1 { font-size: 1.75rem; margin-bottom: 0.5rem; color: #60a5fa; }
+    .subtitle { color: #94a3b8; margin-bottom: 2rem; font-size: 0.95rem; }
+    .status {
+      background: #0f172a;
+      border-left: 3px solid #fbbf24;
+      padding: 1rem 1.25rem;
+      border-radius: 8px;
+      margin-bottom: 1.5rem;
+    }
+    .status strong { color: #fbbf24; }
+    ul { list-style: none; padding: 0; }
+    li { padding: 0.5rem 0; color: #cbd5e1; }
+    li::before { content: "▸ "; color: #60a5fa; margin-right: 0.5rem; }
+    .footer { margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid #334155; font-size: 0.8rem; color: #64748b; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>📊 Daily Stock Report</h1>
+    <p class="subtitle">한국 주식 일일 시장 동향 자동 리포트</p>
+
+    <div class="status">
+      <strong>⏳ 셋업 진행 중</strong><br>
+      첫 리포트는 곧 게시됩니다.
+    </div>
+
+    <ul>
+      <li>마감 전 리포트: 평일 14:50 (종가베팅 후보 + 뉴스)</li>
+      <li>마감 후 리포트: 평일 16:30 (시장 정리, 수급, 테마)</li>
+      <li>텔레그램 봇에서 요약 + 리포트 링크 수신</li>
+    </ul>
+
+    <div class="footer">
+      ※ 본 리포트는 참고용 정보이며, 투자 판단·책임은 본인에게 있습니다.
+    </div>
+  </div>
+</body>
+</html>
