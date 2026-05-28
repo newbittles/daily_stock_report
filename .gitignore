@@ -1,0 +1,46 @@
+# Secrets — NEVER commit
+.env
+data/
+*.json.bak
+
+# Token cache (runtime, contains secrets)
+*token*.json
+*_token.json
+
+# Python
+__pycache__/
+*.py[cod]
+*.so
+.venv/
+venv/
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# pytest / coverage
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Editors
+.vscode/
+.idea/
+*.swp
+
+# OS
+.DS_Store
+Thumbs.db
+
+# bkit (개인 진행 로그 — public 리포에 노출 불필요)
+.bkit/runtime/
+.bkit/audit/
+.bkit/snapshots/
+.bkit/state/
+
+# Personal notes
+to_do.md
+
+# Logs
+*.log
+logs/
