@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ title }} — {{ snap.generated_at.strftime('%Y-%m-%d') }}</title>
+  <meta name="description" content="{{ snap.summary[:140] }}">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #0f172a;
+      --surface: #1e293b;
+      --surface2: #273449;
+      --border: #334155;
+      --text: #e2e8f0;
+      --text-dim: #94a3b8;
+      --text-mute: #64748b;
+      --accent: #60a5fa;
+      --green: #34d399;
+      --red: #f87171;
+      --yellow: #fbbf24;
+      --purple: #a78bfa;
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      padding: 1rem;
+    }
+    .container { max-width: 980px; margin: 0 auto; }
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    /* Header */
+    .header {
+      padding: 1.5rem 0;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 1.5rem;
+    }
+    .header h1 { font-size: 1.5rem; color: var(--accent); margin-bottom: 0.25rem; }
+    .header .meta {
+      color: var(--text-dim);
+      font-size: 0.85rem;
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+    .badge {
+      display: inline-block;
+      padding: 0.25rem 0.6rem;
+      border-radius: 999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+    .badge.pre { background: #fbbf2422; color: var(--yellow); border: 1px solid #fbbf2455; }
+    .badge.post { background: #60a5fa22; color: var(--accent); border: 1px solid #60a5fa55; }
+
+    /* Section */
+    section {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.25rem 1.5rem;
+      margin-bottom: 1rem;
+    }
+    section h2 {
+      font-size: 1.05rem;
+      color: var(--text-dim);
+      margin-bottom: 0.75rem;
+      font-weight: 600;
+      letter-spacing: -0.01em;
+    }
+    section h2 .icon { margin-right: 0.4rem; }
+
+    /* Indexes */
+    .indexes { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
+    .index-card {
+      background: var(--surface2);
+      border-radius: 8px;
+      padding: 1rem;
+      border-left: 3px solid var(--border);
+    }
+    .index-card.up { border-left-color: var(--green); }
+    .index-card.down { border-left-color: var(--red); }
+    .index-name { font-size: 0.85rem; color: var(--text-dim); margin-bottom: 0.25rem; }
+    .index-value { font-size: 1.5rem; font-weight: 700; }
+    .index-change { font-size: 0.9rem; margin-top: 0.25rem; }
+    .up-text { color: var(--green); }
+    .down-text { color: var(--red); }
+
+    /* AI Summary */
+    .summary-box {
+      background: linear-gradient(135deg, #60a5fa15, #a78bfa15);
+      border: 1px solid #60a5fa44;
+      border-radius: 8px;
+      padding: 1rem 1.25rem;
+      margin-bottom: 0.75rem;
+    }
+    .summary-box .label {
+      color: var(--accent);
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      margin-bottom: 0.4rem;
+    }
+    .summary-box p { white-space: pre-wrap; }
+
+    /* Candidate picks */
+    .pick {
+      background: var(--surface2);
+      border-radius: 8px;
+      padding: 1rem 1.25rem;
+      margin-bottom: 0.75rem;
+      border-left: 3px solid var(--yellow);
+    }
+    .pick-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: 0.5rem;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+    .pick-name { font-size: 1.1rem; font-weight: 700; }
+    .pick-ticker { color: var(--text-mute); font-size: 0.85rem; font-family: monospace; }
+    .pick-rationale { color: var(--text); margin-bottom: 0.5rem; }
+    .pick-risk {
+      color: var(--text-dim);
+      font-size: 0.85rem;
+      padding-top: 0.4rem;
+      border-top: 1px dashed var(--border);
+    }
+    .pick-risk::before { content: "⚠ "; color: var(--yellow); }
+
+    /* Watchpoint */
+    .watch-list { list-style: none; padding: 0; }
+    .watch-list li {
+      padding: 0.6rem 0;
+      padding-left: 1.5rem;
+      position: relative;
+      border-bottom: 1px solid var(--border);
+    }
+    .watch-list li:last-child { border-bottom: none; }
+    .watch-list li::before {
+      content: "▸";
+      position: absolute;
+      left: 0;
+      color: var(--accent);
+      font-weight: 700;
+    }
+
+    /* Themes */
+    .theme {
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      gap: 0.75rem;
+      align-items: center;
+      padding: 0.6rem 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .theme:last-child { border-bottom: none; }
+    .theme-rank {
+      width: 1.8rem;
+      height: 1.8rem;
+      border-radius: 50%;
+      background: var(--surface2);
+      display: grid;
+      place-items: center;
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: var(--text-dim);
+    }
+    .theme-info .name { font-weight: 600; }
+    .theme-info .leads { font-size: 0.8rem; color: var(--text-dim); margin-top: 0.15rem; }
+    .theme-pct { font-weight: 700; font-size: 0.95rem; }
+
+    /* Stock tables */
+    .stock-list { display: flex; flex-direction: column; gap: 0.4rem; }
+    .stock-row {
+      display: grid;
+      grid-template-columns: 2rem 1fr auto auto;
+      gap: 0.6rem;
+      padding: 0.5rem 0;
+      align-items: center;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.9rem;
+    }
+    .stock-row:last-child { border-bottom: none; }
+    .stock-rank { color: var(--text-mute); font-family: monospace; }
+    .stock-name { font-weight: 500; }
+    .stock-name .ticker { color: var(--text-mute); font-size: 0.75rem; margin-left: 0.3rem; }
+    .stock-price { font-family: monospace; color: var(--text-dim); }
+    .stock-pct { font-family: monospace; font-weight: 700; min-width: 60px; text-align: right; }
+
+    /* Tabs for stock lists */
+    .tabs {
+      display: flex;
+      gap: 0.5rem;
+      margin-bottom: 0.75rem;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 0.5rem;
+    }
+    .tab {
+      padding: 0.4rem 0.85rem;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      cursor: pointer;
+      color: var(--text-dim);
+      font-size: 0.85rem;
+    }
+    .tab.active { background: var(--accent); color: var(--bg); border-color: var(--accent); }
+    .tab-pane { display: none; }
+    .tab-pane.active { display: block; }
+
+    /* News */
+    .news-item {
+      padding: 0.6rem 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .news-item:last-child { border-bottom: none; }
+    .news-title { color: var(--text); }
+    .news-meta { font-size: 0.75rem; color: var(--text-mute); margin-top: 0.2rem; }
+    .news-source { color: var(--accent); }
+
+    /* Disclaimer */
+    .disclaimer {
+      text-align: center;
+      padding: 1.5rem 1rem;
+      color: var(--text-mute);
+      font-size: 0.8rem;
+      margin-top: 1rem;
+      border-top: 1px solid var(--border);
+    }
+
+    /* Responsive */
+    @media (max-width: 640px) {
+      .indexes { grid-template-columns: 1fr; }
+      .header h1 { font-size: 1.25rem; }
+      .pick-name { font-size: 1rem; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+
+    <header class="header">
+      <h1>📊 {{ title }}</h1>
+      <div class="meta">
+        <span class="badge {{ 'pre' if snap.mode == 'pre_close' else 'post' }}">
+          {{ '🟡 마감 전' if snap.mode == 'pre_close' else '🔵 마감 후' }}
+        </span>
+        <span>{{ snap.generated_at.strftime('%Y년 %m월 %d일 %H:%M') }}</span>
+      </div>
+    </header>
+
+    {# 1. 지수 #}
+    {% if snap.kospi or snap.kosdaq %}
+    <section>
+      <h2><span class="icon">📈</span>주요 지수</h2>
+      <div class="indexes">
+        {% for idx in [snap.kospi, snap.kosdaq] %}
+          {% if idx %}
+          <div class="index-card {{ 'up' if idx.change_pct >= 0 else 'down' }}">
+            <div class="index-name">{{ idx.market }}</div>
+            <div class="index-value">{{ "{:,.2f}".format(idx.value) }}</div>
+            <div class="index-change {{ 'up-text' if idx.change_pct >= 0 else 'down-text' }}">
+              {{ '+' if idx.change_pct >= 0 else '' }}{{ "{:.2f}".format(idx.change) }}
+              ({{ '+' if idx.change_pct >= 0 else '' }}{{ "{:.2f}".format(idx.change_pct) }}%)
+            </div>
+          </div>
+          {% endif %}
+        {% endfor %}
+      </div>
+    </section>
+    {% endif %}
+
+    {# 2. AI 요약 #}
+    {% if snap.summary %}
+    <section>
+      <h2><span class="icon">🤖</span>AI 시장 요약</h2>
+      <div class="summary-box">
+        <div class="label">한 줄 요약</div>
+        <p>{{ snap.summary }}</p>
+      </div>
+      {% if snap.why_moved %}
+      <div class="summary-box">
+        <div class="label">왜 움직였나</div>
+        <p>{{ snap.why_moved }}</p>
+      </div>
+      {% endif %}
+      {% if snap.theme_commentary %}
+      <div class="summary-box">
+        <div class="label">테마 해설</div>
+        <p>{{ snap.theme_commentary }}</p>
+      </div>
+      {% endif %}
+    </section>
+    {% endif %}
+
+    {# 3a. 종가베팅 후보 (마감 전) #}
+    {% if snap.mode == 'pre_close' and snap.candidate_picks %}
+    <section>
+      <h2><span class="icon">🎯</span>종가베팅 후보 {{ snap.candidate_picks|length }}선</h2>
+      {% for p in snap.candidate_picks %}
+      <div class="pick">
+        <div class="pick-head">
+          <span class="pick-name">{{ p.name }}</span>
+          <span class="pick-ticker">{{ p.ticker }}</span>
+        </div>
+        <div class="pick-rationale">{{ p.rationale }}</div>
+        {% if p.risk %}<div class="pick-risk">{{ p.risk }}</div>{% endif %}
+      </div>
+      {% endfor %}
+    </section>
+    {% endif %}
+
+    {# 3b. 내일 관전 포인트 (마감 후) #}
+    {% if snap.mode == 'post_close' and snap.candidate_picks %}
+    <section>
+      <h2><span class="icon">🔭</span>내일 관전 포인트</h2>
+      <ul class="watch-list">
+        {% for w in snap.candidate_picks %}
+        <li>{{ w.watchpoint }}</li>
+        {% endfor %}
+      </ul>
+    </section>
+    {% endif %}
+
+    {# 4. 강세 테마 #}
+    {% if snap.top_themes %}
+    <section>
+      <h2><span class="icon">🔥</span>강세/약세 테마 Top {{ snap.top_themes|length }}</h2>
+      {% for t in snap.top_themes %}
+      <div class="theme">
+        <div class="theme-rank">{{ t.rank }}</div>
+        <div class="theme-info">
+          <div class="name">{{ t.name }}</div>
+          {% if t.leading_stocks %}
+          <div class="leads">▸ {{ t.leading_stocks[:3]|join(', ') }}</div>
+          {% endif %}
+        </div>
+        <div class="theme-pct {{ 'up-text' if t.change_pct >= 0 else 'down-text' }}">
+          {{ '+' if t.change_pct >= 0 else '' }}{{ "{:.2f}".format(t.change_pct) }}%
+        </div>
+      </div>
+      {% endfor %}
+    </section>
+    {% endif %}
+
+    {# 5. 거래량/상승/하락 상위 - 탭 #}
+    {% if snap.top_volume or snap.top_gainers or snap.top_losers %}
+    <section>
+      <h2><span class="icon">💹</span>종목 순위</h2>
+      <div class="tabs">
+        <div class="tab active" data-tab="volume">거래량 상위</div>
+        <div class="tab" data-tab="gainers">상승률 상위</div>
+        <div class="tab" data-tab="losers">하락률 상위</div>
+      </div>
+
+      {% for tab_id, label, stocks in [
+        ('volume', '거래량', snap.top_volume[:15]),
+        ('gainers', '상승률', snap.top_gainers[:15]),
+        ('losers', '하락률', snap.top_losers[:15]),
+      ] %}
+      <div class="tab-pane {{ 'active' if loop.first else '' }}" data-pane="{{ tab_id }}">
+        <div class="stock-list">
+          {% for s in stocks %}
+          <div class="stock-row">
+            <div class="stock-rank">{{ s.rank }}</div>
+            <div class="stock-name">
+              {{ s.name }}<span class="ticker">{{ s.ticker }}</span>
+            </div>
+            <div class="stock-price">{{ "{:,.0f}".format(s.price) }}원</div>
+            <div class="stock-pct {{ 'up-text' if s.change_pct >= 0 else 'down-text' }}">
+              {{ '+' if s.change_pct >= 0 else '' }}{{ "{:.2f}".format(s.change_pct) }}%
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+      {% endfor %}
+    </section>
+    {% endif %}
+
+    {# 6. 시장 뉴스 #}
+    {% if snap.market_news %}
+    <section>
+      <h2><span class="icon">📰</span>주요 시장 뉴스</h2>
+      {% for n in snap.market_news[:12] %}
+      <div class="news-item">
+        <a href="{{ n.url }}" target="_blank" rel="noopener" class="news-title">{{ n.title }}</a>
+        <div class="news-meta">
+          {% if n.source %}<span class="news-source">{{ n.source }}</span>{% endif %}
+          {% if n.published_at %} · {{ n.published_at }}{% endif %}
+        </div>
+      </div>
+      {% endfor %}
+    </section>
+    {% endif %}
+
+    <div class="disclaimer">
+      ※ 본 리포트는 공개 데이터 기반 참고용 정보입니다.<br>
+      투자 판단·매매 결정·결과 책임은 전적으로 본인에게 있습니다.<br><br>
+      <a href="../index.html">← 메인으로</a>
+    </div>
+
+  </div>
+
+  <script>
+    // Simple tab switcher
+    document.querySelectorAll('.tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        const id = tab.dataset.tab;
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+        tab.classList.add('active');
+        document.querySelector(`[data-pane="${id}"]`).classList.add('active');
+      });
+    });
+  </script>
+</body>
+</html>

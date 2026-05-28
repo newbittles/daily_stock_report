@@ -3,63 +3,92 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Daily Stock Report</title>
+  <title>📊 Daily Stock Report</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Apple SD Gothic Neo", sans-serif;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans KR", sans-serif;
       background: #0f172a;
       color: #e2e8f0;
       min-height: 100vh;
-      display: grid;
-      place-items: center;
-      padding: 2rem;
+      padding: 1.5rem 1rem;
       line-height: 1.6;
     }
-    .card {
+    .container { max-width: 720px; margin: 0 auto; }
+    h1 { font-size: 1.75rem; color: #60a5fa; margin-bottom: 0.5rem; }
+    .sub { color: #94a3b8; margin-bottom: 2rem; }
+    .empty {
+      background: #1e293b;
+      border: 1px dashed #334155;
+      border-radius: 12px;
+      padding: 2rem;
+      text-align: center;
+      color: #94a3b8;
+    }
+    .report-card {
       background: #1e293b;
       border: 1px solid #334155;
-      border-radius: 16px;
-      padding: 3rem 2.5rem;
-      max-width: 560px;
-      width: 100%;
-      box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+      border-radius: 12px;
+      padding: 1.25rem;
+      margin-bottom: 0.75rem;
+      text-decoration: none;
+      color: #e2e8f0;
+      display: block;
+      transition: transform 0.15s, border-color 0.15s;
     }
-    h1 { font-size: 1.75rem; margin-bottom: 0.5rem; color: #60a5fa; }
-    .subtitle { color: #94a3b8; margin-bottom: 2rem; font-size: 0.95rem; }
-    .status {
-      background: #0f172a;
-      border-left: 3px solid #fbbf24;
-      padding: 1rem 1.25rem;
-      border-radius: 8px;
-      margin-bottom: 1.5rem;
-    }
-    .status strong { color: #fbbf24; }
-    ul { list-style: none; padding: 0; }
-    li { padding: 0.5rem 0; color: #cbd5e1; }
-    li::before { content: "▸ "; color: #60a5fa; margin-right: 0.5rem; }
-    .footer { margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid #334155; font-size: 0.8rem; color: #64748b; }
+    .report-card:hover { transform: translateY(-2px); border-color: #60a5fa; }
+    .card-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; flex-wrap: wrap; gap: 0.5rem; }
+    .card-date { font-weight: 700; font-size: 1.05rem; }
+    .card-time { color: #94a3b8; font-size: 0.85rem; }
+    .badge { padding: 0.2rem 0.55rem; border-radius: 999px; font-size: 0.7rem; font-weight: 600; }
+    .badge.pre { background: #fbbf2422; color: #fbbf24; }
+    .badge.post { background: #60a5fa22; color: #60a5fa; }
+    .summary { color: #cbd5e1; font-size: 0.9rem; }
+    .indices { font-size: 0.8rem; color: #94a3b8; margin-top: 0.5rem; font-family: monospace; }
+    .up { color: #34d399; }
+    .down { color: #f87171; }
+    footer { margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid #334155; color: #64748b; font-size: 0.8rem; text-align: center; }
   </style>
 </head>
 <body>
-  <div class="card">
+  <div class="container">
     <h1>📊 Daily Stock Report</h1>
-    <p class="subtitle">한국 주식 일일 시장 동향 자동 리포트</p>
+    <p class="sub">한국 주식 일일 시장 동향 자동 리포트 · 매일 평일 14:50 (마감 전) · 16:30 (마감 후)</p>
 
-    <div class="status">
-      <strong>⏳ 셋업 진행 중</strong><br>
-      첫 리포트는 곧 게시됩니다.
-    </div>
+    <a href="reports/2026-05-29-pre.html" class="report-card">
+      <div class="card-head">
+        <div>
+          <span class="card-date">2026-05-29</span>
+          <span class="card-time">00:11</span>
+        </div>
+        <span class="badge pre">
+          🟡 마감 전
+        </span>
+      </div>
+<div class="summary">코스피는 약보합, 코스닥은 큰 폭의 하락세를 보이며 전반적인 시장 약세가 지속되는 가운데, 2차전지 및 MLCC 관련주는 강세를 시현했습니다.</div>      <div class="indices">
+        KOSPI <span class="down">-0.53%</span>
+        · KOSDAQ <span class="down">-2.54%</span>
+      </div>
+    </a>
+    <a href="reports/2026-05-29-post.html" class="report-card">
+      <div class="card-head">
+        <div>
+          <span class="card-date">2026-05-29</span>
+          <span class="card-time">00:11</span>
+        </div>
+        <span class="badge post">
+          🔵 마감 후
+        </span>
+      </div>
+<div class="summary">코스피는 소폭 하락했으나 코스닥은 2%대 급락하며 시장 전반의 투자심리가 위축된 가운데, 2차전지 및 MLCC 관련주가 강세를 보이며 시장을 견인했습니다.</div>      <div class="indices">
+        KOSPI <span class="down">-0.53%</span>
+        · KOSDAQ <span class="down">-2.54%</span>
+      </div>
+    </a>
 
-    <ul>
-      <li>마감 전 리포트: 평일 14:50 (종가베팅 후보 + 뉴스)</li>
-      <li>마감 후 리포트: 평일 16:30 (시장 정리, 수급, 테마)</li>
-      <li>텔레그램 봇에서 요약 + 리포트 링크 수신</li>
-    </ul>
-
-    <div class="footer">
-      ※ 본 리포트는 참고용 정보이며, 투자 판단·책임은 본인에게 있습니다.
-    </div>
+    <footer>
+      ※ 본 리포트는 공개 데이터 기반 참고용 정보입니다. 투자 판단·책임은 본인에게 있습니다.
+    </footer>
   </div>
 </body>
 </html>

@@ -157,20 +157,38 @@ async def analyze(snap: MarketSnapshot) -> MarketSnapshot:
     else:
         prompt = _post_close_prompt(snap, context)
 
-    try:
-        client = genai.Client(api_key=settings.gemini_api_key)
-        response = client.models.generate_content(
-            model=MODEL_NAME,
-            contents=prompt,
-            config=types.GenerateContentConfig(
-                response_mime_type="application/json",
-                temperature=0.3,
-            ),
-        )
-        raw = response.text or "{}"
-        data: dict[str, Any] = json.loads(raw)
-    except Exception as exc:
-        logger.error("gemini_analyze_failed mode=%s error=%s", snap.mode, exc)
+    import asyncio
+    import random
+
+    client = genai.Client(api_key=settings.gemini_api_key)
+    data: dict[str, Any] | None = None
+    last_exc: Exception | None = None
+
+    # 503/일시 오류 대비 3회 재시도 (지수 백오프)
+    for attempt in range(3):
+        try:
+            if attempt > 0:
+                wait = random.uniform(2 * (2 ** (attempt - 1)), 5 * (2 ** (attempt - 1)))
+                logger.info("gemini_retry mode=%s attempt=%d wait=%.1fs", snap.mode, attempt, wait)
+                await asyncio.sleep(wait)
+
+            response = client.models.generate_content(
+                model=MODEL_NAME,
+                contents=prompt,
+                config=types.GenerateContentConfig(
+                    response_mime_type="application/json",
+                    temperature=0.3,
+                ),
+            )
+            raw = response.text or "{}"
+            data = json.loads(raw)
+            break
+        except Exception as exc:
+            last_exc = exc
+            logger.warning("gemini_attempt_failed mode=%s attempt=%d error=%s", snap.mode, attempt, exc)
+
+    if data is None:
+        logger.error("gemini_analyze_failed mode=%s error=%s", snap.mode, last_exc)
         snap.summary = "AI 분석을 일시적으로 사용할 수 없습니다. 아래 데이터를 직접 참고하세요."
         snap.why_moved = ""
         snap.theme_commentary = ""
