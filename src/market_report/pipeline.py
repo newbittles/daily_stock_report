@@ -68,7 +68,73 @@ async def collect_snapshot(mode: ReportMode) -> MarketSnapshot:
 
 
 async def generate_report(mode: ReportMode) -> MarketSnapshot:
-    """전체 파이프라인 — 데이터 수집 + AI 분석."""
+    """전체 파이프라인 — 데이터 수집 + AI 분석 + 추천 종목 차트 생성."""
     snap = await collect_snapshot(mode)
     snap = await analyze(snap)
+
+    # 지수 스파크라인 (KOSPI/KOSDAQ — 양 모드 공통)
+    await _render_index_sparks(snap)
+
+    # 추천 종목별 차트 생성 (마감 전만 — 마감 후는 watchpoints만)
+    if snap.mode == "pre_close" and snap.candidate_picks:
+        await _render_pick_charts(snap)
+
     return snap
+
+
+async def _render_index_sparks(snap: MarketSnapshot) -> None:
+    """지수 미니 시계열 차트 생성."""
+    from src.market_report.chart import index_spark_url_rel, render_index_sparkline
+
+    date = snap.generated_at.strftime("%Y-%m-%d")
+
+    def _safe(market: str) -> str:
+        try:
+            path = render_index_sparkline(market, date)
+            return index_spark_url_rel(market, date) if path else ""
+        except Exception as exc:
+            logger.warning("spark_failed market=%s error=%s", market, exc)
+            return ""
+
+    kospi_url, kosdaq_url = await asyncio.gather(
+        asyncio.to_thread(_safe, "KOSPI"),
+        asyncio.to_thread(_safe, "KOSDAQ"),
+    )
+    snap.kospi_spark_url = kospi_url
+    snap.kosdaq_spark_url = kosdaq_url
+
+
+async def _render_pick_charts(snap: MarketSnapshot) -> None:
+    """후보 종목별 차트 생성 — 동기 함수를 to_thread로 병렬 처리."""
+    from src.market_report.chart import render_chart
+
+    date = snap.generated_at.strftime("%Y-%m-%d")
+    tasks = []
+    for p in snap.candidate_picks:
+        ticker = str(p.get("ticker", "")).strip()
+        name = str(p.get("name", "")).strip()
+        if not ticker or not name:
+            continue
+        tasks.append(asyncio.to_thread(_render_chart_safe, ticker, name, date))
+
+    results = await asyncio.gather(*tasks, return_exceptions=True)
+    # 각 pick에 chart_url 추가 (성공한 것만)
+    for p, result in zip(snap.candidate_picks, results):
+        if isinstance(result, Exception) or result is None:
+            p["chart_url"] = ""
+            logger.warning("chart_skip ticker=%s reason=%s", p.get("ticker"), result)
+        else:
+            p["chart_url"] = result
+
+
+def _render_chart_safe(ticker: str, name: str, date: str) -> str | None:
+    """차트 생성 실패해도 예외 안 던지게 wrap. 성공 시 상대 URL 반환."""
+    from src.market_report.chart import chart_url_rel, render_chart
+    try:
+        path = render_chart(ticker, name, date)
+        if path is None:
+            return None
+        return chart_url_rel(ticker, date)
+    except Exception as exc:
+        logger.warning("chart_render_failed ticker=%s error=%s", ticker, exc)
+        return None

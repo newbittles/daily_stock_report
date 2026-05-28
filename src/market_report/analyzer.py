@@ -91,6 +91,7 @@ def _build_snapshot_context(snap: MarketSnapshot) -> str:
 
 
 def _pre_close_prompt(snap: MarketSnapshot, context: str) -> str:
+    theme_names = [t.name for t in snap.top_themes[:10]]
     return f"""당신은 한국 주식 시장 전문 애널리스트입니다. 지금 시각은 장 마감 40분 전 (14:50).
 사용자는 종가베팅 전략을 사용합니다: 마감 직전 거래량이 쏠리거나, 과매도 후 반등 신호가 보이는 종목을 매수.
 
@@ -99,11 +100,21 @@ def _pre_close_prompt(snap: MarketSnapshot, context: str) -> str:
 {{
   "summary": "오늘 장 분위기 1-2문장 요약 (예: '코스피 약세 속 2차전지 강세 지속')",
   "why_moved": "왜 이런 흐름인지 2-3문장 설명 (수급·테마·이벤트 근거)",
-  "theme_commentary": "가장 강한 테마 2-3개에 대한 짧은 해설 (왜 강한지, 지속 가능성)",
+  "theme_commentary": "강세/약세 테마 전체에 대한 짧은 종합 해설 (2-3문장)",
+  "theme_reasons": {{
+    "테마명1": "이 테마가 왜 오늘 강한지/약한지 — 뉴스·매크로 이슈·실적·정책 근거 (1-2문장, 구체적이고 사실 기반)",
+    "테마명2": "...",
+    "...": "..."
+  }},
   "candidate_picks": [
     {{
       "ticker": "6자리 종목코드",
       "name": "종목명",
+      "theme": "이 종목이 속한 테마명 (위 강세 테마 Top 10 중 하나)",
+      "theme_peers": [
+        {{"name": "동반 상승 중인 같은 테마 종목명", "change_pct": 등락률_숫자}}
+        // 같은 테마의 동반 종목 2~4개 (위 데이터의 상승률 상위에서 찾기, 등락률 정확히)
+      ],
       "rationale": "왜 종가베팅 후보인지 — 거래량/등락/테마/뉴스 근거 (2-3문장)",
       "risk": "주의할 위험 요인 (1문장)"
     }}
@@ -111,11 +122,20 @@ def _pre_close_prompt(snap: MarketSnapshot, context: str) -> str:
   ]
 }}
 
-선정 기준:
+theme_reasons 작성 규칙:
+- 위 데이터의 강세/약세 테마 Top 10 중 **상위 5~7개** 테마에 대해 작성
+- 키는 정확히 다음 중에서 선택 (오탈자 금지): {theme_names}
+- 시장 뉴스에서 단서를 적극 활용 (예: "AI 반도체 사이클 기대감", "전기차 보조금 정책")
+- 추측보다는 데이터 기반 추론
+
+선정 기준 (candidate_picks):
 - 거래량 상위 또는 상승률 상위에 있으면서 강세 테마에 속한 종목
 - 또는 과매도(-3%~-10%)인데 거래량 급증 + 강세 테마 → 반등 후보
 - ETF·인버스·레버리지는 제외 (실제 종목만)
 - 5개 모두 서로 다른 테마/특성에서 선정 (다양성)
+- ticker는 반드시 데이터에 등장한 6자리 코드만 사용 (창작 금지)
+- theme는 정확히 다음 중에서 선택: {theme_names}
+- theme_peers의 등락률은 데이터에 명시된 값만 사용 (창작 금지, 없으면 빈 배열)
 
 데이터:
 {context}
@@ -124,19 +144,30 @@ JSON만 출력하고 다른 설명은 추가하지 마세요."""
 
 
 def _post_close_prompt(snap: MarketSnapshot, context: str) -> str:
+    theme_names = [t.name for t in snap.top_themes[:10]]
     return f"""당신은 한국 주식 시장 전문 애널리스트입니다. 지금은 장 마감 후 (16:30).
 오늘 시장을 정리하고 내일 관전 포인트를 제시하세요. **반드시 JSON 형식**으로:
 
 {{
   "summary": "오늘 장 1-2문장 요약 (지수 등락 + 핵심 키워드)",
   "why_moved": "오늘 시장이 이렇게 움직인 이유 (3-4문장, 수급/테마/이벤트 근거)",
-  "theme_commentary": "오늘 강했던 테마 Top 3 해설 — 각 테마별로 왜 강했고 지속 가능성은? (각 2-3문장)",
+  "theme_commentary": "오늘 시장 흐름 전반 해설 (2-3문장)",
+  "theme_reasons": {{
+    "테마명1": "왜 오늘 이 테마가 강했나/약했나 — 뉴스·매크로·정책 근거 (1-2문장)",
+    "테마명2": "...",
+    "...": "..."
+  }},
   "tomorrow_watchpoints": [
     "내일 주목할 포인트 1 (1문장)",
     "내일 주목할 포인트 2 (1문장)",
     "내일 주목할 포인트 3 (1문장)"
   ]
 }}
+
+theme_reasons 작성 규칙:
+- 위 데이터의 강세/약세 테마 Top 10 중 **상위 5~7개** 테마에 대해 작성
+- 키는 정확히 다음 중에서 선택 (오탈자 금지): {theme_names}
+- 시장 뉴스에서 단서를 적극 활용
 
 데이터:
 {context}
@@ -212,18 +243,51 @@ async def analyze(snap: MarketSnapshot) -> MarketSnapshot:
     snap.why_moved = _to_text(data.get("why_moved"))
     snap.theme_commentary = _to_text(data.get("theme_commentary"))
 
+    # 테마별 근거 매핑 → ThemeRank.reason 채움
+    theme_reasons_raw = data.get("theme_reasons", {})
+    if isinstance(theme_reasons_raw, dict):
+        # 키 정규화 (공백·괄호 변형 대응)
+        norm = {k.strip().lower(): v for k, v in theme_reasons_raw.items()}
+        for t in snap.top_themes:
+            key = t.name.strip().lower()
+            reason = norm.get(key)
+            if not reason:
+                # 부분 매칭 (테마명에 괄호가 있는 경우 대비)
+                for k, v in norm.items():
+                    if k in key or key in k:
+                        reason = v
+                        break
+            t.reason = _to_text(reason) if reason else ""
+
     if snap.mode == "pre_close":
         picks_raw = data.get("candidate_picks", [])
-        # 검증: 각 항목에 ticker, name, rationale 있는지
         valid_picks = []
         for p in picks_raw:
             if not isinstance(p, dict):
                 continue
             if not all(k in p for k in ("ticker", "name", "rationale")):
                 continue
+
+            # theme_peers 정규화: [{"name", "change_pct"}, ...]
+            peers_raw = p.get("theme_peers", [])
+            peers = []
+            if isinstance(peers_raw, list):
+                for peer in peers_raw[:5]:
+                    if not isinstance(peer, dict):
+                        continue
+                    pname = str(peer.get("name", "")).strip()
+                    try:
+                        pct = float(peer.get("change_pct", 0))
+                    except (TypeError, ValueError):
+                        pct = 0.0
+                    if pname:
+                        peers.append({"name": pname, "change_pct": pct})
+
             valid_picks.append({
                 "ticker": str(p["ticker"]).strip(),
                 "name": str(p["name"]).strip(),
+                "theme": str(p.get("theme", "")).strip(),
+                "theme_peers": peers,
                 "rationale": str(p["rationale"]).strip(),
                 "risk": str(p.get("risk", "")).strip(),
             })

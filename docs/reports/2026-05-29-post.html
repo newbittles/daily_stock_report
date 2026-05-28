@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>마감 후 시장 리포트 — 2026-05-29</title>
-  <meta name="description" content="코스피는 소폭 하락했으나 코스닥은 2%대 급락하며 시장 전반의 투자심리가 위축된 가운데, 2차전지 및 MLCC 관련주가 강세를 보이며 시장을 견인했습니다.">
+  <meta name="description" content="AI 분석을 일시적으로 사용할 수 없습니다. 아래 데이터를 직접 참고하세요.">
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
@@ -80,9 +80,20 @@
       border-radius: 8px;
       padding: 1rem;
       border-left: 3px solid var(--border);
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 0.5rem;
+      align-items: center;
     }
     .index-card.up { border-left-color: var(--green); }
     .index-card.down { border-left-color: var(--red); }
+    .index-info { min-width: 0; }
+    .index-spark {
+      width: 130px;
+      height: 40px;
+      flex-shrink: 0;
+    }
+    .index-spark img { width: 100%; height: 100%; object-fit: cover; border-radius: 4px; }
     .index-name { font-size: 0.85rem; color: var(--text-dim); margin-bottom: 0.25rem; }
     .index-value { font-size: 1.5rem; font-weight: 700; }
     .index-change { font-size: 0.9rem; margin-top: 0.25rem; }
@@ -113,6 +124,23 @@
       padding: 1rem 1.25rem;
       margin-bottom: 0.75rem;
       border-left: 3px solid var(--yellow);
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 1rem;
+    }
+    .pick.has-chart { grid-template-columns: 1fr 360px; }
+    .pick-body { min-width: 0; }
+    .pick-chart {
+      align-self: start;
+      background: #0f172a;
+      border-radius: 6px;
+      overflow: hidden;
+    }
+    .pick-chart img {
+      width: 100%;
+      height: auto;
+      display: block;
+      cursor: zoom-in;
     }
     .pick-head {
       display: flex;
@@ -133,6 +161,77 @@
     }
     .pick-risk::before { content: "⚠ "; color: var(--yellow); }
 
+    /* Theme peers */
+    .pick-theme {
+      background: #60a5fa15;
+      border: 1px solid #60a5fa33;
+      border-radius: 6px;
+      padding: 0.5rem 0.75rem;
+      margin-bottom: 0.5rem;
+      font-size: 0.83rem;
+    }
+    .pick-theme-name {
+      color: var(--accent);
+      font-weight: 600;
+      margin-bottom: 0.3rem;
+    }
+    .pick-theme-name::before { content: "🏷 "; }
+    .peer-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+    }
+    .peer-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      padding: 0.2rem 0.6rem;
+      font-size: 0.78rem;
+    }
+    .peer-chip .pct { font-family: monospace; font-weight: 700; }
+
+    /* Theme reason */
+    .theme-reason {
+      grid-column: 1 / -1;
+      font-size: 0.83rem;
+      color: var(--text-dim);
+      margin-top: 0.4rem;
+      padding-top: 0.4rem;
+      border-top: 1px dashed var(--border);
+      line-height: 1.5;
+    }
+    .theme-reason::before { content: "💡 "; }
+    .theme {
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      grid-template-areas: "rank info pct" "reason reason reason";
+      gap: 0.5rem 0.75rem;
+      align-items: center;
+      padding: 0.7rem 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .theme-rank { grid-area: rank; }
+    .theme-info { grid-area: info; }
+    .theme-pct { grid-area: pct; }
+    .theme-reason { grid-area: reason; }
+
+    /* Lightbox overlay for chart click */
+    .lightbox {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.92);
+      z-index: 100;
+      cursor: zoom-out;
+      padding: 1rem;
+      overflow: auto;
+    }
+    .lightbox.active { display: flex; align-items: flex-start; justify-content: center; }
+    .lightbox img { max-width: 100%; height: auto; }
+
     /* Watchpoint */
     .watch-list { list-style: none; padding: 0; }
     .watch-list li {
@@ -150,15 +249,7 @@
       font-weight: 700;
     }
 
-    /* Themes */
-    .theme {
-      display: grid;
-      grid-template-columns: auto 1fr auto;
-      gap: 0.75rem;
-      align-items: center;
-      padding: 0.6rem 0;
-      border-bottom: 1px solid var(--border);
-    }
+    /* Themes (base styles — grid-template-areas redefined above) */
     .theme:last-child { border-bottom: none; }
     .theme-rank {
       width: 1.8rem;
@@ -235,6 +326,9 @@
     }
 
     /* Responsive */
+    @media (max-width: 880px) {
+      .pick.has-chart { grid-template-columns: 1fr; }
+    }
     @media (max-width: 640px) {
       .indexes { grid-template-columns: 1fr; }
       .header h1 { font-size: 1.25rem; }
@@ -251,7 +345,7 @@
         <span class="badge post">
           🔵 마감 후
         </span>
-        <span>2026년 05월 29일 00:11</span>
+        <span>2026년 05월 29일 00:37</span>
       </div>
     </header>
 
@@ -259,20 +353,26 @@
       <h2><span class="icon">📈</span>주요 지수</h2>
       <div class="indexes">
           <div class="index-card down">
-            <div class="index-name">KOSPI</div>
-            <div class="index-value">8,185.29</div>
-            <div class="index-change down-text">
-              43.41
-              (-0.53%)
+            <div class="index-info">
+              <div class="index-name">KOSPI</div>
+              <div class="index-value">8,185.29</div>
+              <div class="index-change down-text">
+                43.41
+                (-0.53%)
+              </div>
             </div>
+            <div class="index-spark"><img src="charts/2026-05-29-KOSPI-spark.png" alt="KOSPI 60일 추이" loading="lazy"></div>
           </div>
           <div class="index-card down">
-            <div class="index-name">KOSDAQ</div>
-            <div class="index-value">1,104.36</div>
-            <div class="index-change down-text">
-              28.77
-              (-2.54%)
+            <div class="index-info">
+              <div class="index-name">KOSDAQ</div>
+              <div class="index-value">1,104.36</div>
+              <div class="index-change down-text">
+                28.77
+                (-2.54%)
+              </div>
             </div>
+            <div class="index-spark"><img src="charts/2026-05-29-KOSDAQ-spark.png" alt="KOSDAQ 60일 추이" loading="lazy"></div>
           </div>
       </div>
     </section>
@@ -281,31 +381,11 @@
       <h2><span class="icon">🤖</span>AI 시장 요약</h2>
       <div class="summary-box">
         <div class="label">한 줄 요약</div>
-        <p>코스피는 소폭 하락했으나 코스닥은 2%대 급락하며 시장 전반의 투자심리가 위축된 가운데, 2차전지 및 MLCC 관련주가 강세를 보이며 시장을 견인했습니다.</p>
-      </div>
-      <div class="summary-box">
-        <div class="label">왜 움직였나</div>
-        <p>오늘 시장은 코스닥의 급락에서 보듯이 전반적인 투자심리 위축과 차익실현 매물이 출회된 하루였습니다. 특히, 국민연금의 국내주식 목표 비중 조정 이슈가 지속적으로 언급되며 수급 불확실성을 키웠고, 외국인 매도세도 시장 하방 압력으로 작용했습니다. 다만, AI 반도체 및 2차전지 등 특정 성장 테마에 대한 집중적인 매수세는 이어지며 지수 하락폭을 방어하는 모습을 보였습니다.</p>
-      </div>
-      <div class="summary-box">
-        <div class="label">테마 해설</div>
-        <p>▸ 1. 2차전지 관련주: LG에너지솔루션, 엘앤에프 등 주요 2차전지 대형주들이 강세를 보이며 시장을 주도했습니다. 최근 조정 이후 저가 매수세 유입과 함께 장기 성장 기대감이 반영된 것으로 보이며, 단기 급등에 따른 차익실현 압력은 경계해야 합니다.
-
-▸ 2. MLCC(적층세라믹콘덴서) 관련주: 삼화콘덴서, 삼성전기 등 MLCC 관련주가 2차전지 테마와 동반 강세를 나타냈습니다. 전기차 및 AI 기기 수요 증가에 따른 업황 개선 기대감이 반영된 것으로, 2차전지 산업 성장과 맞물려 지속적인 관심이 예상됩니다.
-
-▸ 3. AI 반도체 관련주: 직접적인 테마 순위에는 없지만, SK하이닉스 단일종목 레버리지 ETF의 높은 거래량과 뉴스 언급을 통해 AI 반도체 관련주에 대한 강한 매수세가 확인되었습니다. AI 산업 성장에 대한 기대감이 여전히 유효하며, 대형주 중심의 수급 쏠림 현상이 지속될 가능성이 높습니다.</p>
+        <p>AI 분석을 일시적으로 사용할 수 없습니다. 아래 데이터를 직접 참고하세요.</p>
       </div>
     </section>
 
 
-    <section>
-      <h2><span class="icon">🔭</span>내일 관전 포인트</h2>
-      <ul class="watch-list">
-        <li>미국 CPI 발표 등 주요 경제 지표 발표를 앞두고 관망세가 짙어질 수 있으므로, 대외 변수와 외국인 수급 동향을 주시해야 합니다.</li>
-        <li>국민연금의 국내 주식 목표 비중 조정 관련 추가적인 시장 해석과 실제 수급 변화 여부가 중요합니다.</li>
-        <li>오늘 강세를 보인 2차전지 및 AI 반도체 관련 대형주들의 상승세 지속 여부와 함께, 코스닥 중소형주의 반등 가능성을 탐색해야 합니다.</li>
-      </ul>
-    </section>
 
     <section>
       <h2><span class="icon">🔥</span>강세/약세 테마 Top 10</h2>
@@ -886,64 +966,14 @@
     <section>
       <h2><span class="icon">📰</span>주요 시장 뉴스</h2>
       <div class="news-item">
-        <a href="https://finance.naver.com/news/news_read.naver?article_id=0005292581&amp;office_id=015&amp;mode=mainnews&amp;type=&amp;date=2026-05-28&amp;page=1" target="_blank" rel="noopener" class="news-title">없어서 못 판다더니 일냈다…주가 624%·318% 폭등한 韓 회사 [종목+]</a>
+        <a href="https://finance.naver.com/news/news_read.naver?article_id=0002794202&amp;office_id=021&amp;mode=mainnews&amp;type=&amp;date=2026-05-29&amp;page=1" target="_blank" rel="noopener" class="news-title">‘전국민 단타장’…삼전 3.5% 빠지니 2배ETF -7% “곡소리”</a>
         <div class="news-meta">
-<span class="news-source">한국경제</span> · 2026-05-28 22:01:09        </div>
+<span class="news-source">문화일보</span> · 2026-05-29 00:15:11        </div>
       </div>
       <div class="news-item">
-        <a href="https://finance.naver.com/news/news_read.naver?article_id=0005686565&amp;office_id=009&amp;mode=mainnews&amp;type=&amp;date=2026-05-28&amp;page=1" target="_blank" rel="noopener" class="news-title">“대장주만 샀는데도 도박하는 느낌”…예측불가 코스피, 잡주처럼 ‘흔들’</a>
+        <a href="https://finance.naver.com/news/news_read.naver?article_id=0001851730&amp;office_id=005&amp;mode=mainnews&amp;type=&amp;date=2026-05-29&amp;page=1" target="_blank" rel="noopener" class="news-title">“2배 먹는다더니 왜 손실”… 삼전닉스 단일종목 레버리지 혼란</a>
         <div class="news-meta">
-<span class="news-source">매일경제</span> · 2026-05-28 21:56:15        </div>
-      </div>
-      <div class="news-item">
-        <a href="https://finance.naver.com/news/news_read.naver?article_id=0005527916&amp;office_id=014&amp;mode=mainnews&amp;type=&amp;date=2026-05-28&amp;page=1" target="_blank" rel="noopener" class="news-title">국민연금 &#39;국내주식 목표비중 20.8%&#39;…&#39;8천피&#39; 리밸런싱 불씨</a>
-        <div class="news-meta">
-<span class="news-source">파이낸셜뉴스</span> · 2026-05-28 21:54:15        </div>
-      </div>
-      <div class="news-item">
-        <a href="https://finance.naver.com/news/news_read.naver?article_id=0004625583&amp;office_id=011&amp;mode=mainnews&amp;type=&amp;date=2026-05-28&amp;page=1" target="_blank" rel="noopener" class="news-title">“삼전닉스 아닌데 한 달 새 ‘2배’ 뛰었다”…AI 사이클 ‘숨은 승자’ 정체는</a>
-        <div class="news-meta">
-<span class="news-source">서울경제</span> · 2026-05-28 21:11:07        </div>
-      </div>
-      <div class="news-item">
-        <a href="https://finance.naver.com/news/news_read.naver?article_id=0002649494&amp;office_id=016&amp;mode=mainnews&amp;type=&amp;date=2026-05-28&amp;page=1" target="_blank" rel="noopener" class="news-title">‘나만 몰랐어?’ ‘삼전닉스’ 투자하는 미국 ETF, 87% 급등…15조 규모라니 [투자360]</a>
-        <div class="news-meta">
-<span class="news-source">헤럴드경제</span> · 2026-05-28 20:40:11        </div>
-      </div>
-      <div class="news-item">
-        <a href="https://finance.naver.com/news/news_read.naver?article_id=0002649489&amp;office_id=016&amp;mode=mainnews&amp;type=&amp;date=2026-05-28&amp;page=1" target="_blank" rel="noopener" class="news-title">“주가 120만원, 두배로 오른다” 파격 전망에…‘삼전’ 던진 초고수 투자자, ‘이것’ 샀다</a>
-        <div class="news-meta">
-<span class="news-source">헤럴드경제</span> · 2026-05-28 20:17:11        </div>
-      </div>
-      <div class="news-item">
-        <a href="https://finance.naver.com/news/news_read.naver?article_id=0001951302&amp;office_id=057&amp;mode=mainnews&amp;type=&amp;date=2026-05-28&amp;page=1" target="_blank" rel="noopener" class="news-title">&#34;그 홍길동이 아니었어?&#34; &#39;삼행시&#39; 단체통장 속지 마세요</a>
-        <div class="news-meta">
-<span class="news-source">MBN</span> · 2026-05-28 20:14:10        </div>
-      </div>
-      <div class="news-item">
-        <a href="https://finance.naver.com/news/news_read.naver?article_id=0006292630&amp;office_id=018&amp;mode=mainnews&amp;type=&amp;date=2026-05-28&amp;page=1" target="_blank" rel="noopener" class="news-title">국민연금 국내주식 20.8%로 높인다…하락장에선 방어수단 되나[마켓인]</a>
-        <div class="news-meta">
-<span class="news-source">이데일리</span> · 2026-05-28 19:58:11        </div>
-      </div>
-      <div class="news-item">
-        <a href="https://finance.naver.com/news/news_read.naver?article_id=0001167875&amp;office_id=366&amp;mode=mainnews&amp;type=&amp;date=2026-05-28&amp;page=1" target="_blank" rel="noopener" class="news-title">국민연금發 매도 충격 피했지만… “국민 노후 자금으로 증시 부양” 비판</a>
-        <div class="news-meta">
-<span class="news-source">조선비즈</span> · 2026-05-28 19:51:10        </div>
-      </div>
-      <div class="news-item">
-        <a href="https://finance.naver.com/news/news_read.naver?article_id=0004625573&amp;office_id=011&amp;mode=mainnews&amp;type=&amp;date=2026-05-28&amp;page=1" target="_blank" rel="noopener" class="news-title">변수 하나에 흔들리는 ‘롤러코스피’…외인도 15거래일간 50조 내던졌다</a>
-        <div class="news-meta">
-<span class="news-source">서울경제</span> · 2026-05-28 19:34:13        </div>
-      </div>
-      <div class="news-item">
-        <a href="https://finance.naver.com/news/news_read.naver?article_id=0000047531&amp;office_id=648&amp;mode=mainnews&amp;type=&amp;date=2026-05-28&amp;page=1" target="_blank" rel="noopener" class="news-title">국민연금, 올해 국장 투자비중 25.8% 이상 늘린다...당장 매도폭탄 없어</a>
-        <div class="news-meta">
-<span class="news-source">비즈워치</span> · 2026-05-28 19:08:15        </div>
-      </div>
-      <div class="news-item">
-        <a href="https://finance.naver.com/news/news_read.naver?article_id=0001031622&amp;office_id=031&amp;mode=mainnews&amp;type=&amp;date=2026-05-28&amp;page=1" target="_blank" rel="noopener" class="news-title">&#34;무섭게 돈 빨아들인다&#34;…개미들, 삼전닉스 레버리지 &#39;열풍&#39;</a>
-        <div class="news-meta">
-<span class="news-source">아이뉴스24</span> · 2026-05-28 18:50:13        </div>
+<span class="news-source">국민일보</span> · 2026-05-29 00:09:11        </div>
       </div>
     </section>
 
@@ -953,6 +983,10 @@
       <a href="../index.html">← 메인으로</a>
     </div>
 
+  </div>
+
+  <div id="lightbox" class="lightbox" onclick="this.classList.remove('active')">
+    <img id="lightbox-img" src="" alt="차트 확대">
   </div>
 
   <script>

@@ -80,9 +80,20 @@
       border-radius: 8px;
       padding: 1rem;
       border-left: 3px solid var(--border);
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 0.5rem;
+      align-items: center;
     }
     .index-card.up { border-left-color: var(--green); }
     .index-card.down { border-left-color: var(--red); }
+    .index-info { min-width: 0; }
+    .index-spark {
+      width: 130px;
+      height: 40px;
+      flex-shrink: 0;
+    }
+    .index-spark img { width: 100%; height: 100%; object-fit: cover; border-radius: 4px; }
     .index-name { font-size: 0.85rem; color: var(--text-dim); margin-bottom: 0.25rem; }
     .index-value { font-size: 1.5rem; font-weight: 700; }
     .index-change { font-size: 0.9rem; margin-top: 0.25rem; }
@@ -113,6 +124,23 @@
       padding: 1rem 1.25rem;
       margin-bottom: 0.75rem;
       border-left: 3px solid var(--yellow);
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 1rem;
+    }
+    .pick.has-chart { grid-template-columns: 1fr 360px; }
+    .pick-body { min-width: 0; }
+    .pick-chart {
+      align-self: start;
+      background: #0f172a;
+      border-radius: 6px;
+      overflow: hidden;
+    }
+    .pick-chart img {
+      width: 100%;
+      height: auto;
+      display: block;
+      cursor: zoom-in;
     }
     .pick-head {
       display: flex;
@@ -133,6 +161,77 @@
     }
     .pick-risk::before { content: "⚠ "; color: var(--yellow); }
 
+    /* Theme peers */
+    .pick-theme {
+      background: #60a5fa15;
+      border: 1px solid #60a5fa33;
+      border-radius: 6px;
+      padding: 0.5rem 0.75rem;
+      margin-bottom: 0.5rem;
+      font-size: 0.83rem;
+    }
+    .pick-theme-name {
+      color: var(--accent);
+      font-weight: 600;
+      margin-bottom: 0.3rem;
+    }
+    .pick-theme-name::before { content: "🏷 "; }
+    .peer-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+    }
+    .peer-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      padding: 0.2rem 0.6rem;
+      font-size: 0.78rem;
+    }
+    .peer-chip .pct { font-family: monospace; font-weight: 700; }
+
+    /* Theme reason */
+    .theme-reason {
+      grid-column: 1 / -1;
+      font-size: 0.83rem;
+      color: var(--text-dim);
+      margin-top: 0.4rem;
+      padding-top: 0.4rem;
+      border-top: 1px dashed var(--border);
+      line-height: 1.5;
+    }
+    .theme-reason::before { content: "💡 "; }
+    .theme {
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      grid-template-areas: "rank info pct" "reason reason reason";
+      gap: 0.5rem 0.75rem;
+      align-items: center;
+      padding: 0.7rem 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .theme-rank { grid-area: rank; }
+    .theme-info { grid-area: info; }
+    .theme-pct { grid-area: pct; }
+    .theme-reason { grid-area: reason; }
+
+    /* Lightbox overlay for chart click */
+    .lightbox {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.92);
+      z-index: 100;
+      cursor: zoom-out;
+      padding: 1rem;
+      overflow: auto;
+    }
+    .lightbox.active { display: flex; align-items: flex-start; justify-content: center; }
+    .lightbox img { max-width: 100%; height: auto; }
+
     /* Watchpoint */
     .watch-list { list-style: none; padding: 0; }
     .watch-list li {
@@ -150,15 +249,7 @@
       font-weight: 700;
     }
 
-    /* Themes */
-    .theme {
-      display: grid;
-      grid-template-columns: auto 1fr auto;
-      gap: 0.75rem;
-      align-items: center;
-      padding: 0.6rem 0;
-      border-bottom: 1px solid var(--border);
-    }
+    /* Themes (base styles — grid-template-areas redefined above) */
     .theme:last-child { border-bottom: none; }
     .theme-rank {
       width: 1.8rem;
@@ -235,6 +326,9 @@
     }
 
     /* Responsive */
+    @media (max-width: 880px) {
+      .pick.has-chart { grid-template-columns: 1fr; }
+    }
     @media (max-width: 640px) {
       .indexes { grid-template-columns: 1fr; }
       .header h1 { font-size: 1.25rem; }
@@ -260,15 +354,20 @@
     <section>
       <h2><span class="icon">📈</span>주요 지수</h2>
       <div class="indexes">
-        {% for idx in [snap.kospi, snap.kosdaq] %}
+        {% for idx, spark_url in [(snap.kospi, snap.kospi_spark_url), (snap.kosdaq, snap.kosdaq_spark_url)] %}
           {% if idx %}
           <div class="index-card {{ 'up' if idx.change_pct >= 0 else 'down' }}">
-            <div class="index-name">{{ idx.market }}</div>
-            <div class="index-value">{{ "{:,.2f}".format(idx.value) }}</div>
-            <div class="index-change {{ 'up-text' if idx.change_pct >= 0 else 'down-text' }}">
-              {{ '+' if idx.change_pct >= 0 else '' }}{{ "{:.2f}".format(idx.change) }}
-              ({{ '+' if idx.change_pct >= 0 else '' }}{{ "{:.2f}".format(idx.change_pct) }}%)
+            <div class="index-info">
+              <div class="index-name">{{ idx.market }}</div>
+              <div class="index-value">{{ "{:,.2f}".format(idx.value) }}</div>
+              <div class="index-change {{ 'up-text' if idx.change_pct >= 0 else 'down-text' }}">
+                {{ '+' if idx.change_pct >= 0 else '' }}{{ "{:.2f}".format(idx.change) }}
+                ({{ '+' if idx.change_pct >= 0 else '' }}{{ "{:.2f}".format(idx.change_pct) }}%)
+              </div>
             </div>
+            {% if spark_url %}
+            <div class="index-spark"><img src="{{ spark_url }}" alt="{{ idx.market }} 60일 추이" loading="lazy"></div>
+            {% endif %}
           </div>
           {% endif %}
         {% endfor %}
@@ -304,13 +403,38 @@
     <section>
       <h2><span class="icon">🎯</span>종가베팅 후보 {{ snap.candidate_picks|length }}선</h2>
       {% for p in snap.candidate_picks %}
-      <div class="pick">
-        <div class="pick-head">
-          <span class="pick-name">{{ p.name }}</span>
-          <span class="pick-ticker">{{ p.ticker }}</span>
+      <div class="pick {{ 'has-chart' if p.chart_url else '' }}">
+        <div class="pick-body">
+          <div class="pick-head">
+            <span class="pick-name">{{ p.name }}</span>
+            <span class="pick-ticker">{{ p.ticker }}</span>
+          </div>
+          {% if p.theme %}
+          <div class="pick-theme">
+            <div class="pick-theme-name">{{ p.theme }}</div>
+            {% if p.theme_peers %}
+            <div class="peer-list">
+              {% for peer in p.theme_peers %}
+              <span class="peer-chip">
+                {{ peer.name }}
+                <span class="pct {{ 'up-text' if peer.change_pct >= 0 else 'down-text' }}">
+                  {{ '+' if peer.change_pct >= 0 else '' }}{{ "%.2f"|format(peer.change_pct) }}%
+                </span>
+              </span>
+              {% endfor %}
+            </div>
+            {% endif %}
+          </div>
+          {% endif %}
+          <div class="pick-rationale">{{ p.rationale }}</div>
+          {% if p.risk %}<div class="pick-risk">{{ p.risk }}</div>{% endif %}
         </div>
-        <div class="pick-rationale">{{ p.rationale }}</div>
-        {% if p.risk %}<div class="pick-risk">{{ p.risk }}</div>{% endif %}
+        {% if p.chart_url %}
+        <div class="pick-chart">
+          <img src="{{ p.chart_url }}" alt="{{ p.name }} 차트" loading="lazy"
+               onclick="document.getElementById('lightbox-img').src=this.src;document.getElementById('lightbox').classList.add('active');">
+        </div>
+        {% endif %}
       </div>
       {% endfor %}
     </section>
@@ -344,6 +468,9 @@
         <div class="theme-pct {{ 'up-text' if t.change_pct >= 0 else 'down-text' }}">
           {{ '+' if t.change_pct >= 0 else '' }}{{ "{:.2f}".format(t.change_pct) }}%
         </div>
+        {% if t.reason %}
+        <div class="theme-reason">{{ t.reason }}</div>
+        {% endif %}
       </div>
       {% endfor %}
     </section>
@@ -406,6 +533,10 @@
       <a href="../index.html">← 메인으로</a>
     </div>
 
+  </div>
+
+  <div id="lightbox" class="lightbox" onclick="this.classList.remove('active')">
+    <img id="lightbox-img" src="" alt="차트 확대">
   </div>
 
   <script>

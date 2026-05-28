@@ -56,6 +56,7 @@ class ThemeRank:
     change_pct: float         # 테마 평균 등락률
     leading_stocks: list[str] = field(default_factory=list)  # 주도주 종목명 (Top 3)
     description: str = ""     # 테마 설명 (있으면)
+    reason: str = ""          # AI가 채움 — 왜 강한지/약한지 (뉴스·매크로 근거)
 
 
 @dataclass
@@ -98,3 +99,7 @@ class MarketSnapshot:
     why_moved: str = ""         # 왜 올랐나/내렸나
     theme_commentary: str = ""  # 강세 테마 해설
     candidate_picks: list[dict] = field(default_factory=list)  # 종가베팅 후보 (pre_close용)
+
+    # 차트 URL (renderer가 채움, 상대 경로 — docs/reports/ 기준)
+    kospi_spark_url: str = ""
+    kosdaq_spark_url: str = ""
