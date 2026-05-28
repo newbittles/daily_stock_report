@@ -1,19 +1,19 @@
 [
   {
     "date": "2026-05-29",
-    "time": "00:37",
-    "mode": "post_close",
-    "url": "reports/2026-05-29-post.html",
+    "time": "00:45",
+    "mode": "pre_close",
+    "url": "reports/2026-05-29-pre.html",
     "summary": "AI 분석을 일시적으로 사용할 수 없습니다. 아래 데이터를 직접 참고하세요.",
     "kospi_pct": -0.53,
     "kosdaq_pct": -2.54
   },
   {
     "date": "2026-05-29",
-    "time": "00:36",
-    "mode": "pre_close",
-    "url": "reports/2026-05-29-pre.html",
-    "summary": "코스피, 코스닥 모두 하락세를 보이는 가운데, 2차전지 및 MLCC 등 일부 기술주와 방어주 성격의 편의점 테마가 강세를 보이며 차별화된 흐름을 나타내고 있습니다.",
+    "time": "00:37",
+    "mode": "post_close",
+    "url": "reports/2026-05-29-post.html",
+    "summary": "AI 분석을 일시적으로 사용할 수 없습니다. 아래 데이터를 직접 참고하세요.",
     "kospi_pct": -0.53,
     "kosdaq_pct": -2.54
   }

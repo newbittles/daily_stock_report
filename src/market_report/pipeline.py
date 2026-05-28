@@ -138,3 +138,40 @@ def _render_chart_safe(ticker: str, name: str, date: str) -> str | None:
     except Exception as exc:
         logger.warning("chart_render_failed ticker=%s error=%s", ticker, exc)
         return None
+
+
+async def run_full(mode: ReportMode, *, do_publish: bool = True, do_telegram: bool = True) -> MarketSnapshot:
+    """End-to-end: 데이터 → 분석 → HTML 렌더 → git push → 텔레그램.
+
+    각 단계 실패는 다음 단계를 막지 않는다.
+    스케줄러·CLI 모두 이 함수를 단일 진입점으로 사용.
+    """
+    from src.market_report.publisher import publish
+    from src.market_report.render import render_report
+    from src.market_report.telegram_notify import send_report
+
+    logger.info("pipeline_start mode=%s", mode)
+
+    snap = await generate_report(mode)
+    logger.info("pipeline_data_ready mode=%s picks=%d themes=%d",
+                mode, len(snap.candidate_picks), len(snap.top_themes))
+
+    try:
+        render_report(snap)
+    except Exception as exc:
+        logger.error("pipeline_render_failed error=%s", exc)
+
+    if do_publish:
+        try:
+            publish(snap)
+        except Exception as exc:
+            logger.error("pipeline_publish_failed error=%s", exc)
+
+    if do_telegram:
+        try:
+            await send_report(snap)
+        except Exception as exc:
+            logger.error("pipeline_telegram_failed error=%s", exc)
+
+    logger.info("pipeline_done mode=%s", mode)
+    return snap
