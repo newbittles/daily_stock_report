@@ -29,7 +29,7 @@ async def main() -> None:
     adapter = KisAdapter(s.kis_app_key, s.kis_app_secret, s.kis_account_no, s.kis_env)
 
     # 종료일 기준 충분한 데이터 확보 (구간 + 20일선 워밍업 60봉)
-    candles_all = await adapter.get_ohlcv(ticker, days=200, end_date=end)
+    candles_all = await adapter.get_ohlcv(ticker, days=320, end_date=end)
     if len(candles_all) < 60:
         print(f"데이터 부족 ({len(candles_all)}봉)")
         return

@@ -246,24 +246,29 @@ def is_ma20_pullback(
     max_gap: float = 0.45,
     require_below_ma5: bool = True,
     min_pullback_pct: float = 2.0,
+    require_ma20_rising: bool = True,
+    require_new_high: bool = True,
+    new_high_lookback: int = 60,
 ) -> PatternResult:
     """20일선 눌림목 (사용자 전략) — 가격 급등 후 20일선 위에서 '단기 조정 중'인 주도주.
 
     급등 정의 = 가격 기준 (거래량 무관 — 대형주도 포착):
       0. 최근 surge_lookback일 내 단기저점→고점 +surge_pct% 이상 상승 (한번의 급등)
-      1. 종가 >= 20일선 (핵심 — 손절선)
-      2. 20일선 이격 max_gap 이내 (과열 추격 방지)
-      3. 단기 눌림 진입: 종가 <= 5일선 (오르는 날 제외)
-      4. 단기 고점 대비 min_pullback_pct 이상 하락 (실제 눌림 확인)
+      1. 20일선 우상향 (추세 살아있음 — 박스권/하락추세 제외)
+      2. 종가 >= 20일선 (핵심 — 손절선)
+      3. 20일선 이격 max_gap 이내 (과열 추격 방지)
+      4. 단기 눌림 진입: 종가 <= 5일선 (오르는 날 제외)
+      5. 단기 고점 대비 min_pullback_pct 이상 하락 (실제 눌림 확인)
 
-    정배열·RSI·MACD·일목·거래량은 제외 (사용자 요청: 이평선+거래량흔적이 아닌 가격+캔들).
+    정배열·RSI·MACD·일목·거래량은 제외 (사용자 요청: 이평선+가격+캔들).
     매수 후 관심종목 등록 → 20일선 이탈 시 손절 (단타 아님).
     """
     closes = _closes(candles)
     if len(closes) < max(60, surge_lookback + 5):
         return PatternResult(False, "데이터 부족")
 
-    ma20 = moving_average(closes, ma_period)[-1]
+    ma20_series = moving_average(closes, ma_period)
+    ma20 = ma20_series[-1]
     ma5 = moving_average(closes, 5)[-1]
     if ma20 is None or ma5 is None:
         return PatternResult(False, "이평선 계산 불가")
@@ -282,7 +287,28 @@ def is_ma20_pullback(
     if surge_rate < surge_pct:
         return PatternResult(False, f"급등 없음 ({surge_lookback}일 +{surge_rate:.0f}%)", metrics)
 
-    # 1. 종가 >= 20일선 (핵심 손절선)
+    # 0-b. 신고가 경신 — 급등 고점이 직전 장기 고점을 넘었는가 (추세주 vs 박스권)
+    #      박스권은 급등해도 이전 고점 못 넘음 → 제외. 추세주는 계단식 신고가 경신.
+    if require_new_high and len(highs) >= new_high_lookback + surge_lookback:
+        prior_high = max(highs[-(new_high_lookback + surge_lookback):-surge_lookback])
+        metrics["prior_high"] = round(prior_high, 1)
+        if window_hi < prior_high:
+            short = (prior_high - window_hi) / prior_high * 100
+            return PatternResult(False, f"신고가 미달 (직전고점 -{short:.1f}%, 박스권)", metrics)
+
+    # 1. 60일선 우상향 (중기 추세 살아있음 — 박스권/하락추세 제외)
+    #    급등은 20일선을 일시적으로 끌어올리므로 20일선 기울기로는 박스권을 못 거름.
+    #    60일선(중기)이 우상향이어야 '진짜 추세주'.
+    if require_ma20_rising:
+        ma60_series = moving_average(closes, 60)
+        ma60_now, ma60_10ago = ma60_series[-1], ma60_series[-11] if len(ma60_series) >= 11 else None
+        if ma60_now is not None and ma60_10ago is not None:
+            ma60_slope = (ma60_now - ma60_10ago) / ma60_10ago * 100
+            metrics["ma60_slope_pct"] = round(ma60_slope, 2)
+            if ma60_now <= ma60_10ago:
+                return PatternResult(False, f"60일선 하락/횡보 ({ma60_slope:+.1f}%)", metrics)
+
+    # 2. 종가 >= 20일선 (핵심 손절선)
     if price < ma20:
         return PatternResult(False, f"20일선 이탈 ({gap*100:+.1f}%)", metrics)
 
@@ -303,9 +329,10 @@ def is_ma20_pullback(
     if pullback < min_pullback_pct:
         return PatternResult(False, f"눌림 부족 (5일고점대비 -{pullback:.1f}%)", metrics)
 
+    slope_txt = f", 60선기울기 {metrics.get('ma60_slope_pct', 0):+.1f}%" if "ma60_slope_pct" in metrics else ""
     reasons = [
         f"급등 ({surge_lookback}일 +{surge_rate:.0f}%)",
-        f"20일선 위 (+{gap*100:.1f}%)",
+        f"20일선 위 (+{gap*100:.1f}%{slope_txt})",
         f"단기눌림 (5일선 {ma5_gap:+.1f}%, 5일고점 -{pullback:.1f}%)",
     ]
     return PatternResult(True, " / ".join(reasons), metrics)

@@ -61,11 +61,14 @@ strategies:
     conditions:
       ma20_pullback:
         ma_period: 20
-        surge_lookback: 10   # 최근 10일 내
-        surge_pct: 15.0      # 단기저점→고점 +15% 이상 (가격 급등)
-        max_gap: 0.45        # 20일선 +45% 이내 (급등 정점 추격 방지)
+        surge_lookback: 10        # 최근 10일 내
+        surge_pct: 15.0           # 단기저점→고점 +15% 이상 (가격 급등)
+        max_gap: 0.45             # 20일선 +45% 이내 (급등 정점 추격 방지)
         require_below_ma5: true   # 5일선 아래 (단기 눌림 진입)
         min_pullback_pct: 2.0     # 5일 고점 대비 -2% 이상 (실제 눌림)
+        require_ma20_rising: true # 60일선 우상향 (중기 추세 — 하락추세 제외)
+        require_new_high: true    # 급등 고점이 직전 60일 신고가 경신 (박스권 제외)
+        new_high_lookback: 60
       min_trade_value: 3000000000
     opinion: "20일선 눌림목 (B) · 관심등록 · 손절=2일연속 20일선 이탈"
 
