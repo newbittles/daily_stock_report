@@ -189,8 +189,49 @@ def _build_traces(candles):
     return traces
 
 
-def render_interactive(candles, ticker: str, name: str, date: str | None = None) -> Path | None:
-    """인터랙티브 HTML 차트 생성. 일/주/월 토글 버튼 포함."""
+def _signal_markers(candles, signal_dates, sell_dates, go):
+    """매수(초록▲)·매도(빨강▼) 신호 마커 trace. 해당 날짜의 저가 아래/고가 위에 표시."""
+    out = []
+    date_set = {c.date: c for c in candles}
+    if signal_dates:
+        xs, ys = [], []
+        for d in signal_dates:
+            c = date_set.get(d)
+            if c:
+                xs.append(d)
+                ys.append(c.low * 0.97)
+        if xs:
+            out.append(go.Scatter(
+                x=xs, y=ys, name="매수신호", mode="markers",
+                marker=dict(symbol="triangle-up", size=14, color="#22c55e",
+                            line=dict(width=1, color="#fff")),
+                xaxis="x", yaxis="y",
+            ))
+    if sell_dates:
+        xs, ys = [], []
+        for d in sell_dates:
+            c = date_set.get(d)
+            if c:
+                xs.append(d)
+                ys.append(c.high * 1.03)
+        if xs:
+            out.append(go.Scatter(
+                x=xs, y=ys, name="매도/손절", mode="markers",
+                marker=dict(symbol="triangle-down", size=14, color="#ef4444",
+                            line=dict(width=1, color="#fff")),
+                xaxis="x", yaxis="y",
+            ))
+    return out
+
+
+def render_interactive(candles, ticker: str, name: str, date: str | None = None,
+                       signal_dates: list[str] | None = None,
+                       sell_dates: list[str] | None = None) -> Path | None:
+    """인터랙티브 HTML 차트 생성. 일/주/월 토글 + 신호 마커.
+
+    signal_dates: 매수 신호일(YYYYMMDD) → 초록 ▲ 마커
+    sell_dates: 매도/손절일 → 빨강 ▼ 마커
+    """
     import plotly.graph_objects as go
     from datetime import datetime
 
@@ -204,6 +245,9 @@ def render_interactive(candles, ticker: str, name: str, date: str | None = None)
     trace_tf = []  # 각 trace가 어느 타임프레임인지
     for tf, cs in frames.items():
         ts = _build_traces(cs)
+        # 신호 마커는 일봉에만 (신호는 일봉 기준 판정)
+        if tf == "일봉":
+            ts += _signal_markers(cs, signal_dates, sell_dates, go)
         all_traces.extend(ts)
         trace_tf.extend([tf] * len(ts))
 
