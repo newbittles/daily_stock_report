@@ -233,18 +233,18 @@ def render_interactive(candles, ticker: str, name: str, date: str | None = None)
                           buttons=buttons, bgcolor="#1e293b", font=dict(color="#e2e8f0"))],
         legend=dict(orientation="h", y=1.03, font=dict(size=9)),
         margin=dict(l=50, r=20, t=80, b=20),
-        dragmode="pan",  # 드래그 = 좌우 이동 (HTS 기본). 휠 = 줌인/아웃.
+        dragmode="zoom",  # 기본: 드래그 = 영역 확대 (박스 줌). 모드바에서 pan 전환 가능.
     )
 
     CHARTS_DIR.mkdir(parents=True, exist_ok=True)
     date_str = date or datetime.now().strftime("%Y-%m-%d")
     out = CHARTS_DIR / f"{date_str}-{ticker}.html"
-    # scrollZoom: 휠 줌 / displaylogo 제거 / 한글 모드바
+    # 드래그=확대(zoom) 기본 + 휠줌 + 모드바에 이동(pan) 버튼 + 슬라이더
     config = {
-        "scrollZoom": True,
+        "scrollZoom": True,                 # 마우스 휠 = 줌인/아웃
         "displaylogo": False,
-        "modeBarButtonsToRemove": ["lasso2d", "select2d", "autoScale2d"],
-        "doubleClick": "reset",  # 더블클릭 = 전체보기 리셋
+        "modeBarButtonsToRemove": ["lasso2d", "select2d"],  # zoom/pan 버튼은 유지
+        "doubleClick": "reset",             # 더블클릭 = 전체보기 리셋
     }
     fig.write_html(str(out), include_plotlyjs="cdn", config=config)
     logger.info("plotly_chart_rendered ticker=%s path=%s", ticker, out)
