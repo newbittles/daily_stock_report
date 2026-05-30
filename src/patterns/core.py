@@ -242,25 +242,25 @@ def is_above_ichimoku_cloud(candles: list[Candle]) -> PatternResult:
 
 def is_ma20_pullback(
     candles: list[Candle], ma_period: int = 20,
-    vol_lookback: int = 15, vol_mult: float = 2.0,
+    surge_lookback: int = 10, surge_pct: float = 15.0,
     max_gap: float = 0.45,
     require_below_ma5: bool = True,
     min_pullback_pct: float = 2.0,
 ) -> PatternResult:
-    """20일선 눌림목 (사용자 전략) — 급등 후 20일선 위에서 '단기 조정 중'인 주도주.
+    """20일선 눌림목 (사용자 전략) — 가격 급등 후 20일선 위에서 '단기 조정 중'인 주도주.
 
-    데이터 역산(8개 매수 사례) + 신호 과다 보정:
-      1. 종가 >= 20일선 (핵심 — 손절선, 사례 88% 충족)
-      2. 최근 vol_lookback일 내 거래량 급증 이력 (급등/주도주, 평균 8배)
-      3. 20일선 이격 max_gap 이내 (과열 추격매수 방지)
-      4. 단기 눌림 진입: 종가 <= 5일선 (오르는 날 제외, 조정 중인 날만)
-      5. 단기 고점 대비 min_pullback_pct 이상 하락 (실제 눌림 확인)
+    급등 정의 = 가격 기준 (거래량 무관 — 대형주도 포착):
+      0. 최근 surge_lookback일 내 단기저점→고점 +surge_pct% 이상 상승 (한번의 급등)
+      1. 종가 >= 20일선 (핵심 — 손절선)
+      2. 20일선 이격 max_gap 이내 (과열 추격 방지)
+      3. 단기 눌림 진입: 종가 <= 5일선 (오르는 날 제외)
+      4. 단기 고점 대비 min_pullback_pct 이상 하락 (실제 눌림 확인)
 
-    정배열·RSI·MACD·일목은 제외 (사례와 불일치 / 사용자 요청).
+    정배열·RSI·MACD·일목·거래량은 제외 (사용자 요청: 이평선+거래량흔적이 아닌 가격+캔들).
     매수 후 관심종목 등록 → 20일선 이탈 시 손절 (단타 아님).
     """
     closes = _closes(candles)
-    if len(closes) < max(60, vol_lookback + 5):
+    if len(closes) < max(60, surge_lookback + 5):
         return PatternResult(False, "데이터 부족")
 
     ma20 = moving_average(closes, ma_period)[-1]
@@ -272,47 +272,40 @@ def is_ma20_pullback(
     gap = (price - ma20) / ma20
     metrics = {"price": round(price, 1), "ma20": round(ma20, 1), "ma20_gap_pct": round(gap * 100, 2)}
 
+    # 0. 가격 급등 이력 — 최근 surge_lookback일 내 저점→고점 상승률
+    highs = _highs(candles)
+    lows = _lows(candles)
+    window_lo = min(lows[-surge_lookback:])
+    window_hi = max(highs[-surge_lookback:])
+    surge_rate = (window_hi - window_lo) / window_lo * 100 if window_lo > 0 else 0.0
+    metrics["surge_pct"] = round(surge_rate, 1)
+    if surge_rate < surge_pct:
+        return PatternResult(False, f"급등 없음 ({surge_lookback}일 +{surge_rate:.0f}%)", metrics)
+
     # 1. 종가 >= 20일선 (핵심 손절선)
     if price < ma20:
         return PatternResult(False, f"20일선 이탈 ({gap*100:+.1f}%)", metrics)
 
-    # 3. 과열 상단 제한
+    # 2. 과열 상단 제한
     if gap > max_gap:
         return PatternResult(False, f"20일선 이격 과대 (+{gap*100:.0f}%)", metrics)
 
-    # 2. 최근 거래량 급증 이력
-    vols = _volumes(candles)
-    max_ratio = 0.0
-    for j in range(max(5, len(vols) - vol_lookback), len(vols)):
-        avg5 = sum(vols[j - 5:j]) / 5
-        if avg5 > 0:
-            max_ratio = max(max_ratio, vols[j] / avg5)
-    metrics["max_vol_ratio"] = round(max_ratio, 1)
-    if max_ratio < vol_mult:
-        return PatternResult(False, f"거래량 급증 이력 없음 ({max_ratio:.1f}배)", metrics)
-
-    # 4. 단기 눌림 진입 — 종가 <= 5일선 (상승 중인 날 제외)
+    # 3. 단기 눌림 진입 — 종가 <= 5일선 (상승 중인 날 제외)
     ma5_gap = (price - ma5) / ma5 * 100
     metrics["ma5_gap_pct"] = round(ma5_gap, 2)
     if require_below_ma5 and price > ma5:
         return PatternResult(False, f"단기 상승 중 (5일선 +{ma5_gap:.1f}%, 눌림 아님)", metrics)
 
-    # 5. 단기 고점(최근 5일) 대비 하락 — 실제 눌림 확인
-    highs = _highs(candles)
+    # 4. 단기 고점(최근 5일) 대비 하락 — 실제 눌림 확인
     hi5 = max(highs[-5:])
-    pullback = (hi5 - price) / hi5 * 100  # 5일 고점 대비 하락률
+    pullback = (hi5 - price) / hi5 * 100
     metrics["pullback_pct"] = round(pullback, 2)
     if pullback < min_pullback_pct:
         return PatternResult(False, f"눌림 부족 (5일고점대비 -{pullback:.1f}%)", metrics)
 
-    # 참고: 20일 고점 대비 (조정 깊이)
-    hi20 = max(highs[-20:])
-    from_high = (price - hi20) / hi20 * 100
-    metrics["from_high_pct"] = round(from_high, 2)
-
     reasons = [
+        f"급등 ({surge_lookback}일 +{surge_rate:.0f}%)",
         f"20일선 위 (+{gap*100:.1f}%)",
-        f"거래량 급증 {max_ratio:.1f}배",
         f"단기눌림 (5일선 {ma5_gap:+.1f}%, 5일고점 -{pullback:.1f}%)",
     ]
     return PatternResult(True, " / ".join(reasons), metrics)
