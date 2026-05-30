@@ -419,6 +419,80 @@ def is_consecutive_bearish(
     return PatternResult(True, " / ".join(reasons), metrics)
 
 
+def is_convergence_breakout(
+    candles: list[Candle],
+    conv_max: float = 6.0,
+    gap120_min: float = 2.0, gap120_max: float = 20.0,
+    require_long_align: bool = False,
+    strict_align: bool = True,
+) -> PatternResult:
+    """A 전략 — 이평선 수렴(박스권) 후 정배열 대세상승 시작.
+
+    사용자 역산(8개 사례)으로 도출:
+      1. 단기 조건:
+         - strict_align=True : 5 > 10 > 20 정배열 (타이트)
+         - strict_align=False: 종가가 5/10/20 위 (수렴 후 상승 전환)
+      2. 단기 이평 수렴: 5/10/20 이격 <= conv_max% (박스권 = 모여있음)
+      3. 종가 > 120일선 (이격 gap120_min~max% = 장기 상승추세 위, 8/8 입증)
+      4. (옵션) 장기 정배열 60 > 120 — require_long_align=True
+
+    A1: strict_align=True,  require_long_align=False
+    A2: strict_align=True,  require_long_align=True
+    A3: strict_align=False, require_long_align=False (수렴+상승전환, 8/8 목표)
+    MACD·주봉정배열은 제외 (사례 지지 약함).
+    """
+    closes = _closes(candles)
+    if len(closes) < 130:
+        return PatternResult(False, "데이터 부족 (120일선 필요)")
+
+    ma5 = moving_average(closes, 5)[-1]
+    ma10 = moving_average(closes, 10)[-1]
+    ma20 = moving_average(closes, 20)[-1]
+    ma60 = moving_average(closes, 60)[-1]
+    ma120 = moving_average(closes, 120)[-1]
+    if None in (ma5, ma10, ma20, ma60, ma120):
+        return PatternResult(False, "이평선 계산 불가")
+
+    price = closes[-1]
+    metrics = {"price": round(price, 1)}
+
+    # 1. 단기 조건
+    if strict_align:
+        if not (ma5 > ma10 > ma20):
+            return PatternResult(False, "단기 정배열 아님 (5>10>20)", metrics)
+        short_txt = "단기정배열 5>10>20"
+    else:
+        if not (price > ma5 and price > ma10 and price > ma20):
+            return PatternResult(False, "종가가 단기 이평 아래 (상승전환 전)", metrics)
+        short_txt = "수렴대 위로 상승전환"
+
+    # 2. 단기 이평 수렴 (5/10/20 이격)
+    conv = (max(ma5, ma10, ma20) - min(ma5, ma10, ma20)) / ma20 * 100
+    metrics["conv_pct"] = round(conv, 2)
+    if conv > conv_max:
+        return PatternResult(False, f"수렴 안됨 (이격 {conv:.1f}%)", metrics)
+
+    # 3. 종가 > 120일선 (이격 범위)
+    gap120 = (price - ma120) / ma120 * 100
+    metrics["gap120_pct"] = round(gap120, 2)
+    if gap120 < gap120_min:
+        return PatternResult(False, f"120선 이격 부족 ({gap120:+.1f}%)", metrics)
+    if gap120 > gap120_max:
+        return PatternResult(False, f"120선 이격 과대 ({gap120:+.1f}%)", metrics)
+
+    # 4. (옵션) 장기 정배열
+    if require_long_align and not (ma60 > ma120):
+        ma60_120 = (ma60 - ma120) / ma120 * 100
+        return PatternResult(False, f"장기 정배열 아님 (60<120, {ma60_120:+.1f}%)", metrics)
+
+    align_txt = " + 장기(60>120)" if require_long_align and ma60 > ma120 else ""
+    reasons = [
+        f"{short_txt} (수렴 {conv:.1f}%)",
+        f"120선 위 (+{gap120:.1f}%){align_txt}",
+    ]
+    return PatternResult(True, " / ".join(reasons), metrics)
+
+
 def is_macd_golden_cross(
     candles: list[Candle], within: int = 3, require_above_zero: bool = True,
     fast: int = 12, slow: int = 26, signal: int = 9,

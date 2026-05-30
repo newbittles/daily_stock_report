@@ -6,6 +6,7 @@ from src.patterns.core import (
     is_above_ichimoku_cloud,
     is_breakout,
     is_consecutive_bearish,
+    is_convergence_breakout,
     is_macd_golden_cross,
     is_ma20_pullback,
     is_ma_alignment,
@@ -226,3 +227,32 @@ def test_consecutive_bearish_no_volume_history():
     base[-1] = _candle(161, 158)
     result = is_consecutive_bearish(base, days=3, require_volume_history=True)
     assert not result.matched
+
+
+def test_convergence_breakout_a3_matched():
+    # 박스권 수렴(이평 모임) 후 종가가 이평 위로 상승전환 + 120선 위
+    # 130봉: 완만한 상승으로 120선 아래 깔고, 최근 수렴 후 종가 상승
+    closes = [100 + i * 0.3 for i in range(125)]  # 120선 워밍업
+    # 최근 5봉 수렴 후 상승전환 (종가가 5/10/20 위)
+    closes += [137, 137.5, 138, 138.5, 140]
+    candles = _make_candles(closes)
+    result = is_convergence_breakout(candles, strict_align=False, require_long_align=False)
+    assert result.matched
+    assert "120선 위" in result.reason
+
+
+def test_convergence_breakout_below_120_rejected():
+    # 종가가 120일선 아래 → 미포착
+    closes = [200 - i * 0.5 for i in range(130)]  # 하락 → 종가 < 120선
+    candles = _make_candles(closes)
+    result = is_convergence_breakout(candles, strict_align=False)
+    assert not result.matched
+
+
+def test_convergence_breakout_not_converged():
+    # 이평선 크게 벌어짐(급등 직후) → 수렴 아님 → 미포착
+    closes = [100 + i * 0.2 for i in range(120)] + [130, 140, 150, 160, 175]
+    candles = _make_candles(closes)
+    result = is_convergence_breakout(candles, strict_align=False)
+    # 급등으로 5/10/20 이격 큼 → 수렴 조건 미달
+    assert not result.matched or result.metrics.get("conv_pct", 0) <= 6.0
