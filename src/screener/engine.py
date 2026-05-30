@@ -117,6 +117,7 @@ def _check_condition(
             max_gap=p.get("max_gap", 0.45),
             require_below_ma5=p.get("require_below_ma5", True),
             min_pullback_pct=p.get("min_pullback_pct", 2.0),
+            max_pullback_pct=p.get("max_pullback_pct"),
             require_ma20_rising=p.get("require_ma20_rising", True),
             require_new_high=p.get("require_new_high", True),
             new_high_lookback=p.get("new_high_lookback", 60),

@@ -246,6 +246,7 @@ def is_ma20_pullback(
     max_gap: float = 0.45,
     require_below_ma5: bool = True,
     min_pullback_pct: float = 2.0,
+    max_pullback_pct: float | None = None,
     require_ma20_rising: bool = True,
     require_new_high: bool = True,
     new_high_lookback: int = 60,
@@ -328,6 +329,9 @@ def is_ma20_pullback(
     metrics["pullback_pct"] = round(pullback, 2)
     if pullback < min_pullback_pct:
         return PatternResult(False, f"눌림 부족 (5일고점대비 -{pullback:.1f}%)", metrics)
+    # 눌림 깊이 상한 — 너무 깊으면 추세 약화 (5/13 과열 후 깊은 눌림 회피)
+    if max_pullback_pct is not None and pullback > max_pullback_pct:
+        return PatternResult(False, f"눌림 과대 (5일고점대비 -{pullback:.1f}%, 추세약화)", metrics)
 
     slope_txt = f", 60선기울기 {metrics.get('ma60_slope_pct', 0):+.1f}%" if "ma60_slope_pct" in metrics else ""
     reasons = [
