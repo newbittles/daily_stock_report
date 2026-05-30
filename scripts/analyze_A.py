@@ -26,6 +26,13 @@ CASES = [
     ("066570", "LG전자", "20260413"),
     ("005380", "현대차", "20251015"),
     ("047040", "대우건설", "20260115"),
+    ("353200", "대덕전자(1월)", "20260128"),
+    ("012330", "현대모비스", "20260507"),
+    ("307950", "현대오토에버", "20260507"),
+    ("319400", "현대무벡스", "20260529"),
+    ("018880", "한온시스템", "20260415"),
+    ("402340", "SK스퀘어", "20260413"),
+    ("000720", "현대건설", "20260106"),
 ]
 
 
@@ -88,16 +95,25 @@ async def analyze(adapter, ticker, name, date):
         if None not in (a0, b0, a1, b1) and a0 <= b0 and a1 > b1:
             gc_recent = True
             break
-    # 거래량
+    # 거래량 패턴
     vols = [x.volume for x in candles]
-    vol_ratio = vols[i] / (sum(vols[i-5:i]) / 5) if i >= 5 else 0
+    vol_ratio = vols[i] / (sum(vols[i-5:i]) / 5) if i >= 5 else 0   # 당일/직전5일평균
+    vol_ratio20 = vols[i] / (sum(vols[i-20:i]) / 20) if i >= 20 else 0  # 당일/직전20일평균
+    # 거래대금 (종가×거래량, 억원)
+    trade_value = c.close * vols[i] / 1e8
+    # 직전 5일(수렴기) 거래량 평균 대비 당일 (돌파 거래량 확인)
+    # 거래량 추세: 최근 3일 평균 vs 그 이전 10일 평균 (증가 여부)
+    recent3 = sum(vols[i-2:i+1]) / 3
+    prior10 = sum(vols[i-12:i-2]) / 10 if i >= 12 else recent3
+    vol_trend = recent3 / prior10 if prior10 > 0 else 0
 
     return {
         "name": name, "date": c.date, "close": c.close,
         "align_d": align_d, "align_d60": align_d60, "gap120": gap120,
         "conv": conv, "box": box_range,
         "align_w": align_w, "macd_sig": macd_above_sig,
-        "macd_zero": macd_above_zero, "gc": gc_recent, "vol": vol_ratio,
+        "macd_zero": macd_above_zero, "gc": gc_recent,
+        "vol": vol_ratio, "vol20": vol_ratio20, "tval": trade_value, "vol_trend": vol_trend,
     }
 
 
@@ -107,32 +123,28 @@ async def main():
 
     print("A 전략 매수 사례 역산 (수렴→정배열 대세상승 시작)")
     print("=" * 100)
-    print(f"{'종목':<14}{'매수일':<10}{'5>20>60':>8}{'+120':>6}{'120이격':>8}{'MA수렴%':>8}"
-          f"{'박스폭%':>8}{'MACD>0':>7}{'GC':>5}{'거래량':>7}")
+    print(f"{'종목':<15}{'매수일':<10}{'120이격':>8}{'MA수렴%':>8}{'당일/5일':>9}{'당일/20일':>10}"
+          f"{'거래량추세':>10}{'거래대금억':>10}")
     print("-" * 100)
     rows = []
     for ticker, name, date in CASES:
         r = await analyze(adapter, ticker, name, date)
         if not r:
-            print(f"{name:<14}{date:<10} 데이터 부족")
+            print(f"{name:<15}{date:<10} 데이터 부족")
             continue
         rows.append(r)
-        print(f"{r['name']:<14}{r['date']:<10}{'O' if r['align_d60'] else 'X':>8}"
-              f"{'O' if r['align_d'] else 'X':>6}{r['gap120']:>+7.1f}%{r['conv']:>7.1f}%"
-              f"{r['box']:>7.1f}%{'O' if r['macd_zero'] else 'X':>7}"
-              f"{'O' if r['gc'] else 'X':>5}{r['vol']:>6.1f}x")
+        print(f"{r['name']:<15}{r['date']:<10}{r['gap120']:>+7.1f}%{r['conv']:>7.1f}%"
+              f"{r['vol']:>8.1f}x{r['vol20']:>9.1f}x{r['vol_trend']:>9.1f}x{r['tval']:>9.0f}")
 
     if rows:
         n = len(rows)
-        print("\n공통 패턴:")
-        print(f"  정배열 5>20>60: {sum(r['align_d60'] for r in rows)}/{n}")
-        print(f"  정배열 5>20>60>120: {sum(r['align_d'] for r in rows)}/{n}")
-        print(f"  종가>120일선: {sum(1 for r in rows if r['gap120']>0)}/{n} (이격 평균 {sum(r['gap120'] for r in rows)/n:+.1f}%, 범위 {min(r['gap120'] for r in rows):+.1f}~{max(r['gap120'] for r in rows):+.1f}%)")
-        print(f"  주봉 정배열(20>60): {sum(r['align_w'] for r in rows)}/{n}")
-        print(f"  MA 수렴도: 평균 {sum(r['conv'] for r in rows)/n:.1f}% (범위 {min(r['conv'] for r in rows):.1f}~{max(r['conv'] for r in rows):.1f}%)")
-        print(f"  직전 20일 박스폭: 평균 {sum(r['box'] for r in rows)/n:.1f}%")
-        print(f"  MACD > 0: {sum(r['macd_zero'] for r in rows)}/{n}  /  GC: {sum(r['gc'] for r in rows)}/{n}")
-        print(f"  거래량: 평균 {sum(r['vol'] for r in rows)/n:.1f}배")
+        print("\n거래량 공통 패턴:")
+        print(f"  당일 거래량/직전5일평균: 평균 {sum(r['vol'] for r in rows)/n:.1f}배 (범위 {min(r['vol'] for r in rows):.1f}~{max(r['vol'] for r in rows):.1f})")
+        print(f"  당일 거래량/직전20일평균: 평균 {sum(r['vol20'] for r in rows)/n:.1f}배 (범위 {min(r['vol20'] for r in rows):.1f}~{max(r['vol20'] for r in rows):.1f})")
+        print(f"  거래량 추세(최근3일/이전10일): 평균 {sum(r['vol_trend'] for r in rows)/n:.1f}배 (범위 {min(r['vol_trend'] for r in rows):.1f}~{max(r['vol_trend'] for r in rows):.1f})")
+        print(f"  거래대금: 평균 {sum(r['tval'] for r in rows)/n:.0f}억 (범위 {min(r['tval'] for r in rows):.0f}~{max(r['tval'] for r in rows):.0f}억)")
+        print(f"  당일거래량 >직전5일평균 1.5배+: {sum(1 for r in rows if r['vol']>=1.5)}/{n}")
+        print(f"  거래량추세 증가(>1.2배): {sum(1 for r in rows if r['vol_trend']>=1.2)}/{n}")
 
 
 if __name__ == "__main__":

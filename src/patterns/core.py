@@ -422,34 +422,41 @@ def is_consecutive_bearish(
 def is_convergence_breakout(
     candles: list[Candle],
     conv_max: float = 6.0,
-    gap120_min: float = 2.0, gap120_max: float = 20.0,
+    gap120_min: float = 2.0, gap120_max: float | None = None,
     require_long_align: bool = False,
     strict_align: bool = True,
+    require_new_high: bool = False, new_high_lookback: int = 60, new_high_tol: float = 0.03,
+    require_ma120_rising: bool = False,
+    vol_conv_lookback: int = 5, breakout_vol_mult: float = 1.5,
 ) -> PatternResult:
-    """A 전략 — 이평선 수렴(박스권) 후 정배열 대세상승 시작.
+    """A 전략 — 이평선 수렴(박스권) 후 신고가 돌파 대세상승 시작.
 
-    사용자 역산(8개 사례)으로 도출:
+    사용자 역산(8개 사례) + 박스권/추세주 구분 보강:
       1. 단기 조건:
          - strict_align=True : 5 > 10 > 20 정배열 (타이트)
          - strict_align=False: 종가가 5/10/20 위 (수렴 후 상승 전환)
       2. 단기 이평 수렴: 5/10/20 이격 <= conv_max% (박스권 = 모여있음)
-      3. 종가 > 120일선 (이격 gap120_min~max% = 장기 상승추세 위, 8/8 입증)
-      4. (옵션) 장기 정배열 60 > 120 — require_long_align=True
+      3. 종가 > 120일선 (이격 >= gap120_min%, 장기 상승추세 위)
+         ※ gap120_max=None: 이격 상한 없음 (이미 오른 추세주 안 거름 — 대덕전자 1월)
+      4. 신고가 경신: 종가가 최근 new_high_lookback일 고가의 -tol 이내
+         ※ 박스권 반등(신고가 못넘음) 제외 — NAVER/카카오 오감지 차단
+      5. (옵션) 장기 정배열 60 > 120
 
     A1: strict_align=True,  require_long_align=False
     A2: strict_align=True,  require_long_align=True
-    A3: strict_align=False, require_long_align=False (수렴+상승전환, 8/8 목표)
+    A3: strict_align=False, require_long_align=False (수렴+상승전환+신고가, 권장)
     MACD·주봉정배열은 제외 (사례 지지 약함).
     """
     closes = _closes(candles)
-    if len(closes) < 130:
+    if len(closes) < 135:
         return PatternResult(False, "데이터 부족 (120일선 필요)")
 
+    ma120_series = moving_average(closes, 120)
     ma5 = moving_average(closes, 5)[-1]
     ma10 = moving_average(closes, 10)[-1]
     ma20 = moving_average(closes, 20)[-1]
     ma60 = moving_average(closes, 60)[-1]
-    ma120 = moving_average(closes, 120)[-1]
+    ma120 = ma120_series[-1]
     if None in (ma5, ma10, ma20, ma60, ma120):
         return PatternResult(False, "이평선 계산 불가")
 
@@ -467,28 +474,66 @@ def is_convergence_breakout(
         short_txt = "수렴대 위로 상승전환"
 
     # 2. 단기 이평 수렴 (5/10/20 이격)
+    #    당일 수렴 OR (직전 수렴 이력 + 당일 거래량 돌파) — 수렴 깨진 강한 돌파 구제
     conv = (max(ma5, ma10, ma20) - min(ma5, ma10, ma20)) / ma20 * 100
     metrics["conv_pct"] = round(conv, 2)
     if conv > conv_max:
-        return PatternResult(False, f"수렴 안됨 (이격 {conv:.1f}%)", metrics)
+        # 수렴 깨짐 — 직전 수렴 이력 + 당일 거래량 급증이면 '돌파'로 구제
+        ma5_s = moving_average(closes, 5)
+        ma10_s = moving_average(closes, 10)
+        ma20_s = moving_average(closes, 20)
+        recent_converged = False
+        for k in range(max(0, len(closes) - vol_conv_lookback), len(closes)):
+            if None in (ma5_s[k], ma10_s[k], ma20_s[k]):
+                continue
+            conv_k = (max(ma5_s[k], ma10_s[k], ma20_s[k]) - min(ma5_s[k], ma10_s[k], ma20_s[k])) / ma20_s[k] * 100
+            if conv_k <= conv_max:
+                recent_converged = True
+                break
+        vols = _volumes(candles)
+        vol_ratio = vols[-1] / (sum(vols[-6:-1]) / 5) if len(vols) >= 6 else 0
+        metrics["vol_ratio"] = round(vol_ratio, 2)
+        if not (recent_converged and vol_ratio >= breakout_vol_mult):
+            return PatternResult(False, f"수렴 안됨 (이격 {conv:.1f}%, 거래량 {vol_ratio:.1f}x)", metrics)
+        # 구제 통과 — 돌파로 인정
+        metrics["breakout"] = 1
 
-    # 3. 종가 > 120일선 (이격 범위)
+    # 3. 종가 > 120일선 (이격 하한만 — 상한 없음: 추세주 안 거름)
     gap120 = (price - ma120) / ma120 * 100
     metrics["gap120_pct"] = round(gap120, 2)
     if gap120 < gap120_min:
         return PatternResult(False, f"120선 이격 부족 ({gap120:+.1f}%)", metrics)
-    if gap120 > gap120_max:
+    if gap120_max is not None and gap120 > gap120_max:
         return PatternResult(False, f"120선 이격 과대 ({gap120:+.1f}%)", metrics)
 
-    # 4. (옵션) 장기 정배열
+    # 4-a. 120선 우상향 — 박스권/하락추세 제외 (NAVER 횡보 차단, SK네트웍스 우상향 유지)
+    if require_ma120_rising and ma120_series[-11] is not None:
+        ma120_10ago = ma120_series[-11]
+        slope = (ma120 - ma120_10ago) / ma120_10ago * 100
+        metrics["ma120_slope_pct"] = round(slope, 2)
+        if ma120 <= ma120_10ago:
+            return PatternResult(False, f"120선 하락/횡보 ({slope:+.1f}%, 박스권)", metrics)
+
+    # 4-b. 신고가 경신 (옵션, 기본 비활성 — 조정후 재상승 초입 놓침 방지)
+    if require_new_high:
+        highs = _highs(candles)
+        hi = max(highs[-new_high_lookback:])
+        metrics["from_high_pct"] = round((price - hi) / hi * 100, 2)
+        if price < hi * (1 - new_high_tol):
+            short = (hi - price) / hi * 100
+            return PatternResult(False, f"신고가 미달 (60일고점 -{short:.1f}%, 박스권)", metrics)
+
+    # 5. (옵션) 장기 정배열
     if require_long_align and not (ma60 > ma120):
         ma60_120 = (ma60 - ma120) / ma120 * 100
         return PatternResult(False, f"장기 정배열 아님 (60<120, {ma60_120:+.1f}%)", metrics)
 
     align_txt = " + 장기(60>120)" if require_long_align and ma60 > ma120 else ""
+    nh_txt = " + 신고가" if require_new_high else ""
+    rising_txt = " + 120선우상향" if require_ma120_rising else ""
     reasons = [
         f"{short_txt} (수렴 {conv:.1f}%)",
-        f"120선 위 (+{gap120:.1f}%){align_txt}",
+        f"120선 위 (+{gap120:.1f}%){rising_txt}{nh_txt}{align_txt}",
     ]
     return PatternResult(True, " / ".join(reasons), metrics)
 
