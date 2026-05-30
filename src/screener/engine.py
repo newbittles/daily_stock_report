@@ -24,6 +24,7 @@ from src.patterns.core import (
     is_above_ichimoku_cloud,
     is_bollinger_breakout,
     is_breakout,
+    is_consecutive_bearish,
     is_macd_golden_cross,
     is_ma_alignment,
     is_near_high,
@@ -103,6 +104,18 @@ def _check_condition(
     if key == "near_high":
         p = params if isinstance(params, dict) else {}
         r = is_near_high(candles, lookback=p.get("lookback", 250), tolerance=p.get("tolerance", 0.03))
+        return r.matched, r.reason, r.metrics
+
+    if key == "consecutive_bearish":
+        p = params if isinstance(params, dict) else {}
+        r = is_consecutive_bearish(
+            candles,
+            days=p.get("days", 3),
+            require_alignment=p.get("require_alignment", True),
+            volume_surge_lookback=p.get("volume_surge_lookback", 10),
+            volume_surge_mult=p.get("volume_surge_mult", 2.0),
+            require_volume_history=p.get("require_volume_history", True),
+        )
         return r.matched, r.reason, r.metrics
 
     if key == "low_above_ma":

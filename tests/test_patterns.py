@@ -5,6 +5,7 @@ from src.datasource.base import Candle
 from src.patterns.core import (
     is_above_ichimoku_cloud,
     is_breakout,
+    is_consecutive_bearish,
     is_macd_golden_cross,
     is_ma_alignment,
     is_near_high,
@@ -143,4 +144,49 @@ def test_near_high_far_from_peak():
     # 고점 후 급락 → 신고가 이격
     candles = _make_candles([100 + i for i in range(50)] + [150 - i * 3 for i in range(10)])
     result = is_near_high(candles, lookback=60, tolerance=0.03)
+    assert not result.matched
+
+
+def _candle(o, c, vol=2000):
+    """시가·종가 지정 캔들 (음봉/양봉 제어)."""
+    hi = max(o, c) + 1
+    lo = min(o, c) - 1
+    return Candle(date="d", open=o, high=hi, low=lo, close=c, volume=vol)
+
+
+def test_consecutive_bearish_matched():
+    # 상승추세(정배열) + 거래량 급증 후 음봉 3연속
+    base = []
+    for i in range(70):
+        price = 100 + i  # 꾸준한 상승 → MA20>MA60
+        base.append(_candle(price, price + 0.5, vol=2000))  # 양봉
+    # 거래량 급증 1회 (하락 직전)
+    base[-4] = _candle(170, 171, vol=12000)  # 5일평균 대비 급증
+    # 음봉 3연속 (종가 < 시가), 추세는 유지
+    base[-3] = _candle(172, 169)
+    base[-2] = _candle(169, 166)
+    base[-1] = _candle(166, 163)
+    result = is_consecutive_bearish(base, days=3)
+    assert result.matched
+    assert "음봉 3연속" in result.reason
+
+
+def test_consecutive_bearish_not_all_bearish():
+    # 마지막 봉이 양봉이면 미충족
+    base = [_candle(100 + i, 100 + i + 0.5, vol=2000) for i in range(70)]
+    base[-4] = _candle(165, 166, vol=12000)
+    base[-3] = _candle(167, 164)
+    base[-2] = _candle(164, 161)
+    base[-1] = _candle(161, 163)  # 양봉
+    result = is_consecutive_bearish(base, days=3)
+    assert not result.matched
+
+
+def test_consecutive_bearish_no_volume_history():
+    # 음봉 3연속이지만 거래량 급증 이력 없음 → 미충족
+    base = [_candle(100 + i, 100 + i + 0.5, vol=2000) for i in range(70)]
+    base[-3] = _candle(167, 164)
+    base[-2] = _candle(164, 161)
+    base[-1] = _candle(161, 158)
+    result = is_consecutive_bearish(base, days=3, require_volume_history=True)
     assert not result.matched

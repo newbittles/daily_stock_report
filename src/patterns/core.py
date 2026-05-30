@@ -240,6 +240,79 @@ def is_above_ichimoku_cloud(candles: list[Candle]) -> PatternResult:
     return PatternResult(False, "구름 내부 (중립)", metrics)
 
 
+def is_consecutive_bearish(
+    candles: list[Candle], days: int = 3,
+    require_alignment: bool = True,
+    volume_surge_lookback: int = 10, volume_surge_mult: float = 2.0,
+    require_volume_history: bool = True,
+) -> PatternResult:
+    """종가 눌림목 — 음봉 N연속 + (거래량 급증 이력) + (정배열).
+
+    사용자 전략: 주도주/정배열 종목이 거래량 실린 뒤 N일 음봉 조정 →
+    그 마지막 날 종가 매수, 다음날 반등 노림.
+
+    조건:
+      1. 최근 days봉 모두 음봉 (종가 < 시가)
+      2. (옵션) 정배열 5 > 20 > 60 — 추세 살아있음
+      3. (옵션) 하락 시작 전 volume_surge_lookback일 내 거래량 급증 이력
+    """
+    if len(candles) < max(60, days + volume_surge_lookback + 5):
+        return PatternResult(False, "데이터 부족")
+
+    # 1. 최근 days봉 음봉 연속
+    recent = candles[-days:]
+    all_bearish = all(c.close < c.open for c in recent)
+    if not all_bearish:
+        return PatternResult(False, f"{days}일 음봉 연속 아님")
+
+    metrics: dict[str, float] = {}
+    # 하락폭 (days 시작 전 종가 대비 현재)
+    base_close = candles[-days - 1].close
+    cur_close = candles[-1].close
+    decline_pct = (cur_close - base_close) / base_close * 100 if base_close else 0.0
+    metrics["decline_pct"] = round(decline_pct, 2)
+    metrics["days"] = days
+
+    reasons = [f"음봉 {days}연속 ({decline_pct:+.1f}%)"]
+
+    # 2. 정배열
+    if require_alignment:
+        align = is_ma_alignment(candles[:-0] if False else candles, (5, 20, 60))
+        # 주의: 음봉 조정 중이라 5>20>60이 깨졌을 수 있음 → 20>60만 확인(추세 유지)
+        closes = _closes(candles)
+        ma20 = moving_average(closes, 20)[-1]
+        ma60 = moving_average(closes, 60)[-1]
+        if ma20 is None or ma60 is None or not (ma20 > ma60):
+            return PatternResult(False, "추세 약함 (MA20<MA60)", metrics)
+        reasons.append("상승추세 (MA20>MA60)")
+
+    # 3. 거래량 급증 이력 (하락 구간 직전)
+    if require_volume_history:
+        # 하락 시작 직전 봉들에서 거래량 급증 찾기
+        pre_decline = candles[: -days]  # 하락 전 구간
+        if len(pre_decline) < volume_surge_lookback + 5:
+            return PatternResult(False, "거래량 이력 데이터 부족", metrics)
+        window = pre_decline[-volume_surge_lookback:]
+        vols = [c.volume for c in pre_decline]
+        surge_found = False
+        max_ratio = 0.0
+        for i in range(len(pre_decline) - volume_surge_lookback, len(pre_decline)):
+            if i < 5:
+                continue
+            avg5 = sum(vols[i - 5 : i]) / 5
+            if avg5 > 0:
+                ratio = vols[i] / avg5
+                max_ratio = max(max_ratio, ratio)
+                if ratio >= volume_surge_mult:
+                    surge_found = True
+        metrics["max_vol_ratio"] = round(max_ratio, 1)
+        if not surge_found:
+            return PatternResult(False, f"거래량 급증 이력 없음 (최대 {max_ratio:.1f}배)", metrics)
+        reasons.append(f"직전 거래량 급증 {max_ratio:.1f}배")
+
+    return PatternResult(True, " / ".join(reasons), metrics)
+
+
 def is_macd_golden_cross(
     candles: list[Candle], within: int = 3, require_above_zero: bool = True,
     fast: int = 12, slow: int = 26, signal: int = 9,

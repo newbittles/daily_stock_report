@@ -84,6 +84,21 @@ strategies:
       min_trade_value: 5000000000
     opinion: "신고가 돌파 (C)"
 
+  # ── D. 종가 눌림목 (음봉 3연속 단타) ─────────────────────────────────────
+  # 백테스트(8종목): 승률 56%, 평균 +4.9%, 손익비 우수.
+  # 핵심: 매수 다음날 추가 하락 시 즉시 손절 (전략의 생명선).
+  - name: "D. 종가 눌림목 (음봉3연속)"
+    enabled: true
+    description: "거래량 실린 주도주가 음봉 3연속 조정 → 종가 매수, 다음날 반등 노림"
+    conditions:
+      consecutive_bearish:
+        days: 3                    # 음봉 연속 일수
+        require_alignment: true    # MA20>MA60 추세 유지
+        volume_surge_lookback: 10  # 하락 전 10일 내
+        volume_surge_mult: 2.0     # 거래량 5일평균 2배 이력
+      min_trade_value: 3000000000  # 거래대금 30억 이상
+    opinion: "종가 눌림목 (D) · 다음날 추가하락 시 손절"
+
 # 공통 필터 (모든 전략에 추가 적용)
 global_filters:
   min_price: 1000          # 동전주 제외
