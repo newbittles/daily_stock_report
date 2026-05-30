@@ -114,6 +114,7 @@ def _check_condition(
             ma_period=p.get("ma_period", 20),
             surge_lookback=p.get("surge_lookback", 10),
             surge_pct=p.get("surge_pct", 15.0),
+            max_surge_pct=p.get("max_surge_pct"),
             max_gap=p.get("max_gap", 0.45),
             require_below_ma5=p.get("require_below_ma5", True),
             min_pullback_pct=p.get("min_pullback_pct", 2.0),

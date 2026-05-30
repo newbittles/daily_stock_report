@@ -33,7 +33,7 @@ def _find_surge_day(window, surge_lookback=10):
     return hi_c.date, rate
 
 
-def compute_trades(candles_all, start, end, max_pullback_pct=None):
+def compute_trades(candles_all, start, end, max_pullback_pct=None, max_surge_pct=None):
     """신호 스캔 + 클러스터 진입 + 2일연속 20일선 손절 추적. (signal_days, trades) 반환."""
     closes_all = [c.close for c in candles_all]
     ma20_all = moving_average(closes_all, 20)
@@ -44,7 +44,8 @@ def compute_trades(candles_all, start, end, max_pullback_pct=None):
         c = candles_all[i]
         if c.date < start or c.date > end or len(candles_all[: i + 1]) < 60:
             continue
-        r = is_ma20_pullback(candles_all[: i + 1], max_pullback_pct=max_pullback_pct)
+        r = is_ma20_pullback(candles_all[: i + 1], max_pullback_pct=max_pullback_pct,
+                             max_surge_pct=max_surge_pct)
         if r.matched:
             sd, sr = _find_surge_day(candles_all[: i + 1])
             signal_days.append((c.date, c.close, r, sd, sr))

@@ -243,6 +243,7 @@ def is_above_ichimoku_cloud(candles: list[Candle]) -> PatternResult:
 def is_ma20_pullback(
     candles: list[Candle], ma_period: int = 20,
     surge_lookback: int = 10, surge_pct: float = 15.0,
+    max_surge_pct: float | None = None,
     max_gap: float = 0.45,
     require_below_ma5: bool = True,
     min_pullback_pct: float = 2.0,
@@ -287,6 +288,9 @@ def is_ma20_pullback(
     metrics["surge_pct"] = round(surge_rate, 1)
     if surge_rate < surge_pct:
         return PatternResult(False, f"급등 없음 ({surge_lookback}일 +{surge_rate:.0f}%)", metrics)
+    # 극단적 급등 상한 — 너무 가파른 급등(+N%↑)은 진입 보류 (과열 꼭지 회피)
+    if max_surge_pct is not None and surge_rate > max_surge_pct:
+        return PatternResult(False, f"극단 급등 ({surge_lookback}일 +{surge_rate:.0f}%, 진입보류)", metrics)
 
     # 0-b. 신고가 경신 — 급등 고점이 직전 장기 고점을 넘었는가 (추세주 vs 박스권)
     #      박스권은 급등해도 이전 고점 못 넘음 → 제외. 추세주는 계단식 신고가 경신.
