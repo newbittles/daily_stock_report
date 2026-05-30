@@ -218,27 +218,35 @@ def render_interactive(candles, ticker: str, name: str, date: str | None = None)
         vis = [t == tf for t in trace_tf]
         buttons.append(dict(label=tf, method="update", args=[{"visible": vis}]))
 
-    n_per = len(all_traces) // 3
     fig.update_layout(
         title=f"{name} ({ticker})  {date or ''}",
         template="plotly_dark",
-        height=900,
-        xaxis=dict(domain=[0, 1], rangeslider=dict(visible=False), anchor="y4"),
-        yaxis=dict(domain=[0.45, 1.0], title="가격"),
-        yaxis2=dict(domain=[0.30, 0.43], title="거래량"),
-        yaxis3=dict(domain=[0.15, 0.28], title="MACD"),
-        yaxis4=dict(domain=[0.0, 0.13], title="RSI", range=[0, 100]),
-        updatemenus=[dict(type="buttons", direction="right", x=0.0, y=1.08,
+        height=950,
+        # 메인 x축에 rangeslider(하단 미니맵) — 양끝 드래그로 기간 축소/확대 (HTS풍)
+        xaxis=dict(domain=[0, 1], anchor="y4",
+                   rangeslider=dict(visible=True, thickness=0.06, bgcolor="#0f172a")),
+        yaxis=dict(domain=[0.48, 1.0], title="가격"),
+        yaxis2=dict(domain=[0.34, 0.46], title="거래량"),
+        yaxis3=dict(domain=[0.20, 0.32], title="MACD"),
+        yaxis4=dict(domain=[0.08, 0.18], title="RSI", range=[0, 100]),
+        updatemenus=[dict(type="buttons", direction="right", x=0.0, y=1.07,
                           buttons=buttons, bgcolor="#1e293b", font=dict(color="#e2e8f0"))],
-        legend=dict(orientation="h", y=1.04, font=dict(size=9)),
+        legend=dict(orientation="h", y=1.03, font=dict(size=9)),
         margin=dict(l=50, r=20, t=80, b=20),
-        dragmode="zoom",
+        dragmode="pan",  # 드래그 = 좌우 이동 (HTS 기본). 휠 = 줌인/아웃.
     )
 
     CHARTS_DIR.mkdir(parents=True, exist_ok=True)
     date_str = date or datetime.now().strftime("%Y-%m-%d")
     out = CHARTS_DIR / f"{date_str}-{ticker}.html"
-    fig.write_html(str(out), include_plotlyjs="cdn", config={"scrollZoom": True})
+    # scrollZoom: 휠 줌 / displaylogo 제거 / 한글 모드바
+    config = {
+        "scrollZoom": True,
+        "displaylogo": False,
+        "modeBarButtonsToRemove": ["lasso2d", "select2d", "autoScale2d"],
+        "doubleClick": "reset",  # 더블클릭 = 전체보기 리셋
+    }
+    fig.write_html(str(out), include_plotlyjs="cdn", config=config)
     logger.info("plotly_chart_rendered ticker=%s path=%s", ticker, out)
     return out
 
