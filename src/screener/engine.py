@@ -115,6 +115,8 @@ def _check_condition(
             vol_lookback=p.get("vol_lookback", 15),
             vol_mult=p.get("vol_mult", 2.0),
             max_gap=p.get("max_gap", 0.45),
+            require_below_ma5=p.get("require_below_ma5", True),
+            min_pullback_pct=p.get("min_pullback_pct", 2.0),
         )
         return r.matched, r.reason, r.metrics
 

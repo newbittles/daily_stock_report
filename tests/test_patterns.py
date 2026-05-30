@@ -184,18 +184,20 @@ def test_consecutive_bearish_not_all_bearish():
 
 
 def test_ma20_pullback_matched():
-    # 급등(거래량) 후 20일선 위에서 조정 → 포착
+    # 급등(거래량) 후 20일선 위에서 '단기 눌림(5일선 아래)' → 포착
     base = [_candle(100 + i * 0.5, 100 + i * 0.5 + 0.3, vol=2000) for i in range(60)]
-    # 급등 1회 (거래량 급증)
-    base[-8] = _candle(128, 132, vol=14000)
-    base[-7] = _candle(132, 135, vol=10000)
-    # 이후 20일선 위에서 소폭 조정 (고점 아래, 20선 위)
-    base[-3] = _candle(134, 132)
-    base[-2] = _candle(132, 131)
-    base[-1] = _candle(131, 130)
+    # 급등 (거래량 급증) + 고점 형성
+    base[-8] = _candle(128, 140, vol=14000)
+    base[-7] = _candle(140, 145, vol=10000)
+    base[-6] = _candle(145, 148, vol=8000)  # 5일고점 148
+    # 이후 단기 눌림 — 5일선 아래로, 20일선은 위 유지, 5일고점 대비 충분히 하락
+    base[-4] = _candle(147, 140)
+    base[-3] = _candle(140, 136)
+    base[-2] = _candle(136, 134)
+    base[-1] = _candle(134, 133)  # 종가 133, 5일고점 148 대비 -10%
     result = is_ma20_pullback(base)
     assert result.matched
-    assert "20일선 위" in result.reason
+    assert "단기눌림" in result.reason
 
 
 def test_ma20_pullback_below_ma20_rejected():

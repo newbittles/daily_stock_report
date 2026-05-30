@@ -148,8 +148,16 @@ def render_chart(ticker: str, name: str, date: str | None = None) -> Path | None
     return _render_df(df, ticker, name, date)
 
 
-def _render_df(df: "pd.DataFrame", ticker: str, name: str, date: str | None = None) -> Path | None:
-    """DataFrame으로 실제 차트 렌더링 (render_chart / render_chart_from_candles 공통)."""
+def _render_df(
+    df: "pd.DataFrame", ticker: str, name: str, date: str | None = None,
+    signal_dates: list[str] | None = None, buy_dates: list[str] | None = None,
+    out_suffix: str = "",
+) -> Path | None:
+    """DataFrame으로 실제 차트 렌더링.
+
+    signal_dates: B 신호 발생일 (YYYYMMDD) → 초록 ▲ 마커
+    buy_dates: 사용자 실제 매수일 → 노랑 ★ 마커 (비교용)
+    """
 
     # ── 지표 계산 ──────────────────────────────────────────────────────────
     # MA
@@ -208,10 +216,35 @@ def _render_df(df: "pd.DataFrame", ticker: str, name: str, date: str | None = No
     ap.append(mpf.make_addplot(_last(rsi), color="#a78bfa", panel=2, ylabel="RSI", ylim=(0, 100)))
     ap.append(mpf.make_addplot(_last(cci), color="#34d399", panel=3, ylabel="CCI"))
 
+    # ── 신호/매수일 마커 ──────────────────────────────────────────────────
+    def _marker_series(dates: list[str] | None, offset: float):
+        """해당 날짜의 저가 아래(offset)에 마커 위치. 나머지는 NaN."""
+        if not dates:
+            return None
+        want = {pd.to_datetime(d, format="%Y%m%d") for d in dates}
+        ys = []
+        any_hit = False
+        for idx in df_show.index:
+            if idx in want:
+                ys.append(df_show.loc[idx, "Low"] * offset)
+                any_hit = True
+            else:
+                ys.append(float("nan"))
+        return pd.Series(ys, index=df_show.index) if any_hit else None
+
+    sig_marker = _marker_series(signal_dates, 0.97)
+    if sig_marker is not None:
+        ap.append(mpf.make_addplot(sig_marker, type="scatter", marker="^",
+                                   markersize=120, color="#34d399", panel=0))
+    buy_marker = _marker_series(buy_dates, 0.93)
+    if buy_marker is not None:
+        ap.append(mpf.make_addplot(buy_marker, type="scatter", marker="*",
+                                   markersize=200, color="#fbbf24", panel=0))
+
     # ── 출력 ─────────────────────────────────────────────────────────────
     CHARTS_DIR.mkdir(parents=True, exist_ok=True)
     date_str = date or datetime.now().strftime("%Y-%m-%d")
-    out_path = CHARTS_DIR / f"{date_str}-{ticker}.png"
+    out_path = CHARTS_DIR / f"{date_str}-{ticker}{out_suffix}.png"
 
     fig, axes = mpf.plot(
         df_show,
