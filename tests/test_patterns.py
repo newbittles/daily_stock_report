@@ -7,6 +7,7 @@ from src.patterns.core import (
     is_breakout,
     is_consecutive_bearish,
     is_macd_golden_cross,
+    is_ma20_pullback,
     is_ma_alignment,
     is_near_high,
     is_pullback,
@@ -179,6 +180,39 @@ def test_consecutive_bearish_not_all_bearish():
     base[-2] = _candle(164, 161)
     base[-1] = _candle(161, 163)  # 양봉
     result = is_consecutive_bearish(base, days=3)
+    assert not result.matched
+
+
+def test_ma20_pullback_matched():
+    # 급등(거래량) 후 20일선 위에서 조정 → 포착
+    base = [_candle(100 + i * 0.5, 100 + i * 0.5 + 0.3, vol=2000) for i in range(60)]
+    # 급등 1회 (거래량 급증)
+    base[-8] = _candle(128, 132, vol=14000)
+    base[-7] = _candle(132, 135, vol=10000)
+    # 이후 20일선 위에서 소폭 조정 (고점 아래, 20선 위)
+    base[-3] = _candle(134, 132)
+    base[-2] = _candle(132, 131)
+    base[-1] = _candle(131, 130)
+    result = is_ma20_pullback(base)
+    assert result.matched
+    assert "20일선 위" in result.reason
+
+
+def test_ma20_pullback_below_ma20_rejected():
+    # 20일선 이탈 → 미포착 (손절 구간)
+    base = [_candle(100 + i, 100 + i + 0.3, vol=2000) for i in range(55)]
+    base[-5] = _candle(150, 152, vol=14000)  # 급등
+    # 급락하여 20일선 아래로
+    for k in range(4, 0, -1):
+        base[-k] = _candle(155 - (5 - k) * 12, 150 - (5 - k) * 12)
+    result = is_ma20_pullback(base)
+    assert not result.matched
+
+
+def test_ma20_pullback_no_volume_surge():
+    # 20일선 위지만 급등(거래량) 이력 없음 → 미포착
+    base = [_candle(100 + i * 0.3, 100 + i * 0.3 + 0.2, vol=2000) for i in range(60)]
+    result = is_ma20_pullback(base)
     assert not result.matched
 
 

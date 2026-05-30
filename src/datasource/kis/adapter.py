@@ -138,36 +138,59 @@ class KisAdapter:
             timestamp=datetime.now().strftime("%Y%m%d"),
         )
 
-    async def get_ohlcv(self, ticker: str, days: int = 100) -> list[Candle]:
-        end = datetime.now().strftime("%Y%m%d")
-        start = (datetime.now() - timedelta(days=int(days * 1.6) + 10)).strftime("%Y%m%d")
-        data = await self._request(
-            "/uapi/domestic-stock/v1/quotations/inquire-daily-itemchartprice",
-            _TR["ohlcv_daily"],
-            {
-                "FID_COND_MRKT_DIV_CODE": "J",
-                "FID_INPUT_ISCD": ticker,
-                "FID_INPUT_DATE_1": start,
-                "FID_INPUT_DATE_2": end,
-                "FID_PERIOD_DIV_CODE": "D",  # D:일 W:주 M:월
-                "FID_ORG_ADJ_PRC": "0",      # 0:수정주가 1:원주가
-            },
+    async def get_ohlcv(self, ticker: str, days: int = 100, end_date: str | None = None) -> list[Candle]:
+        """일봉 조회. KIS는 1회 100건 제한 → days>100이면 기간 분할 다회 호출.
+
+        end_date: 조회 종료일 YYYYMMDD (기본 오늘). 과거 역검증 시 지정.
+        """
+        end_dt = (
+            datetime.strptime(end_date, "%Y%m%d") if end_date else datetime.now()
         )
-        rows = data.get("output2", []) or []
-        candles: list[Candle] = []
-        for r in rows:
-            if not r.get("stck_bsop_date"):
-                continue
-            candles.append(Candle(
-                date=str(r.get("stck_bsop_date")),
-                open=_f(r.get("stck_oprc")),
-                high=_f(r.get("stck_hgpr")),
-                low=_f(r.get("stck_lwpr")),
-                close=_f(r.get("stck_clpr")),
-                volume=_i(r.get("acml_vol")),
-            ))
-        # KIS는 최신→과거 순 → 과거→최신으로 뒤집어 반환
-        candles.reverse()
+        # 필요 봉수의 약 1.5배 달력일 + 여유 (주말·휴일 감안)
+        need = days + 10
+        all_candles: dict[str, Candle] = {}  # date → Candle (중복 제거)
+
+        cursor_end = end_dt
+        # 100건씩 최대 (days//100 + 2)회 호출
+        max_calls = days // 100 + 2
+        for _ in range(max_calls):
+            seg_end = cursor_end.strftime("%Y%m%d")
+            seg_start = (cursor_end - timedelta(days=150)).strftime("%Y%m%d")
+            data = await self._request(
+                "/uapi/domestic-stock/v1/quotations/inquire-daily-itemchartprice",
+                _TR["ohlcv_daily"],
+                {
+                    "FID_COND_MRKT_DIV_CODE": "J",
+                    "FID_INPUT_ISCD": ticker,
+                    "FID_INPUT_DATE_1": seg_start,
+                    "FID_INPUT_DATE_2": seg_end,
+                    "FID_PERIOD_DIV_CODE": "D",
+                    "FID_ORG_ADJ_PRC": "0",
+                },
+            )
+            rows = data.get("output2", []) or []
+            seg_dates = []
+            for r in rows:
+                d = str(r.get("stck_bsop_date") or "")
+                if not d:
+                    continue
+                seg_dates.append(d)
+                if d not in all_candles:
+                    all_candles[d] = Candle(
+                        date=d,
+                        open=_f(r.get("stck_oprc")),
+                        high=_f(r.get("stck_hgpr")),
+                        low=_f(r.get("stck_lwpr")),
+                        close=_f(r.get("stck_clpr")),
+                        volume=_i(r.get("acml_vol")),
+                    )
+            if len(all_candles) >= need or not seg_dates:
+                break
+            # 다음 구간: 이번 구간 가장 오래된 날짜 직전부터
+            oldest = min(seg_dates)
+            cursor_end = datetime.strptime(oldest, "%Y%m%d") - timedelta(days=1)
+
+        candles = [all_candles[d] for d in sorted(all_candles)]  # 과거→최신
         return candles[-days:] if len(candles) > days else candles
 
     async def get_ranking(self, kind: RankingKind, top: int = 20) -> list[RankedStock]:

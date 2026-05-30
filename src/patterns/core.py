@@ -240,6 +240,67 @@ def is_above_ichimoku_cloud(candles: list[Candle]) -> PatternResult:
     return PatternResult(False, "구름 내부 (중립)", metrics)
 
 
+def is_ma20_pullback(
+    candles: list[Candle], ma_period: int = 20,
+    vol_lookback: int = 15, vol_mult: float = 2.0,
+    max_gap: float = 0.45,
+) -> PatternResult:
+    """20일선 눌림목 (사용자 전략) — 급등 후 20일선 위에서 조정 중인 주도주.
+
+    데이터 역산(8개 매수 사례)으로 도출한 조건:
+      1. 종가 >= 20일선 (핵심 — 손절선, 사례 88% 충족)
+      2. 최근 vol_lookback일 내 거래량 급증 이력 (급등/주도주, 평균 8배)
+      3. 신고가 갱신 중 아님 (급등 후 조정 국면)
+      4. 20일선 이격 max_gap 이내 (과열 추격매수 방지)
+
+    정배열·RSI·음봉수는 조건에서 제외 (사례와 불일치).
+    매수 후 관심종목 등록 → 20일선 이탈 시 손절 (단타 아님).
+    """
+    closes = _closes(candles)
+    if len(closes) < max(60, vol_lookback + 5):
+        return PatternResult(False, "데이터 부족")
+
+    ma20 = moving_average(closes, ma_period)[-1]
+    if ma20 is None:
+        return PatternResult(False, "MA20 계산 불가")
+
+    price = closes[-1]
+    gap = (price - ma20) / ma20
+    metrics = {"price": round(price, 1), "ma20": round(ma20, 1), "ma20_gap_pct": round(gap * 100, 2)}
+
+    # 1. 종가 >= 20일선 (핵심)
+    if price < ma20:
+        return PatternResult(False, f"20일선 이탈 ({gap*100:+.1f}%)", metrics)
+
+    # 4. 과열 상단 제한
+    if gap > max_gap:
+        return PatternResult(False, f"20일선 이격 과대 (+{gap*100:.0f}%)", metrics)
+
+    # 2. 최근 거래량 급증 이력
+    vols = _volumes(candles)
+    max_ratio = 0.0
+    for j in range(max(5, len(vols) - vol_lookback), len(vols)):
+        avg5 = sum(vols[j - 5:j]) / 5
+        if avg5 > 0:
+            max_ratio = max(max_ratio, vols[j] / avg5)
+    metrics["max_vol_ratio"] = round(max_ratio, 1)
+    if max_ratio < vol_mult:
+        return PatternResult(False, f"거래량 급증 이력 없음 ({max_ratio:.1f}배)", metrics)
+
+    # 3. 신고가 갱신 중 아님 (조정 국면)
+    highs = _highs(candles)
+    hi20 = max(highs[-20:])
+    from_high = (price - hi20) / hi20 * 100
+    metrics["from_high_pct"] = round(from_high, 2)
+
+    reasons = [
+        f"20일선 위 (+{gap*100:.1f}%)",
+        f"거래량 급증 이력 {max_ratio:.1f}배",
+        f"고점대비 {from_high:+.1f}%",
+    ]
+    return PatternResult(True, " / ".join(reasons), metrics)
+
+
 def is_consecutive_bearish(
     candles: list[Candle], days: int = 3,
     require_alignment: bool = True,

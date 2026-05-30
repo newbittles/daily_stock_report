@@ -26,6 +26,7 @@ from src.patterns.core import (
     is_breakout,
     is_consecutive_bearish,
     is_macd_golden_cross,
+    is_ma20_pullback,
     is_ma_alignment,
     is_near_high,
     is_pullback,
@@ -104,6 +105,17 @@ def _check_condition(
     if key == "near_high":
         p = params if isinstance(params, dict) else {}
         r = is_near_high(candles, lookback=p.get("lookback", 250), tolerance=p.get("tolerance", 0.03))
+        return r.matched, r.reason, r.metrics
+
+    if key == "ma20_pullback":
+        p = params if isinstance(params, dict) else {}
+        r = is_ma20_pullback(
+            candles,
+            ma_period=p.get("ma_period", 20),
+            vol_lookback=p.get("vol_lookback", 15),
+            vol_mult=p.get("vol_mult", 2.0),
+            max_gap=p.get("max_gap", 0.45),
+        )
         return r.matched, r.reason, r.metrics
 
     if key == "consecutive_bearish":

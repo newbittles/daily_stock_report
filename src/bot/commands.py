@@ -33,6 +33,7 @@ _HELP_TEXT = """
 /history [건수] — 최근 매매 내역 조회 (기본: 20건)
 /whatif — 매도 종목 "안 팔았다면?" 수익률
 /screen — 조건 검색 실행 (관심종목+핫종목 → 매수 의견)
+/holdings — 보유종목 손절선(20일선) 점검
 /analyze <종목코드> — 온디맨드 패턴 분석 (module-2)
 /hot — 금일 핫 종목 + 시그널 (module-3)
 /summary — 증시 요약 (module-3)
@@ -191,6 +192,27 @@ async def cmd_history(
     records = repo.get_recent(limit)
     await update.message.reply_text(  # type: ignore[union-attr]
         format_trade_history(records), parse_mode="Markdown"
+    )
+
+
+async def cmd_holdings(
+    update: Update,
+    context: ContextTypes.DEFAULT_TYPE,
+    deps: dict[str, Any],
+) -> None:
+    """보유종목 손절 체크 — KIS 계좌 보유종목이 20일선 이탈/근접인지 확인."""
+    from src.alerts.stoploss import check_holdings, format_stoploss_alert
+
+    datasource = deps["datasource"]
+    await update.message.reply_text("🔍 보유종목 손절선 점검 중...")  # type: ignore[union-attr]
+    try:
+        alerts = await check_holdings(datasource)
+    except Exception as exc:
+        logger.error("cmd_holdings_error error=%s", exc)
+        await update.message.reply_text(format_error("보유종목 조회 실패", attempts=1))  # type: ignore[union-attr]
+        return
+    await update.message.reply_text(  # type: ignore[union-attr]
+        format_stoploss_alert(alerts), parse_mode="Markdown"
     )
 
 

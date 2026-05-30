@@ -43,6 +43,7 @@ def build_application(
         ("history", commands.cmd_history),
         ("whatif", commands.cmd_whatif),
         ("screen", commands.cmd_screen),
+        ("holdings", commands.cmd_holdings),
     ]
     for name, fn in handlers:
         app.add_handler(CommandHandler(name, guarded(fn)))
