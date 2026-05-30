@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import asyncio
 import logging
 import re
 from typing import Any
@@ -9,6 +10,8 @@ from telegram.ext import ContextTypes
 
 from src.bot.messages import (
     format_error,
+    format_pick_caption,
+    format_screening_by_strategy,
     format_screening_result,
     format_trade_history,
     format_watchlist,
@@ -196,24 +199,31 @@ async def cmd_screen(
     context: ContextTypes.DEFAULT_TYPE,
     deps: dict[str, Any],
 ) -> None:
-    """조건 검색 실행 — config/screener.yaml 기반."""
+    """조건 검색 실행 — 전략별 분류 + 종목별 차트 발송.
+
+    1. config/screener.yaml 전략으로 관심종목+핫종목 스크리닝
+    2. 전략별로 그룹핑한 요약 발송 (볼드체 + 근거 + 복붙 코드)
+    3. 각 포착 종목의 차트 이미지 개별 발송
+    """
+    from src.market_report.chart import render_chart
     from src.screener.config import load_screener_config
     from src.screener.pipeline import run_screening
 
     datasource = deps["datasource"]
+    notifier = deps["notifier"]
     watchlist_repo: WatchlistRepo = deps["watchlist_repo"]
+    chat_id = str(update.effective_chat.id) if update.effective_chat else None
 
-    cfg = load_screener_config()  # 매번 최신 YAML 로딩 (편집 즉시 반영)
-    enabled = [s.name for s in cfg.enabled_strategies()]
+    cfg = load_screener_config()  # 매번 최신 YAML 로딩
+    enabled = cfg.enabled_strategies()
     if not enabled:
         await update.message.reply_text(  # type: ignore[union-attr]
-            "활성화된 전략이 없습니다. config/screener.yaml에서 enabled: true 로 켜세요."
+            "활성 전략이 없습니다. config/screener.yaml에서 enabled: true 로 켜세요."
         )
         return
 
     await update.message.reply_text(  # type: ignore[union-attr]
-        f"🔍 조건 검색 중... (전략: {', '.join(enabled)})\n"
-        f"관심종목 + 핫종목을 분석합니다. 잠시만요."
+        f"🔍 조건 검색 중... ({len(enabled)}개 전략)\n관심종목 + 핫종목 분석, 잠시만요."
     )
 
     watchlist = [(item.ticker, item.name) for item in watchlist_repo.get_all()]
@@ -224,9 +234,27 @@ async def cmd_screen(
         await update.message.reply_text(format_error("조건 검색 실패", attempts=1))  # type: ignore[union-attr]
         return
 
+    # 1. 전략별 요약 발송
     await update.message.reply_text(  # type: ignore[union-attr]
-        format_screening_result(picks), parse_mode="Markdown"
+        format_screening_by_strategy(picks, enabled), parse_mode="Markdown"
     )
+    if not picks:
+        return
+
+    # 2. 종목별 차트 발송 (중복 종목은 1회만)
+    seen: set[str] = set()
+    for p in picks:
+        if p.ticker in seen:
+            continue
+        seen.add(p.ticker)
+        try:
+            # pykrx 250봉으로 차트 (MA120·일목구름 위해 충분한 데이터 필요)
+            chart_path = await asyncio.to_thread(render_chart, p.ticker, p.name)
+            if chart_path and chat_id:
+                caption = format_pick_caption(p, p.matches[0])
+                await notifier.send_photo(chat_id, str(chart_path), caption)
+        except Exception as exc:
+            logger.warning("chart_send_failed ticker=%s error=%s", p.ticker, exc)
 
 
 async def cmd_whatif(

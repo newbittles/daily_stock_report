@@ -29,6 +29,11 @@ class StockPick:
     price: float
     change_pct: float
     matches: list[ScreenMatch] = field(default_factory=list)
+    candles: list = field(default_factory=list)  # 차트 렌더용 (KIS 일봉 재사용)
+    sector: str = ""              # 섹터/테마명
+    is_leading_sector: bool = False  # 주도(강세) 섹터 소속 여부
+    news_title: str = ""          # 최근 주요 뉴스 헤드라인
+    news_url: str = ""            # 뉴스 링크
 
     @property
     def opinions(self) -> list[str]:
@@ -116,11 +121,57 @@ async def run_screening(
             if matches:
                 picks.append(StockPick(
                     ticker=ticker, name=name, price=price,
-                    change_pct=change_pct, matches=matches,
+                    change_pct=change_pct, matches=matches, candles=candles,
                 ))
         except Exception as exc:
             logger.debug("screen_skip ticker=%s error=%s", ticker, exc)
             continue
 
     logger.info("screening_done universe=%d picks=%d", len(universe), len(picks))
+
+    # 섹터·뉴스 보강 (포착 종목만 — 적은 수라 부담 작음)
+    if picks:
+        await _enrich_picks(picks)
+
     return picks
+
+
+async def _enrich_picks(picks: list[StockPick]) -> None:
+    """포착 종목에 섹터(주도 여부) + 최근 뉴스 1건 보강.
+
+    - 섹터: 네이버 강세 테마의 주도주 목록과 종목명 매칭
+    - 뉴스: 구글 뉴스 RSS 종목 검색 (광고 제외)
+    실패해도 picks 자체는 유지 (보강 정보만 비움).
+    """
+    from src.market_report.scrapers.stock_news import fetch_stock_news
+    from src.market_report.scrapers.theme import fetch_top_themes
+
+    # 1. 강세 테마 + 주도주 매핑
+    leading_names: dict[str, str] = {}  # 종목명 → 테마명 (강세 테마 소속)
+    try:
+        themes = await fetch_top_themes(top=15)
+        for t in themes:
+            if t.change_pct <= 0:  # 강세(상승) 테마만 주도섹터로
+                continue
+            for stock_name in t.leading_stocks:
+                leading_names[stock_name] = t.name
+    except Exception as exc:
+        logger.warning("theme_enrich_failed error=%s", exc)
+
+    # 2. 종목별 보강
+    for p in picks:
+        # 섹터 매칭 (종목명 부분일치)
+        for lead_name, theme_name in leading_names.items():
+            if lead_name in p.name or p.name in lead_name:
+                p.sector = theme_name
+                p.is_leading_sector = True
+                break
+
+        # 뉴스 1건
+        try:
+            news = await fetch_stock_news(p.name, top=1)
+            if news:
+                p.news_title = news[0].title
+                p.news_url = news[0].url
+        except Exception as exc:
+            logger.debug("news_enrich_failed ticker=%s error=%s", p.ticker, exc)

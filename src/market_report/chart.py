@@ -108,12 +108,48 @@ def _ichimoku(df: pd.DataFrame) -> tuple[pd.Series, pd.Series, pd.Series, pd.Ser
     return tenkan, kijun, span_a, span_b, chikou
 
 
+def _candles_to_df(candles) -> "pd.DataFrame | None":
+    """src.datasource.base.Candle 리스트 → mplfinance DataFrame.
+
+    스크리닝에서 이미 가져온 KIS candles를 차트에 재사용 (중복 API 호출 제거).
+    """
+    if not candles:
+        return None
+    rows = []
+    idx = []
+    for c in candles:
+        try:
+            idx.append(pd.to_datetime(c.date, format="%Y%m%d"))
+            rows.append({"Open": c.open, "High": c.high, "Low": c.low,
+                         "Close": c.close, "Volume": c.volume})
+        except Exception:
+            continue
+    if not rows:
+        return None
+    df = pd.DataFrame(rows, index=pd.DatetimeIndex(idx, name="Date"))
+    return df
+
+
+def render_chart_from_candles(candles, ticker: str, name: str, date: str | None = None) -> Path | None:
+    """KIS candles 리스트로 차트 생성 (API 재호출 없음)."""
+    df = _candles_to_df(candles)
+    if df is None or len(df) < 60:
+        logger.warning("chart_skip_insufficient ticker=%s rows=%s", ticker, 0 if df is None else len(df))
+        return None
+    return _render_df(df, ticker, name, date)
+
+
 def render_chart(ticker: str, name: str, date: str | None = None) -> Path | None:
-    """추천 종목 차트 PNG 생성. 실패 시 None 반환."""
+    """추천 종목 차트 PNG 생성 (pykrx로 OHLCV 조회). 실패 시 None."""
     df = _fetch_ohlcv(ticker, days=250)
     if df is None or len(df) < 60:
         logger.warning("chart_skip_insufficient ticker=%s rows=%s", ticker, len(df) if df is not None else 0)
         return None
+    return _render_df(df, ticker, name, date)
+
+
+def _render_df(df: "pd.DataFrame", ticker: str, name: str, date: str | None = None) -> Path | None:
+    """DataFrame으로 실제 차트 렌더링 (render_chart / render_chart_from_candles 공통)."""
 
     # ── 지표 계산 ──────────────────────────────────────────────────────────
     # MA
@@ -191,19 +227,21 @@ def render_chart(ticker: str, name: str, date: str | None = None) -> Path | None
         warn_too_much_data=300,
     )
 
-    # 일목구름 채움 (span_a/span_b 사이)
+    # 일목구름 채움 (span_a/span_b 사이) — NaN 구간 방어
     ax_main = axes[0]
-    x = range(len(df_show))
     sa = _last(span_a).values
     sb = _last(span_b).values
-    ax_main.fill_between(
-        x, sa, sb,
-        where=(sa >= sb), color="#2ECC7110", interpolate=True,
-    )
-    ax_main.fill_between(
-        x, sa, sb,
-        where=(sa < sb), color="#E74C3C10", interpolate=True,
-    )
+    valid = ~(np.isnan(sa) | np.isnan(sb))
+    if valid.any():
+        x = np.arange(len(df_show))
+        ax_main.fill_between(
+            x, sa, sb,
+            where=valid & (sa >= sb), color="#2ECC7110", interpolate=True,
+        )
+        ax_main.fill_between(
+            x, sa, sb,
+            where=valid & (sa < sb), color="#E74C3C10", interpolate=True,
+        )
 
     # RSI 30/70 가이드라인
     axes[4].axhline(30, color="#94a3b8", linewidth=0.5, linestyle=":")

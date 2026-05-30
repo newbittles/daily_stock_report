@@ -117,6 +117,84 @@ def format_screening_result(picks: list, mode_label: str = "조건 검색") -> s
     return "\n".join(lines)
 
 
+def format_screening_by_strategy(picks: list, strategies: list | None = None) -> str:
+    """조건검색 결과를 전략별로 그룹핑 → 볼드체 텔레그램 메시지.
+
+    picks: list[StockPick]
+    strategies: list[Strategy] (전략 순서·설명 표시용, 선택)
+    """
+    from datetime import datetime
+
+    if not picks:
+        return (
+            "🔍 *조건검색 결과*\n\n"
+            "오늘 조건을 충족하는 종목이 없습니다.\n"
+            f"_{_DISCLAIMER}_"
+        )
+
+    # 전략명 → [(pick, match)] 그룹핑
+    by_strategy: dict[str, list] = {}
+    for p in picks:
+        for m in p.matches:
+            by_strategy.setdefault(m.strategy_name, []).append((p, m))
+
+    # 전략 순서 (config 순서 유지, 없으면 등장 순)
+    order = [s.name for s in strategies] if strategies else list(by_strategy.keys())
+    for name in by_strategy:
+        if name not in order:
+            order.append(name)
+
+    now = datetime.now().strftime("%m/%d %H:%M")
+    lines = [f"🔍 *조건검색 결과* ({now})", ""]
+
+    for sname in order:
+        items = by_strategy.get(sname)
+        if not items:
+            continue
+        lines.append(f"━━━━━━━━━━━━━━━")
+        lines.append(f"📌 *{sname}*  ({len(items)}종목)")
+        lines.append("")
+        for p, m in items:
+            sign = "+" if p.change_pct >= 0 else ""
+            lines.append(f"▪️ *{p.name}* `{p.ticker}`  {p.price:,.0f}원 ({sign}{p.change_pct:.2f}%)")
+            # 섹터 (주도섹터면 강조)
+            if getattr(p, "sector", ""):
+                tag = "🔥 주도섹터" if getattr(p, "is_leading_sector", False) else "섹터"
+                lines.append(f"   🏷 {tag}: {p.sector}")
+            for r in m.reasons:
+                lines.append(f"   └ {r}")
+            # 뉴스 링크
+            if getattr(p, "news_title", "") and getattr(p, "news_url", ""):
+                lines.append(f"   📰 [{p.news_title[:45]}]({p.news_url})")
+        lines.append("")
+
+    # 복붙용 종목코드 리스트 (한투 앱 관심종목 일괄등록용)
+    all_tickers = list(dict.fromkeys(p.ticker for p in picks))
+    lines.append("━━━━━━━━━━━━━━━")
+    lines.append("📋 *관심종목 복사용* (한투 앱에 붙여넣기)")
+    lines.append(f"`{' '.join(all_tickers)}`")
+    lines.append("")
+    lines.append(f"_{_DISCLAIMER}_")
+    return "\n".join(lines)
+
+
+def format_pick_caption(pick, match) -> str:
+    """차트 이미지에 붙일 캡션 (종목명/전략/섹터/근거/뉴스)."""
+    sign = "+" if pick.change_pct >= 0 else ""
+    lines = [
+        f"*{pick.name}* `{pick.ticker}`",
+        f"{pick.price:,.0f}원 ({sign}{pick.change_pct:.2f}%) · {match.strategy_name}",
+    ]
+    if getattr(pick, "sector", ""):
+        tag = "🔥 주도섹터" if getattr(pick, "is_leading_sector", False) else "섹터"
+        lines.append(f"🏷 {tag}: {pick.sector}")
+    for r in match.reasons:
+        lines.append(f"└ {r}")
+    if getattr(pick, "news_title", "") and getattr(pick, "news_url", ""):
+        lines.append(f"📰 [{pick.news_title[:45]}]({pick.news_url})")
+    return "\n".join(lines)
+
+
 def format_error(reason: str, attempts: int, last_success: str | None = None) -> str:
     return (
         f"⚠️ 분석 실패: {reason}\n"

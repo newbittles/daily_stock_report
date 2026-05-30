@@ -48,6 +48,33 @@ class TelegramNotifier:
         tg_log.error("SEND_EXHAUSTED chat_id=%s len=%d preview=%r", chat_id, len(text), preview)
         return False
 
+    async def send_photo(
+        self, chat_id: str, photo_path: str, caption: str = "", *, parse_mode: str = "Markdown"
+    ) -> bool:
+        """차트 이미지 등 사진 발송. caption은 1024자 제한 → 초과 시 잘림."""
+        preview = caption.replace("\n", " ")[:50]
+        cap = caption[:1024]
+        for attempt in range(MAX_RETRY):
+            try:
+                if attempt > 0:
+                    await asyncio.sleep(random.uniform(2.0, 5.0))
+                with open(photo_path, "rb") as f:
+                    msg = await self._bot.send_photo(
+                        chat_id=int(chat_id), photo=f, caption=cap, parse_mode=parse_mode,
+                    )
+                tg_log.info(
+                    "PHOTO ok chat_id=%s message_id=%s file=%s preview=%r",
+                    chat_id, msg.message_id, photo_path, preview,
+                )
+                return True
+            except (TelegramError, OSError) as exc:
+                tg_log.warning(
+                    "PHOTO_FAIL attempt=%d/%d chat_id=%s file=%s error=%s",
+                    attempt + 1, MAX_RETRY, chat_id, photo_path, str(exc),
+                )
+        tg_log.error("PHOTO_EXHAUSTED chat_id=%s file=%s", chat_id, photo_path)
+        return False
+
     async def send_signal_alert(self, chat_id: str, record: SignalRecord) -> None:
         text = format_signal_alert(record)
         await self.send(chat_id, text)
