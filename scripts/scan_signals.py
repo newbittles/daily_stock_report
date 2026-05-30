@@ -84,12 +84,16 @@ async def main() -> None:
     print(f"🟢 매수신호 {len(signal_days)}일 → 매수/손절 추적 (손절=2일연속 종가 20일선 이탈)")
     print("-" * 78)
 
+    # 보유 무관 — 신호 클러스터(연속 신호 구간)의 첫날마다 독립 진입.
+    # 신호가 3거래일 이상 끊겼다 다시 뜨면 새 진입(손절 후 재신호 포함).
     trades = []
-    last_exit_idx = -1
+    prev_signal_idx = -100
     for d, px, r, sd, sr in signal_days:
         bi = date_to_idx[d]
-        if bi <= last_exit_idx:
-            continue  # 이전 매수의 보유 구간 → 신규 진입 스킵
+        is_new_cluster = (bi - prev_signal_idx) > 3
+        prev_signal_idx = bi
+        if not is_new_cluster:
+            continue  # 같은 눌림 구간의 연속 신호 → 첫날만 진입
         # 매수 후 손절: 2일 연속 종가 20일선 이탈 (일시적 1일 이탈은 무시)
         exit_idx, exit_px, exit_date = None, None, None
         for j in range(bi + 1, len(candles_all)):
@@ -103,12 +107,10 @@ async def main() -> None:
             ret = (exit_px - px) / px * 100
             hold = exit_idx - bi
             trades.append((d, px, exit_date, exit_px, ret, hold, sd, sr))
-            last_exit_idx = exit_idx
         else:
             cur = candles_all[-1]
             ret = (cur.close - px) / px * 100
             trades.append((d, px, "보유중", cur.close, ret, len(candles_all) - 1 - bi, sd, sr))
-            last_exit_idx = len(candles_all)
 
     print(f"{'급등고점일':<11}{'매수일':<10}{'매수가':>10}{'손절일':<12}{'청산가':>10}{'수익률':>8}{'보유':>5}")
     print("-" * 78)
