@@ -7,7 +7,13 @@ from typing import Any
 from telegram import Update
 from telegram.ext import ContextTypes
 
-from src.bot.messages import format_error, format_trade_history, format_watchlist, format_whatif
+from src.bot.messages import (
+    format_error,
+    format_screening_result,
+    format_trade_history,
+    format_watchlist,
+    format_whatif,
+)
 from src.storage.repos import TradeRecord, TradeHistoryRepo, WatchlistRepo
 
 logger = logging.getLogger(__name__)
@@ -23,11 +29,14 @@ _HELP_TEXT = """
 /sync_trades [일수] — 키움 체결내역 동기화 (기본: 7일)
 /history [건수] — 최근 매매 내역 조회 (기본: 20건)
 /whatif — 매도 종목 "안 팔았다면?" 수익률
+/screen — 조건 검색 실행 (관심종목+핫종목 → 매수 의견)
 /analyze <종목코드> — 온디맨드 패턴 분석 (module-2)
 /hot — 금일 핫 종목 + 시그널 (module-3)
 /summary — 증시 요약 (module-3)
 /briefing — 종가 직전 브리핑 (module-3)
 /settings — 알림 임계치 설정
+
+💡 조건 검색 규칙은 config/screener.yaml 파일에서 수정하세요.
 
 ※ 모든 분석은 참고용입니다. 투자 책임은 본인에게 있습니다.
 """.strip()
@@ -146,22 +155,21 @@ async def cmd_sync_trades(
     await update.message.reply_text(f"🔄 최근 {days}일 체결내역 동기화 중...")  # type: ignore[union-attr]
 
     today = datetime.date.today()
-    total = 0
-    errors = 0
-    for i in range(days):
-        date_str = (today - datetime.timedelta(days=i)).strftime("%Y%m%d")
-        try:
-            raw_records = await datasource.get_trade_history(date_str)
-            for item in raw_records:
-                repo.upsert(TradeRecord(**item))
-                total += 1
-        except Exception as exc:
-            logger.error("sync_trades_error date=%s error=%s", date_str, exc)
-            errors += 1
+    start = (today - datetime.timedelta(days=days)).strftime("%Y%m%d")
+    end = today.strftime("%Y%m%d")
 
-    msg = f"✅ 동기화 완료: {total}건 처리"
-    if errors:
-        msg += f" (오류 {errors}일)"
+    total = 0
+    try:
+        # KIS 어댑터: get_trade_history(start, end) — 기간 일괄 조회
+        raw_records = await datasource.get_trade_history(start, end)
+        for item in raw_records:
+            repo.upsert(TradeRecord(**item))
+            total += 1
+        msg = f"✅ 동기화 완료: {total}건 처리"
+    except Exception as exc:
+        logger.error("sync_trades_error start=%s end=%s error=%s", start, end, exc)
+        msg = format_error("체결내역 동기화 실패", attempts=1)
+
     await update.message.reply_text(msg)  # type: ignore[union-attr]
 
 
@@ -180,6 +188,44 @@ async def cmd_history(
     records = repo.get_recent(limit)
     await update.message.reply_text(  # type: ignore[union-attr]
         format_trade_history(records), parse_mode="Markdown"
+    )
+
+
+async def cmd_screen(
+    update: Update,
+    context: ContextTypes.DEFAULT_TYPE,
+    deps: dict[str, Any],
+) -> None:
+    """조건 검색 실행 — config/screener.yaml 기반."""
+    from src.screener.config import load_screener_config
+    from src.screener.pipeline import run_screening
+
+    datasource = deps["datasource"]
+    watchlist_repo: WatchlistRepo = deps["watchlist_repo"]
+
+    cfg = load_screener_config()  # 매번 최신 YAML 로딩 (편집 즉시 반영)
+    enabled = [s.name for s in cfg.enabled_strategies()]
+    if not enabled:
+        await update.message.reply_text(  # type: ignore[union-attr]
+            "활성화된 전략이 없습니다. config/screener.yaml에서 enabled: true 로 켜세요."
+        )
+        return
+
+    await update.message.reply_text(  # type: ignore[union-attr]
+        f"🔍 조건 검색 중... (전략: {', '.join(enabled)})\n"
+        f"관심종목 + 핫종목을 분석합니다. 잠시만요."
+    )
+
+    watchlist = [(item.ticker, item.name) for item in watchlist_repo.get_all()]
+    try:
+        picks = await run_screening(datasource, watchlist, cfg)
+    except Exception as exc:
+        logger.error("cmd_screen_error error=%s", exc)
+        await update.message.reply_text(format_error("조건 검색 실패", attempts=1))  # type: ignore[union-attr]
+        return
+
+    await update.message.reply_text(  # type: ignore[union-attr]
+        format_screening_result(picks), parse_mode="Markdown"
     )
 
 

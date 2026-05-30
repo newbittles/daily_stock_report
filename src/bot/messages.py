@@ -88,6 +88,35 @@ def format_whatif(results: list[dict]) -> str:
     return "\n".join(lines)
 
 
+def format_screening_result(picks: list, mode_label: str = "조건 검색") -> str:
+    """조건 검색 결과 → 텔레그램 메시지.
+
+    picks: list[StockPick] (src.screener.pipeline)
+    """
+    if not picks:
+        return (
+            f"🔍 *{mode_label}*\n\n"
+            f"조건을 충족하는 종목이 없습니다.\n"
+            f"_{_DISCLAIMER}_"
+        )
+
+    lines = [f"🔍 *{mode_label}* — {len(picks)}종목 포착", ""]
+    for p in picks:
+        sign = "+" if p.change_pct >= 0 else ""
+        # 매칭 전략·의견
+        opinions = " / ".join(dict.fromkeys(p.opinions))  # 중복 제거, 순서 유지
+        lines.append(f"*{p.name}* ({p.ticker})")
+        lines.append(f"  {p.price:,.0f}원 ({sign}{p.change_pct:.2f}%)  → _{opinions}_")
+        # 전략별 근거
+        for m in p.matches:
+            reasons = ", ".join(m.reasons[:3])
+            lines.append(f"  ▸ [{m.strategy_name}] {reasons}")
+        lines.append("")
+
+    lines.append(_DISCLAIMER)
+    return "\n".join(lines)
+
+
 def format_error(reason: str, attempts: int, last_success: str | None = None) -> str:
     return (
         f"⚠️ 분석 실패: {reason}\n"

@@ -42,6 +42,7 @@ def build_application(
         ("sync_trades", commands.cmd_sync_trades),
         ("history", commands.cmd_history),
         ("whatif", commands.cmd_whatif),
+        ("screen", commands.cmd_screen),
     ]
     for name, fn in handlers:
         app.add_handler(CommandHandler(name, guarded(fn)))

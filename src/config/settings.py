@@ -6,8 +6,14 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
-    # Kiwoom OpenAPI+ (OCX) — 앱키 없음, HTS 로그인으로 인증
-    kiwoom_account_no: str
+    # 한국투자증권 KIS Open API (REST)
+    kis_app_key: str = ""
+    kis_app_secret: str = ""
+    kis_account_no: str = ""
+    kis_env: Literal["real", "paper"] = "paper"
+
+    # Kiwoom OpenAPI+ (OCX) — 레거시, 현재 미사용 (기본값으로 선택)
+    kiwoom_account_no: str = ""
     kiwoom_env: Literal["real", "paper"] = "real"
 
     # Telegram

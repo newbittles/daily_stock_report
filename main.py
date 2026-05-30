@@ -1,27 +1,32 @@
-"""Entry point — Kiwoom OCX + Telegram bot + APScheduler.
+"""Entry point — KIS REST + Telegram bot + APScheduler.
 
-실행 순서:
-  1. QApplication 생성 (OCX 이벤트 처리용 — headless 불가, 로그인 팝업 필요)
-  2. 메인 스레드에서 Kiwoom() 생성 + CommConnect(block=True) — QAxWidget은 메인 스레드 전용
-  3. asyncio.run(main(kiwoom)) 으로 봇·스케줄러 기동
+KIS Open API(REST) 기반이라 OCX/QApplication/32비트 불필요.
+App Key/Secret만 .env에 있으면 헤드리스로 기동.
+
+실행:
+    python main.py
 """
 from __future__ import annotations
 
 import asyncio
 import logging
-import sys
-from typing import Any
 
 from telegram import Bot
 
 from src.alerts.monitor import WatchlistMonitor
 from src.bot.router import build_application
 from src.config.settings import get_settings
-from src.datasource.kiwoom.adapter import KiwoomAdapter
+from src.datasource.kis.adapter import KisAdapter
 from src.notify.telegram.adapter import TelegramNotifier
 from src.scheduler.jobs import setup_scheduler
 from src.storage.db import get_connection, init_db
-from src.storage.repos import AlertHistoryRepo, AnalysisCacheRepo, SignalLogRepo, TradeHistoryRepo, WatchlistRepo
+from src.storage.repos import (
+    AlertHistoryRepo,
+    AnalysisCacheRepo,
+    SignalLogRepo,
+    TradeHistoryRepo,
+    WatchlistRepo,
+)
 
 logging.basicConfig(
     level=logging.INFO,
@@ -30,7 +35,7 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
-async def main(kiwoom: Any) -> None:
+async def main() -> None:
     settings = get_settings()
 
     # ── Storage ──────────────────────────────────────────────────────────────
@@ -42,13 +47,18 @@ async def main(kiwoom: Any) -> None:
     cache_repo = AnalysisCacheRepo(conn)
     trade_repo = TradeHistoryRepo(conn)
 
-    # ── Kiwoom OCX adapter (kiwoom 인스턴스는 메인 스레드에서 미리 생성됨) ──────
-    datasource = KiwoomAdapter(
-        account_no=settings.kiwoom_account_no,
-        env=settings.kiwoom_env,
-        kiwoom=kiwoom,
+    # ── KIS REST adapter ───────────────────────────────────────────────────────
+    if not settings.kis_app_key or not settings.kis_app_secret:
+        logger.error("KIS_APP_KEY/KIS_APP_SECRET 미설정 — .env를 확인하세요.")
+        raise SystemExit(1)
+
+    datasource = KisAdapter(
+        app_key=settings.kis_app_key,
+        app_secret=settings.kis_app_secret,
+        account_no=settings.kis_account_no,
+        env=settings.kis_env,
     )
-    await datasource.connect()
+    logger.info("kis_adapter_ready env=%s", settings.kis_env)
 
     # ── Telegram ──────────────────────────────────────────────────────────────
     bot = Bot(token=settings.telegram_bot_token)
@@ -91,7 +101,7 @@ async def main(kiwoom: Any) -> None:
         await app.initialize()
         await app.start()
         await app.updater.start_polling()  # type: ignore[union-attr]
-        logger.info("bot_started env=%s", settings.kiwoom_env)
+        logger.info("bot_started env=%s", settings.kis_env)
         await asyncio.Event().wait()
     except (KeyboardInterrupt, SystemExit):
         logger.info("shutdown_requested")
@@ -107,14 +117,4 @@ async def main(kiwoom: Any) -> None:
 
 
 if __name__ == "__main__":
-    from typing import Any
-    from PyQt5.QtWidgets import QApplication
-    from pykiwoom.kiwoom import Kiwoom
-
-    # QApplication + Kiwoom은 반드시 메인 스레드에서 생성 (QAxWidget 제약)
-    _qt_app = QApplication.instance() or QApplication(sys.argv)
-    logger.info("kiwoom_login_start  — HTS 로그인 팝업이 나타납니다")
-    _kiwoom = Kiwoom()
-    _kiwoom.CommConnect(block=True)
-
-    asyncio.run(main(_kiwoom))
+    asyncio.run(main())
