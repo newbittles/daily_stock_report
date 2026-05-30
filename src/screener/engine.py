@@ -24,9 +24,12 @@ from src.patterns.core import (
     is_above_ichimoku_cloud,
     is_bollinger_breakout,
     is_breakout,
+    is_macd_golden_cross,
     is_ma_alignment,
+    is_near_high,
     is_pullback,
     is_volume_surge,
+    is_weekly_ma_alignment,
 )
 
 
@@ -82,6 +85,47 @@ def _check_condition(
         p = params if isinstance(params, dict) else {}
         r = is_bollinger_breakout(candles, period=p.get("period", 20), num_std=p.get("num_std", 2.0))
         return r.matched, r.reason, r.metrics
+
+    if key == "macd_golden_cross":
+        p = params if isinstance(params, dict) else {}
+        r = is_macd_golden_cross(
+            candles,
+            within=p.get("within", 3),
+            require_above_zero=p.get("above_zero", True),
+        )
+        return r.matched, r.reason, r.metrics
+
+    if key == "weekly_ma_alignment":
+        periods = tuple(params.get("periods", [20, 60])) if isinstance(params, dict) else (20, 60)
+        r = is_weekly_ma_alignment(candles, periods)
+        return r.matched, r.reason, r.metrics
+
+    if key == "near_high":
+        p = params if isinstance(params, dict) else {}
+        r = is_near_high(candles, lookback=p.get("lookback", 250), tolerance=p.get("tolerance", 0.03))
+        return r.matched, r.reason, r.metrics
+
+    if key == "low_above_ma":
+        # 당일 저가 >= 특정 MA (지지선 유지 — 눌림목 조정 확인)
+        period = params.get("period", 20) if isinstance(params, dict) else 20
+        ma = moving_average(closes, period)[-1]
+        if ma is None:
+            return False, f"MA{period} 계산 불가", {}
+        low = candles[-1].low
+        ok = low >= ma
+        return ok, f"당일저가 {'>=' if ok else '<'} MA{period} (지지{'유지' if ok else '이탈'})", {
+            "low": round(low, 1), f"ma{period}": round(ma, 1),
+        }
+
+    if key == "min_trade_value":
+        # 당일 거래대금 >= N원 (종가×거래량 근사). params: 원 단위 숫자
+        min_val = float(params) if not isinstance(params, (dict, list)) else 0
+        last = candles[-1]
+        trade_value = last.close * last.volume
+        ok = trade_value >= min_val
+        return ok, f"거래대금 {trade_value/1e8:.0f}억 ({'OK' if ok else f'{min_val/1e8:.0f}억 미달'})", {
+            "trade_value_eok": round(trade_value / 1e8, 1),
+        }
 
     if key == "rsi_between":
         lo, hi = (params + [0, 100])[:2] if isinstance(params, list) else (0, 100)

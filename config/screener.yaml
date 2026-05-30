@@ -8,73 +8,83 @@
 #    - enabled: false 로 두면 해당 전략은 건너뜁니다.
 #
 #  사용 가능한 조건 (conditions):
-#    ma_alignment:      정배열 (periods 순서대로 위>아래). periods 지정 가능
-#    pullback:          눌림목 (상승추세 중 MA선 근접 + RSI 과열 아님)
-#    breakout:          돌파 (N일 고가 갱신 + 거래량 증가)
-#    volume_surge:      거래량 급증 (직전 평균 대비 N배)
-#    above_ichimoku:    일목구름 위 (양운 상승)
-#    bollinger_breakout: 볼린저밴드 상단 돌파
-#    rsi_between:        RSI 범위 [min, max]
-#    price_above_ma:    현재가 > 특정 MA (period 지정)
-#    change_pct_between: 당일 등락률 범위 [min, max] %
+#    ma_alignment {periods}        정배열 (periods 순서대로 위>아래)
+#    weekly_ma_alignment {periods} 주봉 정배열 (멀티 타임프레임)
+#    pullback {ma_period, tolerance, rsi_max}  눌림목
+#    breakout {lookback, vol_mult} 돌파 (N일 고가 갱신 + 거래량 증가)
+#    volume_surge {lookback, mult} 거래량 급증
+#    above_ichimoku                일목구름 위 (양운 상승)
+#    bollinger_breakout {period, num_std}  볼린저 상단 돌파
+#    macd_golden_cross {within, above_zero}  MACD 골든크로스 (0선 위 옵션)
+#    near_high {lookback, tolerance}  신고가 근접 (52주=lookback 250)
+#    rsi_between [min, max]         RSI 범위
+#    price_above_ma {period}        현재가 > 특정 MA
+#    low_above_ma {period}          당일 저가 >= MA (지지선 유지)
+#    change_pct_between [min, max]  당일 등락률 범위 %
+#    min_trade_value <원>           당일 거래대금 하한 (예: 5000000000 = 50억)
 #
 # ════════════════════════════════════════════════════════════════════════
 
-# 검색 대상 유니버스
 universe:
-  watchlist: true       # 내 관심종목 포함
-  hot_stocks: true      # 당일 핫종목(거래량·등락률 상위) 포함
-  hot_stocks_top: 30    # 핫종목 상위 N개
+  watchlist: true
+  hot_stocks: true
+  hot_stocks_top: 40
 
-# 전략 목록 — 각 전략이 독립적으로 후보를 추출
 strategies:
 
-  - name: "정배열 눌림목"
+  # ── A. MACD 골든크로스 + 일/주봉 정배열 (추세 추종형) ───────────────────
+  - name: "A. MACD GC + 멀티TF 정배열"
     enabled: true
-    description: "상승추세(정배열) 중 MA20 눌림목, 과매수 아닌 매수 타이밍"
+    description: "MACD 0선 위 골든크로스 + 일봉 5>20>60>120 + 주봉 20>60 정배열"
+    conditions:
+      macd_golden_cross:
+        within: 5          # 최근 5봉 이내 GC
+        above_zero: true   # 0선 위 교차만 (강한 신호)
+      ma_alignment:
+        periods: [5, 20, 60]
+      price_above_ma:
+        period: 120        # 종가 > 120일선
+      weekly_ma_alignment:
+        periods: [20, 60]  # 주봉 20 > 60
+      min_trade_value: 5000000000   # 거래대금 50억 이상
+    opinion: "추세 진입 (A)"
+
+  # ── B. 주도주 눌림목 (추세 내 조정 매수) ────────────────────────────────
+  - name: "B. 주도주 눌림목"
+    enabled: true
+    description: "정배열·신고가 이력 주도주가 20일선 ±3% 눌림 + 지지 유지"
     conditions:
       ma_alignment:
         periods: [5, 20, 60]
+      near_high:
+        lookback: 60       # 최근 60일 내 신고가 이력
+        tolerance: 0.12    # 신고가 -12% 이내 (조정 허용폭)
       pullback:
         ma_period: 20
-        tolerance: 0.03      # MA20 ±3% 이내
-        rsi_max: 55
-    opinion: "매수 관심"      # 조건 충족 시 의견 라벨
+        tolerance: 0.03    # 20일선 ±3%
+        rsi_max: 60
+      low_above_ma:
+        period: 20         # 당일 저가가 20일선 지지
+      min_trade_value: 5000000000
+    opinion: "눌림목 매수 (B)"
 
-  - name: "거래량 돌파"
+  # ── C. 52주 신고가 돌파 (보조 스윙) ─────────────────────────────────────
+  - name: "C. 신고가 돌파"
     enabled: true
-    description: "20일 고가 돌파 + 거래량 1.5배 이상 (추세 전환 신호)"
+    description: "52주 신고가 근접 + 거래량 동반 돌파 + 정배열"
     conditions:
+      near_high:
+        lookback: 250      # 52주
+        tolerance: 0.03    # 신고가 -3% 이내
       breakout:
         lookback: 20
         vol_mult: 1.5
-      above_ichimoku: true
-    opinion: "매수 관심"
-
-  - name: "종가 베팅 (과매도 반등)"
-    enabled: true
-    description: "거래량 급증 + RSI 과매도 구간 (마감 전 단기 반등 노림)"
-    conditions:
-      volume_surge:
-        lookback: 5
-        mult: 2.0
-      rsi_between: [25, 45]
-      change_pct_between: [-7, 3]
-    opinion: "단기 관심 (종가 베팅)"
-
-  # 예시 — 비활성. 필요하면 enabled: true 로 켜세요.
-  - name: "볼린저 상단 돌파"
-    enabled: false
-    description: "볼린저밴드 상단 돌파 + 정배열"
-    conditions:
-      bollinger_breakout:
-        period: 20
-        num_std: 2.0
       ma_alignment:
-        periods: [5, 20]
-    opinion: "매수 관심"
+        periods: [5, 20, 60]
+      min_trade_value: 5000000000
+    opinion: "신고가 돌파 (C)"
 
-# 공통 필터 (모든 전략에 추가 적용, 선택)
+# 공통 필터 (모든 전략에 추가 적용)
 global_filters:
-  min_price: 1000          # 최소 주가 (동전주 제외)
-  exclude_etf: true        # ETF/ETN 제외 (이름에 KODEX/TIGER 등 포함 시)
+  min_price: 1000          # 동전주 제외
+  exclude_etf: true        # ETF/ETN/레버리지/인버스 제외

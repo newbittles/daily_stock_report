@@ -9,9 +9,13 @@ from src.patterns.core import (
     is_above_ichimoku_cloud,
     is_bollinger_breakout,
     is_breakout,
+    is_macd_golden_cross,
     is_ma_alignment,
+    is_near_high,
     is_pullback,
     is_volume_surge,
+    is_weekly_ma_alignment,
+    resample_weekly,
 )
 
 __all__ = [
@@ -22,4 +26,8 @@ __all__ = [
     "is_volume_surge",
     "is_above_ichimoku_cloud",
     "is_bollinger_breakout",
+    "is_macd_golden_cross",
+    "is_weekly_ma_alignment",
+    "is_near_high",
+    "resample_weekly",
 ]

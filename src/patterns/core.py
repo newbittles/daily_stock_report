@@ -8,7 +8,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 
 from src.datasource.base import Candle
-from src.indicators.core import bollinger_bands, ichimoku, moving_average, rsi
+from src.indicators.core import bollinger_bands, ichimoku, macd, moving_average, rsi
 
 
 @dataclass
@@ -33,6 +33,47 @@ def _lows(candles: list[Candle]) -> list[float]:
 
 def _volumes(candles: list[Candle]) -> list[int]:
     return [c.volume for c in candles]
+
+
+def _iso_week_key(date_str: str) -> str:
+    """YYYYMMDD → ISO 연도-주차 키 (주봉 그룹핑용). 순수 — datetime만 사용."""
+    import datetime
+    try:
+        d = datetime.date(int(date_str[:4]), int(date_str[4:6]), int(date_str[6:8]))
+        iso = d.isocalendar()
+        return f"{iso[0]}-{iso[1]:02d}"
+    except (ValueError, IndexError):
+        return date_str
+
+
+def resample_weekly(candles: list[Candle]) -> list[Candle]:
+    """일봉 → 주봉 변환 (순수). 같은 ISO 주차끼리 OHLCV 집계.
+
+    open=주 첫날 시가, high=주 최고, low=주 최저, close=주 마지막 종가, volume=주 합계.
+    """
+    if not candles:
+        return []
+    groups: dict[str, list[Candle]] = {}
+    order: list[str] = []
+    for c in candles:
+        key = _iso_week_key(c.date)
+        if key not in groups:
+            groups[key] = []
+            order.append(key)
+        groups[key].append(c)
+
+    weekly: list[Candle] = []
+    for key in order:
+        week = groups[key]
+        weekly.append(Candle(
+            date=week[-1].date,
+            open=week[0].open,
+            high=max(c.high for c in week),
+            low=min(c.low for c in week),
+            close=week[-1].close,
+            volume=sum(c.volume for c in week),
+        ))
+    return weekly
 
 
 def is_ma_alignment(
@@ -197,6 +238,97 @@ def is_above_ichimoku_cloud(candles: list[Candle]) -> PatternResult:
     if price < cloud_bottom:
         return PatternResult(False, "일목구름 아래 (약세)", metrics)
     return PatternResult(False, "구름 내부 (중립)", metrics)
+
+
+def is_macd_golden_cross(
+    candles: list[Candle], within: int = 3, require_above_zero: bool = True,
+    fast: int = 12, slow: int = 26, signal: int = 9,
+) -> PatternResult:
+    """MACD 골든크로스 — 최근 within봉 이내 MACD선이 시그널선 상향 돌파.
+
+    require_above_zero=True면 0선 위 교차만 인정 (강한 신호).
+    """
+    closes = _closes(candles)
+    if len(closes) < slow + signal + within:
+        return PatternResult(False, "데이터 부족")
+
+    macd_line, sig_line, _hist = macd(closes, fast, slow, signal)
+
+    # 최근 within봉 구간에서 GC 탐색
+    gc_found = False
+    gc_idx = -1
+    n = len(closes)
+    for i in range(n - within, n):
+        if i < 1:
+            continue
+        m0, m1 = macd_line[i - 1], macd_line[i]
+        s0, s1 = sig_line[i - 1], sig_line[i]
+        if None in (m0, m1, s0, s1):
+            continue
+        if m0 <= s0 and m1 > s1:  # 상향 돌파
+            if require_above_zero and m1 <= 0:
+                continue
+            gc_found = True
+            gc_idx = i
+            break
+
+    cur_macd = macd_line[-1] if macd_line[-1] is not None else 0.0
+    metrics = {"macd": round(cur_macd, 3)}
+    if sig_line[-1] is not None:
+        metrics["signal"] = round(sig_line[-1], 3)
+
+    if gc_found:
+        zero_note = " (0선 위)" if cur_macd > 0 else ""
+        ago = n - 1 - gc_idx
+        when = "당일" if ago == 0 else f"{ago}봉 전"
+        return PatternResult(True, f"MACD 골든크로스{zero_note} {when}", metrics)
+    return PatternResult(False, "MACD GC 없음", metrics)
+
+
+def is_weekly_ma_alignment(
+    candles: list[Candle], periods: tuple[int, ...] = (20, 60),
+) -> PatternResult:
+    """주봉 정배열 — 일봉을 주봉으로 변환 후 MA 정배열 판정.
+
+    멀티 타임프레임: 상위 추세(주봉) 확인용.
+    """
+    weekly = resample_weekly(candles)
+    if len(weekly) < max(periods):
+        return PatternResult(False, f"주봉 데이터 부족 ({len(weekly)}주)")
+
+    result = is_ma_alignment(weekly, periods)
+    if result.matched:
+        labels = " > ".join(f"{p}주" for p in periods)
+        return PatternResult(True, f"주봉 정배열 ({labels})", result.metrics)
+    return PatternResult(False, "주봉 정배열 아님", result.metrics)
+
+
+def is_near_high(
+    candles: list[Candle], lookback: int = 250, tolerance: float = 0.03,
+) -> PatternResult:
+    """신고가 근접 — 현재가가 최근 lookback봉 최고가의 -tolerance 이내.
+
+    52주 신고가: lookback=250 (약 1년 거래일).
+    """
+    if len(candles) < 2:
+        return PatternResult(False, "데이터 부족")
+    highs = _highs(candles)
+    window = highs[-lookback:] if len(highs) > lookback else highs
+    period_high = max(window)
+    price = candles[-1].close
+    if period_high <= 0:
+        return PatternResult(False, "고가 데이터 오류")
+
+    gap = (period_high - price) / period_high  # 신고가 대비 하락률
+    metrics = {
+        "price": round(price, 1),
+        "period_high": round(period_high, 1),
+        "gap_pct": round(gap * 100, 2),
+    }
+    weeks = lookback // 5
+    if gap <= tolerance:
+        return PatternResult(True, f"{weeks}주 신고가 근접 (-{gap*100:.1f}%)", metrics)
+    return PatternResult(False, f"신고가 이격 -{gap*100:.1f}%", metrics)
 
 
 def is_bollinger_breakout(
