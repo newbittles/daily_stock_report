@@ -428,6 +428,7 @@ def is_convergence_breakout(
     require_new_high: bool = False, new_high_lookback: int = 60, new_high_tol: float = 0.03,
     require_ma120_rising: bool = False,
     vol_conv_lookback: int = 5, breakout_vol_mult: float = 1.5,
+    enable_vol_breakout: bool = False,
     reject_macd_falling: bool = True,
 ) -> PatternResult:
     """A 전략 — 이평선 수렴(박스권) 후 신고가 돌파 대세상승 시작.
@@ -479,7 +480,10 @@ def is_convergence_breakout(
     conv = (max(ma5, ma10, ma20) - min(ma5, ma10, ma20)) / ma20 * 100
     metrics["conv_pct"] = round(conv, 2)
     if conv > conv_max:
-        # 수렴 깨짐 — 직전 수렴 이력 + 당일 거래량 급증이면 '돌파'로 구제
+        if not enable_vol_breakout:
+            # OR경로 비활성(기본) — 데이터상 포착 동일하고 노이즈만 늘려 제거
+            return PatternResult(False, f"수렴 안됨 (이격 {conv:.1f}%)", metrics)
+        # 수렴 깨짐 — 직전 수렴 이력 + 당일 거래량 급증이면 '돌파'로 구제 (옵션)
         ma5_s = moving_average(closes, 5)
         ma10_s = moving_average(closes, 10)
         ma20_s = moving_average(closes, 20)

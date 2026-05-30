@@ -25,6 +25,7 @@ from src.patterns.core import (
     is_bollinger_breakout,
     is_breakout,
     is_consecutive_bearish,
+    is_convergence_breakout,
     is_macd_golden_cross,
     is_ma20_pullback,
     is_ma_alignment,
@@ -105,6 +106,21 @@ def _check_condition(
     if key == "near_high":
         p = params if isinstance(params, dict) else {}
         r = is_near_high(candles, lookback=p.get("lookback", 250), tolerance=p.get("tolerance", 0.03))
+        return r.matched, r.reason, r.metrics
+
+    if key == "convergence_breakout":
+        p = params if isinstance(params, dict) else {}
+        r = is_convergence_breakout(
+            candles,
+            conv_max=p.get("conv_max", 6.0),
+            gap120_min=p.get("gap120_min", 2.0),
+            gap120_max=p.get("gap120_max"),
+            strict_align=p.get("strict_align", False),
+            require_new_high=p.get("require_new_high", False),
+            require_ma120_rising=p.get("require_ma120_rising", False),
+            reject_macd_falling=p.get("reject_macd_falling", True),
+            enable_vol_breakout=p.get("enable_vol_breakout", False),
+        )
         return r.matched, r.reason, r.metrics
 
     if key == "ma20_pullback":

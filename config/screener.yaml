@@ -32,22 +32,29 @@ universe:
 
 strategies:
 
-  # ── A. MACD 골든크로스 + 일/주봉 정배열 (추세 추종형) ───────────────────
-  - name: "A. MACD GC + 멀티TF 정배열"
+  # ── A. 수렴 후 대세상승 시작 (추세 초입) ────────────────────────────────
+  # 사용자 매수사례 15개 역산 (포착 14/15=93%). 박스권 횡보(이평 수렴) 깨고 상승전환.
+  # 흐름: ① 단기이평(5/10/20) 수렴 → ② 종가가 그 위로 상승전환 → ③ 종가>120선 진입.
+  # 핵심교훈: '정배열 완성'이 아니라 '수렴 후 막 상승전환'이 진입점.
+  #   - 60>120 장기정배열·신고가·120선우상향은 제외 (바닥탈출 대박 대우건설+654% 보존).
+  #   - MACD는 약한필수(하락중이면 제외)+상태알림(0선돌파/GC/상승). 방향(상승)이 93% 공통.
+  # 청산(별도 운영): 손절 20선2일이탈 / 익절 MACD+20선·일목구름. scripts/backtest_A.py 참고.
+  # ※ 아래 파라미터를 수정해 조건을 조정할 수 있음 (코드 변경 불필요).
+  - name: "A. 수렴 후 대세상승 시작"
     enabled: true
-    description: "MACD 0선 위 골든크로스 + 일봉 5>20>60>120 + 주봉 20>60 정배열"
+    description: "이평선 수렴(박스권) 깨고 정배열 대세상승 시작 (수렴 + 종가 이평선 위 + 120선 위)"
     conditions:
-      macd_golden_cross:
-        within: 5          # 최근 5봉 이내 GC
-        above_zero: true   # 0선 위 교차만 (강한 신호)
-      ma_alignment:
-        periods: [5, 20, 60]
-      price_above_ma:
-        period: 120        # 종가 > 120일선
-      weekly_ma_alignment:
-        periods: [20, 60]  # 주봉 20 > 60
-      min_trade_value: 5000000000   # 거래대금 50억 이상
-    opinion: "추세 진입 (A)"
+      convergence_breakout:
+        conv_max: 6.0              # 단기이평(5/10/20) 수렴 이격 상한 %
+        gap120_min: 2.0            # 종가>120선 최소 이격 % (장기추세 위)
+        # gap120_max: 생략          # 이격 상한 없음 (이미 오른 추세주 안 거름)
+        strict_align: false        # false=종가 이평선 위(상승전환) / true=5>10>20 정배열
+        require_new_high: false    # 신고가 경신 요구 (바닥탈출 대박 죽여서 기본 off)
+        require_ma120_rising: false # 120선 우상향 요구 (바닥탈출 죽여서 기본 off)
+        reject_macd_falling: true  # MACD 하락중이면 제외 (약한필수)
+        enable_vol_breakout: false # 수렴깨진 거래량 돌파 OR경로 (노이즈만 늘려 기본 off)
+      min_trade_value: 3000000000  # 거래대금 30억 이상
+    opinion: "대세상승 진입 (A) · 청산=20선/MACD/일목"
 
   # ── B. 주도주 20일선 눌림목 (가격급등 후 눌림) ───────────────────────────
   # 사용자 사례(미래에셋·한화솔루션·삼성전기·SK하이닉스·삼화콘덴서 등) 역산.
