@@ -119,6 +119,15 @@ async def run_screening(
 
             matches = screen_stock(strategies, candles, change_pct)
             if matches:
+                # 고위험 종목 제외 (관리/거래정지/투자경고·위험) — 매칭된 것만 체크(API 절약)
+                if hasattr(datasource, "get_exclusion_status"):
+                    try:
+                        ex = await datasource.get_exclusion_status(ticker)
+                        if ex["excluded"]:
+                            logger.info("excluded ticker=%s reasons=%s", ticker, ex["reasons"])
+                            continue
+                    except Exception as exc:
+                        logger.debug("exclusion_check_failed ticker=%s error=%s", ticker, exc)
                 picks.append(StockPick(
                     ticker=ticker, name=name, price=price,
                     change_pct=change_pct, matches=matches, candles=candles,

@@ -121,6 +121,49 @@ class KisAdapter:
 
         raise KisError(f"{path} failed after {MAX_RETRY} attempts") from last_exc
 
+    # ── 종목 제외 필터 (관리/경고/정지 등) ───────────────────────────────────
+    async def get_exclusion_status(self, ticker: str, strict: bool = False) -> dict:
+        """종목 제외 사유 판정 — inquire-price의 상태 필드 기반.
+
+        기본(고위험만): 관리종목·거래정지·투자경고·투자위험.
+          → 증거금100%·단기과열·투자주의는 제외 안 함 (대세상승주에 자주 붙음.
+             대우건설+654%, SK네트웍스, 성호전자 등이 증거금100%였음 — 검증된 사실).
+        strict=True: 위 + 증거금100%·단기과열·투자주의·투자유의도 제외 (안전 우선).
+        반환: {"excluded": bool, "reasons": [str...], "name": 업종명}
+        """
+        data = await self._request(
+            "/uapi/domestic-stock/v1/quotations/inquire-price",
+            _TR["quote"],
+            {"FID_COND_MRKT_DIV_CODE": "J", "FID_INPUT_ISCD": ticker},
+        )
+        out = data.get("output", {})
+        reasons: list[str] = []
+
+        # ── 고위험 (항상 제외) ──
+        if str(out.get("mang_issu_cls_code", "N")).strip() == "Y":
+            reasons.append("관리종목")
+        if str(out.get("temp_stop_yn", "N")).strip() == "Y":
+            reasons.append("거래정지")
+        warn = str(out.get("mrkt_warn_cls_code", "00")).strip()
+        if warn == "02":
+            reasons.append("투자경고")
+        elif warn == "03":
+            reasons.append("투자위험")
+
+        # ── strict 모드에서만 제외 (대세상승주에 자주 붙어 기본은 허용) ──
+        if strict:
+            if warn == "01":
+                reasons.append("투자주의")
+            if str(out.get("invt_caful_yn", "N")).strip() == "Y":
+                reasons.append("투자유의")
+            if str(out.get("short_over_yn", "N")).strip() == "Y":
+                reasons.append("단기과열")
+            if _f(out.get("marg_rate")) >= 100:
+                reasons.append("증거금100%")
+
+        return {"excluded": bool(reasons), "reasons": reasons,
+                "name": str(out.get("bstp_kor_isnm", "")).strip()}
+
     # ── MarketDataSource 인터페이스 ───────────────────────────────────────────
     async def get_quote(self, ticker: str) -> Quote:
         data = await self._request(

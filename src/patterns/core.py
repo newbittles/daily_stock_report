@@ -428,6 +428,7 @@ def is_convergence_breakout(
     require_new_high: bool = False, new_high_lookback: int = 60, new_high_tol: float = 0.03,
     require_ma120_rising: bool = False,
     vol_conv_lookback: int = 5, breakout_vol_mult: float = 1.5,
+    reject_macd_falling: bool = True,
 ) -> PatternResult:
     """A 전략 — 이평선 수렴(박스권) 후 신고가 돌파 대세상승 시작.
 
@@ -528,12 +529,49 @@ def is_convergence_breakout(
         ma60_120 = (ma60 - ma120) / ma120 * 100
         return PatternResult(False, f"장기 정배열 아님 (60<120, {ma60_120:+.1f}%)", metrics)
 
+    # 6. MACD — 약한 필수(하락 중이면 제외) + 상태 알림(metrics)
+    macd_line, macd_sig, _hist = macd(closes)
+    ml, ms = macd_line[-1], macd_sig[-1]
+    macd_rising = ml is not None and macd_line[-2] is not None and ml > macd_line[-2]
+    macd_above_zero = ml is not None and ml > 0
+    macd_above_sig = ml is not None and ms is not None and ml > ms
+    macd_gc = False
+    macd_zero_cross = False
+    for k in range(max(1, len(closes) - 5), len(closes)):
+        a0, a1 = macd_line[k - 1], macd_line[k]
+        b0, b1 = macd_sig[k - 1], macd_sig[k]
+        if None not in (a0, a1, b0, b1) and a0 <= b0 and a1 > b1:
+            macd_gc = True
+        if a0 is not None and a1 is not None and a0 <= 0 < a1:
+            macd_zero_cross = True
+    metrics["macd_rising"] = 1 if macd_rising else 0
+    metrics["macd_above_zero"] = 1 if macd_above_zero else 0
+    metrics["macd_above_sig"] = 1 if macd_above_sig else 0
+    metrics["macd_gc"] = 1 if macd_gc else 0
+    metrics["macd_zero_cross"] = 1 if macd_zero_cross else 0
+
+    # 약한 필수: MACD가 명백히 하락 중이면 제외 (사례 14/15가 상승 중)
+    if reject_macd_falling and ml is not None and not macd_rising:
+        return PatternResult(False, "MACD 하락 중 (추세 약화)", metrics)
+
+    # MACD 상태 알림 텍스트 (강세 신호 강조)
+    macd_signals = []
+    if macd_zero_cross:
+        macd_signals.append("0선돌파")
+    if macd_gc:
+        macd_signals.append("GC")
+    if macd_above_zero:
+        macd_signals.append("0선위")
+    if macd_rising:
+        macd_signals.append("상승")
+    macd_txt = f" · MACD[{','.join(macd_signals)}]" if macd_signals else ""
+
     align_txt = " + 장기(60>120)" if require_long_align and ma60 > ma120 else ""
     nh_txt = " + 신고가" if require_new_high else ""
     rising_txt = " + 120선우상향" if require_ma120_rising else ""
     reasons = [
         f"{short_txt} (수렴 {conv:.1f}%)",
-        f"120선 위 (+{gap120:.1f}%){rising_txt}{nh_txt}{align_txt}",
+        f"120선 위 (+{gap120:.1f}%){rising_txt}{nh_txt}{align_txt}{macd_txt}",
     ]
     return PatternResult(True, " / ".join(reasons), metrics)
 
