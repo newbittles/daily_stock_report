@@ -38,7 +38,8 @@ def _format_strategy_holdings(snap: MarketSnapshot) -> list[str]:
             for i in seen[strat]:
                 sign = "+" if i.get("change_pct", 0) >= 0 else ""
                 warn = " ⚠️끝물" if i.get("endstage") else ""
-                theme = f" _{i['theme']}_" if i.get("theme") else ""
+                _tlabel = "업종" if i.get("theme_kind") == "sector" else "테마"
+                theme = f" _{_tlabel}:{i['theme']}_" if i.get("theme") else ""
                 lines.append(
                     f"  • {_naver_link(i['name'], i['ticker'])} "
                     f"{sign}{i.get('change_pct', 0):.1f}%{theme}{warn}"

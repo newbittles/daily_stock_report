@@ -116,7 +116,8 @@ async def collect_screen_picks(adapter, per_strategy: int = 8) -> list[dict]:
                     "change_pct": round(change_pct, 2),
                     "reason": "; ".join(res.reasons),
                     "endstage": bool(res.metrics.get("endstage")),
-                    "theme": "",            # pipeline에서 top_themes 역매핑으로 채움
+                    "theme": "",            # pipeline에서 테마 역매핑/업종 폴백으로 채움
+                    "theme_kind": "",       # "theme"(테마) | "sector"(세분업종)
                     "is_theme_leader": False,
                 })
                 counts[s.name] = counts.get(s.name, 0) + 1

@@ -488,7 +488,7 @@
               {% if p.endstage %}<span class="down-text">⚠️끝물</span>{% endif %}
               <div class="theme-reason">{{ p.reason }}</div>
               <div class="pick-meta">
-                테마:
+                {{ '업종' if p.theme_kind == 'sector' else '테마' }}:
                 {% if p.theme %}<a href="https://search.naver.com/search.naver?query={{ p.theme|urlencode }}+관련주" target="_blank" rel="noopener">{{ p.theme }}</a>{% else %}-{% endif %}
                 · 주도테마: {{ 'O' if p.is_theme_leader else 'X' }}
               </div>

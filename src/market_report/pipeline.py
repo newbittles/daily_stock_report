@@ -181,7 +181,20 @@ async def run_full(mode: ReportMode, *, do_publish: bool = True, do_telegram: bo
             tname = ticker_theme.get(p["ticker"])
             if tname:
                 p["theme"] = tname
+                p["theme_kind"] = "theme"
             p["is_theme_leader"] = p["name"].strip() in leaders
+        # 테마 없는 종목 → 세분업종 폴백 (누락 0)
+        try:
+            from src.market_report.scrapers.sector import get_stock_sectors
+            need = [p["ticker"] for p in snap.screen_picks if not p.get("theme")]
+            if need:
+                sectors = await get_stock_sectors(need)
+                for p in snap.screen_picks:
+                    if not p.get("theme") and sectors.get(p["ticker"]):
+                        p["theme"] = sectors[p["ticker"]]
+                        p["theme_kind"] = "sector"
+        except Exception as exc:
+            logger.warning("sector_fallback_failed error=%s", exc)
         logger.info("pipeline_strategy_ready picks=%d holdings=%d",
                     len(snap.screen_picks), len(snap.holdings_status))
     except Exception as exc:
