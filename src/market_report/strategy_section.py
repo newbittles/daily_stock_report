@@ -29,6 +29,21 @@ _LEADERS = {
 }
 
 
+def _watchlist_tickers() -> list[tuple[str, str]]:
+    """관심종목(SQLite watchlist) → [(ticker, name)]. 실패/빈 경우 []."""
+    try:
+        from src.config.settings import get_settings
+        from src.storage.db import get_connection
+        from src.storage.repos import WatchlistRepo
+        conn = get_connection(get_settings().db_path)
+        items = WatchlistRepo(conn).get_all()
+        conn.close()
+        return [(w.ticker, w.name) for w in items]
+    except Exception as exc:
+        logger.warning("watchlist_load_failed error=%s", exc)
+        return []
+
+
 def load_manual_holdings() -> list[dict]:
     """config/holdings.yaml의 수동 보유종목 로드. 없으면 빈 리스트."""
     if not _HOLDINGS_CONFIG.exists():
@@ -57,6 +72,11 @@ async def collect_screen_picks(adapter, per_strategy: int = 8) -> list[dict]:
                     universe[r.ticker] = r.name
     except Exception as exc:
         logger.warning("screen_picks_ranking_failed error=%s", exc)
+
+    # 관심종목(watchlist) 추가 — B(급등후 눌림)는 당일 핫종목보다 관심종목에서 잘 잡힘
+    for tk, nm in _watchlist_tickers():
+        if tk not in universe:
+            universe[tk] = nm
 
     counts: dict[str, int] = {}
     picks: list[dict] = []

@@ -68,6 +68,12 @@ async def collect_dashboard_data(adapter, days_back: int = 12, end_date: str | N
     except Exception as exc:
         logger.warning("dashboard_ranking_failed error=%s", exc)
 
+    # 관심종목(watchlist) 추가 — B(급등후 눌림) 포착용
+    from src.market_report.strategy_section import _watchlist_tickers
+    for tk, nm in _watchlist_tickers():
+        if tk not in universe:
+            universe[tk] = nm
+
     # 종목별 일봉 1회 수집
     cmap: dict[str, list] = {}
     names: dict[str, str] = {}
