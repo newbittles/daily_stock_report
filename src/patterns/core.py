@@ -580,6 +580,252 @@ def is_convergence_breakout(
     return PatternResult(True, " / ".join(reasons), metrics)
 
 
+def is_trend_follow(
+    candles: list[Candle],
+    nh_lookback: int = 60, nh_tol: float = 0.03,
+    div_lookback: int = 40, div_min_sep: int = 5, div_rsi_margin: float = 5.0,
+    rollover_peak_min: float = 50.0, rollover_ratio: float = 0.55,
+) -> PatternResult:
+    """C 전략 — 대세 정배열 주도주 추세 추종 (늦게 발견해도 진입).
+
+    검증(삼성전기/SK하이닉스/디엔디/LG이노텍 등): 이미 한참 오른 종목도
+    어느 날 진입하든 60일선만 안 깨면 +수십~수백%. '늦었다'는 두려움이 틀림.
+
+    진입:
+      1. 일봉 정배열 5 > 10 > 20 > 60 (대세상승 진행 중)
+      2. 종가가 최근 nh_lookback일 신고가의 -nh_tol 이내 (신고가 근처)
+    손절(운영): 60일선 종가 2일연속 이탈 → 알림만, 매도는 본인 판단.
+
+    끝물 경고(진입 막지 않음 — 플래그만): '많이 올랐다'(절대 상승률)는 대세주의
+    정상 상태라 끝물이 아니다. 진짜 끝물 = '올랐는데 동력이 꺾였다'(모멘텀 소진):
+      ① RSI 약세 다이버전스: 가격은 직전 스윙고점보다 높은데 RSI는 div_rsi_margin
+         이상 낮음 → 상승 동력 소진.
+      ② 이격 정점 통과: 60선 이격이 자기 최근(div_lookback일) 최대(>= rollover_peak_min)
+         대비 rollover_ratio 이하로 후퇴 → 포물선 가속이 끝나고 꺾이기 시작.
+    둘 중 하나라도 충족 시 ⚠️끝물주의. (절대 상승률 기준 폐기 — 전 종목 오탐 원인)
+    """
+    closes = _closes(candles)
+    if len(closes) < 130:
+        return PatternResult(False, "데이터 부족 (정배열 60일선 필요)")
+
+    ma5 = moving_average(closes, 5)[-1]
+    ma10 = moving_average(closes, 10)[-1]
+    ma20 = moving_average(closes, 20)[-1]
+    ma60_series = moving_average(closes, 60)
+    ma60 = ma60_series[-1]
+    if None in (ma5, ma10, ma20, ma60):
+        return PatternResult(False, "이평선 계산 불가")
+
+    price = closes[-1]
+    metrics = {"price": round(price, 1), "ma60": round(ma60, 1)}
+
+    # 1. 정배열 5>10>20>60
+    if not (ma5 > ma10 > ma20 > ma60):
+        return PatternResult(False, "정배열 아님 (5>10>20>60)", metrics)
+
+    # 2. 신고가 근처
+    highs = _highs(candles)
+    hi = max(highs[-nh_lookback:])
+    from_high = (price - hi) / hi * 100
+    metrics["from_high_pct"] = round(from_high, 2)
+    if price < hi * (1 - nh_tol):
+        return PatternResult(False, f"신고가 미달 ({nh_lookback}일고점 {from_high:.1f}%)", metrics)
+
+    gap60 = (price - ma60) / ma60 * 100
+    metrics["gap60_pct"] = round(gap60, 2)
+    rise120 = (price - closes[-121]) / closes[-121] * 100 if len(closes) >= 121 else 0.0
+    metrics["rise120_pct"] = round(rise120, 1)
+
+    # ── 끝물 경고 (모멘텀 소진 기반 — 진입은 막지 않음) ──────────────────────
+    warns = []
+    n = len(closes)
+
+    # ① RSI 약세 다이버전스: 직전 스윙고점 대비 가격↑ 인데 RSI↓
+    rsi_vals = rsi(closes, 14)
+    lo, hi_idx = max(0, n - div_lookback), n - div_min_sep
+    if hi_idx > lo and rsi_vals[-1] is not None:
+        pj = max(range(lo, hi_idx), key=lambda i: closes[i])  # 직전 스윙 고점
+        rp, rc = rsi_vals[pj], rsi_vals[-1]
+        if rp is not None and price > closes[pj] and rc < rp - div_rsi_margin:
+            warns.append(f"RSI다이버전스({rp:.0f}→{rc:.0f})")
+
+    # ② 이격 정점 통과: 60선 이격이 자기 최근 최대 대비 후퇴 (가속 종료)
+    gap_hist = [
+        (closes[i] - ma60_series[i]) / ma60_series[i] * 100
+        for i in range(max(0, n - div_lookback), n)
+        if ma60_series[i] is not None
+    ]
+    if gap_hist:
+        peak_gap = max(gap_hist)
+        metrics["peak_gap60"] = round(peak_gap, 1)
+        if peak_gap >= rollover_peak_min and gap60 <= peak_gap * rollover_ratio:
+            warns.append(f"이격정점통과({peak_gap:.0f}%→{gap60:.0f}%)")
+
+    metrics["endstage"] = 1 if warns else 0
+
+    reason = f"대세 정배열 + 신고가 ({from_high:+.1f}%, 60선+{gap60:.0f}%)"
+    if warns:
+        reason += f" · ⚠️끝물주의({','.join(warns)})"
+    return PatternResult(True, reason, metrics)
+
+
+def is_leader_oversold_bounce(
+    candles: list[Candle],
+    align_lookback: int = 40, oversold_within: int = 6,
+    rsi_oversold: float = 43.0, support_ma: int = 60,
+    deep_tol: float = 0.13, upper_tol: float = 0.18,
+) -> PatternResult:
+    """D 전략 — 주도주 과매도 반등 (C와 독립, 일시 충격 바닥 포착).
+
+    C(신고가 추세추종)와 정반대 상태(신고가 -10%+·RSI 과매도)를 노린다.
+    검증(SK하이닉스/삼성전자 3/31 바닥): 정배열 주도주가 시장충격으로 과매도까지
+    밀렸다가 장기추세선(120선) 위에서 지지받고 반등 확인되는 첫날 진입.
+
+    진입:
+      1. 장기추세 생존: 종가 > 120선 (대세 안 깨짐)
+      2. 주도주 이력: 최근 align_lookback일 내 정배열(5>10>20>60) 경험
+      3. 과매도 후 반등 확인: 최근 oversold_within일 내 RSI <= rsi_oversold 찍고
+         → 당일 RSI 상승전환 + 당일 양봉(종가>시가) (바닥 확인 캔들)
+      4. 지지선권: 종가가 support_ma선의 -deep_tol ~ +upper_tol 범위 (깊은 눌림 지지)
+    손절(운영): 반등 저점(최근 oversold_within일 최저 저가) 종가 이탈 또는 120선 이탈.
+    """
+    closes = _closes(candles)
+    if len(closes) < 130:
+        return PatternResult(False, "데이터 부족 (120선 필요)")
+
+    ma5 = moving_average(closes, 5)
+    ma10 = moving_average(closes, 10)
+    ma20 = moving_average(closes, 20)
+    ma60 = moving_average(closes, 60)
+    ma120 = moving_average(closes, 120)
+    rsi_v = rsi(closes, 14)
+    if None in (ma5[-1], ma10[-1], ma20[-1], ma60[-1], ma120[-1], rsi_v[-1]):
+        return PatternResult(False, "지표 계산 불가")
+
+    price = closes[-1]
+    metrics = {"price": round(price, 1), "ma120": round(ma120[-1], 1),
+               "rsi": round(rsi_v[-1], 1)}
+
+    # 1. 장기추세 생존 (종가 > 120선)
+    if price <= ma120[-1]:
+        gap120 = (price - ma120[-1]) / ma120[-1] * 100
+        return PatternResult(False, f"120선 이탈 (대세붕괴, {gap120:+.0f}%)", metrics)
+
+    # 2. 주도주 이력 (최근 align_lookback일 내 정배열 경험)
+    had_align = False
+    for i in range(max(0, len(closes) - align_lookback), len(closes)):
+        if None in (ma5[i], ma10[i], ma20[i], ma60[i]):
+            continue
+        if ma5[i] > ma10[i] > ma20[i] > ma60[i]:
+            had_align = True
+            break
+    if not had_align:
+        return PatternResult(False, f"주도주 아님 (최근 {align_lookback}일 정배열 이력 없음)", metrics)
+
+    # 3. 과매도 후 반등 확인
+    recent_rsi = [r for r in rsi_v[-oversold_within:] if r is not None]
+    min_rsi = min(recent_rsi) if recent_rsi else 100.0
+    metrics["min_rsi"] = round(min_rsi, 1)
+    if min_rsi > rsi_oversold:
+        return PatternResult(False, f"과매도 미달 (최근RSI저점 {min_rsi:.0f} > {rsi_oversold:.0f})", metrics)
+    rsi_turn = rsi_v[-1] > rsi_v[-2] if rsi_v[-2] is not None else False
+    bullish = candles[-1].close > candles[-1].open
+    if not (rsi_turn and bullish):
+        return PatternResult(False, f"반등 확인 미흡 (RSI전환{'O' if rsi_turn else 'X'}/양봉{'O' if bullish else 'X'})", metrics)
+
+    # 4. 지지선권 (support_ma선 -deep_tol ~ +upper_tol)
+    sup = moving_average(closes, support_ma)[-1]
+    gap_sup = (price - sup) / sup * 100
+    metrics[f"gap{support_ma}_pct"] = round(gap_sup, 2)
+    if not (-deep_tol * 100 <= gap_sup <= upper_tol * 100):
+        return PatternResult(False, f"{support_ma}선권 이탈 ({gap_sup:+.0f}%)", metrics)
+
+    reason = (f"주도주 과매도 반등 (RSI {min_rsi:.0f}→{rsi_v[-1]:.0f} 전환, "
+              f"{support_ma}선{gap_sup:+.0f}%, 120선 위)")
+    return PatternResult(True, reason, metrics)
+
+
+def diagnose_holding(
+    candles: list[Candle], stop_streak: int = 2,
+    pullback_gap_max: float = 0.0,
+) -> PatternResult:
+    """보유종목 상태 진단 — A/B/C 전략 종합 (홀딩/손절/추가매수).
+
+    내가 어떤 전략으로 샀는지 몰라도, 현재 차트 상태로 종합 판정한다.
+    우선순위(위험 우선): 추세붕괴 > 60선손절 > 20선단기손절 > 추가매수 > 홀딩.
+
+    metrics["state"] 코드:
+      "BREAKDOWN" 🔴 120선 이탈 (대세 붕괴 — 손절 검토)
+      "STOP60"    🔴 60선 stop_streak일 연속 이탈 (C 추세 손절)
+      "STOP20"    ⚠️ 20선 stop_streak일 연속 이탈 (A/B 단기 손절)
+      "ADD"       🟢 정배열 유지 + 20선 위 5선 아래 눌림 (B 추가매수 후보)
+      "HOLD"      ✅ 정배열 유지 (추세 양호 — 보유 지속, 끝물이면 병기)
+      "NEUTRAL"   ➖ 정배열 아니나 손절선 위 (관망)
+    """
+    closes = _closes(candles)
+    if len(closes) < 25:
+        return PatternResult(False, "데이터 부족", {"state": "UNKNOWN"})
+
+    ma5 = moving_average(closes, 5)[-1]
+    ma20_s = moving_average(closes, 20)
+    ma60_s = moving_average(closes, 60)
+    ma120_s = moving_average(closes, 120)
+    ma20 = ma20_s[-1]
+    ma60 = ma60_s[-1]
+    ma120 = ma120_s[-1]
+    price = closes[-1]
+    metrics: dict[str, float] = {"price": round(price, 1)}
+    if ma20:
+        metrics["gap20_pct"] = round((price - ma20) / ma20 * 100, 1)
+    if ma60:
+        metrics["gap60_pct"] = round((price - ma60) / ma60 * 100, 1)
+
+    def _below_streak(ma_series: list[float | None], n: int) -> bool:
+        if len(closes) < n:
+            return False
+        for k in range(1, n + 1):
+            m = ma_series[-k]
+            if m is None or closes[-k] >= m:
+                return False
+        return True
+
+    # 1. 120선 이탈 → 추세 붕괴
+    if ma120 is not None and price < ma120:
+        metrics["state"] = "BREAKDOWN"
+        return PatternResult(False, f"120선 이탈 (대세 붕괴, {(price-ma120)/ma120*100:+.1f}%)", metrics)
+
+    # 2. 60선 2일연속 이탈 → C 추세 손절
+    if ma60 is not None and _below_streak(ma60_s, stop_streak):
+        metrics["state"] = "STOP60"
+        return PatternResult(False, f"60선 {stop_streak}일연속 이탈 (추세 손절)", metrics)
+
+    # 3. 20선 2일연속 이탈 → A/B 단기 손절
+    if ma20 is not None and _below_streak(ma20_s, stop_streak):
+        metrics["state"] = "STOP20"
+        return PatternResult(False, f"20선 {stop_streak}일연속 이탈 (단기 손절)", metrics)
+
+    aligned = None not in (ma5, ma20, ma60) and ma5 > ma20 > ma60
+
+    # 4. 정배열 + 20선 위 + 5선 아래 눌림 → B 추가매수 후보
+    if aligned and ma5 is not None and price > ma20 and price <= ma5 * (1 + pullback_gap_max):
+        metrics["state"] = "ADD"
+        return PatternResult(True, f"20선 위 단기 눌림 (추가매수 후보, 20선{metrics.get('gap20_pct', 0):+.0f}%)", metrics)
+
+    # 5. 정배열 유지 → 홀딩 (끝물이면 병기)
+    if aligned:
+        tf = is_trend_follow(candles)
+        endstage = tf.matched and tf.metrics.get("endstage")
+        metrics["state"] = "HOLD"
+        if endstage:
+            metrics["endstage"] = 1
+            return PatternResult(True, f"추세 양호 · 홀딩 ({tf.reason.split('·')[-1].strip()})", metrics)
+        return PatternResult(True, f"추세 양호 · 홀딩 (정배열, 20선{metrics.get('gap20_pct', 0):+.0f}%)", metrics)
+
+    # 6. 그 외 (손절선 위지만 정배열 아님) → 관망
+    metrics["state"] = "NEUTRAL"
+    return PatternResult(True, f"관망 (정배열 아님, 손절선 위)", metrics)
+
+
 def is_macd_golden_cross(
     candles: list[Candle], within: int = 3, require_above_zero: bool = True,
     fast: int = 12, slow: int = 26, signal: int = 9,

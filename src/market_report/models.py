@@ -100,6 +100,11 @@ class MarketSnapshot:
     theme_commentary: str = ""  # 강세 테마 해설
     candidate_picks: list[dict] = field(default_factory=list)  # 종가베팅 후보 (pre_close용)
 
+    # 전략 스크린 결과 (A/B/C — 오늘 포착, pipeline이 KIS로 채움)
+    screen_picks: list[dict] = field(default_factory=list)   # {strategy, ticker, name, price, reason, endstage}
+    # 보유종목 상태 (홀딩/손절/추가매수 — pipeline이 채움)
+    holdings_status: list[dict] = field(default_factory=list)  # {name, ticker, state, reason, profit_rate, ...}
+
     # 차트 URL (renderer가 채움, 상대 경로 — docs/reports/ 기준)
     kospi_spark_url: str = ""
     kosdaq_spark_url: str = ""

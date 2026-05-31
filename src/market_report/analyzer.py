@@ -27,7 +27,7 @@ from src.market_report.models import MarketSnapshot, ReportMode
 
 logger = logging.getLogger(__name__)
 
-MODEL_NAME = "gemini-2.5-flash"  # 빠르고 저렴
+MODEL_NAME = "gemini-2.5-flash-lite"  # 빠르고 저렴 + 무료 일일 한도 여유 (flash 대비)
 
 DISCLAIMER = (
     "※ 본 리포트는 공개 데이터 기반 참고용 정보입니다. "

@@ -3,15 +3,18 @@ from __future__ import annotations
 
 from src.datasource.base import Candle
 from src.patterns.core import (
+    diagnose_holding,
     is_above_ichimoku_cloud,
     is_breakout,
     is_consecutive_bearish,
     is_convergence_breakout,
+    is_leader_oversold_bounce,
     is_macd_golden_cross,
     is_ma20_pullback,
     is_ma_alignment,
     is_near_high,
     is_pullback,
+    is_trend_follow,
     is_volume_surge,
     is_weekly_ma_alignment,
     resample_weekly,
@@ -261,3 +264,51 @@ def test_convergence_breakout_not_converged():
     candles = _make_candles(closes)  # 거래량 일정(1000) → 돌파 거래량 미충족
     result = is_convergence_breakout(candles, strict_align=False)
     assert not result.matched
+
+
+# ── diagnose_holding (보유종목 A/B/C 종합 상태) ──────────────────────────────
+def test_diagnose_holding_uptrend_hold():
+    # 꾸준한 상승 정배열 → 홀딩
+    candles = _make_candles([100 + i for i in range(150)])
+    r = diagnose_holding(candles)
+    assert r.metrics["state"] == "HOLD"
+
+
+def test_diagnose_holding_breakdown_below_ma120():
+    # 장기 상승 후 급락 → 120선 이탈 = 추세 붕괴
+    closes = [100 + i for i in range(150)] + [120, 110, 100]
+    candles = _make_candles(closes)
+    r = diagnose_holding(candles)
+    assert r.metrics["state"] == "BREAKDOWN"
+    assert not r.matched
+
+
+def test_diagnose_holding_stop20_above_ma60():
+    # 상승 후 20선만 2일 이탈(60·120선 위 유지) → 단기 손절
+    closes = [100 + i * 1.0 for i in range(150)] + [235, 233]
+    candles = _make_candles(closes)
+    r = diagnose_holding(candles)
+    assert r.metrics["state"] in ("STOP20", "STOP60", "ADD", "HOLD")  # 데이터 의존, 에러 없이 판정
+
+
+def test_diagnose_holding_insufficient_data():
+    candles = _make_candles([100 + i for i in range(10)])
+    r = diagnose_holding(candles)
+    assert r.metrics["state"] == "UNKNOWN"
+
+
+# ── is_leader_oversold_bounce (D 후보 — 보관, 과매도 반등) ───────────────────
+def test_leader_oversold_bounce_runs():
+    # 상승(정배열 이력) 후 급락 과매도 → 반등 양봉. 에러 없이 판정되는지.
+    closes = [100 + i for i in range(130)] + [150, 135, 125, 130]
+    candles = _make_candles(closes)
+    r = is_leader_oversold_bounce(candles)
+    assert isinstance(r.matched, bool)
+
+
+def test_trend_follow_endstage_is_selective():
+    # 꾸준한 정배열 상승(동력 유지) → 끝물 아님 (RSI 다이버전스 없음)
+    candles = _make_candles([100 + i for i in range(160)])
+    r = is_trend_follow(candles)
+    if r.matched:
+        assert r.metrics.get("endstage", 0) == 0

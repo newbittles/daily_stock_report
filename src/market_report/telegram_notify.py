@@ -16,6 +16,33 @@ from src.notify.telegram.adapter import TelegramNotifier
 logger = logging.getLogger(__name__)
 
 
+_STATE_EMOJI = {"BREAKDOWN": "🔴", "STOP60": "🔴", "STOP20": "⚠️", "ADD": "🟢",
+                "HOLD": "✅", "NEUTRAL": "➖", "UNKNOWN": "❔"}
+
+
+def _format_strategy_holdings(snap: MarketSnapshot) -> list[str]:
+    """A/B/C 스크린 + 보유종목 상태 요약 라인 (pre/post 공통)."""
+    lines: list[str] = []
+    if snap.screen_picks:
+        lines.append("🎯 *전략 스크린 (A/B/C)*")
+        seen: dict[str, list] = {}
+        for p in snap.screen_picks:
+            seen.setdefault(p["strategy"], []).append(p)
+        for strat, items in seen.items():
+            short = strat.split(".")[0].strip()
+            names = ", ".join(f"{i['name']}{'⚠️' if i.get('endstage') else ''}" for i in items[:6])
+            lines.append(f"  *{short}*: {names}")
+        lines.append("")
+    if snap.holdings_status:
+        lines.append("📋 *보유종목 상태*")
+        for h in snap.holdings_status:
+            em = _STATE_EMOJI.get(h.get("state", "UNKNOWN"), "•")
+            sign = "+" if h.get("profit_rate", 0) >= 0 else ""
+            lines.append(f"  {em} {h['name']} ({sign}{h.get('profit_rate', 0):.1f}%) — {h['reason']}")
+        lines.append("")
+    return lines
+
+
 def _format_pre_summary(snap: MarketSnapshot) -> str:
     """마감 전 텔레그램 요약 메시지 (Markdown)."""
     url = report_url(snap)
@@ -52,6 +79,7 @@ def _format_pre_summary(snap: MarketSnapshot) -> str:
             lines.append(f"{i}. {name} ({ticker}){theme_str}")
         lines.append("")
 
+    lines.extend(_format_strategy_holdings(snap))
     lines.append(f"📄 [전체 리포트 보기]({url})")
     lines.append("")
     lines.append("_※ 참고용 정보. 투자 판단·책임은 본인._")
@@ -98,6 +126,7 @@ def _format_post_summary(snap: MarketSnapshot) -> str:
                 lines.append(f"  · {w}")
             lines.append("")
 
+    lines.extend(_format_strategy_holdings(snap))
     lines.append(f"📄 [전체 리포트 보기]({url})")
     lines.append("")
     lines.append("_※ 참고용 정보. 투자 판단·책임은 본인._")

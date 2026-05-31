@@ -31,6 +31,7 @@ from src.patterns.core import (
     is_ma_alignment,
     is_near_high,
     is_pullback,
+    is_trend_follow,
     is_volume_surge,
     is_weekly_ma_alignment,
 )
@@ -106,6 +107,20 @@ def _check_condition(
     if key == "near_high":
         p = params if isinstance(params, dict) else {}
         r = is_near_high(candles, lookback=p.get("lookback", 250), tolerance=p.get("tolerance", 0.03))
+        return r.matched, r.reason, r.metrics
+
+    if key == "trend_follow":
+        p = params if isinstance(params, dict) else {}
+        r = is_trend_follow(
+            candles,
+            nh_lookback=p.get("nh_lookback", 60),
+            nh_tol=p.get("nh_tol", 0.03),
+            div_lookback=p.get("div_lookback", 40),
+            div_min_sep=p.get("div_min_sep", 5),
+            div_rsi_margin=p.get("div_rsi_margin", 5.0),
+            rollover_peak_min=p.get("rollover_peak_min", 50.0),
+            rollover_ratio=p.get("rollover_ratio", 0.55),
+        )
         return r.matched, r.reason, r.metrics
 
     if key == "convergence_breakout":

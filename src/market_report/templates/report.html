@@ -452,6 +452,46 @@
     </section>
     {% endif %}
 
+    {# 3c. 전략 스크린 A/B/C #}
+    {% if snap.screen_picks %}
+    <section>
+      <h2><span class="icon">🎯</span>전략 스크린 (A/B/C)</h2>
+      {% for strat in snap.screen_picks|map(attribute='strategy')|unique %}
+      <div class="label" style="margin-top:10px;">{{ strat }}</div>
+      <ul class="watch-list">
+        {% for p in snap.screen_picks if p.strategy == strat %}
+        <li>
+          <strong>{{ p.name }}</strong> ({{ p.ticker }}) · {{ "{:,.0f}".format(p.price) }}원
+          {% if p.endstage %}<span class="down-text">⚠️끝물</span>{% endif %}
+          <div class="theme-reason">{{ p.reason }}</div>
+        </li>
+        {% endfor %}
+      </ul>
+      {% endfor %}
+      <p class="disclaimer" style="font-size:12px;">※ 참고용 시그널입니다. 매수 추천이 아니며 판단·책임은 본인에게 있습니다.</p>
+    </section>
+    {% endif %}
+
+    {# 3d. 보유종목 상태 #}
+    {% if snap.holdings_status %}
+    <section>
+      <h2><span class="icon">📋</span>보유종목 상태 (홀딩/손절/추가매수)</h2>
+      <ul class="watch-list">
+        {% for h in snap.holdings_status %}
+        <li>
+          <strong>{{ h.name }}</strong> ({{ h.ticker }}) · {{ "{:,.0f}".format(h.price) }}원
+          <span class="{{ 'up-text' if h.profit_rate >= 0 else 'down-text' }}">
+            ({{ '+' if h.profit_rate >= 0 else '' }}{{ "{:.1f}".format(h.profit_rate) }}%)
+          </span>
+          {% if h.endstage %}<span class="down-text">⚠️끝물</span>{% endif %}
+          <div class="theme-reason">{{ h.reason }}</div>
+        </li>
+        {% endfor %}
+      </ul>
+      <p class="disclaimer" style="font-size:12px;">※ 손절선은 알림용 기준이며, 실제 매도 판단·책임은 본인에게 있습니다.</p>
+    </section>
+    {% endif %}
+
     {# 4. 강세 테마 #}
     {% if snap.top_themes %}
     <section>

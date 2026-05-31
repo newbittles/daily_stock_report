@@ -156,6 +156,23 @@ async def run_full(mode: ReportMode, *, do_publish: bool = True, do_telegram: bo
     logger.info("pipeline_data_ready mode=%s picks=%d themes=%d",
                 mode, len(snap.candidate_picks), len(snap.top_themes))
 
+    # A/B/C 전략 스크린 + 보유종목 상태 (KIS) — 리포트에 필수 포함
+    try:
+        from src.config.settings import get_settings
+        from src.datasource.kis.adapter import KisAdapter
+        from src.market_report.strategy_section import (
+            collect_holdings_status,
+            collect_screen_picks,
+        )
+        s = get_settings()
+        adapter = KisAdapter(s.kis_app_key, s.kis_app_secret, s.kis_account_no, s.kis_env)
+        snap.screen_picks = await collect_screen_picks(adapter)
+        snap.holdings_status = await collect_holdings_status(adapter)
+        logger.info("pipeline_strategy_ready picks=%d holdings=%d",
+                    len(snap.screen_picks), len(snap.holdings_status))
+    except Exception as exc:
+        logger.error("pipeline_strategy_failed error=%s", exc)
+
     try:
         render_report(snap)
     except Exception as exc:

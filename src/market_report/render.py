@@ -174,6 +174,7 @@ def _render_index() -> None:
   <div class="container">
     <h1>📊 Daily Stock Report</h1>
     <p class="sub">한국 주식 일일 시장 동향 자동 리포트 · 매일 평일 14:50 (마감 전) · 16:30 (마감 후)</p>
+    <p class="sub"><a href="reports/screen-dashboard.html" style="color:#58a6ff;">📈 전략 스크린 대시보드 (A/B/C · 일자별 · 차트 매수/매도 시그널)</a></p>
 
     {% if not history %}
     <div class="empty">아직 생성된 리포트가 없습니다. 다음 발송 시간 이후 표시됩니다.</div>

@@ -38,6 +38,9 @@ _TR = {
     "ohlcv_minute": "FHKST03010200",
     "rank_volume": "FHPST01710000",
     "rank_fluctuation": "FHPST01700000",
+    # 시세분석 (실전/모의 공통 — FH 계열, 공식 repo 검증 2026-05-31)
+    "sector_price": "FHPUP02140000",       # 국내업종 구분별전체시세
+    "foreign_inst_total": "FHPTJ04400000",  # 국내기관_외국인 매매종목 가집계
 }
 _TR_ENV = {
     "balance": {"real": "TTTC8434R", "paper": "VTTC8434R"},
@@ -300,6 +303,67 @@ class KisAdapter:
                 change_pct=_f(r.get("prdy_ctrt")),
                 volume=_i(r.get("acml_vol")),
             ))
+        return result
+
+    # ── 시세분석: 업종 등락 / 투자자(외국인·기관) 순매수 ───────────────────────
+    async def get_sector_prices(self, market: str = "K") -> list[dict[str, Any]]:
+        """국내업종 구분별 전체시세 → [{code,name,index,change,change_pct,volume}].
+
+        market: K(거래소/코스피), Q(코스닥), K2(코스피200). iscd는 0001(코스피)/1001(코스닥).
+        """
+        iscd = "1001" if market == "Q" else "0001"
+        data = await self._request(
+            "/uapi/domestic-stock/v1/quotations/inquire-index-category-price",
+            _TR["sector_price"],
+            {"FID_COND_MRKT_DIV_CODE": "U", "FID_INPUT_ISCD": iscd,
+             "FID_COND_SCR_DIV_CODE": "20214", "FID_MRKT_CLS_CODE": market,
+             "FID_BLNG_CLS_CODE": "0"},
+        )
+        # output2 = 업종별 리스트(38행), output1 = 종합 요약 (probe 검증 2026-05-31)
+        rows = data.get("output2") or []
+        result = []
+        for r in rows:
+            if not isinstance(r, dict):
+                continue
+            result.append({
+                "code": str(r.get("bstp_cls_code", "")).strip(),
+                "name": str(r.get("hts_kor_isnm", "")).strip(),
+                "index": _f(r.get("bstp_nmix_prpr")),
+                "change_pct": _f(r.get("bstp_nmix_prdy_ctrt")),
+                "volume": _i(r.get("acml_vol")),
+            })
+        return result
+
+    async def get_investor_net_buy(
+        self, investor: str = "foreign", side: str = "buy", market: str = "0000",
+    ) -> list[dict[str, Any]]:
+        """외국인/기관 순매수(도) 상위 종목.
+
+        investor: foreign(외국인)/inst(기관)/all(전체). side: buy(순매수)/sell(순매도).
+        market: 0000전체/0001코스피/1001코스닥. 금액 기준 정렬.
+        반환: [{ticker,name,price,change_pct,net_qty,frgn_net_value,orgn_net_value}].
+        """
+        etc = {"all": "0", "foreign": "1", "inst": "2"}.get(investor, "1")
+        rank = "1" if side == "sell" else "0"
+        data = await self._request(
+            "/uapi/domestic-stock/v1/quotations/foreign-institution-total",
+            _TR["foreign_inst_total"],
+            {"FID_COND_MRKT_DIV_CODE": "V", "FID_COND_SCR_DIV_CODE": "16449",
+             "FID_INPUT_ISCD": market, "FID_DIV_CLS_CODE": "1",
+             "FID_RANK_SORT_CLS_CODE": rank, "FID_ETC_CLS_CODE": etc},
+        )
+        rows = data.get("output", []) or []
+        result = []
+        for r in rows:
+            result.append({
+                "ticker": str(r.get("mksc_shrn_iscd", "")).strip(),
+                "name": str(r.get("hts_kor_isnm", "")).strip(),
+                "price": _f(r.get("stck_prpr")),
+                "change_pct": _f(r.get("prdy_ctrt")),
+                "net_qty": _i(r.get("ntby_qty")),
+                "frgn_net_value": _i(r.get("frgn_ntby_tr_pbmn")),  # 외국인 순매수 금액(백만)
+                "orgn_net_value": _i(r.get("orgn_ntby_tr_pbmn")),  # 기관 순매수 금액(백만)
+            })
         return result
 
     # ── 확장: 잔고 / 체결내역 ─────────────────────────────────────────────────

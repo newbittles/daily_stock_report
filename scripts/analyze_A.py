@@ -107,12 +107,22 @@ async def analyze(adapter, ticker, name, date):
     prior10 = sum(vols[i-12:i-2]) / 10 if i >= 12 else recent3
     vol_trend = recent3 / prior10 if prior10 > 0 else 0
 
+    # MACD 상승 중 (당일 > 전일) / 0선 근접·돌파 임박
+    macd_rising = macd_line[i] is not None and macd_line[i-1] is not None and macd_line[i] > macd_line[i-1]
+    # 0선 돌파 임박: MACD<0이지만 상승 중 (곧 0 돌파) 또는 막 0 돌파(최근5봉)
+    macd_zero_cross_recent = False
+    for k in range(max(1, i-4), i+1):
+        if macd_line[k-1] is not None and macd_line[k] is not None and macd_line[k-1] <= 0 < macd_line[k]:
+            macd_zero_cross_recent = True
+            break
+
     return {
         "name": name, "date": c.date, "close": c.close,
         "align_d": align_d, "align_d60": align_d60, "gap120": gap120,
         "conv": conv, "box": box_range,
         "align_w": align_w, "macd_sig": macd_above_sig,
         "macd_zero": macd_above_zero, "gc": gc_recent,
+        "macd_rising": macd_rising, "macd_zc": macd_zero_cross_recent,
         "vol": vol_ratio, "vol20": vol_ratio20, "tval": trade_value, "vol_trend": vol_trend,
     }
 
@@ -123,8 +133,8 @@ async def main():
 
     print("A 전략 매수 사례 역산 (수렴→정배열 대세상승 시작)")
     print("=" * 100)
-    print(f"{'종목':<15}{'매수일':<10}{'120이격':>8}{'MA수렴%':>8}{'당일/5일':>9}{'당일/20일':>10}"
-          f"{'거래량추세':>10}{'거래대금억':>10}")
+    print(f"{'종목':<15}{'매수일':<10}{'120이격':>8}{'MA수렴%':>8}{'MACD>0':>7}{'MACD>시그':>9}"
+          f"{'GC최근':>7}{'MACD상승':>9}{'0선돌파':>8}")
     print("-" * 100)
     rows = []
     for ticker, name, date in CASES:
@@ -134,17 +144,21 @@ async def main():
             continue
         rows.append(r)
         print(f"{r['name']:<15}{r['date']:<10}{r['gap120']:>+7.1f}%{r['conv']:>7.1f}%"
-              f"{r['vol']:>8.1f}x{r['vol20']:>9.1f}x{r['vol_trend']:>9.1f}x{r['tval']:>9.0f}")
+              f"{'O' if r['macd_zero'] else 'X':>7}{'O' if r['macd_sig'] else 'X':>9}"
+              f"{'O' if r['gc'] else 'X':>7}{'O' if r['macd_rising'] else 'X':>9}"
+              f"{'O' if r['macd_zc'] else 'X':>8}")
 
     if rows:
         n = len(rows)
-        print("\n거래량 공통 패턴:")
-        print(f"  당일 거래량/직전5일평균: 평균 {sum(r['vol'] for r in rows)/n:.1f}배 (범위 {min(r['vol'] for r in rows):.1f}~{max(r['vol'] for r in rows):.1f})")
-        print(f"  당일 거래량/직전20일평균: 평균 {sum(r['vol20'] for r in rows)/n:.1f}배 (범위 {min(r['vol20'] for r in rows):.1f}~{max(r['vol20'] for r in rows):.1f})")
-        print(f"  거래량 추세(최근3일/이전10일): 평균 {sum(r['vol_trend'] for r in rows)/n:.1f}배 (범위 {min(r['vol_trend'] for r in rows):.1f}~{max(r['vol_trend'] for r in rows):.1f})")
-        print(f"  거래대금: 평균 {sum(r['tval'] for r in rows)/n:.0f}억 (범위 {min(r['tval'] for r in rows):.0f}~{max(r['tval'] for r in rows):.0f}억)")
-        print(f"  당일거래량 >직전5일평균 1.5배+: {sum(1 for r in rows if r['vol']>=1.5)}/{n}")
-        print(f"  거래량추세 증가(>1.2배): {sum(1 for r in rows if r['vol_trend']>=1.2)}/{n}")
+        print("\nMACD 공통 패턴:")
+        print(f"  MACD > 0 (0선 위): {sum(r['macd_zero'] for r in rows)}/{n} ({sum(r['macd_zero'] for r in rows)/n*100:.0f}%)")
+        print(f"  MACD > 시그널 (GC상태): {sum(r['macd_sig'] for r in rows)}/{n} ({sum(r['macd_sig'] for r in rows)/n*100:.0f}%)")
+        print(f"  최근5봉 골든크로스: {sum(r['gc'] for r in rows)}/{n} ({sum(r['gc'] for r in rows)/n*100:.0f}%)")
+        print(f"  MACD 상승 중(당일>전일): {sum(r['macd_rising'] for r in rows)}/{n} ({sum(r['macd_rising'] for r in rows)/n*100:.0f}%)")
+        print(f"  최근5봉 0선 돌파: {sum(r['macd_zc'] for r in rows)}/{n} ({sum(r['macd_zc'] for r in rows)/n*100:.0f}%)")
+        # 종합: MACD>0 또는 상승중 (둘 중 하나)
+        either = sum(1 for r in rows if r['macd_zero'] or r['macd_rising'])
+        print(f"  MACD>0 OR 상승중: {either}/{n} ({either/n*100:.0f}%)")
 
 
 if __name__ == "__main__":
