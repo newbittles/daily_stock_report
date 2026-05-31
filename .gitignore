@@ -53,3 +53,8 @@ logs/
 
 # 개인 보유종목(평단·수량) — 공개 노출 방지
 config/holdings.yaml
+
+# 스캘핑 런타임 데이터(분봉 raw·체결 csv) — 코드만 추적
+experiments/scalping/data/
+experiments/scalping/out/
+experiments/scalping/__pycache__/

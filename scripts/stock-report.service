@@ -1,0 +1,17 @@
+[Unit]
+Description=Stock Report Scheduler (pre 14:50 / post 16:30 / holdings 16:35 / dashboard 16:40 KST)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=ubuntu
+WorkingDirectory=/home/ubuntu/stock_report
+Environment=PYTHONUNBUFFERED=1
+Environment=MPLBACKEND=Agg
+ExecStart=/home/ubuntu/stock_report/venv/bin/python -X utf8 -m src.market_report.scheduler
+Restart=always
+RestartSec=30
+
+[Install]
+WantedBy=multi-user.target
