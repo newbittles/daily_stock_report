@@ -8,6 +8,7 @@ from src.patterns.core import (
     is_breakout,
     is_consecutive_bearish,
     is_convergence_breakout,
+    is_downtrend_reversal,
     is_leader_oversold_bounce,
     is_macd_golden_cross,
     is_ma20_pullback,
@@ -312,3 +313,26 @@ def test_trend_follow_endstage_is_selective():
     r = is_trend_follow(candles)
     if r.matched:
         assert r.metrics.get("endstage", 0) == 0
+
+
+# ── is_downtrend_reversal (D 전략 — 하락추세 전환) ───────────────────────────
+def test_downtrend_reversal_uptrend_rejected():
+    # 꾸준한 상승 = 하락 이력 없음 → 미포착 (이미 상승추세)
+    candles = _make_candles([100 + i for i in range(160)])
+    r = is_downtrend_reversal(candles)
+    assert not r.matched
+
+
+def test_downtrend_reversal_runs_on_reversal_shape():
+    # 하락 후 반등(전환) 형태 — 에러 없이 판정되는지 (이평 기준)
+    closes = [200 - i for i in range(110)] + [90 + i * 2 for i in range(50)]
+    candles = _make_candles(closes)
+    r = is_downtrend_reversal(candles, use_ichimoku=False)
+    assert isinstance(r.matched, bool)
+
+
+def test_downtrend_reversal_insufficient_data():
+    candles = _make_candles([100 + i for i in range(50)])
+    r = is_downtrend_reversal(candles)
+    assert not r.matched
+    assert "부족" in r.reason

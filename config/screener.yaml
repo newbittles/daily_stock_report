@@ -102,6 +102,24 @@ strategies:
       min_trade_value: 3000000000
     opinion: "추세추종 (C) · 손절=60일선 2일이탈"
 
+  # ── D. 하락추세 전환 (추세선 돌파의 객관적 대용) ─────────────────────────
+  # 사용자 사례(NAVER 24/9/23·LG엔솔/LG전자 25/6~7·SK네트웍스/LG씨엔에스/에코프로) 역산.
+  # '고점-고점 하락추세선 돌파'는 긋는 위치가 주관적 → 가장 잘 맞은 일목 구름(양운)
+  #   상향 돌파를 주 신호로, 이평선·MACD로 노이즈 제거. (NAVER 0일·LG엔솔+1·LG전자+2 정확)
+  # 진입: ① 하락이력(20<60 or 최근 구름아래/5<20) ② 5>20 회복 ③ MACD+ ④ 일목 구름 상향돌파.
+  # 손절: 구름 하단 2일이탈(use_ichimoku) / 20일선 2일이탈. 가짜반등(에코프로)은 구름이 거름.
+  # ※ use_ichimoku=false 로 두면 일목 대신 20일선 돌파 기준(노이즈 우려 시).
+  - name: "D. 하락추세 전환"
+    enabled: true
+    description: "하락하던 종목이 일목 구름 상향 돌파 + 단기정배열 회복 + MACD 양전환 (추세전환 초입)"
+    conditions:
+      downtrend_reversal:
+        downtrend_lookback: 20   # 하락 이력 확인 기간
+        use_ichimoku: true       # true=일목 구름 돌파(주신호) / false=20일선 돌파(보조)
+        cloud_shift: 26          # 일목 선행스팬 미래 시프트
+      min_trade_value: 3000000000
+    opinion: "하락추세 전환 (D) · 손절=구름하단/20선 2일이탈"
+
 # 공통 필터 (모든 전략에 추가 적용)
 global_filters:
   min_price: 1000          # 동전주 제외

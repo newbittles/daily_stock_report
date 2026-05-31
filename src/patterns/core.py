@@ -669,6 +669,89 @@ def is_trend_follow(
     return PatternResult(True, reason, metrics)
 
 
+def is_downtrend_reversal(
+    candles: list[Candle],
+    downtrend_lookback: int = 20, use_ichimoku: bool = True, cloud_shift: int = 26,
+) -> PatternResult:
+    """D 전략 — 하락추세 전환 (추세선 돌파의 객관적 대용).
+
+    사용자 사례(NAVER 24/9/23, LG엔솔·LG전자 25/6~7, SK네트웍스·LG씨엔에스·에코프로) 역산.
+    '고점-고점 하락추세선 돌파'는 긋는 위치가 주관적이라, 검증 결과 가장 잘 맞은
+    **일목 구름(양운) 상향 돌파**를 주 신호로, 이평선·MACD로 노이즈를 거른다.
+    (NAVER 0일·LG엔솔 +1·LG전자 +2 정확, SK넷·LGCNS +5일, 에코프로 +20일=가짜반등 필터)
+
+    진입:
+      1. 하락 이력(전환 초입): 20선 < 60선(중기 역배열) OR 최근 downtrend_lookback일 내
+         구름 아래(use_ichimoku) / 5선<20선 경험 → '하락하던' 종목만 (이미 상승추세 제외)
+      2. 5선 > 20선 (단기 정배열 회복)
+      3. MACD 히스토그램 > 0 (양전환)
+      4. (주신호) use_ichimoku=True: 종가가 일목 구름(26봉 시프트) 상단 위로 돌파.
+         노이즈 우려 시 use_ichimoku=False → 종가 > 20일선으로 대체(이평선 기준).
+    손절(운영): use_ichimoku면 종가 2일연속 구름 하단 이탈 / 아니면 20일선 2일이탈.
+    """
+    closes = _closes(candles)
+    if len(closes) < 90:
+        return PatternResult(False, "데이터 부족 (일목 구름 90봉 필요)")
+
+    highs, lows = _highs(candles), _lows(candles)
+    ma5 = moving_average(closes, 5)
+    ma20 = moving_average(closes, 20)
+    ma60 = moving_average(closes, 60)
+    if None in (ma5[-1], ma20[-1], ma60[-1]):
+        return PatternResult(False, "이평선 계산 불가")
+    _macd_line, _sig, hist = macd(closes)
+    price = closes[-1]
+    metrics = {"price": round(price, 1)}
+
+    # 2. 단기 정배열 회복 (5 > 20)
+    if not (ma5[-1] > ma20[-1]):
+        return PatternResult(False, "5선 < 20선 (단기정배열 미회복)", metrics)
+
+    # 3. MACD 양전환
+    if hist[-1] is None or hist[-1] <= 0:
+        return PatternResult(False, "MACD 음 (양전환 전)", metrics)
+
+    # 4. 주신호: 일목 구름 상향 돌파 (26봉 시프트) — 또는 이평선 대체
+    cloud_top = cloud_bot = None
+    pos_label = "20일선 위"
+    if use_ichimoku:
+        cl = ichimoku(highs, lows, closes)
+        j = len(closes) - 1 - cloud_shift
+        if j >= 0 and cl["senkou_a"][j] is not None and cl["senkou_b"][j] is not None:
+            cloud_top = max(cl["senkou_a"][j], cl["senkou_b"][j])
+            cloud_bot = min(cl["senkou_a"][j], cl["senkou_b"][j])
+            metrics["cloud_top"] = round(cloud_top, 1)
+            metrics["cloud_bot"] = round(cloud_bot, 1)
+            if price <= cloud_top:
+                return PatternResult(False, f"일목구름 미돌파 (구름상단 {cloud_top:,.0f})", metrics)
+            pos_label = "일목구름 위"
+        elif price <= ma20[-1]:  # 구름 계산 불가 → 이평선 대체
+            return PatternResult(False, "20일선 미돌파", metrics)
+    elif price <= ma20[-1]:
+        return PatternResult(False, "20일선 미돌파", metrics)
+
+    # 1. 하락 이력 (전환 초입) — 이미 상승추세인 종목 제외
+    had_downtrend = ma20[-1] < ma60[-1]  # 중기 역배열 = 초입
+    if not had_downtrend:
+        for k in range(2, min(downtrend_lookback, len(closes) - 1) + 1):
+            below_cloud = (use_ichimoku and cloud_bot is not None
+                           and closes[-k] < cloud_bot)
+            short_dead = (ma5[-k] is not None and ma20[-k] is not None
+                          and ma5[-k] < ma20[-k])
+            if below_cloud or short_dead:
+                had_downtrend = True
+                break
+    if not had_downtrend:
+        return PatternResult(False, "하락전환 이력 없음 (이미 상승추세)", metrics)
+
+    align = "20<60(초입)" if ma20[-1] < ma60[-1] else "20>60"
+    rv = rsi(closes, 14)[-1]
+    if rv is not None:
+        metrics["rsi"] = round(rv, 1)
+    reason = f"하락추세 전환 ({pos_label}, 5>20, MACD+, {align})"
+    return PatternResult(True, reason, metrics)
+
+
 def is_leader_oversold_bounce(
     candles: list[Candle],
     align_lookback: int = 40, oversold_within: int = 6,

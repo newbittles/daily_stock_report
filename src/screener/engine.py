@@ -26,6 +26,7 @@ from src.patterns.core import (
     is_breakout,
     is_consecutive_bearish,
     is_convergence_breakout,
+    is_downtrend_reversal,
     is_macd_golden_cross,
     is_ma20_pullback,
     is_ma_alignment,
@@ -107,6 +108,16 @@ def _check_condition(
     if key == "near_high":
         p = params if isinstance(params, dict) else {}
         r = is_near_high(candles, lookback=p.get("lookback", 250), tolerance=p.get("tolerance", 0.03))
+        return r.matched, r.reason, r.metrics
+
+    if key == "downtrend_reversal":
+        p = params if isinstance(params, dict) else {}
+        r = is_downtrend_reversal(
+            candles,
+            downtrend_lookback=p.get("downtrend_lookback", 20),
+            use_ichimoku=p.get("use_ichimoku", True),
+            cloud_shift=p.get("cloud_shift", 26),
+        )
         return r.matched, r.reason, r.metrics
 
     if key == "trend_follow":
