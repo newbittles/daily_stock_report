@@ -168,6 +168,16 @@ async def run_full(mode: ReportMode, *, do_publish: bool = True, do_telegram: bo
         adapter = KisAdapter(s.kis_app_key, s.kis_app_secret, s.kis_account_no, s.kis_env)
         snap.screen_picks = await collect_screen_picks(adapter)
         snap.holdings_status = await collect_holdings_status(adapter)
+        # 테마 역매핑 — 강세/약세 테마의 주도주면 테마명·주도여부 부착 (추가 크롤링 없음)
+        theme_map: dict[str, str] = {}
+        for t in snap.top_themes:
+            for lead in t.leading_stocks:
+                theme_map.setdefault(lead.strip(), t.name)
+        for p in snap.screen_picks:
+            tname = theme_map.get(p["name"].strip())
+            if tname:
+                p["theme"] = tname
+                p["is_theme_leader"] = True
         logger.info("pipeline_strategy_ready picks=%d holdings=%d",
                     len(snap.screen_picks), len(snap.holdings_status))
     except Exception as exc:

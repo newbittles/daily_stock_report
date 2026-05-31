@@ -69,32 +69,38 @@ async def cmd_watch(
     context: ContextTypes.DEFAULT_TYPE,
     deps: dict[str, Any],
 ) -> None:
-    args = context.args or []
-    if not args or not _TICKER_RE.match(args[0]):
+    # 다중 종목 지원: "/watch 005930 000660 ..." 또는 콤마 구분 (복사버튼 일괄등록)
+    raw = " ".join(context.args or []).replace(",", " ").split()
+    tickers = [t for t in raw if _TICKER_RE.match(t)]
+    if not tickers:
         await update.message.reply_text(  # type: ignore[union-attr]
-            "사용법: /watch <6자리 종목코드>\n예: /watch 005930"
+            "사용법: /watch <6자리 종목코드> (여러 개 가능)\n예: /watch 005930 000660"
         )
         return
 
-    ticker = args[0]
     repo: WatchlistRepo = deps["watchlist_repo"]
     datasource = deps["datasource"]
+    added, skipped, failed = [], [], []
+    for ticker in tickers:
+        if repo.exists(ticker):
+            skipped.append(ticker)
+            continue
+        try:
+            quote = await datasource.get_quote(ticker)
+            repo.add(ticker, quote.name)
+            added.append(f"{quote.name}({ticker})")
+        except Exception as exc:
+            logger.error("cmd_watch_error ticker=%s error=%s", ticker, exc)
+            failed.append(ticker)
 
-    if repo.exists(ticker):
-        await update.message.reply_text(f"{ticker}은 이미 관심종목입니다.")  # type: ignore[union-attr]
-        return
-
-    try:
-        quote = await datasource.get_quote(ticker)
-        repo.add(ticker, quote.name)
-        await update.message.reply_text(  # type: ignore[union-attr]
-            f"✅ 관심종목 추가: {quote.name} ({ticker})"
-        )
-    except Exception as exc:
-        logger.error("cmd_watch_error ticker=%s error=%s", ticker, exc)
-        await update.message.reply_text(  # type: ignore[union-attr]
-            format_error(f"종목 조회 실패 ({ticker})", attempts=1)
-        )
+    lines = []
+    if added:
+        lines.append(f"✅ 관심종목 추가 {len(added)}: " + ", ".join(added))
+    if skipped:
+        lines.append(f"⏭️ 이미 등록 {len(skipped)}: " + ", ".join(skipped))
+    if failed:
+        lines.append(f"⚠️ 실패 {len(failed)}: " + ", ".join(failed))
+    await update.message.reply_text("\n".join(lines) or "처리할 종목 없음")  # type: ignore[union-attr]
 
 
 async def cmd_unwatch(

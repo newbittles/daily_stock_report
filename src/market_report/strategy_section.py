@@ -113,8 +113,11 @@ async def collect_screen_picks(adapter, per_strategy: int = 8) -> list[dict]:
                     "strategy": s.name,
                     "ticker": tk, "name": nm,
                     "price": round(c[-1].close, 1),
+                    "change_pct": round(change_pct, 2),
                     "reason": "; ".join(res.reasons),
                     "endstage": bool(res.metrics.get("endstage")),
+                    "theme": "",            # pipeline에서 top_themes 역매핑으로 채움
+                    "is_theme_leader": False,
                 })
                 counts[s.name] = counts.get(s.name, 0) + 1
     return picks

@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>{{ title }} — {{ snap.generated_at.strftime('%Y-%m-%d') }}</title>
-  <meta name="description" content="{{ snap.summary[:140] }}">
+  <title>마감 후 시장 리포트 — 2026-06-01</title>
+  <meta name="description" content="">
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
@@ -354,248 +354,114 @@
   <div class="container">
 
     <header class="header">
-      <h1>📊 {{ title }}</h1>
+      <h1>📊 마감 후 시장 리포트</h1>
       <div class="meta">
-        <span class="badge {{ 'pre' if snap.mode == 'pre_close' else 'post' }}">
-          {{ '🟡 마감 전' if snap.mode == 'pre_close' else '🔵 마감 후' }}
+        <span class="badge post">
+          🔵 마감 후
         </span>
-        <span>{{ snap.generated_at.strftime('%Y년 %m월 %d일 %H:%M') }}</span>
+        <span>2026년 06월 01일 00:04</span>
       </div>
     </header>
 
-    {# 1. 지수 #}
-    {% if snap.kospi or snap.kosdaq %}
-    <section>
-      <h2><span class="icon">📈</span>주요 지수</h2>
-      <div class="indexes">
-        {% for idx, spark_url in [(snap.kospi, snap.kospi_spark_url), (snap.kosdaq, snap.kosdaq_spark_url)] %}
-          {% if idx %}
-          <div class="index-card {{ 'up' if idx.change_pct >= 0 else 'down' }}">
-            <div class="index-info">
-              <div class="index-name">{{ idx.market }}</div>
-              <div class="index-value">{{ "{:,.2f}".format(idx.value) }}</div>
-              <div class="index-change {{ 'up-text' if idx.change_pct >= 0 else 'down-text' }}">
-                {{ '+' if idx.change_pct >= 0 else '' }}{{ "{:.2f}".format(idx.change) }}
-                ({{ '+' if idx.change_pct >= 0 else '' }}{{ "{:.2f}".format(idx.change_pct) }}%)
-              </div>
-            </div>
-            {% if spark_url %}
-            <div class="index-spark"><img src="{{ spark_url }}" alt="{{ idx.market }} 60일 추이" loading="lazy"></div>
-            {% endif %}
-          </div>
-          {% endif %}
-        {% endfor %}
-      </div>
-    </section>
-    {% endif %}
 
-    {# 2. AI 요약 #}
-    {% if snap.summary %}
-    <section>
-      <h2><span class="icon">🤖</span>AI 시장 요약</h2>
-      <div class="summary-box">
-        <div class="label">한 줄 요약</div>
-        <p>{{ snap.summary }}</p>
-      </div>
-      {% if snap.why_moved %}
-      <div class="summary-box">
-        <div class="label">왜 움직였나</div>
-        <p>{{ snap.why_moved }}</p>
-      </div>
-      {% endif %}
-      {% if snap.theme_commentary %}
-      <div class="summary-box">
-        <div class="label">테마 해설</div>
-        <p>{{ snap.theme_commentary }}</p>
-      </div>
-      {% endif %}
-    </section>
-    {% endif %}
 
-    {# 3a. 종가베팅 후보 (마감 전) #}
-    {% if snap.mode == 'pre_close' and snap.candidate_picks %}
-    <section>
-      <h2><span class="icon">🎯</span>종가베팅 후보 {{ snap.candidate_picks|length }}선</h2>
-      {% for p in snap.candidate_picks %}
-      <div class="pick {{ 'has-chart' if p.chart_url else '' }}">
-        <div class="pick-body">
-          <div class="pick-head">
-            <span class="pick-name">{{ p.name }}</span>
-            <span class="pick-ticker">{{ p.ticker }}</span>
-          </div>
-          {% if p.theme %}
-          <div class="pick-theme">
-            <div class="pick-theme-name">{{ p.theme }}</div>
-            {% if p.theme_peers %}
-            <div class="peer-list">
-              {% for peer in p.theme_peers %}
-              <span class="peer-chip">
-                {{ peer.name }}
-                <span class="pct {{ 'up-text' if peer.change_pct >= 0 else 'down-text' }}">
-                  {{ '+' if peer.change_pct >= 0 else '' }}{{ "%.2f"|format(peer.change_pct) }}%
-                </span>
-              </span>
-              {% endfor %}
-            </div>
-            {% endif %}
-          </div>
-          {% endif %}
-          <div class="pick-rationale">{{ p.rationale }}</div>
-          {% if p.risk %}<div class="pick-risk">{{ p.risk }}</div>{% endif %}
-        </div>
-        {% if p.chart_url %}
-        <div class="pick-chart">
-          <img src="{{ p.chart_url }}" alt="{{ p.name }} 차트" loading="lazy"
-               onclick="document.getElementById('lightbox-img').src=this.src;document.getElementById('lightbox').classList.add('active');">
-        </div>
-        {% endif %}
-      </div>
-      {% endfor %}
-    </section>
-    {% endif %}
 
-    {# 3b. 내일 관전 포인트 (마감 후) #}
-    {% if snap.mode == 'post_close' and snap.candidate_picks %}
-    <section>
-      <h2><span class="icon">🔭</span>내일 관전 포인트</h2>
-      <ul class="watch-list">
-        {% for w in snap.candidate_picks %}
-        <li>{{ w.watchpoint }}</li>
-        {% endfor %}
-      </ul>
-    </section>
-    {% endif %}
 
-    {# 3c. 전략 스크린 A/B/C/D — 전략별 칸 분리 + 복사버튼 + 상승률 + 테마 + 네이버링크 #}
-    {% if snap.screen_picks %}
     <section>
       <h2><span class="icon">🎯</span>전략 스크린</h2>
       <div class="strat-grid">
-        {% for strat in snap.screen_picks|map(attribute='strategy')|unique|sort %}
-        {% set items = snap.screen_picks|selectattr('strategy','equalto',strat)|list %}
-        {% set codes = items|map(attribute='ticker')|join(' ') %}
         <div class="strat-col">
           <div class="strat-head">
-            <span class="strat-name">{{ strat }}</span>
-            <button class="copy-btn" data-codes="{{ codes }}" onclick="copyWatch(this)">📋 관심등록 복사</button>
+            <span class="strat-name">A. 수렴 후 대세상승 시작</span>
+            <button class="copy-btn" data-codes="005930" onclick="copyWatch(this)">📋 관심등록 복사</button>
           </div>
           <ul class="watch-list">
-            {% for p in items %}
             <li>
-              <a href="https://finance.naver.com/item/main.naver?code={{ p.ticker }}" target="_blank" rel="noopener"><strong>{{ p.name }}</strong></a>
-              <span class="code">{{ p.ticker }}</span>
-              <span class="{{ 'up-text' if p.change_pct >= 0 else 'down-text' }}">{{ '+' if p.change_pct >= 0 else '' }}{{ "{:.1f}".format(p.change_pct) }}%</span>
-              {% if p.endstage %}<span class="down-text">⚠️끝물</span>{% endif %}
-              <div class="theme-reason">{{ p.reason }}</div>
+              <a href="https://finance.naver.com/item/main.naver?code=005930" target="_blank" rel="noopener"><strong>삼성전자</strong></a>
+              <span class="code">005930</span>
+              <span class="up-text">+2.3%</span>
+              <div class="theme-reason">수렴 후 상승전환</div>
               <div class="pick-meta">
                 테마:
-                {% if p.theme %}<a href="https://search.naver.com/search.naver?query={{ p.theme|urlencode }}+관련주" target="_blank" rel="noopener">{{ p.theme }}</a>{% else %}-{% endif %}
-                · 주도테마: {{ 'O' if p.is_theme_leader else 'X' }}
+<a href="https://search.naver.com/search.naver?query=%EB%B0%98%EB%8F%84%EC%B2%B4+관련주" target="_blank" rel="noopener">반도체</a>                · 주도테마: O
               </div>
             </li>
-            {% endfor %}
           </ul>
         </div>
-        {% endfor %}
+        <div class="strat-col">
+          <div class="strat-head">
+            <span class="strat-name">B. 주도주 20일선 눌림목</span>
+            <button class="copy-btn" data-codes="000990" onclick="copyWatch(this)">📋 관심등록 복사</button>
+          </div>
+          <ul class="watch-list">
+            <li>
+              <a href="https://finance.naver.com/item/main.naver?code=000990" target="_blank" rel="noopener"><strong>DB하이텍</strong></a>
+              <span class="code">000990</span>
+              <span class="down-text">-1.2%</span>
+              <div class="theme-reason">20선 눌림</div>
+              <div class="pick-meta">
+                테마:
+-                · 주도테마: X
+              </div>
+            </li>
+          </ul>
+        </div>
+        <div class="strat-col">
+          <div class="strat-head">
+            <span class="strat-name">C. 대세 정배열 추세추종</span>
+            <button class="copy-btn" data-codes="000660" onclick="copyWatch(this)">📋 관심등록 복사</button>
+          </div>
+          <ul class="watch-list">
+            <li>
+              <a href="https://finance.naver.com/item/main.naver?code=000660" target="_blank" rel="noopener"><strong>SK하이닉스</strong></a>
+              <span class="code">000660</span>
+              <span class="up-text">+3.1%</span>
+<span class="down-text">⚠️끝물</span>              <div class="theme-reason">정배열+신고가</div>
+              <div class="pick-meta">
+                테마:
+<a href="https://search.naver.com/search.naver?query=AI%20%EB%B0%98%EB%8F%84%EC%B2%B4+관련주" target="_blank" rel="noopener">AI 반도체</a>                · 주도테마: O
+              </div>
+            </li>
+          </ul>
+        </div>
+        <div class="strat-col">
+          <div class="strat-head">
+            <span class="strat-name">D. 하락추세 전환</span>
+            <button class="copy-btn" data-codes="035420" onclick="copyWatch(this)">📋 관심등록 복사</button>
+          </div>
+          <ul class="watch-list">
+            <li>
+              <a href="https://finance.naver.com/item/main.naver?code=035420" target="_blank" rel="noopener"><strong>NAVER</strong></a>
+              <span class="code">035420</span>
+              <span class="up-text">+1.5%</span>
+              <div class="theme-reason">구름 상향돌파</div>
+              <div class="pick-meta">
+                테마:
+-                · 주도테마: X
+              </div>
+            </li>
+          </ul>
+        </div>
       </div>
       <p class="disclaimer" style="font-size:12px;">※ 참고용 시그널입니다. 매수 추천이 아니며 판단·책임은 본인에게 있습니다. · 📋 복사 → 텔레그램에 붙여넣으면 일괄 관심등록.</p>
     </section>
-    {% endif %}
 
-    {# 3d. 보유종목 상태 #}
-    {% if snap.holdings_status %}
     <section>
       <h2><span class="icon">📋</span>보유종목 상태 (홀딩/손절/추가매수)</h2>
       <ul class="watch-list">
-        {% for h in snap.holdings_status %}
         <li>
-          <a href="https://finance.naver.com/item/main.naver?code={{ h.ticker }}" target="_blank" rel="noopener"><strong>{{ h.name }}</strong></a> ({{ h.ticker }}) · {{ "{:,.0f}".format(h.price) }}원
-          <span class="{{ 'up-text' if h.profit_rate >= 0 else 'down-text' }}">
-            ({{ '+' if h.profit_rate >= 0 else '' }}{{ "{:.1f}".format(h.profit_rate) }}%)
+          <a href="https://finance.naver.com/item/main.naver?code=012330" target="_blank" rel="noopener"><strong>현대모비스</strong></a> (012330) · 768,000원
+          <span class="up-text">
+            (+25.9%)
           </span>
-          {% if h.endstage %}<span class="down-text">⚠️끝물</span>{% endif %}
-          <div class="theme-reason">{{ h.reason }}</div>
+          <div class="theme-reason">홀딩</div>
         </li>
-        {% endfor %}
       </ul>
       <p class="disclaimer" style="font-size:12px;">※ 손절선은 알림용 기준이며, 실제 매도 판단·책임은 본인에게 있습니다.</p>
     </section>
-    {% endif %}
 
-    {# 4. 강세 테마 #}
-    {% if snap.top_themes %}
-    <section>
-      <h2><span class="icon">🔥</span>강세/약세 테마 Top {{ snap.top_themes|length }}</h2>
-      {% for t in snap.top_themes %}
-      <div class="theme">
-        <div class="theme-rank">{{ t.rank }}</div>
-        <div class="theme-info">
-          <div class="name">{{ t.name }}</div>
-          {% if t.leading_stocks %}
-          <div class="leads">▸ {{ t.leading_stocks[:3]|join(', ') }}</div>
-          {% endif %}
-        </div>
-        <div class="theme-pct {{ 'up-text' if t.change_pct >= 0 else 'down-text' }}">
-          {{ '+' if t.change_pct >= 0 else '' }}{{ "{:.2f}".format(t.change_pct) }}%
-        </div>
-        {% if t.reason %}
-        <div class="theme-reason">{{ t.reason }}</div>
-        {% endif %}
-      </div>
-      {% endfor %}
-    </section>
-    {% endif %}
 
-    {# 5. 거래량/상승/하락 상위 - 탭 #}
-    {% if snap.top_volume or snap.top_gainers or snap.top_losers %}
-    <section>
-      <h2><span class="icon">💹</span>종목 순위</h2>
-      <div class="tabs">
-        <div class="tab active" data-tab="volume">거래량 상위</div>
-        <div class="tab" data-tab="gainers">상승률 상위</div>
-        <div class="tab" data-tab="losers">하락률 상위</div>
-      </div>
 
-      {% for tab_id, label, stocks in [
-        ('volume', '거래량', snap.top_volume[:15]),
-        ('gainers', '상승률', snap.top_gainers[:15]),
-        ('losers', '하락률', snap.top_losers[:15]),
-      ] %}
-      <div class="tab-pane {{ 'active' if loop.first else '' }}" data-pane="{{ tab_id }}">
-        <div class="stock-list">
-          {% for s in stocks %}
-          <div class="stock-row">
-            <div class="stock-rank">{{ s.rank }}</div>
-            <div class="stock-name">
-              {{ s.name }}<span class="ticker">{{ s.ticker }}</span>
-            </div>
-            <div class="stock-price">{{ "{:,.0f}".format(s.price) }}원</div>
-            <div class="stock-pct {{ 'up-text' if s.change_pct >= 0 else 'down-text' }}">
-              {{ '+' if s.change_pct >= 0 else '' }}{{ "{:.2f}".format(s.change_pct) }}%
-            </div>
-          </div>
-          {% endfor %}
-        </div>
-      </div>
-      {% endfor %}
-    </section>
-    {% endif %}
-
-    {# 6. 시장 뉴스 #}
-    {% if snap.market_news %}
-    <section>
-      <h2><span class="icon">📰</span>주요 시장 뉴스</h2>
-      {% for n in snap.market_news[:12] %}
-      <div class="news-item">
-        <a href="{{ n.url }}" target="_blank" rel="noopener" class="news-title">{{ n.title }}</a>
-        <div class="news-meta">
-          {% if n.source %}<span class="news-source">{{ n.source }}</span>{% endif %}
-          {% if n.published_at %} · {{ n.published_at }}{% endif %}
-        </div>
-      </div>
-      {% endfor %}
-    </section>
-    {% endif %}
 
     <div class="disclaimer">
       ※ 본 리포트는 공개 데이터 기반 참고용 정보입니다.<br>
