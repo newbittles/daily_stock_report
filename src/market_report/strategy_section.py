@@ -78,6 +78,19 @@ async def collect_screen_picks(adapter, per_strategy: int = 8) -> list[dict]:
         if tk not in universe:
             universe[tk] = nm
 
+    # 시총 상위 풀 (HTS식 디텍팅) — config market_cap: true
+    if getattr(cfg, "universe_market_cap", False):
+        try:
+            from src.datasource.universe import get_market_cap_universe
+            cap = await asyncio.to_thread(
+                get_market_cap_universe, cfg.market_cap_kospi, cfg.market_cap_kosdaq,
+                getattr(cfg, "market_cap_min_amount", 0))
+            for tk, nm in cap:
+                if tk not in universe:
+                    universe[tk] = nm
+        except Exception as exc:
+            logger.warning("screen_picks_marketcap_failed error=%s", exc)
+
     counts: dict[str, int] = {}
     picks: list[dict] = []
     for tk, nm in universe.items():

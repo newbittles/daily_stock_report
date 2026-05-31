@@ -74,6 +74,19 @@ async def collect_dashboard_data(adapter, days_back: int = 12, end_date: str | N
         if tk not in universe:
             universe[tk] = nm
 
+    # 시총 상위 풀 (HTS식 디텍팅) — config market_cap: true
+    if getattr(cfg, "universe_market_cap", False):
+        try:
+            from src.datasource.universe import get_market_cap_universe
+            cap = await asyncio.to_thread(
+                get_market_cap_universe, cfg.market_cap_kospi, cfg.market_cap_kosdaq,
+                getattr(cfg, "market_cap_min_amount", 0))
+            for tk, nm in cap:
+                if tk not in universe:
+                    universe[tk] = nm
+        except Exception as exc:
+            logger.warning("dashboard_marketcap_failed error=%s", exc)
+
     # 종목별 일봉 1회 수집
     cmap: dict[str, list] = {}
     names: dict[str, str] = {}

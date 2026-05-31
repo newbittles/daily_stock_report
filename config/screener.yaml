@@ -26,9 +26,13 @@
 # ════════════════════════════════════════════════════════════════════════
 
 universe:
-  watchlist: true
-  hot_stocks: true
+  watchlist: true            # 관심종목(/watch 등록) 포함
+  hot_stocks: true           # 당일 핫종목(거래량·등락률 순위) — 소형 급등주 포착
   hot_stocks_top: 40
+  market_cap: true                  # 시총 상위 풀 (HTS식 디텍팅 — 숨은 포텐셜 종목)
+  market_cap_kospi: 200             # 코스피 시총 상위 N
+  market_cap_kosdaq: 100            # 코스닥 시총 상위 N
+  market_cap_min_amount: 50000000000  # 당일 거래대금 하한 500억 → 활발한 ~150종목(스캔 ~5분)
 
 strategies:
 

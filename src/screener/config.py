@@ -32,6 +32,10 @@ class ScreenerConfig:
     universe_watchlist: bool = True
     universe_hot: bool = True
     hot_stocks_top: int = 30
+    universe_market_cap: bool = False     # 시총 상위 풀 (HTS식 디텍팅)
+    market_cap_kospi: int = 200           # 코스피 시총 상위 N
+    market_cap_kosdaq: int = 100          # 코스닥 시총 상위 N
+    market_cap_min_amount: float = 0      # 당일 거래대금 하한(원) — 활발한 종목만, 스캔 부하↓
     strategies: list[Strategy] = field(default_factory=list)
     global_filters: dict[str, Any] = field(default_factory=dict)
 
@@ -70,6 +74,10 @@ def load_screener_config(path: Path | str | None = None) -> ScreenerConfig:
         universe_watchlist=bool(universe.get("watchlist", True)),
         universe_hot=bool(universe.get("hot_stocks", True)),
         hot_stocks_top=int(universe.get("hot_stocks_top", 30)),
+        universe_market_cap=bool(universe.get("market_cap", False)),
+        market_cap_kospi=int(universe.get("market_cap_kospi", 200)),
+        market_cap_kosdaq=int(universe.get("market_cap_kosdaq", 100)),
+        market_cap_min_amount=float(universe.get("market_cap_min_amount", 0)),
         strategies=strategies,
         global_filters=raw.get("global_filters", {}) or {},
     )
