@@ -168,21 +168,20 @@ async def run_full(mode: ReportMode, *, do_publish: bool = True, do_telegram: bo
         adapter = KisAdapter(s.kis_app_key, s.kis_app_secret, s.kis_account_no, s.kis_env)
         snap.screen_picks = await collect_screen_picks(adapter)
         snap.holdings_status = await collect_holdings_status(adapter)
-        # 테마 역매핑 — 주도주면 테마명·주도여부 부착. 커버리지 위해 상위 40테마 별도 수집.
-        theme_map: dict[str, str] = {}
+        # 테마 역매핑 — 종목코드→테마(테마 상세페이지 역인덱스, 일1회 캐시). 커버리지↑.
+        ticker_theme: dict[str, str] = {}
         try:
-            from src.market_report.scrapers.theme import fetch_top_themes
-            map_themes = await fetch_top_themes(top=40)
-        except Exception:
-            map_themes = snap.top_themes
-        for t in (map_themes or snap.top_themes):
-            for lead in t.leading_stocks:
-                theme_map.setdefault(lead.strip(), t.name)
+            from src.market_report.scrapers.theme import build_ticker_theme_map
+            ticker_theme = await build_ticker_theme_map(max_themes=25)
+        except Exception as exc:
+            logger.warning("theme_map_failed error=%s", exc)
+        # 강세/약세 테마(top_themes) 주도주 = 주도테마 여부 판정용
+        leaders = {lead.strip() for t in snap.top_themes for lead in t.leading_stocks}
         for p in snap.screen_picks:
-            tname = theme_map.get(p["name"].strip())
+            tname = ticker_theme.get(p["ticker"])
             if tname:
                 p["theme"] = tname
-                p["is_theme_leader"] = True
+            p["is_theme_leader"] = p["name"].strip() in leaders
         logger.info("pipeline_strategy_ready picks=%d holdings=%d",
                     len(snap.screen_picks), len(snap.holdings_status))
     except Exception as exc:
