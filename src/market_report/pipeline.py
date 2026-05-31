@@ -168,9 +168,14 @@ async def run_full(mode: ReportMode, *, do_publish: bool = True, do_telegram: bo
         adapter = KisAdapter(s.kis_app_key, s.kis_app_secret, s.kis_account_no, s.kis_env)
         snap.screen_picks = await collect_screen_picks(adapter)
         snap.holdings_status = await collect_holdings_status(adapter)
-        # 테마 역매핑 — 강세/약세 테마의 주도주면 테마명·주도여부 부착 (추가 크롤링 없음)
+        # 테마 역매핑 — 주도주면 테마명·주도여부 부착. 커버리지 위해 상위 40테마 별도 수집.
         theme_map: dict[str, str] = {}
-        for t in snap.top_themes:
+        try:
+            from src.market_report.scrapers.theme import fetch_top_themes
+            map_themes = await fetch_top_themes(top=40)
+        except Exception:
+            map_themes = snap.top_themes
+        for t in (map_themes or snap.top_themes):
             for lead in t.leading_stocks:
                 theme_map.setdefault(lead.strip(), t.name)
         for p in snap.screen_picks:

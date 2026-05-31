@@ -20,25 +20,37 @@ _STATE_EMOJI = {"BREAKDOWN": "🔴", "STOP60": "🔴", "STOP20": "⚠️", "ADD"
                 "HOLD": "✅", "NEUTRAL": "➖", "UNKNOWN": "❔"}
 
 
+def _naver_link(name: str, ticker: str) -> str:
+    """텔레그램 Markdown 종목 링크 → 네이버 금융 개별 페이지."""
+    return f"[{name}](https://finance.naver.com/item/main.naver?code={ticker})"
+
+
 def _format_strategy_holdings(snap: MarketSnapshot) -> list[str]:
-    """A/B/C 스크린 + 보유종목 상태 요약 라인 (pre/post 공통)."""
+    """A/B/C/D 스크린 + 보유종목 상태 요약 (종목명=네이버링크, 상승률·테마 병기)."""
     lines: list[str] = []
     if snap.screen_picks:
-        lines.append("🎯 *전략 스크린 (A/B/C)*")
+        lines.append("🎯 *전략 스크린*")
         seen: dict[str, list] = {}
         for p in snap.screen_picks:
             seen.setdefault(p["strategy"], []).append(p)
-        for strat, items in seen.items():
-            short = strat.split(".")[0].strip()
-            names = ", ".join(f"{i['name']}{'⚠️' if i.get('endstage') else ''}" for i in items[:6])
-            lines.append(f"  *{short}*: {names}")
+        for strat in sorted(seen.keys()):
+            lines.append(f"*{strat}*")
+            for i in seen[strat]:
+                sign = "+" if i.get("change_pct", 0) >= 0 else ""
+                warn = " ⚠️끝물" if i.get("endstage") else ""
+                theme = f" _{i['theme']}_" if i.get("theme") else ""
+                lines.append(
+                    f"  • {_naver_link(i['name'], i['ticker'])} "
+                    f"{sign}{i.get('change_pct', 0):.1f}%{theme}{warn}"
+                )
         lines.append("")
     if snap.holdings_status:
         lines.append("📋 *보유종목 상태*")
         for h in snap.holdings_status:
             em = _STATE_EMOJI.get(h.get("state", "UNKNOWN"), "•")
             sign = "+" if h.get("profit_rate", 0) >= 0 else ""
-            lines.append(f"  {em} {h['name']} ({sign}{h.get('profit_rate', 0):.1f}%) — {h['reason']}")
+            lines.append(f"  {em} {_naver_link(h['name'], h['ticker'])} "
+                         f"({sign}{h.get('profit_rate', 0):.1f}%) — {h['reason']}")
         lines.append("")
     return lines
 

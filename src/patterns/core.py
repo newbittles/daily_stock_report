@@ -673,7 +673,7 @@ def is_downtrend_reversal(
     candles: list[Candle],
     downtrend_lookback: int = 20, use_ichimoku: bool = True, cloud_shift: int = 26,
 ) -> PatternResult:
-    """D 전략 — 하락추세 전환 (추세선 돌파의 객관적 대용).
+    """D 전략 — 추세 반전 (하락추세→상승전환, 추세선 돌파의 객관적 대용).
 
     사용자 사례(NAVER 24/9/23, LG엔솔·LG전자 25/6~7, SK네트웍스·LG씨엔에스·에코프로) 역산.
     '고점-고점 하락추세선 돌파'는 긋는 위치가 주관적이라, 검증 결과 가장 잘 맞은
@@ -748,7 +748,7 @@ def is_downtrend_reversal(
     rv = rsi(closes, 14)[-1]
     if rv is not None:
         metrics["rsi"] = round(rv, 1)
-    reason = f"하락추세 전환 ({pos_label}, 5>20, MACD+, {align})"
+    reason = f"추세 반전 ({pos_label}, 5>20, MACD+, {align})"
     return PatternResult(True, reason, metrics)
 
 
