@@ -1,5 +1,14 @@
 [
   {
+    "date": "2026-05-31",
+    "time": "09:50",
+    "mode": "post_close",
+    "url": "reports/2026-05-31-post.html",
+    "summary": "AI 분석을 일시적으로 사용할 수 없습니다. 아래 데이터를 직접 참고하세요.",
+    "kospi_pct": 3.55,
+    "kosdaq_pct": -2.68
+  },
+  {
     "date": "2026-05-29",
     "time": "00:45",
     "mode": "pre_close",
