@@ -168,22 +168,25 @@ async def run_full(mode: ReportMode, *, do_publish: bool = True, do_telegram: bo
         adapter = KisAdapter(s.kis_app_key, s.kis_app_secret, s.kis_account_no, s.kis_env)
         snap.screen_picks = await collect_screen_picks(adapter)
         snap.holdings_status = await collect_holdings_status(adapter)
-        # 테마 역매핑 — 종목코드→테마(테마 상세페이지 역인덱스, 일1회 캐시). 커버리지↑.
-        ticker_theme: dict[str, str] = {}
+        # 테마 — judal(주달) 종목→테마 역인덱스 (네이버보다 트렌드 반영·정확). 일1회 캐시.
+        jmap: dict[str, dict] = {}
         try:
-            from src.market_report.scrapers.theme import build_ticker_theme_map
-            ticker_theme = await build_ticker_theme_map(max_themes=25)
+            from src.market_report.scrapers.judal import _is_nontheme, build_judal_theme_map
+            jmap = await build_judal_theme_map(max_themes=200)
         except Exception as exc:
-            logger.warning("theme_map_failed error=%s", exc)
-        # 강세/약세 테마(top_themes) 주도주 = 주도테마 여부 판정용
+            logger.warning("judal_theme_failed error=%s", exc)
+
+            def _is_nontheme(_n):  # judal 실패 시 폴백 정의
+                return False
         leaders = {lead.strip() for t in snap.top_themes for lead in t.leading_stocks}
         for p in snap.screen_picks:
-            tname = ticker_theme.get(p["ticker"])
-            if tname:
-                p["theme"] = tname
+            jv = jmap.get(p["ticker"])
+            if jv and jv.get("theme") and not _is_nontheme(jv["theme"]):
+                p["theme"] = jv["theme"]
                 p["theme_kind"] = "theme"
+                p["theme_idx"] = jv.get("idx", "")
             p["is_theme_leader"] = p["name"].strip() in leaders
-        # 테마 없는 종목 → 세분업종 폴백 (누락 0)
+        # judal 테마 없는 종목 → 네이버 세분업종 폴백 (누락 0)
         try:
             from src.market_report.scrapers.sector import get_stock_sectors
             need = [p["ticker"] for p in snap.screen_picks if not p.get("theme")]
