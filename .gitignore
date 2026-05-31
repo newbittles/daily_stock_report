@@ -47,3 +47,9 @@ logs/
 
 # Git worktrees
 .worktrees/
+
+# Playwright MCP 임시 세션 파일
+.playwright-mcp/
+
+# 개인 보유종목(평단·수량) — 공개 노출 방지
+config/holdings.yaml

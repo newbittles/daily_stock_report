@@ -1,0 +1,9 @@
+# 수동 보유종목 예시 — 복사해서 config/holdings.yaml 로 저장 후 본인 값 입력.
+# config/holdings.yaml 은 .gitignore 처리됨 (개인 투자 포지션 노출 방지).
+# KIS 계좌(get_balance)에 종목이 있으면 그쪽이 우선, 비어있으면 이 목록을 진단·리포트한다.
+# 종목코드는 FinanceDataReader 등으로 검증할 것. avg_price=평단가, quantity=보유수량.
+holdings:
+  - ticker: "000000"
+    name: "종목명"
+    avg_price: 10000
+    quantity: 10
