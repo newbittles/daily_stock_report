@@ -131,6 +131,8 @@ def _check_condition(
             div_rsi_margin=p.get("div_rsi_margin", 5.0),
             rollover_peak_min=p.get("rollover_peak_min", 50.0),
             rollover_ratio=p.get("rollover_ratio", 0.55),
+            surge_skip_day=p.get("surge_skip_day", 8.0),
+            surge_skip_break=p.get("surge_skip_break", 5.0),
         )
         return r.matched, r.reason, r.metrics
 

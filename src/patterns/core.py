@@ -585,6 +585,7 @@ def is_trend_follow(
     nh_lookback: int = 60, nh_tol: float = 0.03,
     div_lookback: int = 40, div_min_sep: int = 5, div_rsi_margin: float = 5.0,
     rollover_peak_min: float = 50.0, rollover_ratio: float = 0.55,
+    surge_skip_day: float = 8.0, surge_skip_break: float = 5.0,
 ) -> PatternResult:
     """C 전략 — 대세 정배열 주도주 추세 추종 (늦게 발견해도 진입).
 
@@ -646,7 +647,11 @@ def is_trend_follow(
     if hi_idx > lo and rsi_vals[-1] is not None:
         pj = max(range(lo, hi_idx), key=lambda i: closes[i])  # 직전 스윙 고점
         rp, rc = rsi_vals[pj], rsi_vals[-1]
-        if rp is not None and price > closes[pj] and rc < rp - div_rsi_margin:
+        # 급등 신고가는 다이버전스 무시 (상한가/급등 돌파는 강세 — RSI(14) 평활지연 오판 방지)
+        day_chg = (price - closes[-2]) / closes[-2] * 100 if len(closes) >= 2 and closes[-2] else 0.0
+        break_pct = (price - closes[pj]) / closes[pj] * 100 if closes[pj] else 0.0
+        surged = day_chg >= surge_skip_day or break_pct >= surge_skip_break
+        if rp is not None and price > closes[pj] and rc < rp - div_rsi_margin and not surged:
             warns.append(f"RSI다이버전스({rp:.0f}→{rc:.0f})")
 
     # ② 이격 정점 통과: 60선 이격이 자기 최근 최대 대비 후퇴 (가속 종료)
