@@ -57,8 +57,16 @@ def load_manual_holdings() -> list[dict]:
         return []
 
 
-async def collect_screen_picks(adapter, per_strategy: int = 8) -> list[dict]:
-    """오늘 A/B/C 전략 포착 종목 (유니버스: 주도주 + 핫종목)."""
+async def collect_screen_picks(adapter, per_strategy: int = 8,
+                               drop_today: bool = False) -> list[dict]:
+    """오늘 A/B/C 전략 포착 종목 (유니버스: 주도주 + 핫종목).
+
+    drop_today: 마지막 봉이 '오늘'(장전 미완성 봉)이면 제외하고 전일 마감 기준 평가.
+                us_morning(07:30 장전) 시초 Top3용 — real ohlcv는 장전에 당일 복제봉을 줌.
+    """
+    from datetime import datetime as _dt
+    _today = _dt.now().strftime("%Y%m%d") if drop_today else None
+
     cfg = load_screener_config()
     strategies = cfg.enabled_strategies()
     min_price = cfg.global_filters.get("min_price", 0)
@@ -102,6 +110,8 @@ async def collect_screen_picks(adapter, per_strategy: int = 8) -> list[dict]:
             c = await adapter.get_ohlcv(tk, days=180)
         except Exception:
             continue
+        if drop_today and c and c[-1].date == _today:  # 장전 미완성 당일봉 제외
+            c = c[:-1]
         if len(c) < 135 or c[-1].close < min_price:
             continue
         change_pct = (c[-1].close - c[-2].close) / c[-2].close * 100 if len(c) >= 2 and c[-2].close else 0.0

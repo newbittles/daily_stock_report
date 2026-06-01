@@ -217,7 +217,7 @@ async def run_full(mode: ReportMode, *, do_publish: bool = True, do_telegram: bo
             from src.market_report.top3 import select_top3
             s = get_settings()
             adapter = KisAdapter(s.kis_app_key, s.kis_app_secret, s.kis_account_no, s.kis_env)
-            snap.screen_picks = await collect_screen_picks(adapter)
+            snap.screen_picks = await collect_screen_picks(adapter, drop_today=True)  # 장전 미완성봉 제외
             # 종목 테마 채우기 (judal → 세분업종 폴백) — 미국 강세테마 매칭에 필요
             try:
                 from src.market_report.scrapers.judal import _is_nontheme, build_judal_theme_map
