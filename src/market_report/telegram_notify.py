@@ -26,9 +26,12 @@ def _naver_link(name: str, ticker: str) -> str:
 
 
 def _format_strategy_holdings(snap: MarketSnapshot) -> list[str]:
-    """Top3 + A/B/C/D 스크린 + 보유종목 상태 요약 (종목명=네이버링크, 상승률·테마 병기)."""
+    """Top3 + 보유종목 상태 요약 (종목명=네이버링크, 상승률·손절 병기).
+
+    A/B/C/D 전략 스크린은 텔레그램에서 제외 — 웹 '전체 리포트 보기'에서만 표시(메시지 간결화).
+    """
     lines: list[str] = []
-    # ★ 오늘의 추천 Top3 (가장 먼저)
+    # ★ 오늘의 추천 Top3
     if getattr(snap, "top3", None):
         lines.append("🏆 *오늘의 추천 Top 3*")
         for i, t in enumerate(snap.top3, 1):
@@ -39,26 +42,6 @@ def _format_strategy_holdings(snap: MarketSnapshot) -> list[str]:
             if t.get("stop_price"):
                 lines.append(f"   ✂️ 손절 {t['stop_price']:,.0f}원 "
                              f"({t.get('stop_pct', 0):+.1f}%)")
-        lines.append("")
-    if snap.screen_picks:
-        lines.append("🎯 *전략 스크린*")
-        seen: dict[str, list] = {}
-        for p in snap.screen_picks:
-            seen.setdefault(p["strategy"], []).append(p)
-        for strat in sorted(seen.keys()):
-            lines.append(f"*{strat}*")
-            for i in seen[strat]:
-                sign = "+" if i.get("change_pct", 0) >= 0 else ""
-                warn = " ⚠️끝물" if i.get("endstage") else ""
-                _tlabel = "업종" if i.get("theme_kind") == "sector" else "테마"
-                theme = f" _{_tlabel}:{i['theme']}_" if i.get("theme") else ""
-                lines.append(
-                    f"  • {_naver_link(i['name'], i['ticker'])} "
-                    f"{sign}{i.get('change_pct', 0):.1f}%{theme}{warn}"
-                )
-                if i.get("stop_price"):
-                    lines.append(f"     ✂️손절 {i['stop_price']:,.0f}원"
-                                 f"({i.get('stop_pct', 0):+.1f}%)")
         lines.append("")
     if snap.holdings_status:
         lines.append("📋 *보유종목 상태*")
@@ -96,15 +79,12 @@ def _format_pre_summary(snap: MarketSnapshot) -> str:
         lines.append(snap.summary)
         lines.append("")
 
-    # 종가베팅 후보 짧게 (5개)
-    if snap.candidate_picks:
-        lines.append("🎯 *종가베팅 후보*")
-        for i, p in enumerate(snap.candidate_picks[:5], 1):
-            name = p.get("name", "?")
-            ticker = p.get("ticker", "")
-            theme = p.get("theme", "")
-            theme_str = f" [{theme}]" if theme else ""
-            lines.append(f"{i}. {name} ({ticker}){theme_str}")
+    # 강세 테마 Top 3
+    if snap.top_themes:
+        lines.append("🔥 *강세 테마*")
+        for t in snap.top_themes[:3]:
+            sign = "+" if t.change_pct >= 0 else ""
+            lines.append(f"  · {t.name} {sign}{t.change_pct:.2f}%")
         lines.append("")
 
     lines.extend(_format_strategy_holdings(snap))
@@ -144,15 +124,6 @@ def _format_post_summary(snap: MarketSnapshot) -> str:
             sign = "+" if t.change_pct >= 0 else ""
             lines.append(f"  · {t.name} {sign}{t.change_pct:.2f}%")
         lines.append("")
-
-    # 내일 관전 포인트
-    if snap.candidate_picks:
-        watchpoints = [p.get("watchpoint", "") for p in snap.candidate_picks if p.get("watchpoint")]
-        if watchpoints:
-            lines.append("🔭 *내일 관전 포인트*")
-            for w in watchpoints[:3]:
-                lines.append(f"  · {w}")
-            lines.append("")
 
     lines.extend(_format_strategy_holdings(snap))
     lines.append(f"📄 [전체 리포트 보기]({url})")

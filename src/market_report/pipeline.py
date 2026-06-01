@@ -27,12 +27,13 @@ async def collect_snapshot(mode: ReportMode) -> MarketSnapshot:
     """모든 스크래퍼를 병렬 호출해 시장 스냅샷 구성."""
     logger.info("snapshot_collect_start mode=%s", mode)
 
+    # 종목순위는 ETF/ETN/우선주가 상위를 다수 차지 → 넉넉히 받아 필터 후 자름
     results = await asyncio.gather(
         fetch_index("KOSPI"),
         fetch_index("KOSDAQ"),
-        fetch_top_volume("KOSPI", top=30),
-        fetch_top_gainers("KOSPI", top=15),
-        fetch_top_losers("KOSPI", top=15),
+        fetch_top_volume("KOSPI", top=60),
+        fetch_top_gainers("KOSPI", top=40),
+        fetch_top_losers("KOSPI", top=40),
         fetch_top_themes(top=10),
         fetch_market_news(top=15),
         return_exceptions=True,
@@ -45,14 +46,22 @@ async def collect_snapshot(mode: ReportMode) -> MarketSnapshot:
             return default
         return r
 
+    # 종목 스크린과 동일 기준 — ETF/ETN/우선주 제외 (위험/거래정지는 naver 데이터 한계, 별도 TODO)
+    from src.screener.pipeline import _is_etf, _is_pref
+
+    def _clean_rank(stocks, limit):
+        out = [s for s in stocks
+               if not _is_etf(getattr(s, "name", "")) and not _is_pref(getattr(s, "name", ""))]
+        return out[:limit]
+
     snap = MarketSnapshot(
         mode=mode,
         generated_at=datetime.now(),
         kospi=_safe(0, None),
         kosdaq=_safe(1, None),
-        top_volume=_safe(2, []),
-        top_gainers=_safe(3, []),
-        top_losers=_safe(4, []),
+        top_volume=_clean_rank(_safe(2, []), 20),
+        top_gainers=_clean_rank(_safe(3, []), 15),
+        top_losers=_clean_rank(_safe(4, []), 15),
         top_themes=_safe(5, []),
         market_news=_safe(6, []),
     )

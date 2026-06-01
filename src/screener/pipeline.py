@@ -49,7 +49,8 @@ class StockPick:
 
 def _is_etf(name: str) -> bool:
     keywords = ("KODEX", "TIGER", "KBSTAR", "ARIRANG", "HANARO", "KOSEF",
-                "SOL ", "ACE ", "PLUS ", "RISE ", "TIMEFOLIO", "레버리지", "인버스", "선물")
+                "SOL ", "ACE ", "PLUS ", "RISE ", "TIMEFOLIO", "레버리지", "인버스", "선물",
+                "ETN", "ETF")  # ETN/ETF 명시 제외
     upper = name.upper()
     return any(k.upper() in upper for k in keywords)
 
