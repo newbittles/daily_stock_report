@@ -171,12 +171,14 @@ async def send_report(snap: MarketSnapshot) -> bool:
     bot = Bot(token=settings.telegram_bot_token)
     notifier = TelegramNotifier(bot=bot)
 
-    # 화이트리스트 첫 chat_id로 발송 (필요시 전체 broadcast로 확장 가능)
-    chat_id = str(chat_ids[0])
-    try:
-        await notifier.send(chat_id, text)
-        logger.info("telegram_sent mode=%s chat_id=%s", snap.mode, chat_id)
-        return True
-    except Exception as exc:
-        logger.error("telegram_send_failed mode=%s error=%s", snap.mode, exc)
-        return False
+    # 화이트리스트 전체 수신자에게 발송 (여러 명 가능)
+    ok_any = False
+    for cid in chat_ids:
+        cid = str(cid)
+        try:
+            await notifier.send(cid, text)
+            logger.info("telegram_sent mode=%s chat_id=%s", snap.mode, cid)
+            ok_any = True
+        except Exception as exc:
+            logger.error("telegram_send_failed mode=%s chat_id=%s error=%s", snap.mode, cid, exc)
+    return ok_any

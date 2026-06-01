@@ -8,6 +8,10 @@
 """
 from __future__ import annotations
 
+import re
+
+_PREF_RE = re.compile(r"우[A-C]?$")  # 우선주(삼성전기우, 한화3우B 등) — Top3에서 제외(보통주 우선)
+
 # P4 가중치 (백테스트 확정) + supply(수급, 실시간 보강)
 WEIGHTS = {"strat": 3.0, "mom": 0.5, "liq": 0.5, "align": 0.1, "nh": 1.0, "supply": 2.0, "end": 6.0}
 _STRAT_W = {"D. 추세 반전": 2.5, "C. 대세 정배열 추세추종": 3.0,
@@ -30,9 +34,11 @@ def select_top3(screen_picks: list[dict], foreign_buy: set[str] | None = None,
     w = w or WEIGHTS
     fb, ib = foreign_buy or set(), inst_buy or set()
 
-    # 종목별 집계 (여러 전략 매칭 → 최고 strat 전략 채택)
+    # 종목별 집계 (여러 전략 매칭 → 최고 strat 전략 채택). 우선주 제외(보통주 우선).
     by_ticker: dict[str, dict] = {}
     for p in screen_picks:
+        if _PREF_RE.search(p.get("name", "")):
+            continue
         tk = p["ticker"]
         sw = _strat_weight(p["strategy"])
         cur = by_ticker.get(tk)
