@@ -37,8 +37,8 @@ def _format_strategy_holdings(snap: MarketSnapshot) -> list[str]:
                          f"{t['price']:,.0f}원 ({sign}{t.get('change_pct', 0):.1f}%)")
             lines.append(f"   └ {t['reason']}")
             if t.get("stop_price"):
-                lines.append(f"   ✂️ 손절 {t.get('stop_ma', 20)}일선 "
-                             f"{t['stop_price']:,.0f}원 ({t.get('stop_pct', 0):+.1f}%)")
+                lines.append(f"   ✂️ 손절 {t['stop_price']:,.0f}원 "
+                             f"({t.get('stop_pct', 0):+.1f}%, 1.5×ATR)")
         lines.append("")
     if snap.screen_picks:
         lines.append("🎯 *전략 스크린*")
@@ -57,8 +57,8 @@ def _format_strategy_holdings(snap: MarketSnapshot) -> list[str]:
                     f"{sign}{i.get('change_pct', 0):.1f}%{theme}{warn}"
                 )
                 if i.get("stop_price"):
-                    lines.append(f"     ✂️손절 {i.get('stop_ma', 20)}선 "
-                                 f"{i['stop_price']:,.0f}원({i.get('stop_pct', 0):+.1f}%)")
+                    lines.append(f"     ✂️손절 {i['stop_price']:,.0f}원"
+                                 f"({i.get('stop_pct', 0):+.1f}%)")
         lines.append("")
     if snap.holdings_status:
         lines.append("📋 *보유종목 상태*")

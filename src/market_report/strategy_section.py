@@ -13,7 +13,7 @@ from pathlib import Path
 import yaml
 
 from src.alerts.holdings_report import diagnose_holdings
-from src.indicators.core import moving_average
+from src.indicators.core import average_true_range, moving_average
 from src.screener.config import load_screener_config
 from src.screener.engine import evaluate_strategy
 from src.screener.pipeline import _is_etf, _is_pref
@@ -109,22 +109,24 @@ async def collect_screen_picks(adapter, per_strategy: int = 8) -> list[dict]:
         from math import log10
         _closes = [x.close for x in c]
         _ma20 = moving_average(_closes, 20)[-1]
-        _ma60 = moving_average(_closes, 60)[-1]
         _liq = log10(max(c[-1].close * c[-1].volume, 1))
         _gap20 = (c[-1].close - _ma20) / _ma20 * 100 if _ma20 else 0.0
         _hi60 = max(x.high for x in c[-60:])
         _nh = (c[-1].close / _hi60 - 0.97) * 100 if _hi60 else 0.0
+        # ATR(변동성) 기반 손절가 — 현재가 - 1.5×ATR. 급등주는 넓게, 안정주는 좁게 자동.
+        # 배수 1.5: 한 달 백테스트상 종가베팅 다음날 손절 7.4%(2.0×는 0% 무의미, 1.0×는 18.5% 휩쏘 과다)
+        _atr = average_true_range([x.high for x in c], [x.low for x in c], _closes, 14)
+        _price = c[-1].close
+        if _atr and _price:
+            _stop_price = max(_price - 1.5 * _atr, 0.0)
+            _stop_pct = (_stop_price - _price) / _price * 100  # 음수 = 하락 손절폭
+        else:
+            _stop_price, _stop_pct = 0.0, 0.0
         for s in strategies:
             if counts.get(s.name, 0) >= per_strategy:
                 continue
             res = evaluate_strategy(s.name, s.opinion, s.conditions, c, change_pct)
             if res.matched:
-                # 손절선: C/D=60일선, B/A=20일선 (2일 연속 종가 이탈 기준)
-                _stop_ma = 60 if s.name[:2] in ("C.", "D.") else 20
-                _stop_price = _ma60 if _stop_ma == 60 else _ma20
-                # 현재가 대비 손절선 위치(보통 음수 = 그만큼 하락 시 손절)
-                _stop_pct = ((_stop_price - c[-1].close) / c[-1].close * 100
-                             if _stop_price else 0.0)
                 picks.append({
                     "strategy": s.name,
                     "ticker": tk, "name": nm,
@@ -133,7 +135,7 @@ async def collect_screen_picks(adapter, per_strategy: int = 8) -> list[dict]:
                     "reason": "; ".join(res.reasons),
                     "endstage": bool(res.metrics.get("endstage")),
                     "_liq": round(_liq, 2), "_gap20": round(_gap20, 1), "_nh": round(_nh, 2),
-                    "stop_ma": _stop_ma, "stop_price": round(_stop_price, 1) if _stop_price else 0,
+                    "stop_price": round(_stop_price, 1) if _stop_price else 0,
                     "stop_pct": round(_stop_pct, 1),
                     "theme": "",            # pipeline에서 judal 테마/업종 폴백으로 채움
                     "theme_kind": "",       # "theme"(judal 테마) | "sector"(네이버 세분업종)

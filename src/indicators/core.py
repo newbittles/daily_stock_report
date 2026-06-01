@@ -22,6 +22,27 @@ def moving_average(values: list[float], period: int) -> list[float | None]:
     return result
 
 
+def average_true_range(
+    highs: list[float], lows: list[float], closes: list[float], period: int = 14
+) -> float | None:
+    """ATR(평균진폭) — 최근 period일 True Range 평균. 변동성 기반 손절폭 산정용.
+
+    TR = max(고-저, |고-전일종가|, |저-전일종가|). 데이터 부족 시 None.
+    급등주는 ATR이 커 손절폭이 넓고, 안정주는 좁다 → 종목별 적정 손절 자동.
+    """
+    n = min(len(highs), len(lows), len(closes))
+    if n < period + 1:
+        return None
+    trs: list[float] = []
+    for i in range(1, n):
+        tr = max(highs[i] - lows[i],
+                 abs(highs[i] - closes[i - 1]),
+                 abs(lows[i] - closes[i - 1]))
+        trs.append(tr)
+    recent = trs[-period:]
+    return sum(recent) / len(recent) if recent else None
+
+
 def ema(values: list[float], period: int) -> list[float | None]:
     """지수이동평균(EMA). 첫 유효값은 SMA로 시드."""
     if period <= 0:

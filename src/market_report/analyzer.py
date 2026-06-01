@@ -304,3 +304,87 @@ async def analyze(snap: MarketSnapshot) -> MarketSnapshot:
         snap.mode, len(snap.candidate_picks), len(snap.summary)
     )
     return snap
+
+
+async def summarize_stocks(snap: MarketSnapshot) -> None:
+    """Top3 + 전략스크린 종목별 AI 요약을 1회 배치 호출로 사전 생성.
+
+    정적 리포트(GitHub Pages)에 임베드할 종목별 요약을 미리 만들어 각 dict에
+    'ai_summary'를 추가한다. 클릭 시 실시간 호출(키 노출) 대신 사전 생성 방식.
+    종목 수만큼 호출하지 않고 한 프롬프트에 모아 1회만 호출(한도·시간 절약).
+    실패/키 없음/한도 시 빈 문자열 → 프론트에서 버튼 미표시.
+    """
+    import asyncio
+    import random
+
+    settings = get_settings()
+    if not settings.gemini_api_key:
+        return
+
+    # 대상 종목 수집 (top3 ∪ screen_picks, ticker 중복 1회)
+    targets: dict[str, dict] = {}
+    for src_list in ((snap.top3 or []), snap.screen_picks or []):
+        for p in src_list:
+            tk = str(p.get("ticker", "")).strip()
+            if tk and tk not in targets:
+                targets[tk] = p
+    if not targets:
+        return
+
+    lines = []
+    for tk, p in targets.items():
+        sp = p.get("stop_price")
+        stop = f"손절 {sp:,.0f}원({p.get('stop_pct', 0):+.1f}%, 1.5xATR)" if sp else "손절기준 없음"
+        lead = "(주도주)" if p.get("is_theme_leader") else ""
+        lines.append(
+            f"- {tk} {p.get('name', '')} | 등락 {p.get('change_pct', 0):+.1f}% "
+            f"| 추천진입가(현재가) {p.get('price', 0):,.0f}원 | {stop} "
+            f"| 테마 {p.get('theme', '-') or '-'}{lead} | 시그널 {str(p.get('strategy', ''))[:2]} "
+            f"| 근거 {str(p.get('reason', ''))[:80]}"
+        )
+    blob = "\n".join(lines)
+
+    prompt = (
+        "다음은 오늘 한국 증시에서 기술적 시그널로 포착된 종목들이다. 각 종목에 대해 "
+        "개인투자자가 '이 종목 왜 주목받나?'를 이해하도록 2~3문장으로 요약하라.\n"
+        "반드시 포함: ①테마/주도주 여부 ②오늘 등락 맥락(왜 올랐나/조정인가) "
+        "③추천 진입가(현재가)와 손절가 안내.\n"
+        "투자 단정·매수 추천 금지(참고용 시그널 톤). 수치는 아래 주어진 값만 사용하고 "
+        "지어내지 말 것. 뉴스는 모르면 언급하지 말 것.\n\n"
+        f"종목 목록:\n{blob}\n\n"
+        '반드시 JSON으로만 답하라: {"종목코드": "요약문", ...}'
+    )
+
+    client = genai.Client(api_key=settings.gemini_api_key)
+    data: dict[str, Any] | None = None
+    for attempt in range(3):
+        try:
+            if attempt > 0:
+                await asyncio.sleep(random.uniform(2 * (2 ** (attempt - 1)), 5 * (2 ** (attempt - 1))))
+            response = client.models.generate_content(
+                model=MODEL_NAME,
+                contents=prompt,
+                config=types.GenerateContentConfig(
+                    response_mime_type="application/json", temperature=0.3),
+            )
+            data = json.loads(response.text or "{}")
+            break
+        except Exception as exc:  # noqa: BLE001
+            logger.warning("stock_summary_attempt_failed attempt=%d error=%s", attempt, exc)
+
+    if not isinstance(data, dict):
+        logger.error("stock_summary_failed — 종목 요약 생성 실패")
+        return
+
+    def _put(p: dict) -> None:
+        tk = str(p.get("ticker", "")).strip()
+        s = data.get(tk, "")
+        if isinstance(s, (dict, list)):
+            s = json.dumps(s, ensure_ascii=False)
+        p["ai_summary"] = str(s or "").strip()
+
+    for p in (snap.top3 or []):
+        _put(p)
+    for p in (snap.screen_picks or []):
+        _put(p)
+    logger.info("stock_summary_ok n=%d", len(targets))

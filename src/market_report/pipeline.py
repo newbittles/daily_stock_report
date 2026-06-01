@@ -211,6 +211,13 @@ async def run_full(mode: ReportMode, *, do_publish: bool = True, do_telegram: bo
 
         logger.info("pipeline_strategy_ready picks=%d holdings=%d top3=%d",
                     len(snap.screen_picks), len(snap.holdings_status), len(snap.top3))
+
+        # 종목별 AI 요약 사전 생성 (정적 리포트 임베드용 — 클릭 시 모달 표시)
+        try:
+            from src.market_report.analyzer import summarize_stocks
+            await summarize_stocks(snap)
+        except Exception as exc:
+            logger.warning("stock_summary_skip error=%s", exc)
     except Exception as exc:
         logger.error("pipeline_strategy_failed error=%s", exc)
 
