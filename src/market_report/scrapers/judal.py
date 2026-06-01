@@ -69,7 +69,9 @@ def _pick_theme(cands: list) -> dict:
     비테마 제외 + 종목수 _THEME_CAP 이하(핵심 테마) 중 최대 = 반도체·2차전지 등 대표 선정.
     """
     real = [c for c in cands if not _is_nontheme(c[0])]
-    pool = [c for c in real if c[2] <= _THEME_CAP] or real or cands
+    if not real:  # 유효 테마 없음(계절/비테마뿐) → 빈값 → pipeline에서 업종 폴백
+        return {"theme": "", "idx": ""}
+    pool = [c for c in real if c[2] <= _THEME_CAP] or real
     name, idx, _cnt = max(pool, key=lambda c: c[2])
     return {"theme": name, "idx": idx}
 
