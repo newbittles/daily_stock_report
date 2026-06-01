@@ -46,10 +46,13 @@ _THEME_PATTERN = re.compile(
 _CODE_PATTERN = re.compile(r'item/main\.nhn\?code=(\d{6})')
 _CACHE = Path(__file__).resolve().parent.parent.parent.parent / "data" / "judal_theme_map.json"
 
-# 비테마성(분류·지수·그룹) — 종목 대표 테마로 부적합 → 제외
+# 비테마성(분류·지수·그룹·계절/이벤트) — 종목 대표 테마로 부적합 → 제외
 _NONTHEME = ("MSCI", "코스피", "코스닥", "KRX", "밸류업", "지주", "그룹",
              "우선주", "배당", "PER", "PBR", "스팩", "신규상장", "관리종목",
-             "액면", "증자", "출자", "지분")
+             "액면", "증자", "출자", "지분",
+             # 계절·날씨·일시 이벤트 (대표 테마 부적합)
+             "제습기", "에어컨", "난방", "보일러", "폭염", "한파", "황사",
+             "미세먼지", "장마", "태풍", "김장", "모기", "빙과", "마스크", "감기", "독감")
 
 
 def _is_nontheme(name: str) -> bool:
