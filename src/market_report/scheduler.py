@@ -1,7 +1,7 @@
 """일일 리포트 스케줄러 — APScheduler cron 잡.
 
 평일(월~금) 한국시간 기준:
-  - 14:50 → 마감 전 리포트 (종가베팅 후보)
+  - 14:40 → 마감 전 리포트 (종가베팅 후보)
   - 16:30 → 마감 후 리포트 (시장 정리)
 
 실행:
@@ -59,11 +59,11 @@ async def _dashboard_job() -> None:
 
 
 def build_scheduler() -> AsyncIOScheduler:
-    """평일 14:50 / 16:30 트리거 등록."""
+    """평일 14:40 / 16:30 트리거 등록."""
     scheduler = AsyncIOScheduler(timezone=KST)
 
     scheduler.add_job(
-        _job, CronTrigger(day_of_week="mon-fri", hour=14, minute=50, timezone=KST),
+        _job, CronTrigger(day_of_week="mon-fri", hour=14, minute=40, timezone=KST),
         args=["pre_close"], id="report_pre", replace_existing=True,
         misfire_grace_time=600,
     )
@@ -89,7 +89,7 @@ async def run_forever() -> None:
     scheduler = build_scheduler()
     scheduler.start()
 
-    logger.info("scheduler_started — 평일 14:50 (마감 전) + 16:30 (마감 후)")
+    logger.info("scheduler_started — 평일 14:40 (마감 전) + 16:30 (마감 후)")
     for job in scheduler.get_jobs():
         logger.info("  job=%s next_run=%s", job.id, job.next_run_time)
 

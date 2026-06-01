@@ -20,6 +20,7 @@ from bs4 import BeautifulSoup
 
 from src.market_report.http import fetch
 from src.market_report.models import ThemeRank
+from src.market_report.scrapers.judal import _is_nontheme
 
 logger = logging.getLogger(__name__)
 
@@ -74,6 +75,8 @@ async def fetch_top_themes(top: int = 10) -> list[ThemeRank]:
         if not name_link:
             continue
         theme_name = name_link.get_text(strip=True)
+        if _is_nontheme(theme_name):  # 계절/비테마(제습기·에어컨·독감 등) 강세테마 제외
+            continue
 
         # 등락률 추출 (텍스트에서 % 포함된 값 찾기)
         change_pct = 0.0
