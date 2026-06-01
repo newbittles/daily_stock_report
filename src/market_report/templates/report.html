@@ -381,7 +381,6 @@
         <div class="top3-head">
           <span class="top3-rank">{{ loop.index }}</span>
           <a href="https://finance.naver.com/item/main.naver?code={{ t.ticker }}" target="_blank" rel="noopener"><strong>{{ t.name }}</strong></a>
-          <span class="code">{{ t.ticker }}</span>
           <span class="px">{{ "{:,.0f}".format(t.price) }}원</span>
           <span class="{{ 'up-text' if t.change_pct >= 0 else 'down-text' }}">{{ '+' if t.change_pct >= 0 else '' }}{{ "{:.1f}".format(t.change_pct) }}%</span>
           {% if t.endstage %}<span class="down-text">⚠️끝물</span>{% endif %}
@@ -516,7 +515,7 @@
             {% for p in items %}
             <li>
               <a href="https://finance.naver.com/item/main.naver?code={{ p.ticker }}" target="_blank" rel="noopener"><strong>{{ p.name }}</strong></a>
-              <span class="code">{{ p.ticker }}</span>
+              <span class="px">{{ "{:,.0f}".format(p.price) }}원</span>
               <span class="{{ 'up-text' if p.change_pct >= 0 else 'down-text' }}">{{ '+' if p.change_pct >= 0 else '' }}{{ "{:.1f}".format(p.change_pct) }}%</span>
               {% if p.endstage %}<span class="down-text">⚠️끝물</span>{% endif %}
               <div class="theme-reason">{{ p.reason }}</div>
