@@ -13,6 +13,7 @@ from pathlib import Path
 import yaml
 
 from src.alerts.holdings_report import diagnose_holdings
+from src.indicators.core import moving_average
 from src.screener.config import load_screener_config
 from src.screener.engine import evaluate_strategy
 from src.screener.pipeline import _is_etf
