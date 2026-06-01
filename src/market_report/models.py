@@ -100,6 +100,8 @@ class MarketSnapshot:
     theme_commentary: str = ""  # 강세 테마 해설
     candidate_picks: list[dict] = field(default_factory=list)  # 종가베팅 후보 (pre_close용)
 
+    # Top3 종합 추천 (A/B/C/D + 주도주·거래량·수급 종합 → 딱 3종목, pipeline이 채움)
+    top3: list[dict] = field(default_factory=list)           # {ticker, name, price, change_pct, score, reason, ...}
     # 전략 스크린 결과 (A/B/C — 오늘 포착, pipeline이 KIS로 채움)
     screen_picks: list[dict] = field(default_factory=list)   # {strategy, ticker, name, price, reason, endstage}
     # 보유종목 상태 (홀딩/손절/추가매수 — pipeline이 채움)

@@ -104,6 +104,14 @@ async def collect_screen_picks(adapter, per_strategy: int = 8) -> list[dict]:
         if len(c) < 135 or c[-1].close < min_price:
             continue
         change_pct = (c[-1].close - c[-2].close) / c[-2].close * 100 if len(c) >= 2 and c[-2].close else 0.0
+        # Top3 종합점수용 지표 (거래대금·20선이격·신고가근접)
+        from math import log10
+        _closes = [x.close for x in c]
+        _ma20 = moving_average(_closes, 20)[-1]
+        _liq = log10(max(c[-1].close * c[-1].volume, 1))
+        _gap20 = (c[-1].close - _ma20) / _ma20 * 100 if _ma20 else 0.0
+        _hi60 = max(x.high for x in c[-60:])
+        _nh = (c[-1].close / _hi60 - 0.97) * 100 if _hi60 else 0.0
         for s in strategies:
             if counts.get(s.name, 0) >= per_strategy:
                 continue
@@ -116,6 +124,7 @@ async def collect_screen_picks(adapter, per_strategy: int = 8) -> list[dict]:
                     "change_pct": round(change_pct, 2),
                     "reason": "; ".join(res.reasons),
                     "endstage": bool(res.metrics.get("endstage")),
+                    "_liq": round(_liq, 2), "_gap20": round(_gap20, 1), "_nh": round(_nh, 2),
                     "theme": "",            # pipeline에서 judal 테마/업종 폴백으로 채움
                     "theme_kind": "",       # "theme"(judal 테마) | "sector"(네이버 세분업종)
                     "theme_idx": "",        # judal themeIdx (테마 링크용)

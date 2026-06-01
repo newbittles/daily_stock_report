@@ -198,8 +198,19 @@ async def run_full(mode: ReportMode, *, do_publish: bool = True, do_telegram: bo
                         p["theme_kind"] = "sector"
         except Exception as exc:
             logger.warning("sector_fallback_failed error=%s", exc)
-        logger.info("pipeline_strategy_ready picks=%d holdings=%d",
-                    len(snap.screen_picks), len(snap.holdings_status))
+
+        # Top3 종합추천 — 수급(외인/기관 순매수) 수집 후 P4 점수로 3종목 선정
+        try:
+            from src.market_report.top3 import select_top3
+            fb = {x["ticker"] for x in await adapter.get_investor_net_buy("foreign", "buy")}
+            ib = {x["ticker"] for x in await adapter.get_investor_net_buy("inst", "buy")}
+            snap.top3 = select_top3(snap.screen_picks, foreign_buy=fb, inst_buy=ib)
+            logger.info("pipeline_top3_ready top3=%s", [t["name"] for t in snap.top3])
+        except Exception as exc:
+            logger.warning("top3_failed error=%s", exc)
+
+        logger.info("pipeline_strategy_ready picks=%d holdings=%d top3=%d",
+                    len(snap.screen_picks), len(snap.holdings_status), len(snap.top3))
     except Exception as exc:
         logger.error("pipeline_strategy_failed error=%s", exc)
 

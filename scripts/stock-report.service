@@ -12,6 +12,9 @@ Environment=MPLBACKEND=Agg
 ExecStart=/home/ubuntu/stock_report/venv/bin/python -X utf8 -m src.market_report.scheduler
 Restart=always
 RestartSec=30
+# 전송 성공/실패 등 모든 로그를 파일에 누적 (journalctl 외에 파일로도 확인)
+StandardOutput=append:/home/ubuntu/stock_report/logs/scheduler.log
+StandardError=append:/home/ubuntu/stock_report/logs/scheduler.log
 
 [Install]
 WantedBy=multi-user.target

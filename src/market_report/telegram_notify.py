@@ -26,8 +26,17 @@ def _naver_link(name: str, ticker: str) -> str:
 
 
 def _format_strategy_holdings(snap: MarketSnapshot) -> list[str]:
-    """A/B/C/D 스크린 + 보유종목 상태 요약 (종목명=네이버링크, 상승률·테마 병기)."""
+    """Top3 + A/B/C/D 스크린 + 보유종목 상태 요약 (종목명=네이버링크, 상승률·테마 병기)."""
     lines: list[str] = []
+    # ★ 오늘의 추천 Top3 (가장 먼저)
+    if getattr(snap, "top3", None):
+        lines.append("🏆 *오늘의 추천 Top 3*")
+        for i, t in enumerate(snap.top3, 1):
+            sign = "+" if t.get("change_pct", 0) >= 0 else ""
+            lines.append(f"{i}. {_naver_link(t['name'], t['ticker'])} "
+                         f"{t['price']:,.0f}원 ({sign}{t.get('change_pct', 0):.1f}%)")
+            lines.append(f"   └ {t['reason']}")
+        lines.append("")
     if snap.screen_picks:
         lines.append("🎯 *전략 스크린*")
         seen: dict[str, list] = {}
