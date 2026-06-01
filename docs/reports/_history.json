@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-06-02",
+    "time": "07:00",
+    "mode": "us_morning",
+    "url": "reports/2026-06-02-us.html",
+    "summary": "미국 증시는 혼조세를 보이며 마감했습니다. S&P500과 나스닥은 소폭 상승했지만, 다우 지수는 강보합에 머물렀습니다. 반도체 섹터의 강세가 두드러졌습니다.",
+    "kospi_pct": null,
+    "kosdaq_pct": null
+  },
+  {
+    "date": "2026-06-02",
     "time": "06:14",
     "mode": "post_close",
     "url": "reports/2026-06-02-post.html",
