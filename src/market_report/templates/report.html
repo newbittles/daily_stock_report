@@ -406,7 +406,7 @@
         </div>
         <div class="top3-reason">{{ t.reason }}</div>
         {% if t.stop_price %}
-        <div class="top3-reason" style="color:var(--red);">✂️ 손절 {{ "{:,.0f}".format(t.stop_price) }}원 ({{ '+' if t.stop_pct >= 0 else '' }}{{ "{:.1f}".format(t.stop_pct) }}%, 1.5×ATR)</div>
+        <div class="top3-reason" style="color:var(--red);">✂️ 손절 {{ "{:,.0f}".format(t.stop_price) }}원 ({{ '+' if t.stop_pct >= 0 else '' }}{{ "{:.1f}".format(t.stop_pct) }}%)</div>
         {% endif %}
       </div>
       {% endfor %}
@@ -542,7 +542,7 @@
               {% if p.ai_summary %}<button type="button" class="ai-btn" onclick="showAI(this)" data-name="{{ p.name }}" data-summary="{{ p.ai_summary|e }}">🤖 AI요약</button>{% endif %}
               <div class="theme-reason">{{ p.reason }}</div>
               {% if p.stop_price %}
-              <div class="pick-meta" style="color:var(--red);">✂️ 손절 {{ "{:,.0f}".format(p.stop_price) }}원 ({{ '+' if p.stop_pct >= 0 else '' }}{{ "{:.1f}".format(p.stop_pct) }}%, 1.5×ATR)</div>
+              <div class="pick-meta" style="color:var(--red);">✂️ 손절 {{ "{:,.0f}".format(p.stop_price) }}원 ({{ '+' if p.stop_pct >= 0 else '' }}{{ "{:.1f}".format(p.stop_pct) }}%)</div>
               {% endif %}
               <div class="pick-meta">
                 {{ '업종' if p.theme_kind == 'sector' else '테마' }}:

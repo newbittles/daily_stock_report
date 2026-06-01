@@ -331,28 +331,31 @@ async def summarize_stocks(snap: MarketSnapshot) -> None:
     if not targets:
         return
 
+    # 컨텍스트: 강세 테마(주도주) + 시장 뉴스 → "왜 올랐나" 추론 근거
+    theme_blob = "\n".join(
+        f"- {t.name} {t.change_pct:+.1f}% [주도주 {', '.join(t.leading_stocks[:3]) or '-'}]"
+        for t in (snap.top_themes or [])[:10])
+    news_blob = "\n".join(f"- {n.title}" for n in (snap.market_news or [])[:15])
+
     lines = []
     for tk, p in targets.items():
-        sp = p.get("stop_price")
-        stop = f"손절 {sp:,.0f}원({p.get('stop_pct', 0):+.1f}%, 1.5xATR)" if sp else "손절기준 없음"
-        lead = "(주도주)" if p.get("is_theme_leader") else ""
+        lead = "(테마 주도주)" if p.get("is_theme_leader") else ""
         lines.append(
-            f"- {tk} {p.get('name', '')} | 등락 {p.get('change_pct', 0):+.1f}% "
-            f"| 추천진입가(현재가) {p.get('price', 0):,.0f}원 | {stop} "
-            f"| 테마 {p.get('theme', '-') or '-'}{lead} | 시그널 {str(p.get('strategy', ''))[:2]} "
-            f"| 근거 {str(p.get('reason', ''))[:80]}"
+            f"- {tk} {p.get('name', '')} | 오늘 {p.get('change_pct', 0):+.1f}% "
+            f"| 테마 {p.get('theme', '-') or '-'}{lead}"
         )
     blob = "\n".join(lines)
 
     prompt = (
-        "다음은 오늘 한국 증시에서 기술적 시그널로 포착된 종목들이다. 각 종목에 대해 "
-        "개인투자자가 '이 종목 왜 주목받나?'를 이해하도록 2~3문장으로 요약하라.\n"
-        "반드시 포함: ①테마/주도주 여부 ②오늘 등락 맥락(왜 올랐나/조정인가) "
-        "③추천 진입가(현재가)와 손절가 안내.\n"
-        "투자 단정·매수 추천 금지(참고용 시그널 톤). 수치는 아래 주어진 값만 사용하고 "
-        "지어내지 말 것. 뉴스는 모르면 언급하지 말 것.\n\n"
-        f"종목 목록:\n{blob}\n\n"
-        '반드시 JSON으로만 답하라: {"종목코드": "요약문", ...}'
+        "다음은 오늘 한국 증시에서 시그널이 포착된 종목들이다. 각 종목이 "
+        "**오늘 왜 올랐는지(또는 강세인지)** 를 1~2문장으로 간단히 요약하라.\n"
+        "근거는 ①주요 뉴스 ②소속 테마 ③주도주 여부 중심으로. "
+        "진입가·손절가·매수추천은 절대 언급하지 말 것(그건 따로 표시됨). "
+        "뉴스에 근거가 없으면 테마·수급 맥락으로 설명하되, 사실을 지어내지 말 것.\n\n"
+        f"[오늘 강세 테마]\n{theme_blob}\n\n"
+        f"[시장 뉴스 헤드라인]\n{news_blob}\n\n"
+        f"[대상 종목]\n{blob}\n\n"
+        '반드시 JSON으로만 답하라: {"종목코드": "왜 올랐는지 1~2문장", ...}'
     )
 
     client = genai.Client(api_key=settings.gemini_api_key)

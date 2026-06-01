@@ -38,7 +38,7 @@ def _format_strategy_holdings(snap: MarketSnapshot) -> list[str]:
             lines.append(f"   └ {t['reason']}")
             if t.get("stop_price"):
                 lines.append(f"   ✂️ 손절 {t['stop_price']:,.0f}원 "
-                             f"({t.get('stop_pct', 0):+.1f}%, 1.5×ATR)")
+                             f"({t.get('stop_pct', 0):+.1f}%)")
         lines.append("")
     if snap.screen_picks:
         lines.append("🎯 *전략 스크린*")
