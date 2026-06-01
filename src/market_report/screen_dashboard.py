@@ -21,7 +21,7 @@ from src.market_report import chart_lightweight as lw
 from src.patterns.core import diagnose_holding
 from src.screener.config import load_screener_config
 from src.screener.engine import evaluate_strategy
-from src.screener.pipeline import _is_etf
+from src.screener.pipeline import _is_etf, _is_pref
 
 logger = logging.getLogger(__name__)
 
@@ -91,7 +91,7 @@ async def collect_dashboard_data(adapter, days_back: int = 12, end_date: str | N
     cmap: dict[str, list] = {}
     names: dict[str, str] = {}
     for tk, nm in universe.items():
-        if exclude_etf and _is_etf(nm):
+        if _is_pref(nm) or (exclude_etf and _is_etf(nm)):  # 우선주 항상 제외
             continue
         await asyncio.sleep(random.uniform(0.2, 0.5))
         try:

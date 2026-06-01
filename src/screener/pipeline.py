@@ -54,6 +54,16 @@ def _is_etf(name: str) -> bool:
     return any(k.upper() in upper for k in keywords)
 
 
+import re as _re  # noqa: E402
+
+_PREF_RE = _re.compile(r"우[A-C]?$")  # 우선주(삼성전기우·현대차2우B 등)
+
+
+def _is_pref(name: str) -> bool:
+    """우선주 여부 — 전 스크린에서 제외(보통주만 평가)."""
+    return bool(_PREF_RE.search((name or "").strip()))
+
+
 async def collect_universe(
     datasource: MarketDataSource,
     watchlist_tickers: list[tuple[str, str]],
@@ -102,7 +112,7 @@ async def run_screening(
 
     picks: list[StockPick] = []
     for ticker, name in universe.items():
-        if exclude_etf and _is_etf(name):
+        if _is_pref(name) or (exclude_etf and _is_etf(name)):  # 우선주 항상 제외
             continue
         try:
             candles = await datasource.get_ohlcv(ticker, days=120)

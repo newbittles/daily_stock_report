@@ -16,7 +16,7 @@ from src.alerts.holdings_report import diagnose_holdings
 from src.indicators.core import moving_average
 from src.screener.config import load_screener_config
 from src.screener.engine import evaluate_strategy
-from src.screener.pipeline import _is_etf
+from src.screener.pipeline import _is_etf, _is_pref
 
 logger = logging.getLogger(__name__)
 
@@ -95,7 +95,7 @@ async def collect_screen_picks(adapter, per_strategy: int = 8) -> list[dict]:
     counts: dict[str, int] = {}
     picks: list[dict] = []
     for tk, nm in universe.items():
-        if exclude_etf and _is_etf(nm):
+        if _is_pref(nm) or (exclude_etf and _is_etf(nm)):  # 우선주 항상 제외
             continue
         await asyncio.sleep(random.uniform(0.2, 0.5))
         try:

@@ -56,12 +56,17 @@ def _is_nontheme(name: str) -> bool:
     return any(k in name for k in _NONTHEME)
 
 
-def _pick_theme(cands: list) -> dict:
-    """후보 테마들 → 대표 1개. 비테마 제외 후 '종목수 최대'(주요 테마).
+_THEME_CAP = 45  # 종목수 상한 — 초과 테마는 범용(스마트폰·밸류업·제습기 등)으로 보고 제외
 
-    종목수 최소(specific)는 네온가스 같은 마이너를 골라 부정확 → 최대(대표성).
+
+def _pick_theme(cands: list) -> dict:
+    """후보 테마들 → 대표 1개. 비테마 제외 + 범용(종목수 과다) 제외 후 그 중 최대.
+
+    종목수 최소(specific)=네온가스 마이너, 무제한 최대=스마트폰/제습기 범용 → 둘 다 부정확.
+    비테마 제외 + 종목수 _THEME_CAP 이하(핵심 테마) 중 최대 = 반도체·2차전지 등 대표 선정.
     """
-    pool = [c for c in cands if not _is_nontheme(c[0])] or cands
+    real = [c for c in cands if not _is_nontheme(c[0])]
+    pool = [c for c in real if c[2] <= _THEME_CAP] or real or cands
     name, idx, _cnt = max(pool, key=lambda c: c[2])
     return {"theme": name, "idx": idx}
 
