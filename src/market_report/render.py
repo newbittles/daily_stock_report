@@ -38,14 +38,14 @@ def _env() -> Environment:
 def report_path(snap: MarketSnapshot) -> Path:
     """리포트 출력 경로."""
     date_str = snap.generated_at.strftime("%Y-%m-%d")
-    suffix = "pre" if snap.mode == "pre_close" else "post"
+    suffix = {"pre_close": "pre", "post_close": "post", "us_morning": "us"}.get(snap.mode, "post")
     return REPORTS_DIR / f"{date_str}-{suffix}.html"
 
 
 def report_url_rel(snap: MarketSnapshot) -> str:
     """index.html → 리포트 상대 URL."""
     date_str = snap.generated_at.strftime("%Y-%m-%d")
-    suffix = "pre" if snap.mode == "pre_close" else "post"
+    suffix = {"pre_close": "pre", "post_close": "post", "us_morning": "us"}.get(snap.mode, "post")
     return f"reports/{date_str}-{suffix}.html"
 
 
@@ -56,11 +56,11 @@ def render_report(snap: MarketSnapshot) -> Path:
     env = _env()
     template = env.get_template("report.html")
 
-    title = (
-        "마감 전 시장 리포트 (종가베팅)"
-        if snap.mode == "pre_close"
-        else "마감 후 시장 리포트"
-    )
+    title = {
+        "pre_close": "마감 전 시장 리포트 (종가베팅)",
+        "post_close": "마감 후 시장 리포트",
+        "us_morning": "미국 증시 아침 요약",
+    }.get(snap.mode, "시장 리포트")
     html = template.render(title=title, snap=snap)
 
     out = report_path(snap)

@@ -82,6 +82,12 @@ def build_scheduler() -> AsyncIOScheduler:
         _dashboard_job, CronTrigger(day_of_week="mon-fri", hour=16, minute=40, timezone=KST),
         id="screen_dashboard", replace_existing=True, misfire_grace_time=900,
     )
+    # 미국장 아침 요약 (07:30 — 미국장 마감 06:00 후, 국장 시작 전)
+    scheduler.add_job(
+        _job, CronTrigger(day_of_week="tue-sat", hour=7, minute=30, timezone=KST),
+        args=["us_morning"], id="report_us_morning", replace_existing=True,
+        misfire_grace_time=900,
+    )
     return scheduler
 
 
@@ -116,7 +122,7 @@ def main() -> int:
         format="%(asctime)s %(levelname)s %(name)s %(message)s",
     )
     parser = argparse.ArgumentParser(description="Daily report scheduler")
-    parser.add_argument("--once", choices=["pre", "post", "holdings", "dashboard"],
+    parser.add_argument("--once", choices=["pre", "post", "us", "holdings", "dashboard"],
                         help="등록된 잡 1회 즉시 실행 후 종료")
     args = parser.parse_args()
 
@@ -125,7 +131,7 @@ def main() -> int:
     elif args.once == "dashboard":
         asyncio.run(_dashboard_job())
     elif args.once:
-        mode = "pre_close" if args.once == "pre" else "post_close"
+        mode = {"pre": "pre_close", "post": "post_close", "us": "us_morning"}[args.once]
         asyncio.run(_job(mode))
     else:
         asyncio.run(run_forever())

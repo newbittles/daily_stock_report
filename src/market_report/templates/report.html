@@ -389,6 +389,44 @@
       </div>
     </header>
 
+    {# 🌎 미국 증시 마감 (us_morning) #}
+    {% if snap.us_indices %}
+    <section>
+      <h2><span class="icon">🌎</span>미국 증시 마감</h2>
+      <div class="indexes">
+        {% for q in snap.us_indices %}
+        <div class="index-card {{ 'up' if q.change_pct >= 0 else 'down' }}">
+          <div class="index-info">
+            <div class="index-name">{{ q.name }}</div>
+            <div class="index-value">{{ "{:,.2f}".format(q.price) }}</div>
+            <div class="index-change {{ 'up-text' if q.change_pct >= 0 else 'down-text' }}">{{ '+' if q.change_pct >= 0 else '' }}{{ "{:.2f}".format(q.change_pct) }}%</div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </section>
+    {% if snap.us_sectors or snap.us_bigtech %}
+    <section>
+      {% if snap.us_sectors %}
+      <h2><span class="icon">🔥</span>강세 섹터</h2>
+      <ul class="watch-list">
+        {% for q in snap.us_sectors %}
+        <li><strong>{{ q.name }}</strong> <span class="up-text">{{ '+' if q.change_pct >= 0 else '' }}{{ "{:.2f}".format(q.change_pct) }}%</span></li>
+        {% endfor %}
+      </ul>
+      {% endif %}
+      {% if snap.us_bigtech %}
+      <h2 style="margin-top:1rem;"><span class="icon">📈</span>주요 종목</h2>
+      <ul class="watch-list">
+        {% for q in snap.us_bigtech[:8] %}
+        <li><strong>{{ q.name }}</strong> <span class="{{ 'up-text' if q.change_pct >= 0 else 'down-text' }}">{{ '+' if q.change_pct >= 0 else '' }}{{ "{:.2f}".format(q.change_pct) }}%</span></li>
+        {% endfor %}
+      </ul>
+      {% endif %}
+    </section>
+    {% endif %}
+    {% endif %}
+
     {# ★ 오늘의 추천 Top3 (A/B/C/D + 주도주·거래량·수급 종합) #}
     {% if snap.top3 %}
     <section class="top3-sec">

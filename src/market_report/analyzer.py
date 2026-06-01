@@ -90,6 +90,42 @@ def _build_snapshot_context(snap: MarketSnapshot) -> str:
     return "\n".join(lines)
 
 
+def _build_us_context(snap: MarketSnapshot) -> str:
+    """미국 증시 스냅샷 → 프롬프트용 텍스트 (us_morning)."""
+    lines: list[str] = []
+    if snap.us_indices:
+        lines.append("[미국 지수]")
+        for q in snap.us_indices:
+            lines.append(f"  {q['name']}: {q['price']:,.2f} ({q['change_pct']:+.2f}%)")
+    if snap.us_bigtech:
+        lines.append("\n[빅테크/주요 종목]")
+        for q in snap.us_bigtech:
+            lines.append(f"  {q['name']} {q['change_pct']:+.2f}%")
+    if snap.us_sectors:
+        lines.append("\n[강세 섹터 ETF]")
+        for q in snap.us_sectors:
+            lines.append(f"  {q['name']} {q['change_pct']:+.2f}%")
+    return "\n".join(lines)
+
+
+def _us_morning_prompt(snap: MarketSnapshot, context: str) -> str:
+    return f"""당신은 미국 증시 전문 애널리스트입니다. 미국장 마감 직후, 한국 투자자를 위한
+아침 요약을 작성합니다. 아래 데이터로 다음을 **반드시 JSON 형식**으로 출력하세요:
+
+{{
+  "summary": "미국장 1-2문장 요약 (지수 등락 + 핵심 키워드)",
+  "why_moved": "미국장이 왜 이렇게 움직였나 2-3문장 (강세 섹터·빅테크·매크로 근거)",
+  "theme_commentary": "오늘 강세 섹터/테마 해설 + 한국장 시사점 2-3문장 (예: 미국 반도체 강세 → 한국 반도체 주목)"
+}}
+
+수치는 아래 주어진 값만 사용하고 지어내지 마세요. 뉴스는 모르면 언급하지 마세요.
+
+데이터:
+{context}
+
+JSON만 출력하고 다른 설명은 추가하지 마세요."""
+
+
 def _pre_close_prompt(snap: MarketSnapshot, context: str) -> str:
     theme_names = [t.name for t in snap.top_themes[:10]]
     return f"""당신은 한국 주식 시장 전문 애널리스트입니다. 지금 시각은 장 마감 40분 전 (14:50).
@@ -181,11 +217,15 @@ async def analyze(snap: MarketSnapshot) -> MarketSnapshot:
     실패 시 빈 요약·후보로 채워서 반환 (리포트 자체는 발송 가능하도록).
     """
     settings = get_settings()
-    context = _build_snapshot_context(snap)
 
-    if snap.mode == "pre_close":
+    if snap.mode == "us_morning":
+        context = _build_us_context(snap)
+        prompt = _us_morning_prompt(snap, context)
+    elif snap.mode == "pre_close":
+        context = _build_snapshot_context(snap)
         prompt = _pre_close_prompt(snap, context)
     else:
+        context = _build_snapshot_context(snap)
         prompt = _post_close_prompt(snap, context)
 
     import asyncio
@@ -292,12 +332,13 @@ async def analyze(snap: MarketSnapshot) -> MarketSnapshot:
                 "risk": str(p.get("risk", "")).strip(),
             })
         snap.candidate_picks = valid_picks
-    else:
+    elif snap.mode == "post_close":
         # 마감 후: tomorrow_watchpoints를 candidate_picks 자리에 보관 (재사용)
         snap.candidate_picks = [
             {"watchpoint": w} for w in data.get("tomorrow_watchpoints", [])
             if isinstance(w, str)
         ]
+    # us_morning: summary/why_moved/theme_commentary만 사용 (candidate 없음)
 
     logger.info(
         "gemini_analyze_ok mode=%s picks=%d summary_len=%d",

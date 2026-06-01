@@ -8,7 +8,7 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from typing import Literal
 
-ReportMode = Literal["pre_close", "post_close"]
+ReportMode = Literal["pre_close", "post_close", "us_morning"]
 MarketCode = Literal["KOSPI", "KOSDAQ"]
 
 
@@ -93,6 +93,11 @@ class MarketSnapshot:
 
     # 뉴스
     market_news: list[NewsItem] = field(default_factory=list)
+
+    # 미국 증시 (us_morning 모드 — USMarketSource가 채움)
+    us_indices: list[dict] = field(default_factory=list)   # {symbol, name, price, change_pct}
+    us_bigtech: list[dict] = field(default_factory=list)   # 빅테크/주요종목 등락
+    us_sectors: list[dict] = field(default_factory=list)   # 강세 섹터/테마 ETF
 
     # AI 분석 결과 (analyzer가 채움)
     summary: str = ""           # 시장 한줄 요약

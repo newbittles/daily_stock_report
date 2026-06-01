@@ -132,6 +132,51 @@ def _format_post_summary(snap: MarketSnapshot) -> str:
     return "\n".join(lines)
 
 
+def _format_us_morning_summary(snap: MarketSnapshot) -> str:
+    """미국장 아침 요약 메시지 (us_morning) — 지수·AI요약·강세섹터·주요종목·한국 시사점."""
+    url = report_url(snap)
+    date = snap.generated_at.strftime("%Y-%m-%d %H:%M")
+    lines: list[str] = [f"🌎 *미국 증시 마감 요약* — {date}", ""]
+
+    if snap.us_indices:
+        parts = []
+        for q in snap.us_indices:
+            sign = "+" if q.get("change_pct", 0) >= 0 else ""
+            parts.append(f"{q['name']} {q['price']:,.0f}({sign}{q.get('change_pct', 0):.2f}%)")
+        lines.append("📊 " + "  ·  ".join(parts))
+        lines.append("")
+
+    if snap.summary:
+        lines.append(snap.summary)
+        lines.append("")
+    if snap.why_moved:
+        lines.append(f"💡 {snap.why_moved}")
+        lines.append("")
+
+    if snap.us_sectors:
+        lines.append("🔥 *강세 섹터*")
+        for q in snap.us_sectors[:5]:
+            sign = "+" if q.get("change_pct", 0) >= 0 else ""
+            lines.append(f"  · {q['name']} {sign}{q.get('change_pct', 0):.2f}%")
+        lines.append("")
+
+    if snap.us_bigtech:
+        lines.append("📈 *주요 상승 종목*")
+        for q in snap.us_bigtech[:5]:
+            sign = "+" if q.get("change_pct", 0) >= 0 else ""
+            lines.append(f"  · {q['name']} {sign}{q.get('change_pct', 0):.2f}%")
+        lines.append("")
+
+    if snap.theme_commentary:
+        lines.append(f"🌏 *한국장 시사점*\n{snap.theme_commentary}")
+        lines.append("")
+
+    lines.append(f"📄 [전체 리포트 보기]({url})")
+    lines.append("")
+    lines.append("_※ 참고용 정보. 투자 판단·책임은 본인._")
+    return "\n".join(lines)
+
+
 async def send_report(snap: MarketSnapshot) -> bool:
     """리포트 요약을 텔레그램으로 발송. 성공 여부 반환."""
     settings = get_settings()
@@ -140,10 +185,12 @@ async def send_report(snap: MarketSnapshot) -> bool:
         logger.warning("telegram_no_chat_id — allowed_chat_ids 비어있음")
         return False
 
-    text = (
-        _format_pre_summary(snap) if snap.mode == "pre_close"
-        else _format_post_summary(snap)
-    )
+    if snap.mode == "us_morning":
+        text = _format_us_morning_summary(snap)
+    elif snap.mode == "pre_close":
+        text = _format_pre_summary(snap)
+    else:
+        text = _format_post_summary(snap)
 
     bot = Bot(token=settings.telegram_bot_token)
     notifier = TelegramNotifier(bot=bot)

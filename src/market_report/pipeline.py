@@ -76,8 +76,41 @@ async def collect_snapshot(mode: ReportMode) -> MarketSnapshot:
     return snap
 
 
+async def collect_us_snapshot() -> MarketSnapshot:
+    """미국 증시 스냅샷 (us_morning) — FDR 지수/빅테크/섹터."""
+    from dataclasses import asdict
+
+    from src.datasource.us.fdr_source import (
+        fetch_us_bigtech, fetch_us_indices, fetch_us_sectors,
+    )
+    logger.info("us_snapshot_collect_start")
+    idx, bt, sec = await asyncio.gather(
+        fetch_us_indices(), fetch_us_bigtech(), fetch_us_sectors(),
+        return_exceptions=True,
+    )
+
+    def _safe(r):
+        if isinstance(r, Exception):
+            logger.warning("us_fetch_failed error=%s", r)
+            return []
+        return r
+
+    snap = MarketSnapshot(mode="us_morning", generated_at=datetime.now())
+    snap.us_indices = [asdict(q) for q in _safe(idx)]
+    snap.us_bigtech = [asdict(q) for q in _safe(bt)]
+    snap.us_sectors = [asdict(q) for q in _safe(sec)]
+    logger.info("us_snapshot_collected indices=%d bigtech=%d sectors=%d",
+                len(snap.us_indices), len(snap.us_bigtech), len(snap.us_sectors))
+    return snap
+
+
 async def generate_report(mode: ReportMode) -> MarketSnapshot:
     """전체 파이프라인 — 데이터 수집 + AI 분석 + 추천 종목 차트 생성."""
+    if mode == "us_morning":
+        snap = await collect_us_snapshot()
+        snap = await analyze(snap)
+        return snap
+
     snap = await collect_snapshot(mode)
     snap = await analyze(snap)
 
@@ -164,6 +197,25 @@ async def run_full(mode: ReportMode, *, do_publish: bool = True, do_telegram: bo
     snap = await generate_report(mode)
     logger.info("pipeline_data_ready mode=%s picks=%d themes=%d",
                 mode, len(snap.candidate_picks), len(snap.top_themes))
+
+    # 미국장(us_morning) P1: 한국 전략 스크린 스킵 → 렌더/게시/발송만 (P2에서 시초Top3 추가)
+    if mode == "us_morning":
+        try:
+            render_report(snap)
+        except Exception as exc:
+            logger.error("pipeline_render_failed error=%s", exc)
+        if do_publish:
+            try:
+                publish(snap)
+            except Exception as exc:
+                logger.error("pipeline_publish_failed error=%s", exc)
+        if do_telegram:
+            try:
+                await send_report(snap)
+            except Exception as exc:
+                logger.error("pipeline_telegram_failed error=%s", exc)
+        logger.info("pipeline_done mode=%s", mode)
+        return snap
 
     # A/B/C 전략 스크린 + 보유종목 상태 (KIS) — 리포트에 필수 포함
     try:

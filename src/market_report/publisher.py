@@ -21,7 +21,7 @@ GITHUB_PAGES_BASE = "https://newbittles.github.io/daily_stock_report"
 def report_url(snap: MarketSnapshot) -> str:
     """배포된 리포트의 절대 URL."""
     date = snap.generated_at.strftime("%Y-%m-%d")
-    suffix = "pre" if snap.mode == "pre_close" else "post"
+    suffix = {"pre_close": "pre", "post_close": "post", "us_morning": "us"}.get(snap.mode, "post")
     return f"{GITHUB_PAGES_BASE}/reports/{date}-{suffix}.html"
 
 
@@ -55,7 +55,8 @@ def publish(snap: MarketSnapshot) -> bool:
     """
     date = snap.generated_at.strftime("%Y-%m-%d")
     time = snap.generated_at.strftime("%H:%M")
-    mode_label = "마감 전" if snap.mode == "pre_close" else "마감 후"
+    mode_label = {"pre_close": "마감 전", "post_close": "마감 후",
+                  "us_morning": "미국 아침"}.get(snap.mode, "마감 후")
 
     # 1. add
     ok, msg = _run_git("add", "docs/")
