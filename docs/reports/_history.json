@@ -1,20 +1,20 @@
 [
   {
     "date": "2026-06-01",
-    "time": "22:43",
-    "mode": "post_close",
-    "url": "reports/2026-06-01-post.html",
-    "summary": "코스피는 반도체 및 IT 대표주의 강세에 힘입어 3.68% 급등했으나, 코스닥은 2.30% 하락하며 차별화된 장세를 보였습니다.",
+    "time": "23:04",
+    "mode": "pre_close",
+    "url": "reports/2026-06-01-pre.html",
+    "summary": "코스피는 반도체 대표주의 강세에 힘입어 큰 폭으로 상승했지만, 코스닥은 하락하며 시장이 혼조세를 보였습니다.",
     "kospi_pct": 3.68,
     "kosdaq_pct": -2.3
   },
   {
     "date": "2026-06-01",
-    "time": "14:50",
-    "mode": "pre_close",
-    "url": "reports/2026-06-01-pre.html",
-    "summary": "코스피는 반도체 대표주의 강세에 힘입어 8800선을 돌파하며 상승세를 이어갔으나, 코스닥은 차익실현 매물로 약세를 보였습니다.",
-    "kospi_pct": 4.12,
+    "time": "22:47",
+    "mode": "post_close",
+    "url": "reports/2026-06-01-post.html",
+    "summary": "오늘 코스피는 반도체 대표주 강세에 힘입어 3.68% 급등했지만, 코스닥은 2.30% 하락하며 차별화 장세를 보였습니다.",
+    "kospi_pct": 3.68,
     "kosdaq_pct": -2.3
   },
   {
