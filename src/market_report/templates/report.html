@@ -387,6 +387,9 @@
           {% if t.endstage %}<span class="down-text">⚠️끝물</span>{% endif %}
         </div>
         <div class="top3-reason">{{ t.reason }}</div>
+        {% if t.stop_price %}
+        <div class="top3-reason" style="color:var(--red);">✂️ 손절 {{ t.stop_ma }}일선 {{ "{:,.0f}".format(t.stop_price) }}원 ({{ '+' if t.stop_pct >= 0 else '' }}{{ "{:.1f}".format(t.stop_pct) }}%)</div>
+        {% endif %}
       </div>
       {% endfor %}
       <p class="disclaimer" style="font-size:12px;">※ A/B/C/D 시그널 + 주도주·거래량·수급(외국인/기관) 종합 점수 상위 3종목(기준 P4). 참고용이며 매수 추천 아님, 판단·책임은 본인.</p>
@@ -517,6 +520,9 @@
               <span class="{{ 'up-text' if p.change_pct >= 0 else 'down-text' }}">{{ '+' if p.change_pct >= 0 else '' }}{{ "{:.1f}".format(p.change_pct) }}%</span>
               {% if p.endstage %}<span class="down-text">⚠️끝물</span>{% endif %}
               <div class="theme-reason">{{ p.reason }}</div>
+              {% if p.stop_price %}
+              <div class="pick-meta" style="color:var(--red);">✂️ 손절 {{ p.stop_ma }}일선 {{ "{:,.0f}".format(p.stop_price) }}원 ({{ '+' if p.stop_pct >= 0 else '' }}{{ "{:.1f}".format(p.stop_pct) }}%)</div>
+              {% endif %}
               <div class="pick-meta">
                 {{ '업종' if p.theme_kind == 'sector' else '테마' }}:
                 {% if p.theme and p.theme_kind == 'theme' and p.theme_idx %}<a href="https://judal.co.kr/?view=stockList&themeIdx={{ p.theme_idx }}" target="_blank" rel="noopener">{{ p.theme }}</a>

@@ -82,6 +82,8 @@ def select_top3(screen_picks: list[dict], foreign_buy: set[str] | None = None,
             "reason": " · ".join(why), "theme": p.get("theme", ""),
             "theme_kind": p.get("theme_kind", ""), "theme_idx": p.get("theme_idx", ""),
             "endstage": bool(p.get("endstage")),
+            "stop_ma": p.get("stop_ma", 20), "stop_price": p.get("stop_price", 0),
+            "stop_pct": p.get("stop_pct", 0),
         })
     ranked.sort(key=lambda x: x["score"], reverse=True)
     return ranked[:3]
