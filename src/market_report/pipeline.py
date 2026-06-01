@@ -198,8 +198,59 @@ async def run_full(mode: ReportMode, *, do_publish: bool = True, do_telegram: bo
     logger.info("pipeline_data_ready mode=%s picks=%d themes=%d",
                 mode, len(snap.candidate_picks), len(snap.top_themes))
 
-    # 미국장(us_morning) P1: 한국 전략 스크린 스킵 → 렌더/게시/발송만 (P2에서 시초Top3 추가)
+    # 미국장(us_morning) P2: 미국 강세테마 연동 한국 시초 매수 Top3
     if mode == "us_morning":
+        # Q4: 미국 휴장 스킵 — 지수 최신 거래일이 3일 이상 지났으면(주말+휴장) 발송 안 함
+        try:
+            from datetime import date as _date
+            _last = (snap.us_indices[0].get("date", "") if snap.us_indices else "")
+            if _last and (_date.today() - _date.fromisoformat(_last)).days >= 3:
+                logger.info("us_market_holiday_skip last=%s — 발송 생략", _last)
+                return snap
+        except Exception as exc:
+            logger.warning("us_freshness_check_failed error=%s", exc)
+        try:
+            from src.config.settings import get_settings
+            from src.datasource.kis.adapter import KisAdapter
+            from src.market_report.strategy_section import collect_screen_picks
+            from src.market_report.theme_bridge import strong_kr_keywords
+            from src.market_report.top3 import select_top3
+            s = get_settings()
+            adapter = KisAdapter(s.kis_app_key, s.kis_app_secret, s.kis_account_no, s.kis_env)
+            snap.screen_picks = await collect_screen_picks(adapter)
+            # 종목 테마 채우기 (judal → 세분업종 폴백) — 미국 강세테마 매칭에 필요
+            try:
+                from src.market_report.scrapers.judal import _is_nontheme, build_judal_theme_map
+                jmap = await build_judal_theme_map(max_themes=200)
+            except Exception:
+                jmap, _is_nontheme = {}, (lambda _n: False)
+            for p in snap.screen_picks:
+                jv = jmap.get(p["ticker"])
+                if jv and jv.get("theme") and not _is_nontheme(jv["theme"]):
+                    p["theme"], p["theme_kind"], p["theme_idx"] = jv["theme"], "theme", jv.get("idx", "")
+            try:
+                from src.market_report.scrapers.sector import get_stock_sectors
+                need = [p["ticker"] for p in snap.screen_picks if not p.get("theme")]
+                if need:
+                    secs = await get_stock_sectors(need)
+                    for p in snap.screen_picks:
+                        if not p.get("theme") and secs.get(p["ticker"]):
+                            p["theme"], p["theme_kind"] = secs[p["ticker"]], "sector"
+            except Exception as exc:
+                logger.warning("us_sector_fallback_failed error=%s", exc)
+            # 시초 Top3 — P4 + 미국 강세테마 연동 가중(w_us) + ATR 손절
+            strong_kw = strong_kr_keywords(snap.us_sectors)
+            fb = {x["ticker"] for x in await adapter.get_investor_net_buy("foreign", "buy")}
+            ib = {x["ticker"] for x in await adapter.get_investor_net_buy("inst", "buy")}
+            snap.top3 = select_top3(snap.screen_picks, foreign_buy=fb, inst_buy=ib,
+                                    us_keywords=strong_kw, w_us=2.0, us_sectors=snap.us_sectors)
+            from src.market_report.analyzer import summarize_stocks
+            await summarize_stocks(snap)
+            logger.info("us_morning_top3 top3=%s us_kw=%d",
+                        [t["name"] for t in snap.top3], len(strong_kw))
+        except Exception as exc:
+            logger.warning("us_morning_strategy_failed error=%s", exc)
+
         try:
             render_report(snap)
         except Exception as exc:

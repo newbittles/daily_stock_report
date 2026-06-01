@@ -26,13 +26,18 @@ def _strat_weight(name: str) -> float:
 
 
 def select_top3(screen_picks: list[dict], foreign_buy: set[str] | None = None,
-                inst_buy: set[str] | None = None, w: dict | None = None) -> list[dict]:
+                inst_buy: set[str] | None = None, w: dict | None = None,
+                us_keywords: set[str] | None = None, w_us: float = 0.0,
+                us_sectors: list[dict] | None = None) -> list[dict]:
     """A/B/C/D 스크린 결과 → 종합점수 상위 3종목. 추천 이유 동반.
 
     foreign_buy/inst_buy: 외국인/기관 순매수 상위 종목코드 집합(수급 가산).
+    us_keywords/w_us: 미국 강세테마 연동 가중(us_morning 시초 Top3 전용. 국장은 w_us=0).
+    us_sectors: 추천이유에 연결된 미국 섹터명 표기용.
     """
     w = w or WEIGHTS
     fb, ib = foreign_buy or set(), inst_buy or set()
+    us_kw = us_keywords or set()
 
     # 종목별 집계 (여러 전략 매칭 → 최고 strat 전략 채택). 우선주 제외(보통주 우선).
     by_ticker: dict[str, dict] = {}
@@ -49,6 +54,8 @@ def select_top3(screen_picks: list[dict], foreign_buy: set[str] | None = None,
     ranked = []
     for tk, p in by_ticker.items():
         supply = (1 if tk in fb else 0) + (1 if tk in ib else 0)  # 0~2
+        from src.market_report.theme_bridge import matched_us_sector, us_theme_match
+        us_hit = us_theme_match(p.get("theme", ""), us_kw)  # 미국 강세테마 연동
         score = (
             w["strat"] * p["_sw"]
             + w["mom"] * p.get("change_pct", 0)
@@ -56,12 +63,16 @@ def select_top3(screen_picks: list[dict], foreign_buy: set[str] | None = None,
             + w["align"] * min(p.get("_gap20", 0), 30)
             + w["nh"] * p.get("_nh", 0)
             + w["supply"] * supply
+            + w_us * (1 if us_hit else 0)
             - w["end"] * (1 if p.get("endstage") else 0)
         )
         # 추천 이유 구성
         why = []
         strats = "·".join(sorted(p["_strats"]))
         why.append(f"{strats} 시그널")
+        if us_hit:
+            sec = matched_us_sector(p.get("theme", ""), us_sectors or [])
+            why.append(f"미국 {sec} 강세 연동" if sec else "미국 강세테마 연동")
         if tk in fb and tk in ib:
             why.append("외국인+기관 동반 순매수")
         elif tk in fb:

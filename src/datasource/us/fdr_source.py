@@ -43,6 +43,7 @@ class USQuote:
     name: str
     price: float
     change_pct: float  # 전일 대비 등락률(%)
+    date: str = ""     # 최신 데이터 거래일(YYYY-MM-DD) — 휴장 신선도 판정용
 
 
 def _fetch_quotes_sync(symbols: dict[str, str]) -> list[USQuote]:
@@ -62,7 +63,12 @@ def _fetch_quotes_sync(symbols: dict[str, str]) -> list[USQuote]:
                 continue
             last, prev = float(closes.iloc[-1]), float(closes.iloc[-2])
             chg = (last - prev) / prev * 100 if prev else 0.0
-            out.append(USQuote(sym, name, round(last, 2), round(chg, 2)))
+            last_date = ""
+            try:
+                last_date = closes.index[-1].strftime("%Y-%m-%d")
+            except Exception:
+                pass
+            out.append(USQuote(sym, name, round(last, 2), round(chg, 2), last_date))
         except Exception as exc:  # noqa: BLE001
             logger.warning("us_fetch_failed symbol=%s error=%s", sym, exc)
     return out

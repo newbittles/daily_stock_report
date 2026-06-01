@@ -171,9 +171,21 @@ def _format_us_morning_summary(snap: MarketSnapshot) -> str:
         lines.append(f"🌏 *한국장 시사점*\n{snap.theme_commentary}")
         lines.append("")
 
+    # 미국 강세테마 연동 한국 시초 매수 Top3
+    if getattr(snap, "top3", None):
+        lines.append("🏆 *오늘 시초 매수 Top 3* (미국 강세테마 연동)")
+        for i, t in enumerate(snap.top3, 1):
+            sign = "+" if t.get("change_pct", 0) >= 0 else ""
+            lines.append(f"{i}. {_naver_link(t['name'], t['ticker'])} "
+                         f"{t['price']:,.0f}원 ({sign}{t.get('change_pct', 0):.1f}%)")
+            lines.append(f"   └ {t['reason']}")
+            if t.get("stop_price"):
+                lines.append(f"   ✂️ 손절 {t['stop_price']:,.0f}원 ({t.get('stop_pct', 0):+.1f}%)")
+        lines.append("")
+
     lines.append(f"📄 [전체 리포트 보기]({url})")
     lines.append("")
-    lines.append("_※ 참고용 정보. 투자 판단·책임은 본인._")
+    lines.append("_※ 시초 매수는 갭·변동성 위험이 큽니다. 참고용 정보, 판단·책임은 본인._")
     return "\n".join(lines)
 
 
