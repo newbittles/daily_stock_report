@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>마감 후 시장 리포트 — 2026-06-02</title>
-  <meta name="description" content="코스피는 반도체 및 IT 대표주 강세에 힘입어 3.68% 급등했으나, 코스닥은 2.30% 하락하며 차별화된 장세를 보였습니다.">
+  <meta name="description" content="코스피는 반도체 및 IT 대표주의 강세에 힘입어 3.68% 급등했지만, 코스닥은 2.30% 하락하며 차별화된 장세를 보였습니다.">
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
@@ -231,6 +231,19 @@
     }
     .lightbox.active { display: flex; align-items: flex-start; justify-content: center; }
     .lightbox img { max-width: 100%; height: auto; }
+    /* AI 요약 버튼 + 모달 */
+    .ai-btn { background: rgba(96,165,250,0.15); color: var(--accent); border: 1px solid rgba(96,165,250,0.4);
+      border-radius: 6px; padding: 1px 7px; font-size: 0.72rem; cursor: pointer; margin-left: 5px; white-space: nowrap; }
+    .ai-btn:hover { background: rgba(96,165,250,0.32); }
+    .ai-modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.65); z-index: 100;
+      align-items: center; justify-content: center; padding: 1rem; }
+    .ai-modal.active { display: flex; }
+    .ai-modal-content { background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+      max-width: 460px; width: 100%; padding: 1.3rem 1.4rem; position: relative; }
+    .ai-modal-content h3 { margin-bottom: 0.7rem; font-size: 1.05rem; color: var(--text); }
+    .ai-modal-content .ai-body { line-height: 1.65; white-space: pre-line; color: var(--text); font-size: 0.92rem; }
+    .ai-modal-close { position: absolute; top: 0.7rem; right: 0.9rem; background: none; border: none;
+      color: var(--text-mute); font-size: 1.2rem; cursor: pointer; line-height: 1; }
 
     /* Watchpoint */
     .watch-list { list-style: none; padding: 0; }
@@ -334,6 +347,10 @@
       background: var(--green); color: #fff; cursor: pointer; white-space: nowrap; }
     .copy-btn:active { opacity: 0.7; }
     .code { color: var(--muted); font-size: 0.82rem; }
+    .code-copy { display: inline-block; font-size: 0.8rem; padding: 0.05rem 0.4rem; margin-left: 0.3rem;
+      border: 1px solid var(--border); border-radius: 5px; background: var(--bg); color: var(--text-dim);
+      cursor: pointer; vertical-align: middle; }
+    .code-copy:active { opacity: 0.6; }
     .pick-meta { color: var(--muted); font-size: 0.8rem; margin-top: 0.2rem; }
     .strat-col .watch-list li { padding-left: 0; }
     .strat-col .watch-list li::before { content: ""; }
@@ -368,7 +385,7 @@
         <span class="badge post">
           🔵 마감 후
         </span>
-        <span>2026년 06월 02일 00:31</span>
+        <span>2026년 06월 02일 01:04</span>
       </div>
     </header>
 
@@ -378,32 +395,36 @@
         <div class="top3-head">
           <span class="top3-rank">1</span>
           <a href="https://finance.naver.com/item/main.naver?code=066570" target="_blank" rel="noopener"><strong>LG전자</strong></a>
+          <button type="button" class="code-copy" data-code="066570" onclick="copyCode(this)" title="종목코드 복사 (MTS 검색창에 붙여넣기)">📋</button>
           <span class="px">380,500원</span>
           <span class="up-text">+29.9%</span>
-        </div>
+<button type="button" class="ai-btn" onclick="showAI(this)" data-name="LG전자" data-summary="LG전자는 스마트홈 테마의 주도주로, 오늘 29.9% 급등하며 신고가권에 진입했습니다. 기관의 순매수세가 유입되며 강세를 보인 것으로 분석됩니다. 추천 진입가는 380,500원이며, 손절가는 326,029원입니다.">🤖 AI요약</button>        </div>
         <div class="top3-reason">C 시그널 · 기관 순매수 · 당일 +29.9% 강세 · 신고가권 · 테마:스마트홈</div>
-        <div class="top3-reason" style="color:var(--red);">✂️ 손절 60일선 148,143원 (-61.1%)</div>
+        <div class="top3-reason" style="color:var(--red);">✂️ 손절 326,029원 (-14.3%, 1.5×ATR)</div>
       </div>
       <div class="top3-card">
         <div class="top3-head">
           <span class="top3-rank">2</span>
           <a href="https://finance.naver.com/item/main.naver?code=454910" target="_blank" rel="noopener"><strong>두산로보틱스</strong></a>
+          <button type="button" class="code-copy" data-code="454910" onclick="copyCode(this)" title="종목코드 복사 (MTS 검색창에 붙여넣기)">📋</button>
           <span class="px">138,400원</span>
           <span class="up-text">+29.9%</span>
-        </div>
+<button type="button" class="ai-btn" onclick="showAI(this)" data-name="두산로보틱스" data-summary="두산로보틱스는 로봇 테마의 주도주로, 오늘 29.9% 급등하며 신고가권에 진입했습니다. 외국인의 순매수세가 유입되며 강세를 보인 것으로 분석됩니다. 추천 진입가는 138,400원이며, 손절가는 117,764원입니다.">🤖 AI요약</button>        </div>
         <div class="top3-reason">C 시그널 · 외국인 순매수 · 당일 +29.9% 강세 · 신고가권 · 테마:로봇</div>
-        <div class="top3-reason" style="color:var(--red);">✂️ 손절 60일선 95,415원 (-31.1%)</div>
+        <div class="top3-reason" style="color:var(--red);">✂️ 손절 117,764원 (-14.9%, 1.5×ATR)</div>
       </div>
       <div class="top3-card">
         <div class="top3-head">
           <span class="top3-rank">3</span>
           <a href="https://finance.naver.com/item/main.naver?code=040350" target="_blank" rel="noopener"><strong>크레오에스지</strong></a>
+          <button type="button" class="code-copy" data-code="040350" onclick="copyCode(this)" title="종목코드 복사 (MTS 검색창에 붙여넣기)">📋</button>
           <span class="px">6,130원</span>
           <span class="up-text">+29.9%</span>
-        </div>
+<button type="button" class="ai-btn" onclick="showAI(this)" data-name="크레오에스지" data-summary="크레오에스지는 IT서비스 테마의 종목으로, 오늘 29.9% 급등하며 신고가권에 진입했습니다. C·D 시그널이 포착되며 강세를 보인 것으로 분석됩니다. 추천 진입가는 6,130원이며, 손절가는 5,246원입니다.">🤖 AI요약</button>        </div>
         <div class="top3-reason">C·D 시그널 · 당일 +29.9% 강세 · 신고가권 · 테마:IT서비스</div>
-        <div class="top3-reason" style="color:var(--red);">✂️ 손절 60일선 3,728원 (-39.2%)</div>
+        <div class="top3-reason" style="color:var(--red);">✂️ 손절 5,246원 (-14.4%, 1.5×ATR)</div>
       </div>
+      <p style="font-size:12px;color:var(--text-dim);margin-top:0.5rem;">✂️ 제시된 손절가는 종가매매 기준이며, 다음날 해당 가격에 도달하면 손절해야 하는 기준입니다 (ATR 변동성 기법 활용).</p>
       <p class="disclaimer" style="font-size:12px;">※ A/B/C/D 시그널 + 주도주·거래량·수급(외국인/기관) 종합 점수 상위 3종목(기준 P4). 참고용이며 매수 추천 아님, 판단·책임은 본인.</p>
     </section>
 
@@ -439,15 +460,15 @@
       <h2><span class="icon">🤖</span>AI 시장 요약</h2>
       <div class="summary-box">
         <div class="label">한 줄 요약</div>
-        <p>코스피는 반도체 및 IT 대표주 강세에 힘입어 3.68% 급등했으나, 코스닥은 2.30% 하락하며 차별화된 장세를 보였습니다.</p>
+        <p>코스피는 반도체 및 IT 대표주의 강세에 힘입어 3.68% 급등했지만, 코스닥은 2.30% 하락하며 차별화된 장세를 보였습니다.</p>
       </div>
       <div class="summary-box">
         <div class="label">왜 움직였나</div>
-        <p>미국 증시의 긍정적 흐름과 더불어 삼성전자, SK하이닉스 등 대형 반도체주 및 LG전자, 삼성SDS 등 IT 대표주에 대한 외국인 및 기관의 매수세가 코스피 상승을 견인했습니다. 반면, 코스닥 시장에서는 일부 레버리지 상품의 매도세와 차익 실현 매물이 출회되며 하락 압력을 받았습니다.</p>
+        <p>미국 증시의 긍정적인 흐름과 더불어 삼성전자, SK하이닉스 등 대형 반도체주 및 LG전자, 삼성SDS 등 IT 대표주에 대한 외국인 및 기관의 매수세가 유입되며 코스피 상승을 견인했습니다. 반면, 코스닥 시장에서는 일부 테마의 차익실현 매물이 출회되며 하락세를 보인 것으로 분석됩니다.</p>
       </div>
       <div class="summary-box">
         <div class="label">테마 해설</div>
-        <p>오늘 시장은 반도체와 IT, 그리고 로봇 관련주들이 주도하는 흐름을 보였습니다. 특히 LG전자와 삼성전자 등 대형주들의 강세가 지수 상승을 이끌었으며, 관련 기술주들의 동반 강세가 나타났습니다.</p>
+        <p>오늘 시장은 반도체와 IT, 그리고 로봇 관련주들이 강세를 보이며 지수 상승을 주도하는 모습을 보였습니다. 특히 LG전자와 삼성전자가 나란히 급등하며 시장의 관심을 집중시켰습니다.</p>
       </div>
     </section>
 
@@ -455,9 +476,9 @@
     <section>
       <h2><span class="icon">🔭</span>내일 관전 포인트</h2>
       <ul class="watch-list">
-        <li>미국 증시의 방향성과 국내 기관 및 외국인의 수급 동향을 주시해야 합니다.</li>
-        <li>반도체 및 IT 대형주들의 상승세 지속 여부가 시장 전반의 흐름에 중요한 영향을 미칠 것입니다.</li>
-        <li>코스닥 시장의 하락세가 진정되고 개별 종목 장세로 전환될 가능성을 살펴볼 필요가 있습니다.</li>
+        <li>미국 증시의 방향성과 국내 기관 및 외국인의 수급 동향을 면밀히 주시해야 합니다.</li>
+        <li>반도체 및 IT 섹터의 상승세가 지속될지, 아니면 차익실현 매물이 나올지 여부를 관찰해야 합니다.</li>
+        <li>개별 이슈를 가진 종목들의 움직임과 함께 코스닥 시장의 수급 개선 여부를 주목할 필요가 있습니다.</li>
       </ul>
     </section>
 
@@ -472,10 +493,11 @@
           <ul class="watch-list">
             <li>
               <a href="https://finance.naver.com/item/main.naver?code=037560" target="_blank" rel="noopener"><strong>LG헬로비전</strong></a>
+              <button type="button" class="code-copy" data-code="037560" onclick="copyCode(this)" title="종목코드 복사 (MTS 검색창에 붙여넣기)">📋</button>
               <span class="px">2,860원</span>
               <span class="up-text">+30.0%</span>
-              <div class="theme-reason">수렴대 위로 상승전환 (수렴 3.0%) / 120선 위 (+23.4%) · MACD[0선돌파,GC,0선위,상승]; 거래대금 393억 (OK)</div>
-              <div class="pick-meta" style="color:var(--red);">✂️ 손절 20일선 2,238원 (-21.7%)</div>
+<button type="button" class="ai-btn" onclick="showAI(this)" data-name="LG헬로비전" data-summary="LG헬로비전은 OTT 테마의 종목으로, 오늘 30.0% 급등하며 상승 전환 신호가 포착되었습니다. 수렴대 위로 올라서고 MACD가 상승하는 등 긍정적인 기술적 지표를 보이고 있습니다. 추천 진입가는 2,860원이며, 손절가는 2,625원입니다.">🤖 AI요약</button>              <div class="theme-reason">수렴대 위로 상승전환 (수렴 3.0%) / 120선 위 (+23.4%) · MACD[0선돌파,GC,0선위,상승]; 거래대금 393억 (OK)</div>
+              <div class="pick-meta" style="color:var(--red);">✂️ 손절 2,625원 (-8.2%, 1.5×ATR)</div>
               <div class="pick-meta">
                 테마:
 <a href="https://judal.co.kr/?view=stockList&themeIdx=616" target="_blank" rel="noopener">OTT</a>
@@ -484,10 +506,11 @@
             </li>
             <li>
               <a href="https://finance.naver.com/item/main.naver?code=373220" target="_blank" rel="noopener"><strong>LG에너지솔루션</strong></a>
+              <button type="button" class="code-copy" data-code="373220" onclick="copyCode(this)" title="종목코드 복사 (MTS 검색창에 붙여넣기)">📋</button>
               <span class="px">455,000원</span>
               <span class="down-text">-0.7%</span>
-              <div class="theme-reason">수렴대 위로 상승전환 (수렴 5.1%) / 120선 위 (+11.4%) · MACD[GC,상승]; 거래대금 3542억 (OK)</div>
-              <div class="pick-meta" style="color:var(--red);">✂️ 손절 20일선 435,200원 (-4.4%)</div>
+<button type="button" class="ai-btn" onclick="showAI(this)" data-name="LG에너지솔루션" data-summary="LG에너지솔루션은 2차전지 테마의 종목으로, 오늘 0.7% 하락하며 조정을 받고 있습니다. A 시그널이 포착되었으며, 수렴대 위로 상승 전환하고 MACD가 상승하는 등 긍정적인 흐름을 보이고 있습니다. 추천 진입가는 455,000원이며, 손절가는 409,839원입니다.">🤖 AI요약</button>              <div class="theme-reason">수렴대 위로 상승전환 (수렴 5.1%) / 120선 위 (+11.4%) · MACD[GC,상승]; 거래대금 3542억 (OK)</div>
+              <div class="pick-meta" style="color:var(--red);">✂️ 손절 409,839원 (-9.9%, 1.5×ATR)</div>
               <div class="pick-meta">
                 테마:
 <a href="https://judal.co.kr/?view=stockList&themeIdx=39" target="_blank" rel="noopener">2차전지</a>
@@ -496,10 +519,11 @@
             </li>
             <li>
               <a href="https://finance.naver.com/item/main.naver?code=028260" target="_blank" rel="noopener"><strong>삼성물산</strong></a>
+              <button type="button" class="code-copy" data-code="028260" onclick="copyCode(this)" title="종목코드 복사 (MTS 검색창에 붙여넣기)">📋</button>
               <span class="px">455,000원</span>
               <span class="up-text">+5.2%</span>
-              <div class="theme-reason">수렴대 위로 상승전환 (수렴 4.5%) / 120선 위 (+49.5%) · MACD[GC,0선위,상승]; 거래대금 4574억 (OK)</div>
-              <div class="pick-meta" style="color:var(--red);">✂️ 손절 20일선 403,675원 (-11.3%)</div>
+<button type="button" class="ai-btn" onclick="showAI(this)" data-name="삼성물산" data-summary="삼성물산은 건설 테마의 종목으로, 오늘 5.2% 상승하며 상승 전환 신호가 포착되었습니다. A 시그널이 포착되었으며, 수렴대 위로 올라서고 MACD가 상승하는 등 긍정적인 기술적 지표를 보이고 있습니다. 추천 진입가는 455,000원이며, 손절가는 397,250원입니다.">🤖 AI요약</button>              <div class="theme-reason">수렴대 위로 상승전환 (수렴 4.5%) / 120선 위 (+49.5%) · MACD[GC,0선위,상승]; 거래대금 4574억 (OK)</div>
+              <div class="pick-meta" style="color:var(--red);">✂️ 손절 397,250원 (-12.7%, 1.5×ATR)</div>
               <div class="pick-meta">
                 테마:
 <a href="https://judal.co.kr/?view=stockList&themeIdx=105" target="_blank" rel="noopener">건설</a>
@@ -508,10 +532,11 @@
             </li>
             <li>
               <a href="https://finance.naver.com/item/main.naver?code=000270" target="_blank" rel="noopener"><strong>기아</strong></a>
+              <button type="button" class="code-copy" data-code="000270" onclick="copyCode(this)" title="종목코드 복사 (MTS 검색창에 붙여넣기)">📋</button>
               <span class="px">169,900원</span>
               <span class="up-text">+0.4%</span>
-              <div class="theme-reason">수렴대 위로 상승전환 (수렴 2.2%) / 120선 위 (+11.5%) · MACD[GC,0선위,상승]; 거래대금 2946억 (OK)</div>
-              <div class="pick-meta" style="color:var(--red);">✂️ 손절 20일선 164,285원 (-3.3%)</div>
+<button type="button" class="ai-btn" onclick="showAI(this)" data-name="기아" data-summary="기아는 수소차 테마의 종목으로, 오늘 0.4% 상승하며 상승 전환 신호가 포착되었습니다. A 시그널이 포착되었으며, 수렴대 위로 올라서고 MACD가 상승하는 등 긍정적인 기술적 지표를 보이고 있습니다. 추천 진입가는 169,900원이며, 손절가는 152,704원입니다.">🤖 AI요약</button>              <div class="theme-reason">수렴대 위로 상승전환 (수렴 2.2%) / 120선 위 (+11.5%) · MACD[GC,0선위,상승]; 거래대금 2946억 (OK)</div>
+              <div class="pick-meta" style="color:var(--red);">✂️ 손절 152,704원 (-10.1%, 1.5×ATR)</div>
               <div class="pick-meta">
                 테마:
 <a href="https://judal.co.kr/?view=stockList&themeIdx=22" target="_blank" rel="noopener">수소차</a>
@@ -520,10 +545,11 @@
             </li>
             <li>
               <a href="https://finance.naver.com/item/main.naver?code=017670" target="_blank" rel="noopener"><strong>SK텔레콤</strong></a>
+              <button type="button" class="code-copy" data-code="017670" onclick="copyCode(this)" title="종목코드 복사 (MTS 검색창에 붙여넣기)">📋</button>
               <span class="px">112,200원</span>
               <span class="up-text">+11.5%</span>
-              <div class="theme-reason">수렴대 위로 상승전환 (수렴 2.4%) / 120선 위 (+46.4%) · MACD[GC,0선위,상승]; 거래대금 4078억 (OK)</div>
-              <div class="pick-meta" style="color:var(--red);">✂️ 손절 20일선 100,010원 (-10.9%)</div>
+<button type="button" class="ai-btn" onclick="showAI(this)" data-name="SK텔레콤" data-summary="SK텔레콤은 스마트홈 테마의 주도주로, 오늘 11.5% 상승하며 상승 전환 신호가 포착되었습니다. A 시그널이 포착되었으며, 수렴대 위로 올라서고 MACD가 상승하는 등 긍정적인 기술적 지표를 보이고 있습니다. 추천 진입가는 112,200원이며, 손절가는 101,850원입니다.">🤖 AI요약</button>              <div class="theme-reason">수렴대 위로 상승전환 (수렴 2.4%) / 120선 위 (+46.4%) · MACD[GC,0선위,상승]; 거래대금 4078억 (OK)</div>
+              <div class="pick-meta" style="color:var(--red);">✂️ 손절 101,850원 (-9.2%, 1.5×ATR)</div>
               <div class="pick-meta">
                 테마:
 <a href="https://judal.co.kr/?view=stockList&themeIdx=130" target="_blank" rel="noopener">스마트홈</a>
@@ -532,10 +558,11 @@
             </li>
             <li>
               <a href="https://finance.naver.com/item/main.naver?code=278470" target="_blank" rel="noopener"><strong>에이피알</strong></a>
+              <button type="button" class="code-copy" data-code="278470" onclick="copyCode(this)" title="종목코드 복사 (MTS 검색창에 붙여넣기)">📋</button>
               <span class="px">426,500원</span>
               <span class="up-text">+7.8%</span>
-              <div class="theme-reason">수렴대 위로 상승전환 (수렴 2.7%) / 120선 위 (+34.0%) · MACD[0선돌파,0선위,상승]; 거래대금 2986억 (OK)</div>
-              <div class="pick-meta" style="color:var(--red);">✂️ 손절 20일선 408,600원 (-4.2%)</div>
+<button type="button" class="ai-btn" onclick="showAI(this)" data-name="에이피알" data-summary="에이피알은 미용기기 테마의 종목으로, 오늘 7.8% 상승하며 상승 전환 신호가 포착되었습니다. A 시그널이 포착되었으며, 수렴대 위로 올라서고 MACD가 상승하는 등 긍정적인 기술적 지표를 보이고 있습니다. 추천 진입가는 426,500원이며, 손절가는 385,464원입니다.">🤖 AI요약</button>              <div class="theme-reason">수렴대 위로 상승전환 (수렴 2.7%) / 120선 위 (+34.0%) · MACD[0선돌파,0선위,상승]; 거래대금 2986억 (OK)</div>
+              <div class="pick-meta" style="color:var(--red);">✂️ 손절 385,464원 (-9.6%, 1.5×ATR)</div>
               <div class="pick-meta">
                 테마:
 <a href="https://judal.co.kr/?view=stockList&themeIdx=224" target="_blank" rel="noopener">미용기기</a>
@@ -544,10 +571,11 @@
             </li>
             <li>
               <a href="https://finance.naver.com/item/main.naver?code=007660" target="_blank" rel="noopener"><strong>이수페타시스</strong></a>
+              <button type="button" class="code-copy" data-code="007660" onclick="copyCode(this)" title="종목코드 복사 (MTS 검색창에 붙여넣기)">📋</button>
               <span class="px">139,400원</span>
               <span class="up-text">+7.9%</span>
-              <div class="theme-reason">수렴대 위로 상승전환 (수렴 3.9%) / 120선 위 (+13.8%) · MACD[상승]; 거래대금 2676억 (OK)</div>
-              <div class="pick-meta" style="color:var(--red);">✂️ 손절 20일선 134,875원 (-3.2%)</div>
+<button type="button" class="ai-btn" onclick="showAI(this)" data-name="이수페타시스" data-summary="이수페타시스는 반도체 후공정 테마의 종목으로, 오늘 7.9% 상승하며 상승 전환 신호가 포착되었습니다. A 시그널이 포착되었으며, 수렴대 위로 올라서고 MACD가 상승하는 등 긍정적인 기술적 지표를 보이고 있습니다. 추천 진입가는 139,400원이며, 손절가는 120,982원입니다.">🤖 AI요약</button>              <div class="theme-reason">수렴대 위로 상승전환 (수렴 3.9%) / 120선 위 (+13.8%) · MACD[상승]; 거래대금 2676억 (OK)</div>
+              <div class="pick-meta" style="color:var(--red);">✂️ 손절 120,982원 (-13.2%, 1.5×ATR)</div>
               <div class="pick-meta">
                 테마:
 <a href="https://judal.co.kr/?view=stockList&themeIdx=595" target="_blank" rel="noopener">반도체 후공정</a>
@@ -556,10 +584,11 @@
             </li>
             <li>
               <a href="https://finance.naver.com/item/main.naver?code=454910" target="_blank" rel="noopener"><strong>두산로보틱스</strong></a>
+              <button type="button" class="code-copy" data-code="454910" onclick="copyCode(this)" title="종목코드 복사 (MTS 검색창에 붙여넣기)">📋</button>
               <span class="px">138,400원</span>
               <span class="up-text">+29.9%</span>
-              <div class="theme-reason">수렴대 위로 상승전환 (수렴 3.4%) / 120선 위 (+45.6%) · MACD[GC,0선위,상승]; 거래대금 4897억 (OK)</div>
-              <div class="pick-meta" style="color:var(--red);">✂️ 손절 20일선 107,405원 (-22.4%)</div>
+<button type="button" class="ai-btn" onclick="showAI(this)" data-name="두산로보틱스" data-summary="두산로보틱스는 로봇 테마의 주도주로, 오늘 29.9% 급등하며 신고가권에 진입했습니다. 외국인의 순매수세가 유입되며 강세를 보인 것으로 분석됩니다. 추천 진입가는 138,400원이며, 손절가는 117,764원입니다.">🤖 AI요약</button>              <div class="theme-reason">수렴대 위로 상승전환 (수렴 3.4%) / 120선 위 (+45.6%) · MACD[GC,0선위,상승]; 거래대금 4897억 (OK)</div>
+              <div class="pick-meta" style="color:var(--red);">✂️ 손절 117,764원 (-14.9%, 1.5×ATR)</div>
               <div class="pick-meta">
                 테마:
 <a href="https://judal.co.kr/?view=stockList&themeIdx=127" target="_blank" rel="noopener">로봇</a>
@@ -576,10 +605,11 @@
           <ul class="watch-list">
             <li>
               <a href="https://finance.naver.com/item/main.naver?code=018880" target="_blank" rel="noopener"><strong>한온시스템</strong></a>
+              <button type="button" class="code-copy" data-code="018880" onclick="copyCode(this)" title="종목코드 복사 (MTS 검색창에 붙여넣기)">📋</button>
               <span class="px">5,220원</span>
               <span class="down-text">-7.3%</span>
-              <div class="theme-reason">급등 (10일 +39%) / 20일선 위 (+4.1%, 60선기울기 +1.8%) / 단기눌림 (5일선 -1.4%, 5일고점 -12.1%); 거래대금 1436억 (OK)</div>
-              <div class="pick-meta" style="color:var(--red);">✂️ 손절 20일선 5,016원 (-3.9%)</div>
+<button type="button" class="ai-btn" onclick="showAI(this)" data-name="한온시스템" data-summary="한온시스템은 수소차 테마의 종목으로, 오늘 7.3% 하락하며 단기 눌림목 구간에 있습니다. 최근 10일간 39% 급등 후 5일선 부근에서 조정을 받고 있습니다. 추천 진입가는 5,220원이며, 손절가는 4,433원입니다.">🤖 AI요약</button>              <div class="theme-reason">급등 (10일 +39%) / 20일선 위 (+4.1%, 60선기울기 +1.8%) / 단기눌림 (5일선 -1.4%, 5일고점 -12.1%); 거래대금 1436억 (OK)</div>
+              <div class="pick-meta" style="color:var(--red);">✂️ 손절 4,433원 (-15.1%, 1.5×ATR)</div>
               <div class="pick-meta">
                 테마:
 <a href="https://judal.co.kr/?view=stockList&themeIdx=22" target="_blank" rel="noopener">수소차</a>
@@ -588,10 +618,11 @@
             </li>
             <li>
               <a href="https://finance.naver.com/item/main.naver?code=242040" target="_blank" rel="noopener"><strong>나무기술</strong></a>
+              <button type="button" class="code-copy" data-code="242040" onclick="copyCode(this)" title="종목코드 복사 (MTS 검색창에 붙여넣기)">📋</button>
               <span class="px">6,610원</span>
               <span class="down-text">-24.7%</span>
-              <div class="theme-reason">급등 (10일 +171%) / 20일선 위 (+25.2%, 60선기울기 +5.0%) / 단기눌림 (5일선 -7.7%, 5일고점 -40.5%); 거래대금 1616억 (OK)</div>
-              <div class="pick-meta" style="color:var(--red);">✂️ 손절 20일선 5,280원 (-20.1%)</div>
+<button type="button" class="ai-btn" onclick="showAI(this)" data-name="나무기술" data-summary="나무기술은 5G 테마의 종목으로, 오늘 24.7% 하락하며 단기 눌림목 구간에 있습니다. 최근 10일간 171% 급등 후 5일선 부근에서 조정을 받고 있습니다. 추천 진입가는 6,610원이며, 손절가는 5,067원입니다.">🤖 AI요약</button>              <div class="theme-reason">급등 (10일 +171%) / 20일선 위 (+25.2%, 60선기울기 +5.0%) / 단기눌림 (5일선 -7.7%, 5일고점 -40.5%); 거래대금 1616억 (OK)</div>
+              <div class="pick-meta" style="color:var(--red);">✂️ 손절 5,067원 (-23.3%, 1.5×ATR)</div>
               <div class="pick-meta">
                 테마:
 <a href="https://judal.co.kr/?view=stockList&themeIdx=42" target="_blank" rel="noopener">5G</a>
@@ -600,10 +631,11 @@
             </li>
             <li>
               <a href="https://finance.naver.com/item/main.naver?code=147760" target="_blank" rel="noopener"><strong>피엠티</strong></a>
+              <button type="button" class="code-copy" data-code="147760" onclick="copyCode(this)" title="종목코드 복사 (MTS 검색창에 붙여넣기)">📋</button>
               <span class="px">7,220원</span>
               <span class="up-text">+9.6%</span>
-              <div class="theme-reason">급등 (10일 +80%) / 20일선 위 (+5.6%, 60선기울기 +19.3%) / 단기눌림 (5일선 -9.6%, 5일고점 -27.2%); 거래대금 31억 (OK)</div>
-              <div class="pick-meta" style="color:var(--red);">✂️ 손절 20일선 6,835원 (-5.3%)</div>
+<button type="button" class="ai-btn" onclick="showAI(this)" data-name="피엠티" data-summary="피엠티는 반도체 후공정 테마의 종목으로, 오늘 9.6% 상승했으나 단기 눌림목 구간에 있습니다. 최근 10일간 80% 급등 후 5일선 부근에서 조정을 받고 있습니다. 추천 진입가는 7,220원이며, 손절가는 5,038원입니다.">🤖 AI요약</button>              <div class="theme-reason">급등 (10일 +80%) / 20일선 위 (+5.6%, 60선기울기 +19.3%) / 단기눌림 (5일선 -9.6%, 5일고점 -27.2%); 거래대금 31억 (OK)</div>
+              <div class="pick-meta" style="color:var(--red);">✂️ 손절 5,038원 (-30.2%, 1.5×ATR)</div>
               <div class="pick-meta">
                 테마:
 <a href="https://judal.co.kr/?view=stockList&themeIdx=595" target="_blank" rel="noopener">반도체 후공정</a>
@@ -612,10 +644,11 @@
             </li>
             <li>
               <a href="https://finance.naver.com/item/main.naver?code=329180" target="_blank" rel="noopener"><strong>HD현대중공업</strong></a>
+              <button type="button" class="code-copy" data-code="329180" onclick="copyCode(this)" title="종목코드 복사 (MTS 검색창에 붙여넣기)">📋</button>
               <span class="px">684,000원</span>
               <span class="down-text">-1.7%</span>
-              <div class="theme-reason">급등 (10일 +30%) / 20일선 위 (+0.8%, 60선기울기 +2.8%) / 단기눌림 (5일선 -4.3%, 5일고점 -10.6%); 거래대금 3052억 (OK)</div>
-              <div class="pick-meta" style="color:var(--red);">✂️ 손절 20일선 678,700원 (-0.8%)</div>
+<button type="button" class="ai-btn" onclick="showAI(this)" data-name="HD현대중공업" data-summary="HD현대중공업은 조선 테마의 종목으로, 오늘 1.7% 하락하며 단기 눌림목 구간에 있습니다. 최근 10일간 30% 급등 후 5일선 부근에서 조정을 받고 있습니다. 추천 진입가는 684,000원이며, 손절가는 606,964원입니다.">🤖 AI요약</button>              <div class="theme-reason">급등 (10일 +30%) / 20일선 위 (+0.8%, 60선기울기 +2.8%) / 단기눌림 (5일선 -4.3%, 5일고점 -10.6%); 거래대금 3052억 (OK)</div>
+              <div class="pick-meta" style="color:var(--red);">✂️ 손절 606,964원 (-11.3%, 1.5×ATR)</div>
               <div class="pick-meta">
                 업종:
 <a href="https://search.naver.com/search.naver?query=%EC%A1%B0%EC%84%A0+관련주" target="_blank" rel="noopener">조선</a>                · 주도테마: X
@@ -623,10 +656,11 @@
             </li>
             <li>
               <a href="https://finance.naver.com/item/main.naver?code=034730" target="_blank" rel="noopener"><strong>SK</strong></a>
+              <button type="button" class="code-copy" data-code="034730" onclick="copyCode(this)" title="종목코드 복사 (MTS 검색창에 붙여넣기)">📋</button>
               <span class="px">657,000원</span>
               <span class="down-text">-2.8%</span>
-              <div class="theme-reason">급등 (10일 +46%) / 20일선 위 (+15.8%, 60선기울기 +10.1%) / 단기눌림 (5일선 -1.4%, 5일고점 -8.6%); 거래대금 1396억 (OK)</div>
-              <div class="pick-meta" style="color:var(--red);">✂️ 손절 20일선 567,275원 (-13.7%)</div>
+<button type="button" class="ai-btn" onclick="showAI(this)" data-name="SK" data-summary="SK는 수소차 테마의 종목으로, 오늘 2.8% 하락하며 단기 눌림목 구간에 있습니다. 최근 10일간 46% 급등 후 5일선 부근에서 조정을 받고 있습니다. 추천 진입가는 657,000원이며, 손절가는 589,929원입니다.">🤖 AI요약</button>              <div class="theme-reason">급등 (10일 +46%) / 20일선 위 (+15.8%, 60선기울기 +10.1%) / 단기눌림 (5일선 -1.4%, 5일고점 -8.6%); 거래대금 1396억 (OK)</div>
+              <div class="pick-meta" style="color:var(--red);">✂️ 손절 589,929원 (-10.2%, 1.5×ATR)</div>
               <div class="pick-meta">
                 테마:
 <a href="https://judal.co.kr/?view=stockList&themeIdx=22" target="_blank" rel="noopener">수소차</a>
@@ -635,10 +669,11 @@
             </li>
             <li>
               <a href="https://finance.naver.com/item/main.naver?code=000990" target="_blank" rel="noopener"><strong>DB하이텍</strong></a>
+              <button type="button" class="code-copy" data-code="000990" onclick="copyCode(this)" title="종목코드 복사 (MTS 검색창에 붙여넣기)">📋</button>
               <span class="px">181,400원</span>
               <span class="down-text">-2.2%</span>
-              <div class="theme-reason">급등 (10일 +58%) / 20일선 위 (+2.8%, 60선기울기 +14.1%) / 단기눌림 (5일선 -7.8%, 5일고점 -21.3%); 거래대금 1394억 (OK)</div>
-              <div class="pick-meta" style="color:var(--red);">✂️ 손절 20일선 176,410원 (-2.8%)</div>
+<button type="button" class="ai-btn" onclick="showAI(this)" data-name="DB하이텍" data-summary="DB하이텍은 반도체 테마의 종목으로, 오늘 2.2% 하락하며 단기 눌림목 구간에 있습니다. 최근 10일간 58% 급등 후 5일선 부근에서 조정을 받고 있습니다. 추천 진입가는 181,400원이며, 손절가는 150,286원입니다.">🤖 AI요약</button>              <div class="theme-reason">급등 (10일 +58%) / 20일선 위 (+2.8%, 60선기울기 +14.1%) / 단기눌림 (5일선 -7.8%, 5일고점 -21.3%); 거래대금 1394억 (OK)</div>
+              <div class="pick-meta" style="color:var(--red);">✂️ 손절 150,286원 (-17.2%, 1.5×ATR)</div>
               <div class="pick-meta">
                 테마:
 <a href="https://judal.co.kr/?view=stockList&themeIdx=46" target="_blank" rel="noopener">반도체</a>
@@ -647,10 +682,11 @@
             </li>
             <li>
               <a href="https://finance.naver.com/item/main.naver?code=010060" target="_blank" rel="noopener"><strong>OCI홀딩스</strong></a>
+              <button type="button" class="code-copy" data-code="010060" onclick="copyCode(this)" title="종목코드 복사 (MTS 검색창에 붙여넣기)">📋</button>
               <span class="px">351,000원</span>
               <span class="up-text">+0.4%</span>
-              <div class="theme-reason">급등 (10일 +54%) / 20일선 위 (+5.6%, 60선기울기 +13.4%) / 단기눌림 (5일선 -3.2%, 5일고점 -15.2%); 거래대금 1121억 (OK)</div>
-              <div class="pick-meta" style="color:var(--red);">✂️ 손절 20일선 332,300원 (-5.3%)</div>
+<button type="button" class="ai-btn" onclick="showAI(this)" data-name="OCI홀딩스" data-summary="OCI홀딩스는 김민석 테마의 종목으로, 오늘 0.4% 상승했으나 단기 눌림목 구간에 있습니다. 최근 10일간 54% 급등 후 5일선 부근에서 조정을 받고 있습니다. 추천 진입가는 351,000원이며, 손절가는 286,714원입니다.">🤖 AI요약</button>              <div class="theme-reason">급등 (10일 +54%) / 20일선 위 (+5.6%, 60선기울기 +13.4%) / 단기눌림 (5일선 -3.2%, 5일고점 -15.2%); 거래대금 1121억 (OK)</div>
+              <div class="pick-meta" style="color:var(--red);">✂️ 손절 286,714원 (-18.3%, 1.5×ATR)</div>
               <div class="pick-meta">
                 테마:
 <a href="https://judal.co.kr/?view=stockList&themeIdx=639" target="_blank" rel="noopener">김민석</a>
@@ -659,10 +695,11 @@
             </li>
             <li>
               <a href="https://finance.naver.com/item/main.naver?code=036930" target="_blank" rel="noopener"><strong>주성엔지니어링</strong></a>
+              <button type="button" class="code-copy" data-code="036930" onclick="copyCode(this)" title="종목코드 복사 (MTS 검색창에 붙여넣기)">📋</button>
               <span class="px">185,500원</span>
               <span class="down-text">-7.2%</span>
-              <div class="theme-reason">급등 (10일 +66%) / 20일선 위 (+7.4%, 60선기울기 +28.8%) / 단기눌림 (5일선 -12.3%, 5일고점 -25.8%); 거래대금 4807억 (OK)</div>
-              <div class="pick-meta" style="color:var(--red);">✂️ 손절 20일선 172,700원 (-6.9%)</div>
+<button type="button" class="ai-btn" onclick="showAI(this)" data-name="주성엔지니어링" data-summary="주성엔지니어링은 반도체 후공정 테마의 종목으로, 오늘 7.2% 하락하며 단기 눌림목 구간에 있습니다. 최근 10일간 66% 급등 후 5일선 부근에서 조정을 받고 있습니다. 추천 진입가는 185,500원이며, 손절가는 137,511원입니다.">🤖 AI요약</button>              <div class="theme-reason">급등 (10일 +66%) / 20일선 위 (+7.4%, 60선기울기 +28.8%) / 단기눌림 (5일선 -12.3%, 5일고점 -25.8%); 거래대금 4807억 (OK)</div>
+              <div class="pick-meta" style="color:var(--red);">✂️ 손절 137,511원 (-25.9%, 1.5×ATR)</div>
               <div class="pick-meta">
                 테마:
 <a href="https://judal.co.kr/?view=stockList&themeIdx=595" target="_blank" rel="noopener">반도체 후공정</a>
@@ -679,10 +716,11 @@
           <ul class="watch-list">
             <li>
               <a href="https://finance.naver.com/item/main.naver?code=000660" target="_blank" rel="noopener"><strong>SK하이닉스</strong></a>
+              <button type="button" class="code-copy" data-code="000660" onclick="copyCode(this)" title="종목코드 복사 (MTS 검색창에 붙여넣기)">📋</button>
               <span class="px">2,363,000원</span>
               <span class="up-text">+1.3%</span>
-              <div class="theme-reason">대세 정배열 + 신고가 (-1.5%, 60선+81%); 거래대금 132396억 (OK)</div>
-              <div class="pick-meta" style="color:var(--red);">✂️ 손절 60일선 1,308,567원 (-44.6%)</div>
+<button type="button" class="ai-btn" onclick="showAI(this)" data-name="SK하이닉스" data-summary="SK하이닉스는 반도체 테마의 종목으로, 오늘 1.3% 상승하며 신고가권에 근접했습니다. 대세 정배열 및 60선 이상의 강한 상승 추세를 유지하고 있습니다. 추천 진입가는 2,363,000원이며, 손절가는 2,144,857원입니다.">🤖 AI요약</button>              <div class="theme-reason">대세 정배열 + 신고가 (-1.5%, 60선+81%); 거래대금 132396억 (OK)</div>
+              <div class="pick-meta" style="color:var(--red);">✂️ 손절 2,144,857원 (-9.2%, 1.5×ATR)</div>
               <div class="pick-meta">
                 테마:
 <a href="https://judal.co.kr/?view=stockList&themeIdx=46" target="_blank" rel="noopener">반도체</a>
@@ -691,10 +729,11 @@
             </li>
             <li>
               <a href="https://finance.naver.com/item/main.naver?code=005930" target="_blank" rel="noopener"><strong>삼성전자</strong></a>
+              <button type="button" class="code-copy" data-code="005930" onclick="copyCode(this)" title="종목코드 복사 (MTS 검색창에 붙여넣기)">📋</button>
               <span class="px">349,000원</span>
               <span class="up-text">+10.1%</span>
-              <div class="theme-reason">대세 정배열 + 신고가 (-1.6%, 60선+54%); 거래대금 157233억 (OK)</div>
-              <div class="pick-meta" style="color:var(--red);">✂️ 손절 60일선 226,928원 (-35.0%)</div>
+<button type="button" class="ai-btn" onclick="showAI(this)" data-name="삼성전자" data-summary="삼성전자는 반도체 테마의 주도주로, 오늘 10.1% 상승하며 신고가권에 근접했습니다. 대세 정배열 및 60선 이상의 강한 상승 추세를 유지하고 있습니다. 추천 진입가는 349,000원이며, 손절가는 316,857원입니다.">🤖 AI요약</button>              <div class="theme-reason">대세 정배열 + 신고가 (-1.6%, 60선+54%); 거래대금 157233억 (OK)</div>
+              <div class="pick-meta" style="color:var(--red);">✂️ 손절 316,857원 (-9.2%, 1.5×ATR)</div>
               <div class="pick-meta">
                 테마:
 <a href="https://judal.co.kr/?view=stockList&themeIdx=46" target="_blank" rel="noopener">반도체</a>
@@ -703,10 +742,11 @@
             </li>
             <li>
               <a href="https://finance.naver.com/item/main.naver?code=066570" target="_blank" rel="noopener"><strong>LG전자</strong></a>
+              <button type="button" class="code-copy" data-code="066570" onclick="copyCode(this)" title="종목코드 복사 (MTS 검색창에 붙여넣기)">📋</button>
               <span class="px">380,500원</span>
               <span class="up-text">+29.9%</span>
-              <div class="theme-reason">대세 정배열 + 신고가 (+0.0%, 60선+157%); 거래대금 19697억 (OK)</div>
-              <div class="pick-meta" style="color:var(--red);">✂️ 손절 60일선 148,143원 (-61.1%)</div>
+<button type="button" class="ai-btn" onclick="showAI(this)" data-name="LG전자" data-summary="LG전자는 스마트홈 테마의 주도주로, 오늘 29.9% 급등하며 신고가권에 진입했습니다. 기관의 순매수세가 유입되며 강세를 보인 것으로 분석됩니다. 추천 진입가는 380,500원이며, 손절가는 326,029원입니다.">🤖 AI요약</button>              <div class="theme-reason">대세 정배열 + 신고가 (+0.0%, 60선+157%); 거래대금 19697억 (OK)</div>
+              <div class="pick-meta" style="color:var(--red);">✂️ 손절 326,029원 (-14.3%, 1.5×ATR)</div>
               <div class="pick-meta">
                 테마:
 <a href="https://judal.co.kr/?view=stockList&themeIdx=130" target="_blank" rel="noopener">스마트홈</a>
@@ -715,10 +755,11 @@
             </li>
             <li>
               <a href="https://finance.naver.com/item/main.naver?code=040350" target="_blank" rel="noopener"><strong>크레오에스지</strong></a>
+              <button type="button" class="code-copy" data-code="040350" onclick="copyCode(this)" title="종목코드 복사 (MTS 검색창에 붙여넣기)">📋</button>
               <span class="px">6,130원</span>
               <span class="up-text">+29.9%</span>
-              <div class="theme-reason">대세 정배열 + 신고가 (+0.0%, 60선+64%); 거래대금 113억 (OK)</div>
-              <div class="pick-meta" style="color:var(--red);">✂️ 손절 60일선 3,728원 (-39.2%)</div>
+<button type="button" class="ai-btn" onclick="showAI(this)" data-name="크레오에스지" data-summary="크레오에스지는 IT서비스 테마의 종목으로, 오늘 29.9% 급등하며 신고가권에 진입했습니다. C·D 시그널이 포착되며 강세를 보인 것으로 분석됩니다. 추천 진입가는 6,130원이며, 손절가는 5,246원입니다.">🤖 AI요약</button>              <div class="theme-reason">대세 정배열 + 신고가 (+0.0%, 60선+64%); 거래대금 113억 (OK)</div>
+              <div class="pick-meta" style="color:var(--red);">✂️ 손절 5,246원 (-14.4%, 1.5×ATR)</div>
               <div class="pick-meta">
                 업종:
 <a href="https://search.naver.com/search.naver?query=IT%EC%84%9C%EB%B9%84%EC%8A%A4+관련주" target="_blank" rel="noopener">IT서비스</a>                · 주도테마: X
@@ -726,10 +767,11 @@
             </li>
             <li>
               <a href="https://finance.naver.com/item/main.naver?code=032830" target="_blank" rel="noopener"><strong>삼성생명</strong></a>
+              <button type="button" class="code-copy" data-code="032830" onclick="copyCode(this)" title="종목코드 복사 (MTS 검색창에 붙여넣기)">📋</button>
               <span class="px">410,000원</span>
               <span class="up-text">+5.5%</span>
-              <div class="theme-reason">대세 정배열 + 신고가 (-2.5%, 60선+57%); 거래대금 2745억 (OK)</div>
-              <div class="pick-meta" style="color:var(--red);">✂️ 손절 60일선 261,842원 (-36.1%)</div>
+<button type="button" class="ai-btn" onclick="showAI(this)" data-name="삼성생명" data-summary="삼성생명은 보험 테마의 종목으로, 오늘 5.5% 상승하며 신고가권에 근접했습니다. 대세 정배열 및 60선 이상의 강한 상승 추세를 유지하고 있습니다. 추천 진입가는 410,000원이며, 손절가는 368,000원입니다.">🤖 AI요약</button>              <div class="theme-reason">대세 정배열 + 신고가 (-2.5%, 60선+57%); 거래대금 2745억 (OK)</div>
+              <div class="pick-meta" style="color:var(--red);">✂️ 손절 368,000원 (-10.2%, 1.5×ATR)</div>
               <div class="pick-meta">
                 테마:
 <a href="https://judal.co.kr/?view=stockList&themeIdx=66" target="_blank" rel="noopener">보험</a>
@@ -738,10 +780,11 @@
             </li>
             <li>
               <a href="https://finance.naver.com/item/main.naver?code=064400" target="_blank" rel="noopener"><strong>LG씨엔에스</strong></a>
+              <button type="button" class="code-copy" data-code="064400" onclick="copyCode(this)" title="종목코드 복사 (MTS 검색창에 붙여넣기)">📋</button>
               <span class="px">143,700원</span>
               <span class="up-text">+26.3%</span>
-              <div class="theme-reason">대세 정배열 + 신고가 (-2.8%, 60선+106%); 거래대금 15928억 (OK)</div>
-              <div class="pick-meta" style="color:var(--red);">✂️ 손절 60일선 69,755원 (-51.5%)</div>
+<button type="button" class="ai-btn" onclick="showAI(this)" data-name="LG씨엔에스" data-summary="LG씨엔에스는 IT서비스 테마의 종목으로, 오늘 26.3% 급등하며 신고가권에 진입했습니다. C 시그널이 포착되며 강세를 보인 것으로 분석됩니다. 추천 진입가는 143,700원이며, 손절가는 124,661원입니다.">🤖 AI요약</button>              <div class="theme-reason">대세 정배열 + 신고가 (-2.8%, 60선+106%); 거래대금 15928억 (OK)</div>
+              <div class="pick-meta" style="color:var(--red);">✂️ 손절 124,661원 (-13.2%, 1.5×ATR)</div>
               <div class="pick-meta">
                 업종:
 <a href="https://search.naver.com/search.naver?query=IT%EC%84%9C%EB%B9%84%EC%8A%A4+관련주" target="_blank" rel="noopener">IT서비스</a>                · 주도테마: X
@@ -749,10 +792,11 @@
             </li>
             <li>
               <a href="https://finance.naver.com/item/main.naver?code=454910" target="_blank" rel="noopener"><strong>두산로보틱스</strong></a>
+              <button type="button" class="code-copy" data-code="454910" onclick="copyCode(this)" title="종목코드 복사 (MTS 검색창에 붙여넣기)">📋</button>
               <span class="px">138,400원</span>
               <span class="up-text">+29.9%</span>
-              <div class="theme-reason">대세 정배열 + 신고가 (-0.3%, 60선+45%); 거래대금 4897억 (OK)</div>
-              <div class="pick-meta" style="color:var(--red);">✂️ 손절 60일선 95,415원 (-31.1%)</div>
+<button type="button" class="ai-btn" onclick="showAI(this)" data-name="두산로보틱스" data-summary="두산로보틱스는 로봇 테마의 주도주로, 오늘 29.9% 급등하며 신고가권에 진입했습니다. 외국인의 순매수세가 유입되며 강세를 보인 것으로 분석됩니다. 추천 진입가는 138,400원이며, 손절가는 117,764원입니다.">🤖 AI요약</button>              <div class="theme-reason">대세 정배열 + 신고가 (-0.3%, 60선+45%); 거래대금 4897억 (OK)</div>
+              <div class="pick-meta" style="color:var(--red);">✂️ 손절 117,764원 (-14.9%, 1.5×ATR)</div>
               <div class="pick-meta">
                 테마:
 <a href="https://judal.co.kr/?view=stockList&themeIdx=127" target="_blank" rel="noopener">로봇</a>
@@ -769,10 +813,11 @@
           <ul class="watch-list">
             <li>
               <a href="https://finance.naver.com/item/main.naver?code=018260" target="_blank" rel="noopener"><strong>삼성에스디에스</strong></a>
+              <button type="button" class="code-copy" data-code="018260" onclick="copyCode(this)" title="종목코드 복사 (MTS 검색창에 붙여넣기)">📋</button>
               <span class="px">362,000원</span>
               <span class="up-text">+21.1%</span>
-              <div class="theme-reason">추세 반전 (일목구름 위, 5&gt;20, MACD+, 20&gt;60); 거래대금 10707억 (OK)</div>
-              <div class="pick-meta" style="color:var(--red);">✂️ 손절 60일선 175,515원 (-51.5%)</div>
+<button type="button" class="ai-btn" onclick="showAI(this)" data-name="삼성에스디에스" data-summary="삼성에스디에스는 사물인터넷 테마의 종목으로, 오늘 21.1% 상승하며 추세 반전 신호가 포착되었습니다. 일목구름 위로 올라서고 MACD가 상승 전환하는 등 긍정적인 기술적 지표를 보이고 있습니다. 추천 진입가는 362,000원이며, 손절가는 318,275원입니다.">🤖 AI요약</button>              <div class="theme-reason">추세 반전 (일목구름 위, 5&gt;20, MACD+, 20&gt;60); 거래대금 10707억 (OK)</div>
+              <div class="pick-meta" style="color:var(--red);">✂️ 손절 318,275원 (-12.1%, 1.5×ATR)</div>
               <div class="pick-meta">
                 테마:
 <a href="https://judal.co.kr/?view=stockList&themeIdx=101" target="_blank" rel="noopener">사물인터넷</a>
@@ -781,10 +826,11 @@
             </li>
             <li>
               <a href="https://finance.naver.com/item/main.naver?code=034220" target="_blank" rel="noopener"><strong>LG디스플레이</strong></a>
+              <button type="button" class="code-copy" data-code="034220" onclick="copyCode(this)" title="종목코드 복사 (MTS 검색창에 붙여넣기)">📋</button>
               <span class="px">15,800원</span>
               <span class="down-text">-1.8%</span>
-              <div class="theme-reason">추세 반전 (일목구름 위, 5&gt;20, MACD+, 20&gt;60); 거래대금 8516억 (OK)</div>
-              <div class="pick-meta" style="color:var(--red);">✂️ 손절 60일선 12,735원 (-19.4%)</div>
+<button type="button" class="ai-btn" onclick="showAI(this)" data-name="LG디스플레이" data-summary="LG디스플레이는 OLED 테마의 종목으로, 오늘 1.8% 하락하며 조정을 받고 있습니다. D 시그널이 포착되었으며, 추세 반전 신호가 나타나고 있습니다. 추천 진입가는 15,800원이며, 손절가는 13,058원입니다.">🤖 AI요약</button>              <div class="theme-reason">추세 반전 (일목구름 위, 5&gt;20, MACD+, 20&gt;60); 거래대금 8516억 (OK)</div>
+              <div class="pick-meta" style="color:var(--red);">✂️ 손절 13,058원 (-17.4%, 1.5×ATR)</div>
               <div class="pick-meta">
                 테마:
 <a href="https://judal.co.kr/?view=stockList&themeIdx=29" target="_blank" rel="noopener">OLED</a>
@@ -793,10 +839,11 @@
             </li>
             <li>
               <a href="https://finance.naver.com/item/main.naver?code=018880" target="_blank" rel="noopener"><strong>한온시스템</strong></a>
+              <button type="button" class="code-copy" data-code="018880" onclick="copyCode(this)" title="종목코드 복사 (MTS 검색창에 붙여넣기)">📋</button>
               <span class="px">5,220원</span>
               <span class="down-text">-7.3%</span>
-              <div class="theme-reason">추세 반전 (일목구름 위, 5&gt;20, MACD+, 20&gt;60); 거래대금 1436억 (OK)</div>
-              <div class="pick-meta" style="color:var(--red);">✂️ 손절 60일선 4,360원 (-16.5%)</div>
+<button type="button" class="ai-btn" onclick="showAI(this)" data-name="한온시스템" data-summary="한온시스템은 수소차 테마의 종목으로, 오늘 7.3% 하락하며 단기 눌림목 구간에 있습니다. 최근 10일간 39% 급등 후 5일선 부근에서 조정을 받고 있습니다. 추천 진입가는 5,220원이며, 손절가는 4,433원입니다.">🤖 AI요약</button>              <div class="theme-reason">추세 반전 (일목구름 위, 5&gt;20, MACD+, 20&gt;60); 거래대금 1436억 (OK)</div>
+              <div class="pick-meta" style="color:var(--red);">✂️ 손절 4,433원 (-15.1%, 1.5×ATR)</div>
               <div class="pick-meta">
                 테마:
 <a href="https://judal.co.kr/?view=stockList&themeIdx=22" target="_blank" rel="noopener">수소차</a>
@@ -805,10 +852,11 @@
             </li>
             <li>
               <a href="https://finance.naver.com/item/main.naver?code=242040" target="_blank" rel="noopener"><strong>나무기술</strong></a>
+              <button type="button" class="code-copy" data-code="242040" onclick="copyCode(this)" title="종목코드 복사 (MTS 검색창에 붙여넣기)">📋</button>
               <span class="px">6,610원</span>
               <span class="down-text">-24.7%</span>
-              <div class="theme-reason">추세 반전 (일목구름 위, 5&gt;20, MACD+, 20&lt;60(초입)); 거래대금 1616억 (OK)</div>
-              <div class="pick-meta" style="color:var(--red);">✂️ 손절 60일선 5,548원 (-16.1%)</div>
+<button type="button" class="ai-btn" onclick="showAI(this)" data-name="나무기술" data-summary="나무기술은 5G 테마의 종목으로, 오늘 24.7% 하락하며 단기 눌림목 구간에 있습니다. 최근 10일간 171% 급등 후 5일선 부근에서 조정을 받고 있습니다. 추천 진입가는 6,610원이며, 손절가는 5,067원입니다.">🤖 AI요약</button>              <div class="theme-reason">추세 반전 (일목구름 위, 5&gt;20, MACD+, 20&lt;60(초입)); 거래대금 1616억 (OK)</div>
+              <div class="pick-meta" style="color:var(--red);">✂️ 손절 5,067원 (-23.3%, 1.5×ATR)</div>
               <div class="pick-meta">
                 테마:
 <a href="https://judal.co.kr/?view=stockList&themeIdx=42" target="_blank" rel="noopener">5G</a>
@@ -817,10 +865,11 @@
             </li>
             <li>
               <a href="https://finance.naver.com/item/main.naver?code=037560" target="_blank" rel="noopener"><strong>LG헬로비전</strong></a>
+              <button type="button" class="code-copy" data-code="037560" onclick="copyCode(this)" title="종목코드 복사 (MTS 검색창에 붙여넣기)">📋</button>
               <span class="px">2,860원</span>
               <span class="up-text">+30.0%</span>
-              <div class="theme-reason">추세 반전 (일목구름 위, 5&gt;20, MACD+, 20&lt;60(초입)); 거래대금 393억 (OK)</div>
-              <div class="pick-meta" style="color:var(--red);">✂️ 손절 60일선 2,279원 (-20.3%)</div>
+<button type="button" class="ai-btn" onclick="showAI(this)" data-name="LG헬로비전" data-summary="LG헬로비전은 OTT 테마의 종목으로, 오늘 30.0% 급등하며 상승 전환 신호가 포착되었습니다. 수렴대 위로 올라서고 MACD가 상승하는 등 긍정적인 기술적 지표를 보이고 있습니다. 추천 진입가는 2,860원이며, 손절가는 2,625원입니다.">🤖 AI요약</button>              <div class="theme-reason">추세 반전 (일목구름 위, 5&gt;20, MACD+, 20&lt;60(초입)); 거래대금 393억 (OK)</div>
+              <div class="pick-meta" style="color:var(--red);">✂️ 손절 2,625원 (-8.2%, 1.5×ATR)</div>
               <div class="pick-meta">
                 테마:
 <a href="https://judal.co.kr/?view=stockList&themeIdx=616" target="_blank" rel="noopener">OTT</a>
@@ -829,10 +878,11 @@
             </li>
             <li>
               <a href="https://finance.naver.com/item/main.naver?code=149950" target="_blank" rel="noopener"><strong>아바텍</strong></a>
+              <button type="button" class="code-copy" data-code="149950" onclick="copyCode(this)" title="종목코드 복사 (MTS 검색창에 붙여넣기)">📋</button>
               <span class="px">16,390원</span>
               <span class="up-text">+4.4%</span>
-              <div class="theme-reason">추세 반전 (일목구름 위, 5&gt;20, MACD+, 20&gt;60); 거래대금 253억 (OK)</div>
-              <div class="pick-meta" style="color:var(--red);">✂️ 손절 60일선 11,920원 (-27.3%)</div>
+<button type="button" class="ai-btn" onclick="showAI(this)" data-name="아바텍" data-summary="아바텍은 LCD 부품/소재 테마의 종목으로, 오늘 4.4% 상승하며 추세 반전 신호가 포착되었습니다. 일목구름 위로 올라서고 MACD가 상승 전환하는 등 긍정적인 기술적 지표를 보이고 있습니다. 추천 진입가는 16,390원이며, 손절가는 13,347원입니다.">🤖 AI요약</button>              <div class="theme-reason">추세 반전 (일목구름 위, 5&gt;20, MACD+, 20&gt;60); 거래대금 253억 (OK)</div>
+              <div class="pick-meta" style="color:var(--red);">✂️ 손절 13,347원 (-18.6%, 1.5×ATR)</div>
               <div class="pick-meta">
                 테마:
 <a href="https://judal.co.kr/?view=stockList&themeIdx=589" target="_blank" rel="noopener">LCD 부품/소재</a>
@@ -841,10 +891,11 @@
             </li>
             <li>
               <a href="https://finance.naver.com/item/main.naver?code=040350" target="_blank" rel="noopener"><strong>크레오에스지</strong></a>
+              <button type="button" class="code-copy" data-code="040350" onclick="copyCode(this)" title="종목코드 복사 (MTS 검색창에 붙여넣기)">📋</button>
               <span class="px">6,130원</span>
               <span class="up-text">+29.9%</span>
-              <div class="theme-reason">추세 반전 (일목구름 위, 5&gt;20, MACD+, 20&gt;60); 거래대금 113억 (OK)</div>
-              <div class="pick-meta" style="color:var(--red);">✂️ 손절 60일선 3,728원 (-39.2%)</div>
+<button type="button" class="ai-btn" onclick="showAI(this)" data-name="크레오에스지" data-summary="크레오에스지는 IT서비스 테마의 종목으로, 오늘 29.9% 급등하며 신고가권에 진입했습니다. C·D 시그널이 포착되며 강세를 보인 것으로 분석됩니다. 추천 진입가는 6,130원이며, 손절가는 5,246원입니다.">🤖 AI요약</button>              <div class="theme-reason">추세 반전 (일목구름 위, 5&gt;20, MACD+, 20&gt;60); 거래대금 113억 (OK)</div>
+              <div class="pick-meta" style="color:var(--red);">✂️ 손절 5,246원 (-14.4%, 1.5×ATR)</div>
               <div class="pick-meta">
                 업종:
 <a href="https://search.naver.com/search.naver?query=IT%EC%84%9C%EB%B9%84%EC%8A%A4+관련주" target="_blank" rel="noopener">IT서비스</a>                · 주도테마: X
@@ -852,10 +903,11 @@
             </li>
             <li>
               <a href="https://finance.naver.com/item/main.naver?code=036010" target="_blank" rel="noopener"><strong>아비코전자</strong></a>
+              <button type="button" class="code-copy" data-code="036010" onclick="copyCode(this)" title="종목코드 복사 (MTS 검색창에 붙여넣기)">📋</button>
               <span class="px">13,090원</span>
               <span class="up-text">+11.1%</span>
-              <div class="theme-reason">추세 반전 (일목구름 위, 5&gt;20, MACD+, 20&gt;60); 거래대금 121억 (OK)</div>
-              <div class="pick-meta" style="color:var(--red);">✂️ 손절 60일선 9,798원 (-25.2%)</div>
+<button type="button" class="ai-btn" onclick="showAI(this)" data-name="아비코전자" data-summary="아비코전자는 반도체 제품(DDR5) 테마의 종목으로, 오늘 11.1% 상승하며 추세 반전 신호가 포착되었습니다. 일목구름 위로 올라서고 MACD가 상승 전환하는 등 긍정적인 기술적 지표를 보이고 있습니다. 추천 진입가는 13,090원이며, 손절가는 11,042원입니다.">🤖 AI요약</button>              <div class="theme-reason">추세 반전 (일목구름 위, 5&gt;20, MACD+, 20&gt;60); 거래대금 121억 (OK)</div>
+              <div class="pick-meta" style="color:var(--red);">✂️ 손절 11,042원 (-15.6%, 1.5×ATR)</div>
               <div class="pick-meta">
                 테마:
 <a href="https://judal.co.kr/?view=stockList&themeIdx=585" target="_blank" rel="noopener">반도체 제품(DDR5)</a>
@@ -907,7 +959,7 @@
         <div class="theme-pct up-text">
           +9.21%
         </div>
-        <div class="theme-reason">LG전자, 삼성SDS 등 IT 대형주들의 실적 기대감 및 신사업 모멘텀이 부각되며 강세를 보였습니다.</div>
+        <div class="theme-reason">LG전자와 삼성SDS 등 IT 대표주들이 실적 개선 기대감과 함께 외국인 및 기관의 집중적인 매수세에 힘입어 강세를 보였습니다.</div>
       </div>
       <div class="theme">
         <div class="theme-rank">2</div>
@@ -918,7 +970,7 @@
         <div class="theme-pct up-text">
           +8.91%
         </div>
-        <div class="theme-reason">네이버, 카카오 등 인터넷 플랫폼 기업들이 긍정적인 실적 전망과 함께 상승세를 보였습니다.</div>
+        <div class="theme-reason">NAVER와 카카오 등 인터넷 대표주들이 전반적인 IT 섹터 강세에 동반하여 상승 흐름을 이어갔습니다.</div>
       </div>
       <div class="theme">
         <div class="theme-rank">3</div>
@@ -939,7 +991,7 @@
         <div class="theme-pct up-text">
           +3.06%
         </div>
-        <div class="theme-reason">삼성전자와 SK하이닉스가 외국인 매수세에 힘입어 상승하며 반도체 섹터 전반의 투자 심리를 개선시켰습니다.</div>
+        <div class="theme-reason">삼성전자와 SK하이닉스가 미국 증시의 긍정적인 영향과 함께 투자 심리가 개선되며 상승세를 보였습니다.</div>
       </div>
       <div class="theme">
         <div class="theme-rank">5</div>
@@ -950,7 +1002,7 @@
         <div class="theme-pct up-text">
           +2.36%
         </div>
-        <div class="theme-reason">LG전자, 삼성전자 등 IT 대형주들의 강세와 맞물려 관련 기술주들이 동반 강세를 나타냈습니다.</div>
+        <div class="theme-reason">LG전자, 삼성전자 등 관련 대형주들의 강세에 힘입어 무선충전 기술 관련주들도 동반 상승하는 모습을 보였습니다.</div>
       </div>
       <div class="theme">
         <div class="theme-rank">6</div>
@@ -971,7 +1023,7 @@
         <div class="theme-pct up-text">
           +1.26%
         </div>
-        <div class="theme-reason">LG전자 등 관련 대장주들의 상승세와 함께 AI 관련 기술주에 대한 관심이 지속되며 강세를 이어갔습니다.</div>
+        <div class="theme-reason">LG전자 등 관련 대장주들의 강세와 함께 피지컬 AI 및 휴머노이드 로봇 관련주들이 투자자들의 관심을 받으며 상승했습니다.</div>
       </div>
       <div class="theme">
         <div class="theme-rank">8</div>
@@ -992,7 +1044,7 @@
         <div class="theme-pct up-text">
           +1.10%
         </div>
-        <div class="theme-reason">AI 기술 발전과 함께 로봇 관련주들의 상승 모멘텀이 지속되며 시장의 관심을 받았습니다.</div>
+        <div class="theme-reason">AI 기술 발전 및 관련 기업들의 성장 기대감이 지속되면서 지능형 로봇 및 AI 관련주들이 꾸준한 관심을 받았습니다.</div>
       </div>
       <div class="theme">
         <div class="theme-rank">10</div>
@@ -1499,6 +1551,15 @@
     <img id="lightbox-img" src="" alt="차트 확대">
   </div>
 
+  <div id="ai-modal" class="ai-modal" onclick="if(event.target===this)this.classList.remove('active')">
+    <div class="ai-modal-content">
+      <button type="button" class="ai-modal-close" onclick="document.getElementById('ai-modal').classList.remove('active')">✕</button>
+      <h3 id="ai-modal-title">🤖 AI 요약</h3>
+      <div id="ai-modal-body" class="ai-body"></div>
+      <p class="disclaimer" style="font-size:11px;margin-top:0.9rem;">※ AI 생성 참고용 요약입니다. 매수 추천이 아니며 판단·책임은 본인에게 있습니다.</p>
+    </div>
+  </div>
+
   <script>
     // Simple tab switcher
     document.querySelectorAll('.tab').forEach(tab => {
@@ -1510,6 +1571,29 @@
         document.querySelector(`[data-pane="${id}"]`).classList.add('active');
       });
     });
+
+    // 개별 종목코드 복사 — 6자리 코드만 클립보드에 복사 (MTS 검색창 붙여넣기용)
+    function copyCode(btn) {
+      const code = (btn.dataset.code || '').trim();
+      if (!code) return;
+      const done = () => {
+        const orig = btn.textContent;
+        btn.textContent = '✅';
+        setTimeout(() => { btn.textContent = orig; }, 1200);
+      };
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(code).then(done).catch(() => fallbackCopy(code, done));
+      } else {
+        fallbackCopy(code, done);
+      }
+    }
+
+    // 종목 AI 요약 모달 표시 (사전 생성된 data-summary)
+    function showAI(btn) {
+      document.getElementById('ai-modal-title').textContent = '🤖 ' + (btn.dataset.name || '') + ' · AI 요약';
+      document.getElementById('ai-modal-body').textContent = btn.dataset.summary || '요약이 없습니다.';
+      document.getElementById('ai-modal').classList.add('active');
+    }
 
     // 관심종목 일괄등록 복사 (모바일 호환) — "/watch 005930 000660 ..." 클립보드 복사
     function copyWatch(btn) {
