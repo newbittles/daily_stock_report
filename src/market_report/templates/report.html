@@ -350,6 +350,7 @@
       cursor: pointer; vertical-align: middle; }
     .code-copy:active { opacity: 0.6; }
     .pick-meta { color: var(--muted); font-size: 0.8rem; margin-top: 0.2rem; }
+    .pick-line { display: flex; flex-wrap: wrap; align-items: center; gap: 0.4rem; margin-top: 0.35rem; }
     .strat-col .watch-list li { padding-left: 0; }
     .strat-col .watch-list li::before { content: ""; }
 
@@ -623,8 +624,12 @@
               <span class="px">{{ "{:,.0f}".format(p.price) }}원</span>
               <span class="{{ 'up-text' if p.change_pct >= 0 else 'down-text' }}">{{ '+' if p.change_pct >= 0 else '' }}{{ "{:.1f}".format(p.change_pct) }}%</span>
               {% if p.endstage %}<span class="down-text">⚠️끝물</span>{% endif %}
-              {% if p.ai_summary %}<button type="button" class="ai-btn" onclick="showAI(this)" data-name="{{ p.name }}" data-summary="{{ p.ai_summary|e }}">🤖 AI요약</button>{% endif %}
-              {% if p.marcap_str %}<span class="code">시총 {{ p.marcap_str }}</span>{% endif %}
+              {% if p.ai_summary or p.marcap_str %}
+              <div class="pick-line">
+                {% if p.ai_summary %}<button type="button" class="ai-btn" onclick="showAI(this)" data-name="{{ p.name }}" data-summary="{{ p.ai_summary|e }}">🤖 AI요약</button>{% endif %}
+                {% if p.marcap_str %}<span class="code">시총 {{ p.marcap_str }}</span>{% endif %}
+              </div>
+              {% endif %}
               <div class="theme-reason">{{ p.reason }}</div>
               <div class="pick-meta" style="color:{{ 'var(--red)' if p.gap20 >= 25 else 'var(--text-dim)' }};">📊 20일선 이격 {{ '+' if p.gap20 >= 0 else '' }}{{ "{:.1f}".format(p.gap20) }}%{% if p.gap20 >= 25 %} ⚠️과열{% endif %}</div>
               <div class="pick-meta">
