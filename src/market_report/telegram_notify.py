@@ -73,6 +73,14 @@ def _format_pre_summary(snap: MarketSnapshot) -> str:
                 idx_parts.append(f"{idx.market} {idx.value:,.1f}({sign}{idx.change_pct:.2f}%)")
         if idx_parts:
             lines.append("📊 " + "  ·  ".join(idx_parts))
+        mac = []
+        if snap.fx:
+            mac.append(f"원/달러 {snap.fx['value']:,.0f}({snap.fx['change_pct']:+.1f}%)")
+        if snap.wti:
+            mac.append(f"WTI ${snap.wti['value']:,.1f}({snap.wti['change_pct']:+.1f}%)")
+        if mac:
+            lines.append("💱 " + "  ·  ".join(mac))
+        if idx_parts or mac:
             lines.append("")
 
     # AI 한줄 요약
@@ -112,6 +120,14 @@ def _format_post_summary(snap: MarketSnapshot) -> str:
                 idx_parts.append(f"{idx.market} {idx.value:,.1f}({sign}{idx.change_pct:.2f}%)")
         if idx_parts:
             lines.append("📊 " + "  ·  ".join(idx_parts))
+        mac = []
+        if snap.fx:
+            mac.append(f"원/달러 {snap.fx['value']:,.0f}({snap.fx['change_pct']:+.1f}%)")
+        if snap.wti:
+            mac.append(f"WTI ${snap.wti['value']:,.1f}({snap.wti['change_pct']:+.1f}%)")
+        if mac:
+            lines.append("💱 " + "  ·  ".join(mac))
+        if idx_parts or mac:
             lines.append("")
 
     if snap.summary:

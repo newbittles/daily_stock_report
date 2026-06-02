@@ -17,6 +17,7 @@ from src.market_report.scrapers.naver import (
     fetch_top_losers,
     fetch_top_volume,
 )
+from src.market_report.scrapers.macro import fetch_macro
 from src.market_report.scrapers.news import fetch_market_news
 from src.market_report.scrapers.theme import fetch_top_themes
 
@@ -36,6 +37,7 @@ async def collect_snapshot(mode: ReportMode) -> MarketSnapshot:
         fetch_top_losers("KOSPI", top=40),
         fetch_top_themes(top=10),
         fetch_market_news(top=15),
+        fetch_macro(),
         return_exceptions=True,
     )
 
@@ -65,6 +67,9 @@ async def collect_snapshot(mode: ReportMode) -> MarketSnapshot:
         top_themes=_safe(5, []),
         market_news=_safe(6, []),
     )
+    _macro = _safe(7, {}) or {}
+    snap.fx = _macro.get("fx")
+    snap.wti = _macro.get("wti")
 
     logger.info(
         "snapshot_collected mode=%s kospi=%s themes=%d news=%d",
