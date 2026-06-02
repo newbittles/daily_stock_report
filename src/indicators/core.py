@@ -8,6 +8,39 @@
 from __future__ import annotations
 
 
+def tick_size(price: float) -> int:
+    """한국 주식 호가 단위 (KRX 2023.1 개정). 가격대별 최소 호가."""
+    if price < 2_000:
+        return 1
+    if price < 5_000:
+        return 5
+    if price < 20_000:
+        return 10
+    if price < 50_000:
+        return 50
+    if price < 200_000:
+        return 100
+    if price < 500_000:
+        return 500
+    return 1_000
+
+
+def round_to_tick(price: float, mode: str = "nearest") -> float:
+    """가격을 호가 단위로 정렬. mode: nearest(반올림)/down(내림)/up(올림).
+
+    손절가는 실제 호가에 맞춰야 주문 가능 — 단순 산술값(예 312,964원)을
+    호가단위(50만 미만 → 100원)로 끊어 312,900/313,000 같은 유효 호가로 만든다.
+    """
+    if price <= 0:
+        return 0.0
+    t = tick_size(price)
+    if mode == "down":
+        return float((int(price) // t) * t)
+    if mode == "up":
+        return float(-((-int(price)) // t) * t)
+    return float(round(price / t) * t)
+
+
 def moving_average(values: list[float], period: int) -> list[float | None]:
     """단순이동평균(SMA). 길이 < period 구간은 None."""
     if period <= 0:

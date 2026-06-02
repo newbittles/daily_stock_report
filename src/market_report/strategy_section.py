@@ -13,7 +13,7 @@ from pathlib import Path
 import yaml
 
 from src.alerts.holdings_report import diagnose_holdings
-from src.indicators.core import average_true_range, moving_average
+from src.indicators.core import average_true_range, moving_average, round_to_tick
 from src.screener.config import load_screener_config
 from src.screener.engine import evaluate_strategy
 from src.screener.pipeline import _is_etf, _is_pref
@@ -128,7 +128,7 @@ async def collect_screen_picks(adapter, per_strategy: int = 8,
         _atr = average_true_range([x.high for x in c], [x.low for x in c], _closes, 14)
         _price = c[-1].close
         if _atr and _price:
-            _stop_price = max(_price - 1.5 * _atr, 0.0)
+            _stop_price = round_to_tick(max(_price - 1.5 * _atr, 0.0))  # 호가단위 정렬
             _stop_pct = (_stop_price - _price) / _price * 100  # 음수 = 하락 손절폭
         else:
             _stop_price, _stop_pct = 0.0, 0.0
