@@ -202,6 +202,34 @@ def _render_chart_safe(ticker: str, name: str, date: str) -> str | None:
         return None
 
 
+def _supply_streak(rows: list[dict], key: str) -> int:
+    """최신순 일별 순매수에서 연속 순매수일 수 (양수 연속)."""
+    n = 0
+    for r in rows:
+        if (r.get(key) or 0) > 0:
+            n += 1
+        else:
+            break
+    return n
+
+
+async def _inject_supply_streak(snap: MarketSnapshot, adapter) -> None:
+    """Top3 종목별 기관/외국인 연속 순매수일 → supply_str (예 '기관 순매수(3일) · 외국인 순매수(2일)')."""
+    for t in (snap.top3 or []):
+        try:
+            rows = await adapter.get_stock_investor_daily(t["ticker"], days=10)
+            od, fd = _supply_streak(rows, "orgn"), _supply_streak(rows, "frgn")
+            parts = []
+            if od > 0:
+                parts.append(f"기관 순매수({od}일)")
+            if fd > 0:
+                parts.append(f"외국인 순매수({fd}일)")
+            t["supply_str"] = " · ".join(parts)
+        except Exception as exc:
+            logger.warning("supply_streak_failed ticker=%s error=%s", t.get("ticker"), exc)
+            t["supply_str"] = ""
+
+
 def _inject_marcap(snap: MarketSnapshot) -> None:
     """모든 종목(top3·screen_picks·candidate_picks)에 시가총액(원) 주입 — 리포트 표기용."""
     try:
@@ -291,6 +319,7 @@ async def run_full(mode: ReportMode, *, do_publish: bool = True, do_telegram: bo
             ib = {x["ticker"] for x in await adapter.get_investor_net_buy("inst", "buy")}
             snap.top3 = select_top3(snap.screen_picks, foreign_buy=fb, inst_buy=ib,
                                     us_keywords=strong_kw, w_us=2.0, us_sectors=snap.us_sectors)
+            await _inject_supply_streak(snap, adapter)  # 연속 순매수일
             from src.market_report.analyzer import summarize_stocks
             await summarize_stocks(snap)
             logger.info("us_morning_top3 top3=%s us_kw=%d",
@@ -365,6 +394,7 @@ async def run_full(mode: ReportMode, *, do_publish: bool = True, do_telegram: bo
             fb = {x["ticker"] for x in await adapter.get_investor_net_buy("foreign", "buy")}
             ib = {x["ticker"] for x in await adapter.get_investor_net_buy("inst", "buy")}
             snap.top3 = select_top3(snap.screen_picks, foreign_buy=fb, inst_buy=ib)
+            await _inject_supply_streak(snap, adapter)  # 연속 순매수일
             logger.info("pipeline_top3_ready top3=%s", [t["name"] for t in snap.top3])
         except Exception as exc:
             logger.warning("top3_failed error=%s", exc)

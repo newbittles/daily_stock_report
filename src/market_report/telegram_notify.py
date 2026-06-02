@@ -40,6 +40,8 @@ def _format_strategy_holdings(snap: MarketSnapshot) -> list[str]:
             lines.append(f"{i}. {_naver_link(t['name'], t['ticker'])} "
                          f"{t['price']:,.0f}원 ({sign}{t.get('change_pct', 0):.1f}%){mc}")
             lines.append(f"   └ {t['reason']}")
+            if t.get("supply_str"):
+                lines.append(f"   💰 {t['supply_str']}")
             g = t.get("gap20", 0)
             lines.append(f"   📊 20일선 {'+' if g >= 0 else ''}{g:.1f}%"
                          + (" 🔥과열" if t.get("overheat") else ""))
@@ -201,6 +203,8 @@ def _format_us_morning_summary(snap: MarketSnapshot) -> str:
             lines.append(f"{i}. {_naver_link(t['name'], t['ticker'])} "
                          f"{t['price']:,.0f}원 ({sign}{t.get('change_pct', 0):.1f}%){mc}")
             lines.append(f"   └ {t['reason']}")
+            if t.get("supply_str"):
+                lines.append(f"   💰 {t['supply_str']}")
             g = t.get("gap20", 0)
             lines.append(f"   📊 20일선 {'+' if g >= 0 else ''}{g:.1f}%"
                          + (" 🔥과열" if t.get("overheat") else ""))

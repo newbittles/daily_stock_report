@@ -73,12 +73,7 @@ def select_top3(screen_picks: list[dict], foreign_buy: set[str] | None = None,
         if us_hit:
             sec = matched_us_sector(p.get("theme", ""), us_sectors or [])
             why.append(f"미국 {sec} 강세 연동" if sec else "미국 강세테마 연동")
-        if tk in fb and tk in ib:
-            why.append("외국인+기관 동반 순매수")
-        elif tk in fb:
-            why.append("외국인 순매수")
-        elif tk in ib:
-            why.append("기관 순매수")
+        # 수급은 supply_str(연속 순매수일)로 별도 표기 — pipeline에서 주입
         if p.get("change_pct", 0) >= 3:
             why.append(f"당일 +{p['change_pct']:.1f}% 강세")
         if p.get("_nh", 0) >= 2:

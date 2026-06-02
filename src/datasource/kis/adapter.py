@@ -366,6 +366,27 @@ class KisAdapter:
             })
         return result
 
+    async def get_stock_investor_daily(self, ticker: str, days: int = 10) -> list[dict[str, Any]]:
+        """종목별 일별 투자자 순매수 (개인/외국인/기관) — 최신순. 연속 순매수일 계산용.
+
+        inquire-investor(FHKST01010900). 반환: [{date, prsn, frgn, orgn}] (순매수 수량).
+        """
+        data = await self._request(
+            "/uapi/domestic-stock/v1/quotations/inquire-investor",
+            "FHKST01010900",
+            {"FID_COND_MRKT_DIV_CODE": "J", "FID_INPUT_ISCD": ticker},
+        )
+        out = data.get("output") or []
+        rows = []
+        for r in out[:days]:
+            rows.append({
+                "date": str(r.get("stck_bsop_date", "")).strip(),
+                "prsn": _i(r.get("prsn_ntby_qty")),
+                "frgn": _i(r.get("frgn_ntby_qty")),
+                "orgn": _i(r.get("orgn_ntby_qty")),
+            })
+        return rows
+
     # ── 확장: 잔고 / 체결내역 ─────────────────────────────────────────────────
     async def get_balance(self) -> list[dict[str, Any]]:
         """주식 잔고 조회 — 보유 종목 리스트.
