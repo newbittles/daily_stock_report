@@ -83,8 +83,7 @@ def select_top3(screen_picks: list[dict], foreign_buy: set[str] | None = None,
             why.append(f"당일 +{p['change_pct']:.1f}% 강세")
         if p.get("_nh", 0) >= 2:
             why.append("신고가권")
-        if p.get("theme"):
-            why.append(f"테마:{p['theme']}")
+        # 테마는 별도 줄로 표기 (reason에서 제외)
         if p.get("endstage"):
             why.append("⚠️끝물주의")
         ranked.append({
@@ -92,6 +91,7 @@ def select_top3(screen_picks: list[dict], foreign_buy: set[str] | None = None,
             "change_pct": p.get("change_pct", 0), "score": round(score, 1),
             "reason": " · ".join(why), "theme": p.get("theme", ""),
             "theme_kind": p.get("theme_kind", ""), "theme_idx": p.get("theme_idx", ""),
+            "is_theme_leader": bool(p.get("is_theme_leader")),  # 주도테마 여부 O/X
             "endstage": bool(p.get("endstage")),
             "stop_price": p.get("stop_price", 0), "stop_pct": p.get("stop_pct", 0),
             "gap20": round(p.get("gap20", 0), 1),  # 20일선 이격도(%) — 과열 판단

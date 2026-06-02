@@ -473,6 +473,9 @@
           <span class="gap-badge {{ 'overheat' if t.gap20 >= 25 else '' }}">20일선 {{ '+' if t.gap20 >= 0 else '' }}{{ "{:.1f}".format(t.gap20) }}%{% if t.gap20 >= 25 %} ⚠️과열{% endif %}</span>
         </div>
         <div class="top3-reason">{{ t.reason }}</div>
+        {% if t.theme %}
+        <div class="top3-reason">{{ '업종' if t.theme_kind == 'sector' else '테마' }}: {{ t.theme }} · 주도테마여부: <strong style="color:{{ 'var(--green)' if t.is_theme_leader else 'var(--text-mute)' }};">{{ 'O' if t.is_theme_leader else 'X' }}</strong></div>
+        {% endif %}
       </div>
       {% endfor %}
       <p style="font-size:12px;color:var(--text-dim);margin-top:0.5rem;">📊 20일선 이격도 = 현재가가 20일 이동평균선보다 얼마나 높은지. <span style="color:var(--red);">+25% 이상이면 과열</span>(단기 조정 위험)으로 표시합니다.</p>
