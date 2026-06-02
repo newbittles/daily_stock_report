@@ -394,7 +394,8 @@
     <section>
       <h2><span class="icon">🌎</span>미국 증시 마감</h2>
       <div class="indexes">
-        {% for q in snap.us_indices %}
+        {# 위 2칸: S&P500·나스닥 #}
+        {% for q in snap.us_indices[:2] %}
         <div class="index-card {{ 'up' if q.change_pct >= 0 else 'down' }}">
           <div class="index-info">
             <div class="index-name">{{ q.name }}</div>
@@ -403,6 +404,25 @@
           </div>
         </div>
         {% endfor %}
+        {# 아래 2칸: 금(좌)·유가(우) #}
+        {% if snap.gold %}
+        <div class="index-card {{ 'up' if snap.gold.change_pct >= 0 else 'down' }}">
+          <div class="index-info">
+            <div class="index-name">{{ snap.gold.name }}</div>
+            <div class="index-value">${{ "{:,.1f}".format(snap.gold.value) }}</div>
+            <div class="index-change {{ 'up-text' if snap.gold.change_pct >= 0 else 'down-text' }}">{{ '+' if snap.gold.change_pct >= 0 else '' }}{{ "{:.2f}".format(snap.gold.change_pct) }}%</div>
+          </div>
+        </div>
+        {% endif %}
+        {% if snap.wti %}
+        <div class="index-card {{ 'up' if snap.wti.change_pct >= 0 else 'down' }}">
+          <div class="index-info">
+            <div class="index-name">{{ snap.wti.name }}</div>
+            <div class="index-value">${{ "{:,.2f}".format(snap.wti.value) }}</div>
+            <div class="index-change {{ 'up-text' if snap.wti.change_pct >= 0 else 'down-text' }}">{{ '+' if snap.wti.change_pct >= 0 else '' }}{{ "{:.2f}".format(snap.wti.change_pct) }}%</div>
+          </div>
+        </div>
+        {% endif %}
       </div>
     </section>
     {% if snap.us_sectors or snap.us_bigtech %}

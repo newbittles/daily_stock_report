@@ -10,7 +10,7 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-_SYMBOLS = {"fx": ("KRW=X", "원/달러"), "wti": ("CL=F", "WTI 유가")}
+_SYMBOLS = {"fx": ("KRW=X", "원/달러"), "wti": ("CL=F", "WTI 유가"), "gold": ("GC=F", "금")}
 
 
 def _fetch_macro_sync() -> dict:

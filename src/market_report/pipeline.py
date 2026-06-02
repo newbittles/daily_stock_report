@@ -104,6 +104,14 @@ async def collect_us_snapshot() -> MarketSnapshot:
     snap.us_indices = [asdict(q) for q in _safe(idx)]
     snap.us_bigtech = [asdict(q) for q in _safe(bt)]
     snap.us_sectors = [asdict(q) for q in _safe(sec)]
+    # 금/유가 (미국 지수 2x2 하단 — 금 좌, 유가 우)
+    try:
+        from src.market_report.scrapers.macro import fetch_macro
+        macro = await fetch_macro()
+        snap.gold = macro.get("gold")
+        snap.wti = macro.get("wti")
+    except Exception as exc:
+        logger.warning("us_macro_failed error=%s", exc)
     logger.info("us_snapshot_collected indices=%d bigtech=%d sectors=%d",
                 len(snap.us_indices), len(snap.us_bigtech), len(snap.us_sectors))
     return snap

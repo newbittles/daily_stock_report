@@ -82,6 +82,7 @@ class MarketSnapshot:
     # 매크로 (지수 2x2 매트릭스 — 환율/유가)
     fx: dict | None = None    # {name, value, change_pct} USD/KRW
     wti: dict | None = None   # {name, value, change_pct} WTI 유가
+    gold: dict | None = None  # {name, value, change_pct} 금(GC=F)
 
     # 종목 순위
     top_volume: list[StockRank] = field(default_factory=list)

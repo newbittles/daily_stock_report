@@ -157,9 +157,13 @@ def _format_us_morning_summary(snap: MarketSnapshot) -> str:
 
     if snap.us_indices:
         parts = []
-        for q in snap.us_indices:
+        for q in snap.us_indices[:2]:  # S&P500·나스닥
             sign = "+" if q.get("change_pct", 0) >= 0 else ""
             parts.append(f"{q['name']} {q['price']:,.0f}({sign}{q.get('change_pct', 0):.2f}%)")
+        if snap.gold:
+            parts.append(f"금 ${snap.gold['value']:,.0f}({snap.gold['change_pct']:+.1f}%)")
+        if snap.wti:
+            parts.append(f"WTI ${snap.wti['value']:,.1f}({snap.wti['change_pct']:+.1f}%)")
         lines.append("📊 " + "  ·  ".join(parts))
         lines.append("")
 
