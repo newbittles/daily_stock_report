@@ -80,18 +80,16 @@
       border-radius: 8px;
       padding: 1rem;
       border-left: 3px solid var(--border);
-      display: grid;
-      grid-template-columns: 1fr auto;
+      display: flex;
+      flex-direction: column;
       gap: 0.5rem;
-      align-items: center;
     }
     .index-card.up { border-left-color: var(--green); }
     .index-card.down { border-left-color: var(--red); }
     .index-info { min-width: 0; }
     .index-spark {
-      width: 130px;
-      height: 40px;
-      flex-shrink: 0;
+      width: 100%;
+      height: 56px;
     }
     .index-spark img { width: 100%; height: 100%; object-fit: cover; border-radius: 4px; }
     .index-name { font-size: 0.85rem; color: var(--text-dim); margin-bottom: 0.25rem; }
