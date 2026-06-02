@@ -36,8 +36,9 @@ def _format_strategy_holdings(snap: MarketSnapshot) -> list[str]:
         lines.append("🏆 *오늘의 추천 Top 3*")
         for i, t in enumerate(snap.top3, 1):
             sign = "+" if t.get("change_pct", 0) >= 0 else ""
+            mc = f" · 시총 {t['marcap_str']}" if t.get("marcap_str") else ""
             lines.append(f"{i}. {_naver_link(t['name'], t['ticker'])} "
-                         f"{t['price']:,.0f}원 ({sign}{t.get('change_pct', 0):.1f}%)")
+                         f"{t['price']:,.0f}원 ({sign}{t.get('change_pct', 0):.1f}%){mc}")
             lines.append(f"   └ {t['reason']}")
             if t.get("stop_price"):
                 lines.append(f"   ✂️ 손절 {t['stop_price']:,.0f}원 "
@@ -176,8 +177,9 @@ def _format_us_morning_summary(snap: MarketSnapshot) -> str:
         lines.append("🏆 *오늘 시초 매수 Top 3* (미국 강세테마 연동)")
         for i, t in enumerate(snap.top3, 1):
             sign = "+" if t.get("change_pct", 0) >= 0 else ""
+            mc = f" · 시총 {t['marcap_str']}" if t.get("marcap_str") else ""
             lines.append(f"{i}. {_naver_link(t['name'], t['ticker'])} "
-                         f"{t['price']:,.0f}원 ({sign}{t.get('change_pct', 0):.1f}%)")
+                         f"{t['price']:,.0f}원 ({sign}{t.get('change_pct', 0):.1f}%){mc}")
             lines.append(f"   └ {t['reason']}")
             if t.get("stop_price"):
                 lines.append(f"   ✂️ 손절 {t['stop_price']:,.0f}원 ({t.get('stop_pct', 0):+.1f}%)")

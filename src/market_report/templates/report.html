@@ -441,6 +441,7 @@
           <span class="{{ 'up-text' if t.change_pct >= 0 else 'down-text' }}">{{ '+' if t.change_pct >= 0 else '' }}{{ "{:.1f}".format(t.change_pct) }}%</span>
           {% if t.endstage %}<span class="down-text">⚠️끝물</span>{% endif %}
           {% if t.ai_summary %}<button type="button" class="ai-btn" onclick="showAI(this)" data-name="{{ t.name }}" data-summary="{{ t.ai_summary|e }}">🤖 AI요약</button>{% endif %}
+          {% if t.marcap_str %}<span class="code">시총 {{ t.marcap_str }}</span>{% endif %}
         </div>
         <div class="top3-reason">{{ t.reason }}</div>
         {% if t.stop_price %}
@@ -578,6 +579,7 @@
               <span class="{{ 'up-text' if p.change_pct >= 0 else 'down-text' }}">{{ '+' if p.change_pct >= 0 else '' }}{{ "{:.1f}".format(p.change_pct) }}%</span>
               {% if p.endstage %}<span class="down-text">⚠️끝물</span>{% endif %}
               {% if p.ai_summary %}<button type="button" class="ai-btn" onclick="showAI(this)" data-name="{{ p.name }}" data-summary="{{ p.ai_summary|e }}">🤖 AI요약</button>{% endif %}
+              {% if p.marcap_str %}<span class="code">시총 {{ p.marcap_str }}</span>{% endif %}
               <div class="theme-reason">{{ p.reason }}</div>
               {% if p.stop_price %}
               <div class="pick-meta" style="color:var(--red);">✂️ 손절 {{ "{:,.0f}".format(p.stop_price) }}원 ({{ '+' if p.stop_pct >= 0 else '' }}{{ "{:.1f}".format(p.stop_pct) }}%)</div>

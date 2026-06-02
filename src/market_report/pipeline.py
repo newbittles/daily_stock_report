@@ -182,6 +182,23 @@ def _render_chart_safe(ticker: str, name: str, date: str) -> str | None:
         return None
 
 
+def _inject_marcap(snap: MarketSnapshot) -> None:
+    """모든 종목(top3·screen_picks·candidate_picks)에 시가총액(원) 주입 — 리포트 표기용."""
+    try:
+        from src.datasource.market_cap import format_marcap, get_market_cap_map
+        mm = get_market_cap_map()
+        if not mm:
+            return
+        for lst in (snap.top3, snap.screen_picks, snap.candidate_picks):
+            for p in (lst or []):
+                tk = str(p.get("ticker", "")).strip()
+                if tk:
+                    p["marcap"] = mm.get(tk, 0)
+                    p["marcap_str"] = format_marcap(p["marcap"])
+    except Exception as exc:
+        logger.warning("marcap_inject_failed error=%s", exc)
+
+
 async def run_full(mode: ReportMode, *, do_publish: bool = True, do_telegram: bool = True) -> MarketSnapshot:
     """End-to-end: 데이터 → 분석 → HTML 렌더 → git push → 텔레그램.
 
@@ -251,6 +268,7 @@ async def run_full(mode: ReportMode, *, do_publish: bool = True, do_telegram: bo
         except Exception as exc:
             logger.warning("us_morning_strategy_failed error=%s", exc)
 
+        _inject_marcap(snap)
         try:
             render_report(snap)
         except Exception as exc:
@@ -333,6 +351,7 @@ async def run_full(mode: ReportMode, *, do_publish: bool = True, do_telegram: bo
     except Exception as exc:
         logger.error("pipeline_strategy_failed error=%s", exc)
 
+    _inject_marcap(snap)
     try:
         render_report(snap)
     except Exception as exc:
