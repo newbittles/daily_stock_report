@@ -348,3 +348,64 @@ def render_index_sparkline(market: str, date: str | None = None) -> Path | None:
 def index_spark_url_rel(market: str, date: str | None = None) -> str:
     date_str = date or datetime.now().strftime("%Y-%m-%d")
     return f"charts/{date_str}-{market}-spark.png"
+
+
+def render_mini_candle(symbol: str, key: str, date: str | None = None,
+                       source: str = "yf", days: int = 30) -> Path | None:
+    """심볼 OHLC → 미니 캔들차트 PNG. source: yf(yfinance) | fdr(FinanceDataReader).
+
+    지수·환율·유가·금 등 각 항목 카드의 흐름 표시용. 축·라벨 없는 다크 미니 캔들.
+    """
+    date_str = date or datetime.now().strftime("%Y-%m-%d")
+    out = CHARTS_DIR / f"{date_str}-{key}-candle.png"
+    try:
+        if source == "fdr":
+            import FinanceDataReader as fdr
+            start = (datetime.now() - timedelta(days=days * 3)).strftime("%Y-%m-%d")
+            df = fdr.DataReader(symbol, start)
+        else:
+            import yfinance as yf
+            df = yf.download(symbol, period="3mo", interval="1d",
+                             progress=False, auto_adjust=True)
+            if df is not None and isinstance(df.columns, pd.MultiIndex):
+                df.columns = [c[0] for c in df.columns]
+        if df is None or df.empty:
+            return None
+        df = df[["Open", "High", "Low", "Close"]].dropna().tail(days)
+        if len(df) < 5:
+            return None
+        CHARTS_DIR.mkdir(parents=True, exist_ok=True)
+        mc = mpf.make_marketcolors(up="#34d399", down="#f87171", edge="inherit", wick="inherit")
+        style = mpf.make_mpf_style(marketcolors=mc, facecolor="#1e293b", figcolor="#1e293b")
+        fig, _ = mpf.plot(df, type="candle", style=style, axisoff=True,
+                          figsize=(3.8, 1.3), returnfig=True, tight_layout=True)
+        fig.savefig(out, facecolor="#1e293b", bbox_inches="tight", pad_inches=0.03)
+        plt.close(fig)
+        return out
+    except Exception as exc:
+        logger.warning("mini_candle_failed symbol=%s error=%s", symbol, exc)
+        return None
+
+
+def candle_url_rel(key: str, date: str | None = None) -> str:
+    date_str = date or datetime.now().strftime("%Y-%m-%d")
+    return f"charts/{date_str}-{key}-candle.png"
+
+
+def cleanup_old_charts(keep_days: int = 7) -> int:
+    """charts/ 의 오래된 PNG 삭제 (기본 7일 이전). git 용량 누적 방지. 삭제 개수 반환."""
+    import time
+    if not CHARTS_DIR.exists():
+        return 0
+    cutoff = time.time() - keep_days * 86400
+    n = 0
+    for f in CHARTS_DIR.glob("*.png"):
+        try:
+            if f.stat().st_mtime < cutoff:
+                f.unlink()
+                n += 1
+        except Exception:
+            pass
+    if n:
+        logger.info("cleanup_old_charts removed=%d keep_days=%d", n, keep_days)
+    return n

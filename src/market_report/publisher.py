@@ -59,7 +59,7 @@ def publish(snap: MarketSnapshot) -> bool:
                   "us_morning": "미국 아침"}.get(snap.mode, "마감 후")
 
     # 1. add
-    ok, msg = _run_git("add", "docs/")
+    ok, msg = _run_git("add", "-A", "docs/")  # -A: 삭제(오래된 차트)도 스테이징
     if not ok:
         logger.error("publish_add_failed error=%s", msg)
         return False

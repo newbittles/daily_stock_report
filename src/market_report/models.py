@@ -83,6 +83,7 @@ class MarketSnapshot:
     fx: dict | None = None    # {name, value, change_pct} USD/KRW
     wti: dict | None = None   # {name, value, change_pct} WTI 유가
     gold: dict | None = None  # {name, value, change_pct} 금(GC=F)
+    candle_urls: dict = field(default_factory=dict)  # {key: 미니 캔들 이미지 URL} 지수·환율·유가·금·미국
 
     # 종목 순위
     top_volume: list[StockRank] = field(default_factory=list)

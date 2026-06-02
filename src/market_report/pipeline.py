@@ -122,13 +122,14 @@ async def generate_report(mode: ReportMode) -> MarketSnapshot:
     if mode == "us_morning":
         snap = await collect_us_snapshot()
         snap = await analyze(snap)
+        await _render_candles(snap)
         return snap
 
     snap = await collect_snapshot(mode)
     snap = await analyze(snap)
 
-    # 지수 스파크라인 (KOSPI/KOSDAQ — 양 모드 공통)
-    await _render_index_sparks(snap)
+    # 지수·환율·유가 미니 캔들차트 (지수 2x2 각 항목)
+    await _render_candles(snap)
 
     # 추천 종목별 차트 생성 (마감 전만 — 마감 후는 watchpoints만)
     if snap.mode == "pre_close" and snap.candidate_picks:
@@ -137,26 +138,32 @@ async def generate_report(mode: ReportMode) -> MarketSnapshot:
     return snap
 
 
-async def _render_index_sparks(snap: MarketSnapshot) -> None:
-    """지수 미니 시계열 차트 생성."""
-    from src.market_report.chart import index_spark_url_rel, render_index_sparkline
+# 지수 2x2 각 항목 캔들 대상 — (심볼, 키, 소스)
+_CANDLE_ITEMS = {
+    "us_morning": [("US500", "us_sp500", "fdr"), ("IXIC", "us_nasdaq", "fdr"),
+                   ("GC=F", "gold", "yf"), ("CL=F", "wti", "yf")],
+    "kr": [("KS11", "KOSPI", "fdr"), ("KQ11", "KOSDAQ", "fdr"),
+           ("KRW=X", "fx", "yf"), ("CL=F", "wti", "yf")],
+}
+
+
+async def _render_candles(snap: MarketSnapshot) -> None:
+    """지수·환율·유가·금 미니 캔들차트 생성 → snap.candle_urls."""
+    from src.market_report.chart import candle_url_rel, render_mini_candle
 
     date = snap.generated_at.strftime("%Y-%m-%d")
+    items = _CANDLE_ITEMS["us_morning"] if snap.mode == "us_morning" else _CANDLE_ITEMS["kr"]
 
-    def _safe(market: str) -> str:
+    def _one(sym: str, key: str, src: str):
         try:
-            path = render_index_sparkline(market, date)
-            return index_spark_url_rel(market, date) if path else ""
+            p = render_mini_candle(sym, key, date, source=src)
+            return key, (candle_url_rel(key, date) if p else "")
         except Exception as exc:
-            logger.warning("spark_failed market=%s error=%s", market, exc)
-            return ""
+            logger.warning("candle_failed key=%s error=%s", key, exc)
+            return key, ""
 
-    kospi_url, kosdaq_url = await asyncio.gather(
-        asyncio.to_thread(_safe, "KOSPI"),
-        asyncio.to_thread(_safe, "KOSDAQ"),
-    )
-    snap.kospi_spark_url = kospi_url
-    snap.kosdaq_spark_url = kosdaq_url
+    results = await asyncio.gather(*[asyncio.to_thread(_one, s, k, sr) for s, k, sr in items])
+    snap.candle_urls = {k: u for k, u in results if u}
 
 
 async def _render_pick_charts(snap: MarketSnapshot) -> None:
@@ -226,6 +233,13 @@ async def run_full(mode: ReportMode, *, do_publish: bool = True, do_telegram: bo
     from src.market_report.telegram_notify import send_report
 
     logger.info("pipeline_start mode=%s", mode)
+
+    # 오래된 차트 정리 (7일 이전 PNG 삭제 — git 용량 누적 방지)
+    try:
+        from src.market_report.chart import cleanup_old_charts
+        cleanup_old_charts(7)
+    except Exception as exc:
+        logger.warning("chart_cleanup_failed error=%s", exc)
 
     snap = await generate_report(mode)
     logger.info("pipeline_data_ready mode=%s picks=%d themes=%d",

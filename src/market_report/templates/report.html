@@ -397,12 +397,14 @@
       <div class="indexes">
         {# 위 2칸: S&P500·나스닥 #}
         {% for q in snap.us_indices[:2] %}
+        {% set ck = 'us_sp500' if loop.index0 == 0 else 'us_nasdaq' %}
         <div class="index-card {{ 'up' if q.change_pct >= 0 else 'down' }}">
           <div class="index-info">
             <div class="index-name">{{ q.name }}</div>
             <div class="index-value">{{ "{:,.2f}".format(q.price) }}</div>
             <div class="index-change {{ 'up-text' if q.change_pct >= 0 else 'down-text' }}">{{ '+' if q.change_pct >= 0 else '' }}{{ "{:.2f}".format(q.change_pct) }}%</div>
           </div>
+          {% if snap.candle_urls.get(ck) %}<div class="index-spark"><img src="{{ snap.candle_urls[ck] }}" alt="{{ q.name }} 캔들" loading="lazy"></div>{% endif %}
         </div>
         {% endfor %}
         {# 아래 2칸: 금(좌)·유가(우) #}
@@ -413,6 +415,7 @@
             <div class="index-value">${{ "{:,.1f}".format(snap.gold.value) }}</div>
             <div class="index-change {{ 'up-text' if snap.gold.change_pct >= 0 else 'down-text' }}">{{ '+' if snap.gold.change_pct >= 0 else '' }}{{ "{:.2f}".format(snap.gold.change_pct) }}%</div>
           </div>
+          {% if snap.candle_urls.get('gold') %}<div class="index-spark"><img src="{{ snap.candle_urls['gold'] }}" alt="금 캔들" loading="lazy"></div>{% endif %}
         </div>
         {% endif %}
         {% if snap.wti %}
@@ -422,6 +425,7 @@
             <div class="index-value">${{ "{:,.2f}".format(snap.wti.value) }}</div>
             <div class="index-change {{ 'up-text' if snap.wti.change_pct >= 0 else 'down-text' }}">{{ '+' if snap.wti.change_pct >= 0 else '' }}{{ "{:.2f}".format(snap.wti.change_pct) }}%</div>
           </div>
+          {% if snap.candle_urls.get('wti') %}<div class="index-spark"><img src="{{ snap.candle_urls['wti'] }}" alt="유가 캔들" loading="lazy"></div>{% endif %}
         </div>
         {% endif %}
       </div>
@@ -480,7 +484,7 @@
     <section>
       <h2><span class="icon">📈</span>주요 지수</h2>
       <div class="indexes">
-        {% for idx, spark_url in [(snap.kospi, snap.kospi_spark_url), (snap.kosdaq, snap.kosdaq_spark_url)] %}
+        {% for idx, ck in [(snap.kospi, 'KOSPI'), (snap.kosdaq, 'KOSDAQ')] %}
           {% if idx %}
           <div class="index-card {{ 'up' if idx.change_pct >= 0 else 'down' }}">
             <div class="index-info">
@@ -491,8 +495,8 @@
                 ({{ '+' if idx.change_pct >= 0 else '' }}{{ "{:.2f}".format(idx.change_pct) }}%)
               </div>
             </div>
-            {% if spark_url %}
-            <div class="index-spark"><img src="{{ spark_url }}" alt="{{ idx.market }} 60일 추이" loading="lazy"></div>
+            {% if snap.candle_urls.get(ck) %}
+            <div class="index-spark"><img src="{{ snap.candle_urls[ck] }}" alt="{{ idx.market }} 캔들" loading="lazy"></div>
             {% endif %}
           </div>
           {% endif %}
@@ -504,6 +508,7 @@
             <div class="index-value">{{ "{:,.2f}".format(snap.fx.value) }}</div>
             <div class="index-change {{ 'up-text' if snap.fx.change_pct >= 0 else 'down-text' }}">{{ '+' if snap.fx.change_pct >= 0 else '' }}{{ "{:.2f}".format(snap.fx.change_pct) }}%</div>
           </div>
+          {% if snap.candle_urls.get('fx') %}<div class="index-spark"><img src="{{ snap.candle_urls['fx'] }}" alt="환율 캔들" loading="lazy"></div>{% endif %}
         </div>
         {% endif %}
         {% if snap.wti %}
@@ -513,6 +518,7 @@
             <div class="index-value">${{ "{:,.2f}".format(snap.wti.value) }}</div>
             <div class="index-change {{ 'up-text' if snap.wti.change_pct >= 0 else 'down-text' }}">{{ '+' if snap.wti.change_pct >= 0 else '' }}{{ "{:.2f}".format(snap.wti.change_pct) }}%</div>
           </div>
+          {% if snap.candle_urls.get('wti') %}<div class="index-spark"><img src="{{ snap.candle_urls['wti'] }}" alt="유가 캔들" loading="lazy"></div>{% endif %}
         </div>
         {% endif %}
       </div>
