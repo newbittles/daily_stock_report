@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-06-02",
+    "time": "14:40",
+    "mode": "pre_close",
+    "url": "reports/2026-06-02-pre.html",
+    "summary": "코스피는 소폭 하락세 속에서 반도체 관련주 강세로 낙폭을 줄이고 있으며, 코스닥은 기술주 중심의 하락세를 보이고 있습니다.",
+    "kospi_pct": -0.03,
+    "kosdaq_pct": -1.73
+  },
+  {
+    "date": "2026-06-02",
     "time": "07:30",
     "mode": "us_morning",
     "url": "reports/2026-06-02-us.html",
