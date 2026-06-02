@@ -208,6 +208,9 @@ def _inject_marcap(snap: MarketSnapshot) -> None:
                 if tk:
                     p["marcap"] = mm.get(tk, 0)
                     p["marcap_str"] = format_marcap(p["marcap"])
+        # 전략 스크린은 시총 내림차순 정렬 (전략별 그룹 내 순서 유지됨)
+        if snap.screen_picks:
+            snap.screen_picks.sort(key=lambda p: -(p.get("marcap") or 0))
     except Exception as exc:
         logger.warning("marcap_inject_failed error=%s", exc)
 

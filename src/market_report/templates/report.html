@@ -372,6 +372,9 @@
       background: var(--green); color: #fff; border-radius: 50%; font-weight: 700; font-size: 0.9rem; }
     .top3-head a { color: var(--txt); text-decoration: none; border-bottom: 1px dashed var(--accent); font-size: 1.05rem; }
     .top3-reason { color: var(--sub, var(--muted)); font-size: 0.86rem; margin-top: 0.3rem; padding-left: 2.1rem; line-height: 1.4; }
+    .top3-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 0.45rem; padding-left: 2.1rem; margin: 0.3rem 0; }
+    .gap-badge { font-size: 0.8rem; color: var(--text-dim); }
+    .gap-badge.overheat { color: var(--red); font-weight: 700; }
   </style>
 </head>
 <body>
@@ -458,16 +461,16 @@
           <span class="px">{{ "{:,.0f}".format(t.price) }}원</span>
           <span class="{{ 'up-text' if t.change_pct >= 0 else 'down-text' }}">{{ '+' if t.change_pct >= 0 else '' }}{{ "{:.1f}".format(t.change_pct) }}%</span>
           {% if t.endstage %}<span class="down-text">⚠️끝물</span>{% endif %}
+        </div>
+        <div class="top3-meta">
           {% if t.ai_summary %}<button type="button" class="ai-btn" onclick="showAI(this)" data-name="{{ t.name }}" data-summary="{{ t.ai_summary|e }}">🤖 AI요약</button>{% endif %}
           {% if t.marcap_str %}<span class="code">시총 {{ t.marcap_str }}</span>{% endif %}
+          <span class="gap-badge {{ 'overheat' if t.gap20 >= 25 else '' }}">20일선 {{ '+' if t.gap20 >= 0 else '' }}{{ "{:.1f}".format(t.gap20) }}%{% if t.gap20 >= 25 %} ⚠️과열{% endif %}</span>
         </div>
         <div class="top3-reason">{{ t.reason }}</div>
-        {% if t.stop_price %}
-        <div class="top3-reason" style="color:var(--red);">✂️ 손절 {{ "{:,.0f}".format(t.stop_price) }}원 ({{ '+' if t.stop_pct >= 0 else '' }}{{ "{:.1f}".format(t.stop_pct) }}%)</div>
-        {% endif %}
       </div>
       {% endfor %}
-      <p style="font-size:12px;color:var(--text-dim);margin-top:0.5rem;">✂️ 제시된 손절가는 종가매매 기준이며, 다음날 해당 가격에 도달하면 손절해야 하는 기준입니다 (ATR 변동성 기법 활용).</p>
+      <p style="font-size:12px;color:var(--text-dim);margin-top:0.5rem;">📊 20일선 이격도 = 현재가가 20일 이동평균선보다 얼마나 높은지. <span style="color:var(--red);">+25% 이상이면 과열</span>(단기 조정 위험)으로 표시합니다.</p>
       <p class="disclaimer" style="font-size:12px;">※ A/B/C/D 시그널 + 주도주·거래량·수급(외국인/기관) 종합 점수 상위 3종목(기준 P4). 참고용이며 매수 추천 아님, 판단·책임은 본인.</p>
     </section>
     {% endif %}
@@ -617,9 +620,7 @@
               {% if p.ai_summary %}<button type="button" class="ai-btn" onclick="showAI(this)" data-name="{{ p.name }}" data-summary="{{ p.ai_summary|e }}">🤖 AI요약</button>{% endif %}
               {% if p.marcap_str %}<span class="code">시총 {{ p.marcap_str }}</span>{% endif %}
               <div class="theme-reason">{{ p.reason }}</div>
-              {% if p.stop_price %}
-              <div class="pick-meta" style="color:var(--red);">✂️ 손절 {{ "{:,.0f}".format(p.stop_price) }}원 ({{ '+' if p.stop_pct >= 0 else '' }}{{ "{:.1f}".format(p.stop_pct) }}%)</div>
-              {% endif %}
+              <div class="pick-meta" style="color:{{ 'var(--red)' if p.gap20 >= 25 else 'var(--text-dim)' }};">📊 20일선 이격 {{ '+' if p.gap20 >= 0 else '' }}{{ "{:.1f}".format(p.gap20) }}%{% if p.gap20 >= 25 %} ⚠️과열{% endif %}</div>
               <div class="pick-meta">
                 {{ '업종' if p.theme_kind == 'sector' else '테마' }}:
                 {% if p.theme and p.theme_kind == 'theme' and p.theme_idx %}<a href="https://judal.co.kr/?view=stockList&themeIdx={{ p.theme_idx }}" target="_blank" rel="noopener">{{ p.theme }}</a>

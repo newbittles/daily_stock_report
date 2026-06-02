@@ -144,7 +144,7 @@ async def collect_screen_picks(adapter, per_strategy: int = 8,
                     "change_pct": round(change_pct, 2),
                     "reason": "; ".join(res.reasons),
                     "endstage": bool(res.metrics.get("endstage")),
-                    "_liq": round(_liq, 2), "_gap20": round(_gap20, 1), "_nh": round(_nh, 2),
+                    "_liq": round(_liq, 2), "gap20": round(_gap20, 1), "_nh": round(_nh, 2),
                     "stop_price": round(_stop_price, 1) if _stop_price else 0,
                     "stop_pct": round(_stop_pct, 1),
                     "theme": "",            # pipeline에서 judal 테마/업종 폴백으로 채움

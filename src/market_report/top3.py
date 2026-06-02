@@ -60,7 +60,7 @@ def select_top3(screen_picks: list[dict], foreign_buy: set[str] | None = None,
             w["strat"] * p["_sw"]
             + w["mom"] * p.get("change_pct", 0)
             + w["liq"] * p.get("_liq", 0)
-            + w["align"] * min(p.get("_gap20", 0), 30)
+            + w["align"] * min(p.get("gap20", 0), 30)
             + w["nh"] * p.get("_nh", 0)
             + w["supply"] * supply
             + w_us * (1 if us_hit else 0)
@@ -94,6 +94,7 @@ def select_top3(screen_picks: list[dict], foreign_buy: set[str] | None = None,
             "theme_kind": p.get("theme_kind", ""), "theme_idx": p.get("theme_idx", ""),
             "endstage": bool(p.get("endstage")),
             "stop_price": p.get("stop_price", 0), "stop_pct": p.get("stop_pct", 0),
+            "gap20": round(p.get("gap20", 0), 1),  # 20일선 이격도(%) — 과열 판단
         })
     ranked.sort(key=lambda x: x["score"], reverse=True)
     return ranked[:3]
