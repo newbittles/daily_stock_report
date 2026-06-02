@@ -42,7 +42,7 @@ def _format_strategy_holdings(snap: MarketSnapshot) -> list[str]:
             lines.append(f"   └ {t['reason']}")
             g = t.get("gap20", 0)
             lines.append(f"   📊 20일선 {'+' if g >= 0 else ''}{g:.1f}%"
-                         + (" ⚠️과열" if g >= 25 else ""))
+                         + (" 🔥과열" if t.get("overheat") else ""))
         lines.append("")
     if snap.holdings_status:
         lines.append("📋 *보유종목 상태*")
@@ -203,7 +203,7 @@ def _format_us_morning_summary(snap: MarketSnapshot) -> str:
             lines.append(f"   └ {t['reason']}")
             g = t.get("gap20", 0)
             lines.append(f"   📊 20일선 {'+' if g >= 0 else ''}{g:.1f}%"
-                         + (" ⚠️과열" if g >= 25 else ""))
+                         + (" 🔥과열" if t.get("overheat") else ""))
         lines.append("")
 
     lines.append(f"📄 [전체 리포트 보기]({url})")

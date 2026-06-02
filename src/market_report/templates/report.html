@@ -470,7 +470,7 @@
         <div class="top3-meta">
           {% if t.ai_summary %}<button type="button" class="ai-btn" onclick="showAI(this)" data-name="{{ t.name }}" data-summary="{{ t.ai_summary|e }}">🤖 AI요약</button>{% endif %}
           {% if t.marcap_str %}<span class="code">시총 {{ t.marcap_str }}</span>{% endif %}
-          <span class="gap-badge {{ 'overheat' if t.gap20 >= 25 else '' }}">20일선 {{ '+' if t.gap20 >= 0 else '' }}{{ "{:.1f}".format(t.gap20) }}%{% if t.gap20 >= 25 %} ⚠️과열{% endif %}</span>
+          <span class="gap-badge {{ 'overheat' if t.overheat else '' }}">20일선 {{ '+' if t.gap20 >= 0 else '' }}{{ "{:.1f}".format(t.gap20) }}%{% if t.overheat %} 🔥과열(BB돌파·거래량{{ "{:.1f}".format(t.vol_x) }}x){% endif %}</span>
         </div>
         <div class="top3-reason">{{ t.reason }}</div>
         {% if t.theme %}
@@ -634,7 +634,7 @@
               </div>
               {% endif %}
               <div class="theme-reason">{{ p.reason }}</div>
-              <div class="pick-meta" style="color:{{ 'var(--red)' if p.gap20 >= 25 else 'var(--text-dim)' }};">📊 20일선 이격 {{ '+' if p.gap20 >= 0 else '' }}{{ "{:.1f}".format(p.gap20) }}%{% if p.gap20 >= 25 %} ⚠️과열{% endif %}</div>
+              <div class="pick-meta" style="color:{{ 'var(--red)' if p.overheat else 'var(--text-dim)' }};">📊 20일선 이격 {{ '+' if p.gap20 >= 0 else '' }}{{ "{:.1f}".format(p.gap20) }}%{% if p.overheat %} 🔥과열(BB돌파·거래량{{ "{:.1f}".format(p.vol_x) }}x){% endif %}</div>
               <div class="pick-meta">
                 {{ '업종' if p.theme_kind == 'sector' else '테마' }}:
                 {% if p.theme and p.theme_kind == 'theme' and p.theme_idx %}<a href="https://judal.co.kr/?view=stockList&themeIdx={{ p.theme_idx }}" target="_blank" rel="noopener">{{ p.theme }}</a>

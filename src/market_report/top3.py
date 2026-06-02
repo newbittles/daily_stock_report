@@ -94,7 +94,9 @@ def select_top3(screen_picks: list[dict], foreign_buy: set[str] | None = None,
             "is_theme_leader": bool(p.get("is_theme_leader")),  # 주도테마 여부 O/X
             "endstage": bool(p.get("endstage")),
             "stop_price": p.get("stop_price", 0), "stop_pct": p.get("stop_pct", 0),
-            "gap20": round(p.get("gap20", 0), 1),  # 20일선 이격도(%) — 과열 판단
+            "gap20": round(p.get("gap20", 0), 1),  # 20일선 이격도(%)
+            "overheat": bool(p.get("overheat")),   # 🔥과열(BB돌파+이격≥30%+거래량≥1.8배)
+            "vol_x": p.get("vol_x", 0),
         })
     ranked.sort(key=lambda x: x["score"], reverse=True)
     return ranked[:3]

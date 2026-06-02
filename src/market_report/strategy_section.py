@@ -123,6 +123,14 @@ async def collect_screen_picks(adapter, per_strategy: int = 8,
         _gap20 = (c[-1].close - _ma20) / _ma20 * 100 if _ma20 else 0.0
         _hi60 = max(x.high for x in c[-60:])
         _nh = (c[-1].close / _hi60 - 0.97) * 100 if _hi60 else 0.0
+        # 🔥 과열 판정 (7케이스 검증): BB(20,2) 상단 종가돌파 + 20일이격≥30% + 거래량≥1.8배
+        from statistics import pstdev
+        _std20 = pstdev(_closes[-20:]) if len(_closes) >= 20 else 0.0
+        _bbup = (_ma20 + 2 * _std20) if _ma20 else 0.0
+        _vols = [x.volume for x in c]
+        _volavg20 = sum(_vols[-20:]) / 20 if len(_vols) >= 20 else 0.0
+        _volx = c[-1].volume / _volavg20 if _volavg20 else 0.0
+        _overheat = bool(_bbup and c[-1].close > _bbup and _gap20 >= 30 and _volx >= 1.8)
         # ATR(변동성) 기반 손절가 — 현재가 - 1.5×ATR. 급등주는 넓게, 안정주는 좁게 자동.
         # 배수 1.5: 한 달 백테스트상 종가베팅 다음날 손절 7.4%(2.0×는 0% 무의미, 1.0×는 18.5% 휩쏘 과다)
         _atr = average_true_range([x.high for x in c], [x.low for x in c], _closes, 14)
@@ -147,6 +155,7 @@ async def collect_screen_picks(adapter, per_strategy: int = 8,
                     "_liq": round(_liq, 2), "gap20": round(_gap20, 1), "_nh": round(_nh, 2),
                     "stop_price": round(_stop_price, 1) if _stop_price else 0,
                     "stop_pct": round(_stop_pct, 1),
+                    "overheat": _overheat, "vol_x": round(_volx, 1),
                     "theme": "",            # pipeline에서 judal 테마/업종 폴백으로 채움
                     "theme_kind": "",       # "theme"(judal 테마) | "sector"(네이버 세분업종)
                     "theme_idx": "",        # judal themeIdx (테마 링크용)
