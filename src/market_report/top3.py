@@ -61,7 +61,7 @@ def select_top3(screen_picks: list[dict], foreign_buy: set[str] | None = None,
             + w["mom"] * p.get("change_pct", 0)
             + w["liq"] * p.get("_liq", 0)
             + w["align"] * min(p.get("gap20", 0), 30)
-            + w["nh"] * p.get("_nh", 0)
+            + w["nh"] * max(p.get("_nh", 0), 0)  # 신고가 아래(눌림목)는 감점 안 함
             + w["supply"] * supply
             + w_us * (1 if us_hit else 0)
             - w["end"] * (1 if p.get("endstage") else 0)
@@ -97,6 +97,18 @@ def select_top3(screen_picks: list[dict], foreign_buy: set[str] | None = None,
             "gap20": round(p.get("gap20", 0), 1),  # 20일선 이격도(%)
             "overheat": bool(p.get("overheat")),   # 🔥과열(BB돌파+이격≥30%+거래량≥1.8배)
             "vol_x": p.get("vol_x", 0),
+            "lead_strat": p["strategy"].split(".")[0].strip(),  # 대표전략 A/B/C/D
         })
     ranked.sort(key=lambda x: x["score"], reverse=True)
-    return ranked[:3]
+    # 전략 다양성 — 같은 전략 최대 2개 (C 독점 방지 → 주도주+눌림목 균형)
+    out: list[dict] = []
+    strat_cnt: dict[str, int] = {}
+    for r in ranked:
+        st = r["lead_strat"]
+        if strat_cnt.get(st, 0) >= 2:
+            continue
+        out.append(r)
+        strat_cnt[st] = strat_cnt.get(st, 0) + 1
+        if len(out) >= 3:
+            break
+    return out
