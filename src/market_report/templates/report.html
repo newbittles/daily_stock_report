@@ -700,6 +700,9 @@
     {% if snap.holdings_status %}
     <section>
       <h2><span class="icon">📋</span>보유종목 상태 (홀딩/손절/추가매수)</h2>
+      {% if snap.holdings_summary %}
+      <div class="summary-box"><div class="label">🤖 보유종목 AI 코멘트</div><p>{{ snap.holdings_summary }}</p></div>
+      {% endif %}
       <ul class="watch-list">
         {% for h in snap.holdings_status %}
         <li>

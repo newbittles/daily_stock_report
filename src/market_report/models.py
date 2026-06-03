@@ -119,6 +119,7 @@ class MarketSnapshot:
     screen_picks: list[dict] = field(default_factory=list)   # {strategy, ticker, name, price, reason, endstage}
     # 보유종목 상태 (홀딩/손절/추가매수 — pipeline이 채움)
     holdings_status: list[dict] = field(default_factory=list)  # {name, ticker, state, reason, profit_rate, ...}
+    holdings_summary: str = ""  # 보유종목 전체에 대한 AI 종합 코멘트 (analyzer.summarize_holdings)
 
     # 차트 URL (renderer가 채움, 상대 경로 — docs/reports/ 기준)
     kospi_spark_url: str = ""

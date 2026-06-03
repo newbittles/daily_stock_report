@@ -554,6 +554,12 @@ async def run_full(
             await summarize_stocks(snap)
         except Exception as exc:
             logger.warning("stock_summary_skip error=%s", exc)
+        # 보유종목 전체 AI 종합 코멘트 (홀드/익절/손절 관점)
+        try:
+            from src.market_report.analyzer import summarize_holdings
+            await summarize_holdings(snap)
+        except Exception as exc:
+            logger.warning("holdings_summary_skip error=%s", exc)
     except Exception as exc:
         logger.error("pipeline_strategy_failed error=%s", exc)
 

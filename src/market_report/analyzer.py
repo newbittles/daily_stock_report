@@ -211,6 +211,27 @@ theme_reasons 작성 규칙:
 JSON만 출력하고 다른 설명은 추가하지 마세요."""
 
 
+def _fallback_summary(snap: MarketSnapshot) -> str:
+    """AI 실패 시 스냅샷 수치로 만드는 결정론적 요약 (요약이 빈 채로 발송되지 않도록).
+
+    간헐적 Gemini 실패(쿼터·503·휴장일 등)에도 리포트가 최소한의 시장 요약을
+    담도록 보장. 'AI 분석 불가' 단순 메시지 대신 실제 지수·테마 수치를 제공한다.
+    """
+    parts: list[str] = []
+    if snap.mode == "us_morning":
+        for q in (snap.us_indices or [])[:2]:
+            parts.append(f"{q.get('name', '')} {q.get('price', 0):,.0f}({q.get('change_pct', 0):+.2f}%)")
+        secs = [q.get("name", "") for q in (snap.us_sectors or [])[:3] if q.get("name")]
+        head = " · ".join(parts) if parts else "미국 증시"
+        return head + (f". 강세 섹터: {', '.join(secs)}." if secs else ".")
+    for idx, label in ((snap.kospi, "코스피"), (snap.kosdaq, "코스닥")):
+        if idx:
+            parts.append(f"{label} {idx.value:,.1f}({idx.change_pct:+.2f}%)")
+    themes = snap.leading_themes[:3] or [t.name for t in (snap.top_themes or [])[:3]]
+    head = " · ".join(parts) if parts else "국내 증시"
+    return head + (f". 강세 테마: {', '.join(themes)}." if themes else ".")
+
+
 async def analyze(snap: MarketSnapshot) -> MarketSnapshot:
     """Gemini로 시장 분석. snap을 mutate해서 반환.
 
@@ -260,7 +281,8 @@ async def analyze(snap: MarketSnapshot) -> MarketSnapshot:
 
     if data is None:
         logger.error("gemini_analyze_failed mode=%s error=%s", snap.mode, last_exc)
-        snap.summary = "AI 분석을 일시적으로 사용할 수 없습니다. 아래 데이터를 직접 참고하세요."
+        # 결정론적 폴백 — 'AI 분석 불가' 단순 메시지 대신 지수·테마 수치 요약 제공
+        snap.summary = _fallback_summary(snap)
         snap.why_moved = ""
         snap.theme_commentary = ""
         snap.candidate_picks = []
@@ -432,3 +454,80 @@ async def summarize_stocks(snap: MarketSnapshot) -> None:
     for p in (snap.screen_picks or []):
         _put(p)
     logger.info("stock_summary_ok n=%d", len(targets))
+
+
+_HOLD_STATE_KO = {
+    "BREAKDOWN": "추세붕괴", "STOP60": "60선이탈", "STOP20": "20선이탈",
+    "ADD": "눌림목(추가매수후보)", "HOLD": "추세양호(홀딩)", "NEUTRAL": "관망", "UNKNOWN": "데이터부족",
+}
+
+
+def _holdings_fallback(rows: list[dict]) -> str:
+    """보유종목 AI 요약 실패/키 없음 시 상태 카운트 기반 결정론적 코멘트."""
+    counts: dict[str, int] = {}
+    for r in rows:
+        st = r.get("state", "UNKNOWN")
+        counts[st] = counts.get(st, 0) + 1
+    seg = [f"{_HOLD_STATE_KO.get(st, st)} {n}종목"
+           for st, n in sorted(counts.items()) if n]
+    risk = counts.get("BREAKDOWN", 0) + counts.get("STOP60", 0) + counts.get("STOP20", 0)
+    tail = " 손절선 이탈 종목은 분할 대응을 검토하세요." if risk else " 추세 이탈 종목은 없습니다."
+    return f"보유 {len(rows)}종목 — " + ", ".join(seg) + "." + tail
+
+
+async def summarize_holdings(snap: MarketSnapshot) -> None:
+    """보유종목 전체에 대한 AI 종합 코멘트 → snap.holdings_summary.
+
+    개별 종목 진단(state/cross_signal)을 종합해 '지금 무엇을 홀드/익절/손절 검토할지'
+    2~3문장 코멘트를 생성. 실패/키 없음/한도 시 결정론적 폴백(상태 카운트)으로 대체.
+    """
+    import asyncio
+    import random
+
+    rows = snap.holdings_status or []
+    if not rows:
+        return
+
+    settings = get_settings()
+    if not settings.gemini_api_key:
+        snap.holdings_summary = _holdings_fallback(rows)
+        return
+
+    lines = []
+    for r in rows:
+        st = _HOLD_STATE_KO.get(r.get("state", "UNKNOWN"), r.get("state", ""))
+        cs = {"PULLBACK": "단기눌림", "CORRECTION": "조정시작"}.get(r.get("cross_signal"), "")
+        lines.append(f"- {r.get('name', '')} {r.get('profit_rate', 0):+.1f}% | {st}"
+                     + (f" | {cs}" if cs else "") + f" | {r.get('reason', '')}")
+    blob = "\n".join(lines)
+    prompt = (
+        "다음은 사용자의 보유종목 진단 결과다. 전체 포트폴리오 관점에서 "
+        "지금 무엇을 홀드/익절/손절 검토하면 좋을지 2~3문장으로 종합 코멘트하라.\n"
+        "개별 진입가·목표가·매수추천은 하지 말 것. 상태(추세·손절선·눌림)에 근거해 "
+        "차분하게 요약하고, 사실을 지어내지 말 것. 면책은 따로 표시되니 생략.\n\n"
+        f"[보유종목 진단]\n{blob}\n\n"
+        '반드시 JSON으로만 답하라: {"summary": "2~3문장 종합 코멘트"}'
+    )
+
+    client = genai.Client(api_key=settings.gemini_api_key)
+    for attempt in range(3):
+        try:
+            if attempt > 0:
+                await asyncio.sleep(random.uniform(2 * (2 ** (attempt - 1)), 5 * (2 ** (attempt - 1))))
+            response = client.models.generate_content(
+                model=MODEL_NAME,
+                contents=prompt,
+                config=types.GenerateContentConfig(
+                    response_mime_type="application/json", temperature=0.3),
+            )
+            data = json.loads(response.text or "{}")
+            text = str(data.get("summary", "")).strip() if isinstance(data, dict) else ""
+            if text:
+                snap.holdings_summary = text
+                logger.info("holdings_summary_ok n=%d", len(rows))
+                return
+        except Exception as exc:  # noqa: BLE001
+            logger.warning("holdings_summary_attempt_failed attempt=%d error=%s", attempt, exc)
+
+    snap.holdings_summary = _holdings_fallback(rows)
+    logger.info("holdings_summary_fallback n=%d", len(rows))

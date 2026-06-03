@@ -49,6 +49,8 @@ def _format_strategy_holdings(snap: MarketSnapshot) -> list[str]:
         lines.append("")
     if snap.holdings_status:
         lines.append("📋 *보유종목 상태*")
+        if getattr(snap, "holdings_summary", ""):
+            lines.append(f"🤖 {snap.holdings_summary}")
         for h in snap.holdings_status:
             em = _STATE_EMOJI.get(h.get("state", "UNKNOWN"), "•")
             sign = "+" if h.get("profit_rate", 0) >= 0 else ""
@@ -163,6 +165,11 @@ def _format_post_summary(snap: MarketSnapshot) -> str:
         lines.append(snap.summary)
         lines.append("")
 
+    # 왜 움직였나 (마감 후 핵심 AI 산출물 — 기존 텔레그램에 누락되어 있던 항목)
+    if snap.why_moved:
+        lines.append(f"💡 {snap.why_moved}")
+        lines.append("")
+
     # 주도 테마 (오늘 상위종목 — 라벨 아래 줄바꿈)
     if snap.leading_themes:
         lines.append("🚀 *주도 테마* (오늘 상위종목):")
@@ -178,6 +185,15 @@ def _format_post_summary(snap: MarketSnapshot) -> str:
         lines.append("")
 
     lines.extend(_format_strategy_holdings(snap))
+
+    # 내일 관전 포인트 (post_close: candidate_picks에 watchpoint로 보관됨 — 텔레그램에 누락됐던 항목)
+    watchpoints = [w.get("watchpoint") for w in (snap.candidate_picks or []) if w.get("watchpoint")]
+    if watchpoints:
+        lines.append("🔭 *내일 관전 포인트*")
+        for w in watchpoints:
+            lines.append(f"  · {w}")
+        lines.append("")
+
     lines.append(f"📄 [전체 리포트 보기]({url})")
     lines.append("")
     lines.append("_※ 참고용 정보. 투자 판단·책임은 본인._")
