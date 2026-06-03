@@ -69,6 +69,20 @@ async def test_buy_top3_sizes_and_skips_held(tmp_path):
     assert store.is_held("005930")
 
 
+async def test_buy_emits_notify(tmp_path):
+    store = PositionStore(tmp_path / "p.db")
+    order = FakeOrder()
+    msgs = []
+
+    async def notify(m):
+        msgs.append(m)
+
+    picks = [{"ticker": "005930", "name": "삼성전자", "price": 82500}]
+    await buy_top3(picks, FakeAdapter(82500, []), order, store,
+                   send=True, today="2026-06-04", notify=notify)
+    assert any("모의매수" in m for m in msgs)
+
+
 async def test_buy_dry_run_no_order(tmp_path):
     store = PositionStore(tmp_path / "p.db")
     order = FakeOrder()
