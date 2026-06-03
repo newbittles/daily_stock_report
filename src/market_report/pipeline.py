@@ -374,17 +374,18 @@ async def _collect_us_screening(snap: MarketSnapshot) -> None:
     기존 us_screening 모듈(run_us_screening, S&P500 A/B/C/D)을 그대로 재사용.
     실패 시 빈 채로 두어 리포트 자체는 발송되게 한다(best-effort).
     """
-    from src.datasource.us.universe import get_combined_universe
+    from src.datasource.us.universe import get_extended_universe
     from src.screener.us_pipeline import run_us_screening
     from src.screener.us_report import STRATEGY_ORDER, _turnover
 
     _MARCAP_FLOOR_WON = 2e12   # 시총 하한 2조 (사용자 2026-06-04)
     _PRICE_CAP_WON = 5e6       # 주가 상한 500만원/주
+    _MARCAP_TOPN = 50          # 시총 조회는 거래대금 상위 N개만(속도)
 
     try:
-        universe = await get_combined_universe()  # S&P500 ∪ 나스닥 거래대금상위(양자주 등 중소형)
+        universe = get_extended_universe()  # S&P500 ∪ 관심 성장주/양자주 큐레이션
     except Exception as exc:  # noqa: BLE001
-        logger.warning("us_combined_universe_failed error=%s", exc)
+        logger.warning("us_extended_universe_failed error=%s", exc)
         universe = None
     picks = await run_us_screening(universe=universe)
     if not picks:
@@ -396,7 +397,10 @@ async def _collect_us_screening(snap: MarketSnapshot) -> None:
     rate = await fetch_usd_krw()  # USD→KRW (0이면 환산·필터 스킵, best-effort)
     if rate:  # 주가 상한 필터 (price는 이미 있음 — 무료, marcap 조회 전 선필터)
         picks = [p for p in picks if p.price * rate <= _PRICE_CAP_WON]
-    marcaps = await fetch_us_market_caps([p.symbol for p in picks])  # picks에만 시총 조회
+    # 거래대금 상위 N개만 남겨 시총 조회 부담 최소화(표시는 어차피 거래대금 상위)
+    picks.sort(key=_turnover, reverse=True)
+    picks = picks[:_MARCAP_TOPN]
+    marcaps = await fetch_us_market_caps([p.symbol for p in picks])  # 상위 N개만 시총 조회
     if rate:  # 시총 하한 필터
         picks = [p for p in picks if marcaps.get(p.symbol, 0) * rate >= _MARCAP_FLOOR_WON]
     if not picks:

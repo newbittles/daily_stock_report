@@ -83,6 +83,59 @@ def get_sp500_universe() -> list[USStock]:
     return [USStock(**it) for it in items]
 
 
+# 관심 성장주/양자주 큐레이션 — S&P500 밖 인기 종목(사용자 2026-06-04).
+# 나스닥 전체 스캔(3902종목, ~11분)이 비실용적이라 큐레이션으로 대체. 시총/주가 필터로 거름.
+# 이름은 한국어(표시용), sector는 테마 라벨. 종목 추가는 여기에 한 줄씩.
+US_GROWTH_WATCHLIST: list[USStock] = [
+    # 양자컴퓨팅
+    USStock("IONQ", "아이온큐", "양자컴퓨팅", "양자컴퓨팅"),
+    USStock("RGTI", "리게티", "양자컴퓨팅", "양자컴퓨팅"),
+    USStock("QBTS", "디웨이브 퀀텀", "양자컴퓨팅", "양자컴퓨팅"),
+    USStock("QUBT", "퀀텀컴퓨팅", "양자컴퓨팅", "양자컴퓨팅"),
+    USStock("LAES", "세알사이", "양자보안", "양자보안"),
+    USStock("ARQQ", "아르킷 퀀텀", "양자보안", "양자보안"),
+    # 우주/방산/eVTOL
+    USStock("RKLB", "로켓랩", "우주/방산", "우주"),
+    USStock("ASTS", "AST스페이스모바일", "우주/통신", "우주"),
+    USStock("LUNR", "인튜이티브 머신스", "우주", "우주"),
+    USStock("ACHR", "아처 에비에이션", "eVTOL/항공", "eVTOL"),
+    USStock("JOBY", "조비 에비에이션", "eVTOL/항공", "eVTOL"),
+    # AI 소프트웨어/클라우드
+    USStock("AI", "C3.ai", "AI 소프트웨어", "AI"),
+    USStock("BBAI", "빅베어.ai", "AI 소프트웨어", "AI"),
+    USStock("SOUN", "사운드하운드 AI", "AI 음성", "AI"),
+    USStock("TEM", "템퍼스 AI", "AI 헬스케어", "AI"),
+    USStock("CRWV", "코어위브", "AI 클라우드", "AI"),
+    USStock("NBIS", "네비우스", "AI 클라우드", "AI"),
+    # 핀테크
+    USStock("SOFI", "소파이", "핀테크", "핀테크"),
+    USStock("AFRM", "어펌", "핀테크", "핀테크"),
+    USStock("UPST", "업스타트", "핀테크", "핀테크"),
+    USStock("RKT", "로켓 컴퍼니스", "핀테크", "핀테크"),
+    # 원자력(SMR)/에너지
+    USStock("OKLO", "오클로", "소형원자로(SMR)", "원자력"),
+    USStock("SMR", "뉴스케일파워", "소형원자로(SMR)", "원자력"),
+    # 전기차/기타 성장주
+    USStock("LCID", "루시드", "전기차", "전기차"),
+    USStock("CHPT", "차지포인트", "전기차 충전", "전기차"),
+    USStock("HIMS", "힘스앤허스", "헬스케어", "헬스케어"),
+    USStock("RDDT", "레딧", "인터넷", "인터넷"),
+]
+
+
+def get_extended_universe() -> list[USStock]:
+    """S&P500 ∪ 관심 성장주/양자주 큐레이션 (중복 제거, S&P500 우선=GICS 섹터 보존).
+
+    나스닥 전체 스캔보다 빠르고(추가 네트워크 거의 없음) 원하는 테마를 정확히 포착.
+    """
+    sp = get_sp500_universe()
+    seen = {u.symbol for u in sp}
+    extra = [w for w in US_GROWTH_WATCHLIST if w.symbol not in seen]
+    logger.info("extended_universe sp500=%d watchlist=%d total=%d",
+                len(sp), len(extra), len(sp) + len(extra))
+    return sp + extra
+
+
 def _nasdaq_listing() -> list[USStock]:
     """나스닥 전체 listing → USStock (Industry를 sector 자리에 best-effort)."""
     import FinanceDataReader as fdr
