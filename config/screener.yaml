@@ -128,3 +128,5 @@ strategies:
 global_filters:
   min_price: 1000          # 동전주 제외
   exclude_etf: true        # ETF/ETN/레버리지/인버스 제외
+  min_trade_value: 300000000000   # 당일 거래대금 3000억 이상 (활발한 대형주만, 1억=1e8)
+  min_market_cap: 300000000000    # 시가총액 3000억 이상 (소형주 제외)

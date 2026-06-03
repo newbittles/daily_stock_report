@@ -71,6 +71,17 @@ async def collect_screen_picks(adapter, per_strategy: int = 8,
     strategies = cfg.enabled_strategies()
     min_price = cfg.global_filters.get("min_price", 0)
     exclude_etf = cfg.global_filters.get("exclude_etf", False)
+    min_trade_value = float(cfg.global_filters.get("min_trade_value", 0) or 0)  # 당일 거래대금 하한(원)
+    min_market_cap = float(cfg.global_filters.get("min_market_cap", 0) or 0)    # 시가총액 하한(원)
+
+    # 시총 필터용 맵 (FDR Marcap, 원 단위) — min_market_cap 설정 시에만 로드
+    marcap_map: dict[str, int] = {}
+    if min_market_cap > 0:
+        try:
+            from src.datasource.market_cap import get_market_cap_map
+            marcap_map = await asyncio.to_thread(get_market_cap_map)
+        except Exception as exc:
+            logger.warning("screen_marcap_map_failed error=%s — 시총필터 생략", exc)
 
     universe = dict(_LEADERS)
     try:
@@ -114,6 +125,14 @@ async def collect_screen_picks(adapter, per_strategy: int = 8,
             c = c[:-1]
         if len(c) < 135 or c[-1].close < min_price:
             continue
+        # 거래대금 필터 (당일 종가×거래량) — 활발한 종목만
+        if min_trade_value > 0 and (c[-1].close * c[-1].volume) < min_trade_value:
+            continue
+        # 시총 필터 — marcap 맵에 있고 하한 미달이면 제외 (맵에 없으면 데이터 공백이라 통과)
+        if min_market_cap > 0:
+            _cap = marcap_map.get(tk, 0)
+            if _cap and _cap < min_market_cap:
+                continue
         change_pct = (c[-1].close - c[-2].close) / c[-2].close * 100 if len(c) >= 2 and c[-2].close else 0.0
         # Top3 종합점수용 지표 (거래대금·20선이격·신고가근접)
         from math import log10
