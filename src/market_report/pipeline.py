@@ -150,15 +150,19 @@ _CANDLE_ITEMS = {
 
 
 async def _render_candles(snap: MarketSnapshot) -> None:
-    """지수·환율·유가·금 미니 캔들차트 생성 → snap.candle_urls."""
-    from src.market_report.chart import candle_url_rel, render_mini_candle
+    """지수·환율·유가·금 차트 생성 → snap.candle_urls.
+
+    종가베팅 스타일(캔들+이평·볼밴·일목·MACD)을 최근 1주일 확대로 표시.
+    지표는 ~10개월 데이터로 계산(render_index_chart 내부).
+    """
+    from src.market_report.chart import candle_url_rel, render_index_chart
 
     date = snap.generated_at.strftime("%Y-%m-%d")
     items = _CANDLE_ITEMS["us_morning"] if snap.mode == "us_morning" else _CANDLE_ITEMS["kr"]
 
     def _one(sym: str, key: str, src: str):
         try:
-            p = render_mini_candle(sym, key, date, source=src)
+            p = render_index_chart(sym, key, date, source=src)
             return key, (candle_url_rel(key, date) if p else "")
         except Exception as exc:
             logger.warning("candle_failed key=%s error=%s", key, exc)

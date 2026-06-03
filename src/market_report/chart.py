@@ -447,6 +447,107 @@ def render_mini_candle(symbol: str, key: str, date: str | None = None,
         return None
 
 
+def _fetch_index_ohlc(symbol: str, source: str, days_back: int = 240) -> "pd.DataFrame | None":
+    """지수·환율·유가·금 OHLC(일봉) — fdr/yf. 지표 계산용으로 넉넉히(기본 240일) 조회."""
+    try:
+        if source == "fdr":
+            import FinanceDataReader as fdr
+            start = (datetime.now() - timedelta(days=days_back)).strftime("%Y-%m-%d")
+            df = fdr.DataReader(symbol, start)
+        else:
+            import yfinance as yf
+            df = yf.download(symbol, period="10mo", interval="1d", progress=False, auto_adjust=True)
+            if df is not None and isinstance(df.columns, pd.MultiIndex):
+                df.columns = [c[0] for c in df.columns]
+        if df is None or df.empty:
+            return None
+        df = df[["Open", "High", "Low", "Close"]].dropna()
+        df.index = pd.to_datetime(df.index)
+        df.index.name = "Date"
+        return df if len(df) >= 60 else None
+    except Exception as exc:
+        logger.warning("index_ohlc_failed symbol=%s error=%s", symbol, exc)
+        return None
+
+
+def render_index_chart(symbol: str, key: str, date: str | None = None,
+                       source: str = "yf", days_show: int = 7, fit: str = "candle") -> Path | None:
+    """주요 지수 카드용 차트 — 종가베팅 스타일(캔들+이평+볼밴+일목구름 / MACD).
+
+    지표는 ~10개월 데이터로 계산하되 **표시 구간만 최근 days_show봉(≈1주일)**으로 확대.
+    거래대금 패널은 없음(지수/FX/원자재 거래량 무의미). 출력 파일명은 미니캔들과 동일.
+    """
+    date_str = date or datetime.now().strftime("%Y-%m-%d")
+    out = CHARTS_DIR / f"{date_str}-{key}-candle.png"
+    df = _fetch_index_ohlc(symbol, source)
+    if df is None:
+        logger.warning("index_chart_skip key=%s — 데이터 부족", key)
+        return None
+    try:
+        show_len = min(days_show, len(df))
+        df_show = df.tail(show_len)
+
+        def _last(s: pd.Series) -> pd.Series:
+            return s.tail(show_len)
+
+        # 지표(전체 데이터로 계산 → 표시만 최근 구간)
+        ma = {p: df["Close"].rolling(p).mean() for p in (5, 20, 60)}
+        bb = BollingerBands(close=df["Close"], window=20, window_dev=2)
+        bb_high, bb_low = bb.bollinger_hband(), bb.bollinger_lband()
+        _t, _k, span_a, span_b, _c = _ichimoku(df)
+        macd_ind = MACD(close=df["Close"], window_slow=26, window_fast=12, window_sign=9)
+
+        ap = [
+            mpf.make_addplot(_last(ma[5]), color="#FF69B4", width=1.0, panel=0),
+            mpf.make_addplot(_last(ma[20]), color="#FF8C00", width=2.5, panel=0),
+            mpf.make_addplot(_last(ma[60]), color="#2ECC71", width=1.5, panel=0),
+            mpf.make_addplot(_last(bb_high), color="#ffffff", width=2.0, panel=0),
+            mpf.make_addplot(_last(bb_low), color="#ffffff", width=2.0, panel=0),
+            mpf.make_addplot(_last(macd_ind.macd()), color="#60a5fa", panel=1, ylabel="MACD"),
+            mpf.make_addplot(_last(macd_ind.macd_signal()), color="#fbbf24", panel=1),
+            mpf.make_addplot(_last(macd_ind.macd_diff()), type="bar", color="#94a3b855", panel=1),
+        ]
+
+        CHARTS_DIR.mkdir(parents=True, exist_ok=True)
+        fig, axes = mpf.plot(
+            df_show, type="candle", style=STYLE, addplot=ap,
+            panel_ratios=(3, 1), figsize=(4.8, 3.4),
+            returnfig=True, volume=False, tight_layout=True, warn_too_much_data=400,
+        )
+        # 일목 구름대 채움 (표시 구간)
+        sa, sb = _last(span_a).values, _last(span_b).values
+        valid = ~(np.isnan(sa) | np.isnan(sb))
+        if valid.any():
+            x = np.arange(len(df_show))
+            axes[0].fill_between(x, sa, sb, where=valid & (sa >= sb), color="#2ECC7133", interpolate=True)
+            axes[0].fill_between(x, sa, sb, where=valid & (sa < sb), color="#E74C3C33", interpolate=True)
+
+        # y축 범위 — fit="candle": 캔들+볼밴+단기이평(5/20)에 맞춰 캔들을 크게(확대 느낌),
+        #              MA60·일목구름은 범위 밖이면 잘림(트레이딩앱 줌).
+        #          fit="all": 캔들+모든 지표(MA60·구름 포함)를 다 포함 → 일목구름까지 보이나 캔들 작아짐.
+        lows = [df_show["Low"].min(), _last(ma[5]).min(), _last(ma[20]).min(), _last(bb_low).min()]
+        highs = [df_show["High"].max(), _last(ma[5]).max(), _last(ma[20]).max(), _last(bb_high).max()]
+        if fit == "all":
+            lows.append(_last(ma[60]).min())
+            highs.append(_last(ma[60]).max())
+            if valid.any():
+                lows.append(np.nanmin([sa, sb]))
+                highs.append(np.nanmax([sa, sb]))
+        ymin = np.nanmin([v for v in lows if v == v])
+        ymax = np.nanmax([v for v in highs if v == v])
+        if ymin == ymin and ymax == ymax and ymax > ymin:
+            pad = (ymax - ymin) * 0.08
+            axes[0].set_ylim(ymin - pad, ymax + pad)
+
+        fig.savefig(out, dpi=120, bbox_inches="tight", facecolor="#0f172a", pad_inches=0.05)
+        plt.close(fig)
+        logger.info("index_chart_rendered key=%s show=%d", key, show_len)
+        return out
+    except Exception as exc:
+        logger.warning("index_chart_failed key=%s error=%s", key, exc)
+        return None
+
+
 def candle_url_rel(key: str, date: str | None = None) -> str:
     date_str = date or datetime.now().strftime("%Y-%m-%d")
     return f"charts/{date_str}-{key}-candle.png"
