@@ -48,6 +48,9 @@ logs/
 # Git worktrees
 .worktrees/
 
+# Claude Code 머신 로컬 상태(설정·세션·잡·worktree) — 공유 불필요
+.claude/
+
 # Playwright MCP 임시 세션 파일
 .playwright-mcp/
 
