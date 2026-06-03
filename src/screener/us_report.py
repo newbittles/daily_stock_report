@@ -21,11 +21,11 @@ from src.screener.us_pipeline import DISCLAIMER, USStockPick
 
 logger = logging.getLogger(__name__)
 
-# 백테스트 우위순(§12: B 방어적·C 추세) → 표기 순서
+# 표기 순서 = A,B,C,D (사용자 요청 2026-06-04)
 STRATEGY_ORDER: list[tuple[str, str]] = [
-    ("C", "📈 C 추세추종"),
-    ("B", "🔄 B 20일선 눌림목"),
     ("A", "📊 A 수렴 후 상승"),
+    ("B", "🔄 B 20일선 눌림목"),
+    ("C", "📈 C 추세추종"),
     ("D", "🔃 D 추세 반전"),
 ]
 

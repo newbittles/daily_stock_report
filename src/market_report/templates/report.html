@@ -286,6 +286,9 @@
     .theme-info .name { font-weight: 600; }
     .theme-info .leads { font-size: 0.8rem; color: var(--text-dim); margin-top: 0.15rem; }
     .theme-info .theme-why { font-size: 0.82rem; color: var(--text); margin-top: 0.3rem; line-height: 1.4; }
+    .strat-badge { font-size: 0.72rem; font-weight: 700; background: var(--accent); color: #fff; padding: 1px 6px; border-radius: 4px; }
+    .pick-sub { font-size: 0.82rem; color: var(--text-dim); margin-top: 0.2rem; }
+    mark.hl-bold { font-weight: 800; background: #fff3a0; color: #1a1a1a; padding: 0 4px; border-radius: 3px; }
     .theme-pct { font-weight: 700; font-size: 0.95rem; }
 
     /* Stock tables */
@@ -441,14 +444,29 @@
         </div>
         {% endif %}
       </div>
+      {# 🤖 AI 시장요약 — 지수 바로 아래 (us_morning) #}
+      {% if snap.mode == 'us_morning' and snap.summary %}
+      <div class="summary-box" style="margin-top:0.8rem;"><div class="label">🤖 AI 시장 요약</div><p>{{ snap.summary }}</p></div>
+      {% endif %}
+      {% if snap.mode == 'us_morning' and snap.theme_commentary %}
+      <div class="summary-box" style="margin-top:0.6rem;"><div class="label">🌏 한국장 시사점</div><p>{{ snap.theme_commentary }}</p></div>
+      {% endif %}
     </section>
-    {% if snap.us_sectors or snap.us_bigtech %}
+    {% if snap.us_sectors or snap.us_bigtech or snap.us_volume_sectors %}
     <section>
       {% if snap.us_sectors %}
       <h2><span class="icon">🔥</span>강세 섹터</h2>
       <ul class="watch-list">
         {% for q in snap.us_sectors %}
         <li><strong>{{ q.name }}</strong> <span class="up-text">{{ '+' if q.change_pct >= 0 else '' }}{{ "{:.2f}".format(q.change_pct) }}%</span></li>
+        {% endfor %}
+      </ul>
+      {% endif %}
+      {% if snap.us_volume_sectors %}
+      <h2 style="margin-top:1rem;"><span class="icon">🔥</span>거래량 상위 섹터 (Top 4)</h2>
+      <ul class="watch-list">
+        {% for q in snap.us_volume_sectors[:4] %}
+        <li><strong>{{ q.name }}</strong> <span class="{{ 'up-text' if q.change_pct >= 0 else 'down-text' }}">{{ '+' if q.change_pct >= 0 else '' }}{{ "{:.2f}".format(q.change_pct) }}%</span></li>
         {% endfor %}
       </ul>
       {% endif %}
@@ -471,13 +489,15 @@
       <div class="top3-card">
         <div class="top3-head">
           <span class="top3-rank">{{ loop.index }}</span>
-          <a href="https://finance.yahoo.com/quote/{{ t.yf_symbol or t.symbol }}" target="_blank" rel="noopener">{{ t.name }}</a>
+          <a href="https://search.naver.com/search.naver?query={{ (t.name ~ ' 주가') | urlencode }}" target="_blank" rel="noopener">{{ t.name }}</a>
           <span class="pick-ticker">{{ t.symbol }}</span>
+          {% if t.strategies %}<span class="strat-badge">{{ t.strategies | join('/') }}</span>{% endif %}
           <span class="px">${{ "{:,.2f}".format(t.price) }}</span>
           <span class="{{ 'up-text' if t.change_pct >= 0 else 'down-text' }}">{{ '+' if t.change_pct >= 0 else '' }}{{ "{:.2f}".format(t.change_pct) }}%</span>
           {% if t.cross_signal == 'PULLBACK' %}<span class="up-text" style="font-size:0.8rem;">🟢단기눌림</span>{% elif t.cross_signal == 'CORRECTION' %}<span class="down-text" style="font-size:0.8rem;">⚠️조정시작</span>{% endif %}
         </div>
-        {% if t.sector %}<div class="top3-reason">섹터: {{ t.sector }}</div>{% endif %}
+        {% if t.marcap_str or t.turnover_str %}<div class="pick-sub">{% if t.marcap_str %}시총 {{ t.marcap_str }}{% endif %}{% if t.turnover_str %} · 거래대금 {{ t.turnover_str }}{% endif %}</div>{% endif %}
+        {% if t.sector %}<div class="pick-sub">섹터: {{ t.sector }}</div>{% endif %}
         {% if t.reason %}<div class="top3-reason">{{ t.reason }}</div>{% endif %}
       </div>
       {% endfor %}
@@ -493,11 +513,12 @@
       <ul class="watch-list">
         {% for p in g.picks %}
         <li>
-          <a href="https://finance.yahoo.com/quote/{{ p.yf_symbol or p.symbol }}" target="_blank" rel="noopener"><strong>{{ p.name }}</strong></a>
+          <a href="https://search.naver.com/search.naver?query={{ (p.name ~ ' 주가') | urlencode }}" target="_blank" rel="noopener"><strong>{{ p.name }}</strong></a>
           <span class="pick-ticker">{{ p.symbol }}</span> · ${{ "{:,.2f}".format(p.price) }}
           <span class="{{ 'up-text' if p.change_pct >= 0 else 'down-text' }}">{{ '+' if p.change_pct >= 0 else '' }}{{ "{:.2f}".format(p.change_pct) }}%</span>
-          {% if p.sector %}<span style="color:var(--text-dim);font-size:0.85rem;">({{ p.sector }})</span>{% endif %}
           {% if p.cross_signal == 'PULLBACK' %}<span class="up-text" style="font-size:0.8rem;">🟢단기눌림</span>{% elif p.cross_signal == 'CORRECTION' %}<span class="down-text" style="font-size:0.8rem;">⚠️조정시작</span>{% endif %}
+          {% if p.marcap_str or p.turnover_str or g.initial == 'B' %}<div class="pick-sub">{% if p.marcap_str %}시총 {{ p.marcap_str }}{% endif %}{% if p.turnover_str %} · 거래대금 {{ p.turnover_str }}{% endif %}{% if g.initial == 'B' %} · 20MA괴리 <mark class="hl-bold">{{ '+' if p.gap20 >= 0 else '' }}{{ p.gap20 }}%</mark>{% endif %}</div>{% endif %}
+          {% if p.sector %}<div class="pick-sub">섹터: {{ p.sector }}</div>{% endif %}
           {% if p.reason %}<div class="theme-reason">{{ p.reason }}</div>{% endif %}
         </li>
         {% endfor %}
@@ -612,8 +633,8 @@
     </section>
     {% endif %}
 
-    {# 2. AI 요약 #}
-    {% if snap.summary %}
+    {# 2. AI 요약 (us_morning은 지수 바로 아래에서 이미 표시 → 여기선 KR만) #}
+    {% if snap.summary and snap.mode != 'us_morning' %}
     <section>
       <h2><span class="icon">🤖</span>AI 시장 요약</h2>
       <div class="summary-box">

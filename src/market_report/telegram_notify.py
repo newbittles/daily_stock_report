@@ -302,6 +302,13 @@ def _format_us_morning_summary(snap: MarketSnapshot) -> str:
             lines.append(f"  · {q['name']} {sign}{q.get('change_pct', 0):.2f}%")
         lines.append("")
 
+    if getattr(snap, "us_volume_sectors", None):
+        lines.append("🔥 *거래량 상위 섹터* (Top 4)")
+        for q in snap.us_volume_sectors[:4]:
+            sign = "+" if q.get("change_pct", 0) >= 0 else ""
+            lines.append(f"  · {q['name']} {sign}{q.get('change_pct', 0):.2f}%")
+        lines.append("")
+
     if snap.us_bigtech:
         lines.append("📈 *주요 상승 종목*")
         for q in snap.us_bigtech[:5]:
@@ -319,26 +326,49 @@ def _format_us_morning_summary(snap: MarketSnapshot) -> str:
         for i, t in enumerate(snap.us_top3, 1):
             sign = "+" if t.get("change_pct", 0) >= 0 else ""
             badge = _US_CROSS.get(t.get("cross_signal"), "")
-            sec = f" · {t['sector']}" if t.get("sector") else ""
             lines.append(f"{i}. *{t['name']}* `{t['symbol']}` "
-                         f"${t['price']:,.2f} ({sign}{t.get('change_pct', 0):.1f}%){badge}{sec}")
+                         f"${t['price']:,.2f} ({sign}{t.get('change_pct', 0):.1f}%){badge}")
+            meta = []
+            if t.get("strategies"):
+                meta.append(f"전략 {'/'.join(t['strategies'])}")  # #4 A/B/C/D
+            if t.get("marcap_str"):
+                meta.append(f"시총 {t['marcap_str']}")           # #2 원화
+            if t.get("turnover_str"):
+                meta.append(f"거래대금 {t['turnover_str']}")
+            if meta:
+                lines.append("   " + " · ".join(meta))
+            if t.get("sector"):
+                lines.append(f"   섹터: {t['sector']}")           # #6 줄바꿈
             if t.get("reason"):
                 lines.append(f"   └ {t['reason']}")
         lines.append("")
 
-    # 미국 종목 스크리닝 A/B/C/D (전략별)
+    # 미국 종목 스크리닝 A/B/C/D (전략별, A→D 순)
     if getattr(snap, "us_screen_groups", None):
         lines.append("🇺🇸 *미국 종목 스크리닝* (A/B/C/D)")
         for g in snap.us_screen_groups:
             picks = g.get("picks", [])
             if not picks:
                 continue
+            is_b = g.get("initial") == "B"
             lines.append(f"*{g.get('label', '')}*")
             for p in picks[:5]:
                 sign = "+" if p.get("change_pct", 0) >= 0 else ""
                 badge = _US_CROSS.get(p.get("cross_signal"), "")
                 lines.append(f"  • `{p['symbol']}` {p['name'][:20]} "
                              f"${p['price']:,.2f} {sign}{p.get('change_pct', 0):.1f}%{badge}")
+                meta = []
+                if p.get("marcap_str"):
+                    meta.append(f"시총 {p['marcap_str']}")
+                if p.get("turnover_str"):
+                    meta.append(f"거래대금 {p['turnover_str']}")
+                if is_b:  # B전략: 20일선 괴리 형광볼드(#11)
+                    g20 = p.get("gap20", 0)
+                    meta.append(f"20MA괴리 *{'+' if g20 >= 0 else ''}{g20:.1f}%*")
+                if meta:
+                    lines.append("     " + " · ".join(meta))
+                if p.get("sector"):
+                    lines.append(f"     섹터: {p['sector']}")  # #6 줄바꿈
         lines.append("")
 
     lines.append(f"📄 [전체 리포트 보기]({url})")

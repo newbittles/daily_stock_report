@@ -97,10 +97,12 @@ async def collect_us_snapshot() -> MarketSnapshot:
 
     from src.datasource.us.fdr_source import (
         fetch_us_bigtech, fetch_us_indices, fetch_us_sectors,
+        fetch_us_top_volume_sectors,
     )
     logger.info("us_snapshot_collect_start")
-    idx, bt, sec = await asyncio.gather(
+    idx, bt, sec, volsec = await asyncio.gather(
         fetch_us_indices(), fetch_us_bigtech(), fetch_us_sectors(),
+        fetch_us_top_volume_sectors(4),
         return_exceptions=True,
     )
 
@@ -114,6 +116,7 @@ async def collect_us_snapshot() -> MarketSnapshot:
     snap.us_indices = [asdict(q) for q in _safe(idx)]
     snap.us_bigtech = [asdict(q) for q in _safe(bt)]
     snap.us_sectors = [asdict(q) for q in _safe(sec)]
+    snap.us_volume_sectors = [asdict(q) for q in _safe(volsec)]  # #9 거래량 상위 섹터 Top4
     # 금/유가 (미국 지수 2x2 하단 — 금 좌, 유가 우)
     try:
         from src.market_report.scrapers.macro import fetch_macro
@@ -371,12 +374,33 @@ async def _collect_us_screening(snap: MarketSnapshot) -> None:
     기존 us_screening 모듈(run_us_screening, S&P500 A/B/C/D)을 그대로 재사용.
     실패 시 빈 채로 두어 리포트 자체는 발송되게 한다(best-effort).
     """
+    from src.datasource.us.universe import get_combined_universe
     from src.screener.us_pipeline import run_us_screening
     from src.screener.us_report import STRATEGY_ORDER, _turnover
 
-    picks = await run_us_screening()
+    _MARCAP_FLOOR_WON = 2e12   # 시총 하한 2조 (사용자 2026-06-04)
+    _PRICE_CAP_WON = 5e6       # 주가 상한 500만원/주
+
+    try:
+        universe = await get_combined_universe()  # S&P500 ∪ 나스닥 거래대금상위(양자주 등 중소형)
+    except Exception as exc:  # noqa: BLE001
+        logger.warning("us_combined_universe_failed error=%s", exc)
+        universe = None
+    picks = await run_us_screening(universe=universe)
     if not picks:
         logger.info("us_screening_no_picks")
+        return
+
+    from src.datasource.us.fdr_source import fetch_us_market_caps, fetch_usd_krw
+
+    rate = await fetch_usd_krw()  # USD→KRW (0이면 환산·필터 스킵, best-effort)
+    if rate:  # 주가 상한 필터 (price는 이미 있음 — 무료, marcap 조회 전 선필터)
+        picks = [p for p in picks if p.price * rate <= _PRICE_CAP_WON]
+    marcaps = await fetch_us_market_caps([p.symbol for p in picks])  # picks에만 시총 조회
+    if rate:  # 시총 하한 필터
+        picks = [p for p in picks if marcaps.get(p.symbol, 0) * rate >= _MARCAP_FLOOR_WON]
+    if not picks:
+        logger.info("us_screening_all_filtered")
         return
 
     def _pick_reason(p, initial: str = "") -> str:
@@ -395,10 +419,34 @@ async def _collect_us_screening(snap: MarketSnapshot) -> None:
         pool = non_won or cands
         return pool[0] if pool else ""
 
+    from src.datasource.market_cap import format_marcap
     from src.datasource.us.names_ko import korean_name
     from src.datasource.us.symbols import to_yf_symbol
 
+    def _won(usd: float) -> str:
+        """USD 금액 → 원화 조/억 표기 (환율 0이면 빈 문자열)."""
+        return format_marcap(usd * rate) if (usd and rate) else ""
+
+    def _gap20(p) -> float:
+        """현재가의 20일 이동평균 대비 괴리(%) — B전략 정렬·표시용."""
+        cs = [c.close for c in p.candles[-20:]]
+        if len(cs) < 20:
+            return 0.0
+        ma = sum(cs) / len(cs)
+        return (p.price - ma) / ma * 100 if ma else 0.0
+
+    def _strategies(p) -> list[str]:
+        return sorted({m.strategy_name[:1] for m in p.matches})
+
+    def _eff_cross(cs, strats) -> str | None:
+        # ⚠️조정시작은 추세추종(C)에만 — 수렴후상승(A) 등엔 부적합(사용자 2026-06-04).
+        if cs == "CORRECTION" and "C" not in strats:
+            return None
+        return cs
+
     def _to_dict(p, initial: str = "") -> dict:
+        strats = _strategies(p)
+        ctx = {initial} if initial else set(strats)  # 그룹이면 그 전략, top3면 전체
         return {
             "symbol": p.symbol,
             # 한국어(티커) 표기 — 아는 종목은 한국어, 모르는 건 영문명 폴백(사용자 합의).
@@ -408,16 +456,23 @@ async def _collect_us_screening(snap: MarketSnapshot) -> None:
             "change_pct": round(p.change_pct, 2), "sector": p.sector or "",
             "industry": p.industry or "",
             "reason": _pick_reason(p, initial),
-            "cross_signal": p.cross_signal,
+            "cross_signal": _eff_cross(p.cross_signal, ctx),
+            "strategies": strats,                       # #4 A/B/C/D 표시
+            "marcap_str": _won(marcaps.get(p.symbol, 0)),  # 시총(원화 조/억)
+            "turnover_str": _won(_turnover(p)),         # 거래대금(원화 조/억)
+            "gap20": round(_gap20(p), 1),               # #11 20MA 괴리(B 표시·정렬)
         }
 
-    # 전략별 그룹 (C·B·A·D 백테스트 우위순) — 각 그룹 거래대금 상위 5
+    # 전략별 그룹 (A·B·C·D 순) — 기본 거래대금 상위 5, B는 20MA 괴리 작은 순(#11)
     groups: list[dict] = []
     for initial, label in STRATEGY_ORDER:
         grp = [p for p in picks if any(m.strategy_name[:1] == initial for m in p.matches)]
         if not grp:
             continue
-        grp.sort(key=_turnover, reverse=True)
+        if initial == "B":
+            grp.sort(key=lambda p: abs(_gap20(p)))      # 괴리 작은(20선 근접) 순
+        else:
+            grp.sort(key=_turnover, reverse=True)
         groups.append({"label": label, "initial": initial,
                        "picks": [_to_dict(p, initial) for p in grp[:5]]})
     snap.us_screen_groups = groups

@@ -262,8 +262,8 @@ def test_build_report_groups_disclaimer_backtest_note():
     assert "C 추세추종" in text and "B 20일선" in text   # 전략별 그룹
     assert "참고용" in text                              # 면책 (CLAUDE.md §2)
     assert "백테스트" in text                            # 백테스트 보조 주의
-    # C가 B보다 먼저 (백테스트 우위순)
-    assert text.index("C 추세추종") < text.index("B 20일선")
+    # A,B,C,D 순 → B가 C보다 먼저 (사용자 요청 2026-06-04)
+    assert text.index("B 20일선") < text.index("C 추세추종")
 
 
 def test_build_report_empty():

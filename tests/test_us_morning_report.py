@@ -59,9 +59,22 @@ async def test_collect_us_screening_adds_yf_symbol(monkeypatch) -> None:
         candles=cs, cross_signal=None,
     )
 
-    async def fake_run():
+    # 네트워크 호출 전부 모킹 (combined 유니버스·환율·시총)
+    async def fake_run(universe=None):
         return [pick]
     monkeypatch.setattr("src.screener.us_pipeline.run_us_screening", fake_run)
+
+    async def fake_universe(*a, **k):
+        return []
+    monkeypatch.setattr("src.datasource.us.universe.get_combined_universe", fake_universe)
+
+    async def fake_rate():
+        return 1500.0
+    monkeypatch.setattr("src.datasource.us.fdr_source.fetch_usd_krw", fake_rate)
+
+    async def fake_mc(syms):
+        return {s: 1e12 for s in syms}   # 1조 USD × 1500 = 1500조원 (2조 하한 통과)
+    monkeypatch.setattr("src.datasource.us.fdr_source.fetch_us_market_caps", fake_mc)
 
     snap = MarketSnapshot(mode="us_morning", generated_at=datetime(2026, 6, 4, 7, 30))
     await P._collect_us_screening(snap)
@@ -71,3 +84,48 @@ async def test_collect_us_screening_adds_yf_symbol(monkeypatch) -> None:
     assert snap.us_top3[0]["yf_symbol"] == "BRK-B"       # 야후 링크용 정규화
     assert snap.us_screen_groups[0]["picks"][0]["yf_symbol"] == "BRK-B"
     assert "억" not in snap.us_top3[0]["reason"]          # 원화 '억' reason 회피
+    assert snap.us_top3[0]["strategies"] == ["C"]         # #4 전략 표시
+    assert snap.us_top3[0]["marcap_str"]                  # #2 시총(원화) 채워짐
+    assert snap.us_top3[0]["turnover_str"]                # #2 거래대금(원화)
+
+
+async def test_correction_badge_only_for_c(monkeypatch) -> None:
+    """⚠️조정시작은 C(추세추종)에만 — A(수렴후상승)에선 배지 제거(#5)."""
+    from src.datasource.base import Candle
+    from src.market_report import pipeline as P
+    from src.screener.engine import ScreenMatch
+    from src.screener.us_pipeline import USStockPick
+
+    cs = [Candle("20260602", 100, 101, 99, 100.0, 1_000_000)]
+    a_pick = USStockPick(symbol="AAA", name="A Co", price=100.0, change_pct=1.0,
+                         sector="Tech", industry="Tech",
+                         matches=[ScreenMatch(matched=True, strategy_name="A. 수렴", opinion="x", reasons=["정배열"])],
+                         candles=cs, cross_signal="CORRECTION")
+    c_pick = USStockPick(symbol="CCC", name="C Co", price=100.0, change_pct=1.0,
+                         sector="Tech", industry="Tech",
+                         matches=[ScreenMatch(matched=True, strategy_name="C. 추세추종", opinion="x", reasons=["신고가"])],
+                         candles=cs, cross_signal="CORRECTION")
+
+    async def fake_run(universe=None):
+        return [a_pick, c_pick]
+    monkeypatch.setattr("src.screener.us_pipeline.run_us_screening", fake_run)
+
+    async def fake_universe(*a, **k):
+        return []
+    monkeypatch.setattr("src.datasource.us.universe.get_combined_universe", fake_universe)
+    monkeypatch.setattr("src.datasource.us.fdr_source.fetch_usd_krw", lambda: _coro(1500.0))
+    monkeypatch.setattr("src.datasource.us.fdr_source.fetch_us_market_caps",
+                        lambda syms: _coro({s: 1e12 for s in syms}))
+
+    snap = MarketSnapshot(mode="us_morning", generated_at=datetime(2026, 6, 4, 7, 30))
+    await P._collect_us_screening(snap)
+
+    groups = {g["initial"]: g for g in snap.us_screen_groups}
+    a_dict = groups["A"]["picks"][0]
+    c_dict = groups["C"]["picks"][0]
+    assert a_dict["cross_signal"] is None          # A → 조정시작 제거
+    assert c_dict["cross_signal"] == "CORRECTION"  # C → 유지
+
+
+async def _coro(v):
+    return v

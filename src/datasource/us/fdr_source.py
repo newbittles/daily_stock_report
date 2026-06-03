@@ -52,6 +52,7 @@ class USQuote:
     price: float
     change_pct: float  # 전일 대비 등락률(%)
     date: str = ""     # 최신 데이터 거래일(YYYY-MM-DD) — 휴장 신선도 판정용
+    volume: int = 0    # 최신 거래량 (거래량 상위 섹터 산출용)
 
 
 def _fetch_quotes_sync(symbols: dict[str, str]) -> list[USQuote]:
@@ -76,10 +77,24 @@ def _fetch_quotes_sync(symbols: dict[str, str]) -> list[USQuote]:
                 last_date = closes.index[-1].strftime("%Y-%m-%d")
             except Exception:
                 pass
-            out.append(USQuote(sym, name, round(last, 2), round(chg, 2), last_date))
+            vol = 0
+            try:
+                if "Volume" in df.columns:
+                    vol = int(df["Volume"].dropna().iloc[-1])
+            except Exception:
+                vol = 0
+            out.append(USQuote(sym, name, round(last, 2), round(chg, 2), last_date, vol))
         except Exception as exc:  # noqa: BLE001
             logger.warning("us_fetch_failed symbol=%s error=%s", sym, exc)
     return out
+
+
+async def fetch_us_top_volume_sectors(top: int = 4) -> list[USQuote]:
+    """섹터 ETF 거래량 상위 top개 → 핫테마용(거래량 내림차순)."""
+    quotes = await asyncio.to_thread(_fetch_quotes_sync, US_SECTORS)
+    ranked = [q for q in quotes if q.volume > 0]
+    ranked.sort(key=lambda q: q.volume, reverse=True)
+    return ranked[:top]
 
 
 async def fetch_us_indices() -> list[USQuote]:
@@ -325,3 +340,61 @@ def _fetch_turnover_sync(symbols: list[str], lookback: int = 7,
 async def fetch_us_daily_turnover(symbols: list[str], lookback: int = 7) -> dict[str, dict]:
     """미국 종목 당일 거래대금·등락률 일괄 → {symbol: {price, turnover, change_pct, date}}."""
     return await asyncio.to_thread(_fetch_turnover_sync, list(symbols), lookback)
+
+
+# ─── 시총(USD) + USD/KRW 환율 — 리포트 원화(조/억) 표기·시총순 정렬용 ──────────
+
+
+def _fetch_market_caps_sync(symbols: list[str]) -> dict[str, float]:
+    """동기 — yfinance fast_info로 시총(USD) 조회 → {symbol(FDR키): marketCap}.
+
+    종목당 1회라 분산 딜레이(rate limit 완화). 실패 종목은 생략(부분 결과 허용)."""
+    import random
+    import time
+
+    import yfinance as yf
+
+    out: dict[str, float] = {}
+    for i, sym in enumerate(symbols):
+        try:
+            fi = yf.Ticker(to_yf_symbol(sym)).fast_info
+            mc = None
+            try:
+                mc = fi.market_cap
+            except Exception:  # noqa: BLE001
+                try:
+                    mc = fi["market_cap"]
+                except Exception:  # noqa: BLE001
+                    mc = None
+            if mc:
+                out[sym] = float(mc)
+        except Exception as exc:  # noqa: BLE001
+            logger.debug("us_marcap_failed symbol=%s error=%s", sym, exc)
+        if i < len(symbols) - 1:
+            time.sleep(random.uniform(0.1, 0.3))
+    return out
+
+
+async def fetch_us_market_caps(symbols: list[str]) -> dict[str, float]:
+    """미국 종목 시총(USD) 일괄 → {symbol: marketCap}. 실패 시 빈 dict."""
+    if not symbols:
+        return {}
+    return await asyncio.to_thread(_fetch_market_caps_sync, list(symbols))
+
+
+def _fetch_usd_krw_sync() -> float:
+    """USD/KRW 환율(종가). 실패 시 0.0."""
+    try:
+        import FinanceDataReader as fdr
+        from datetime import datetime, timedelta
+        start = (datetime.now() - timedelta(days=10)).strftime("%Y-%m-%d")
+        s = fdr.DataReader("USD/KRW", start)["Close"].dropna()
+        return float(s.iloc[-1]) if len(s) else 0.0
+    except Exception as exc:  # noqa: BLE001
+        logger.warning("usd_krw_failed error=%s", exc)
+        return 0.0
+
+
+async def fetch_usd_krw() -> float:
+    """USD/KRW 환율. 미국 시총·거래대금을 원화(조/억)로 환산할 때 사용. 실패 시 0.0."""
+    return await asyncio.to_thread(_fetch_usd_krw_sync)
