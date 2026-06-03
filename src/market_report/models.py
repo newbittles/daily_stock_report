@@ -92,7 +92,8 @@ class MarketSnapshot:
 
     # 수급 (마감 후만 안정적, 마감 전은 누적)
     flows: list[InvestorFlow] = field(default_factory=list)
-    market_flows: list[dict] = field(default_factory=list)  # 시장 수급표: [{market,personal,foreign,institution,date}] 억
+    market_flows: list[dict] = field(default_factory=list)  # 당일 수급: [{market,personal,foreign,institution,date}] 억
+    market_flows_history: list[dict] = field(default_factory=list)  # 최근 3일 일자별: [{date,kospi,kosdaq}] 최신순
 
     # 테마
     top_themes: list[ThemeRank] = field(default_factory=list)

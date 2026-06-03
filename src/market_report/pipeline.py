@@ -74,6 +74,12 @@ async def collect_snapshot(mode: ReportMode) -> MarketSnapshot:
     snap.fx = _macro.get("fx")
     snap.wti = _macro.get("wti")
     snap.market_flows = _safe(8, []) or []
+    try:
+        from src.market_report.flows_history import update_flows_history
+        snap.market_flows_history = update_flows_history(snap.market_flows, keep_days=3)
+    except Exception as exc:
+        logger.warning("flows_history_failed error=%s", exc)
+        snap.market_flows_history = []
 
     logger.info(
         "snapshot_collected mode=%s kospi=%s themes=%d news=%d",

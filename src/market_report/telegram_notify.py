@@ -57,16 +57,46 @@ def _format_strategy_holdings(snap: MarketSnapshot) -> list[str]:
     return lines
 
 
+def _format_index_lines(snap: MarketSnapshot) -> list[str]:
+    """주요 지수 4개 — 모바일 줄바꿈 자연스럽게 각각 한 줄씩."""
+    lines: list[str] = []
+    for idx in (snap.kospi, snap.kosdaq):
+        if idx:
+            mk = "코스피" if idx.market == "KOSPI" else "코스닥"
+            lines.append(f"📊 {mk} {idx.value:,.1f} ({idx.change_pct:+.2f}%)")
+    if snap.fx:
+        lines.append(f"💱 원/달러 {snap.fx['value']:,.1f} ({snap.fx['change_pct']:+.2f}%)")
+    if snap.wti:
+        lines.append(f"🛢 WTI ${snap.wti['value']:,.1f} ({snap.wti['change_pct']:+.2f}%)")
+    if lines:
+        lines.append("")
+    return lines
+
+
 def _format_market_flows(snap: MarketSnapshot) -> list[str]:
-    """투자자 수급 줄 (개인/외국인/기관 순매수, 억). 시장별 1줄."""
-    if not snap.market_flows:
+    """투자자 수급 — 당일 순매수 + (전일) 병기, 시장별 1줄 (억)."""
+    hist = snap.market_flows_history
+    if not hist:
         return []
-    lines = ["💰 *투자자 수급* (순매수 억)"]
-    for f in snap.market_flows:
-        mk = "코스피" if f.get("market") == "KOSPI" else "코스닥"
-        lines.append(
-            f"  {mk}: 개인 {f.get('personal', 0):+,} · 외인 {f.get('foreign', 0):+,} · 기관 {f.get('institution', 0):+,}"
-        )
+    today = hist[0]
+    prev = hist[1] if len(hist) > 1 else None
+    d = str(today.get("date", ""))
+    head = f"💰 *투자자 수급* ({d[4:6]}/{d[6:8]} · 억"
+    head += " · 괄호=전일)" if prev else ")"
+    lines = [head]
+    for mk, label in (("kospi", "코스피"), ("kosdaq", "코스닥")):
+        f = today.get(mk) or {}
+        if not f:
+            continue
+
+        def _cell(key: str, f=f, mk=mk) -> str:
+            v = int(f.get(key, 0))
+            s = f"{v:+,}"
+            if prev and prev.get(mk):
+                s += f"({int(prev[mk].get(key, 0)):+,})"
+            return s
+
+        lines.append(f"  {label} 개인 {_cell('personal')} · 외인 {_cell('foreign')} · 기관 {_cell('institution')}")
     lines.append("")
     return lines
 
@@ -80,26 +110,10 @@ def _format_pre_summary(snap: MarketSnapshot) -> str:
     lines.append(f"🟡 *마감 전 리포트* — {date}")
     lines.append("")
 
-    # 지수
-    if snap.kospi or snap.kosdaq:
-        idx_parts = []
-        for idx in (snap.kospi, snap.kosdaq):
-            if idx:
-                sign = "+" if idx.change_pct >= 0 else ""
-                idx_parts.append(f"{idx.market} {idx.value:,.1f}({sign}{idx.change_pct:.2f}%)")
-        if idx_parts:
-            lines.append("📊 " + "  ·  ".join(idx_parts))
-        mac = []
-        if snap.fx:
-            mac.append(f"원/달러 {snap.fx['value']:,.0f}({snap.fx['change_pct']:+.1f}%)")
-        if snap.wti:
-            mac.append(f"WTI ${snap.wti['value']:,.1f}({snap.wti['change_pct']:+.1f}%)")
-        if mac:
-            lines.append("💱 " + "  ·  ".join(mac))
-        if idx_parts or mac:
-            lines.append("")
+    # 지수 (각 줄 1개 — 모바일 줄바꿈 자연스럽게)
+    lines.extend(_format_index_lines(snap))
 
-    # 투자자 수급 (개인/외국인/기관 순매수, 억)
+    # 투자자 수급 (당일 + 전일 병기, 억)
     lines.extend(_format_market_flows(snap))
 
     # AI 한줄 요약
@@ -107,9 +121,10 @@ def _format_pre_summary(snap: MarketSnapshot) -> str:
         lines.append(snap.summary)
         lines.append("")
 
-    # 주도 테마 (오늘 상위종목이 속한 테마 — 모멘텀)
+    # 주도 테마 (오늘 상위종목 — 라벨 아래 줄바꿈)
     if snap.leading_themes:
-        lines.append("🚀 *주도 테마* (오늘 상위종목): " + " · ".join(snap.leading_themes[:5]))
+        lines.append("🚀 *주도 테마* (오늘 상위종목):")
+        lines.append(" · ".join(snap.leading_themes[:5]))
         lines.append("")
 
     # 강세 테마 Top 3 (테마 평균 등락률)
@@ -136,34 +151,20 @@ def _format_post_summary(snap: MarketSnapshot) -> str:
     lines.append(f"🔵 *마감 후 리포트* — {date}")
     lines.append("")
 
-    if snap.kospi or snap.kosdaq:
-        idx_parts = []
-        for idx in (snap.kospi, snap.kosdaq):
-            if idx:
-                sign = "+" if idx.change_pct >= 0 else ""
-                idx_parts.append(f"{idx.market} {idx.value:,.1f}({sign}{idx.change_pct:.2f}%)")
-        if idx_parts:
-            lines.append("📊 " + "  ·  ".join(idx_parts))
-        mac = []
-        if snap.fx:
-            mac.append(f"원/달러 {snap.fx['value']:,.0f}({snap.fx['change_pct']:+.1f}%)")
-        if snap.wti:
-            mac.append(f"WTI ${snap.wti['value']:,.1f}({snap.wti['change_pct']:+.1f}%)")
-        if mac:
-            lines.append("💱 " + "  ·  ".join(mac))
-        if idx_parts or mac:
-            lines.append("")
+    # 지수 (각 줄 1개 — 모바일 줄바꿈 자연스럽게)
+    lines.extend(_format_index_lines(snap))
 
-    # 투자자 수급
+    # 투자자 수급 (당일 + 전일 병기)
     lines.extend(_format_market_flows(snap))
 
     if snap.summary:
         lines.append(snap.summary)
         lines.append("")
 
-    # 주도 테마 (오늘 상위종목이 속한 테마 — 모멘텀)
+    # 주도 테마 (오늘 상위종목 — 라벨 아래 줄바꿈)
     if snap.leading_themes:
-        lines.append("🚀 *주도 테마* (오늘 상위종목): " + " · ".join(snap.leading_themes[:5]))
+        lines.append("🚀 *주도 테마* (오늘 상위종목):")
+        lines.append(" · ".join(snap.leading_themes[:5]))
         lines.append("")
 
     # 강세 테마 Top 3
