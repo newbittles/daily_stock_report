@@ -1,5 +1,14 @@
 [
   {
+    "date": "2026-06-03",
+    "time": "18:53",
+    "mode": "pre_close",
+    "url": "reports/2026-06-03-pre.html",
+    "summary": "코스피는 소폭 상승세를 유지하는 반면, 코스닥은 2% 넘게 하락하며 차별화된 흐름을 보이고 있습니다.",
+    "kospi_pct": 0.15,
+    "kosdaq_pct": -2.29
+  },
+  {
     "date": "2026-06-02",
     "time": "23:21",
     "mode": "us_morning",
