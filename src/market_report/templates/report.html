@@ -89,9 +89,8 @@
     .index-info { min-width: 0; }
     .index-spark {
       width: 100%;
-      height: 56px;
     }
-    .index-spark img { width: 100%; height: 100%; object-fit: cover; border-radius: 4px; }
+    .index-spark img { width: 100%; height: auto; object-fit: contain; border-radius: 4px; cursor: zoom-in; display: block; }
     .index-name { font-size: 0.85rem; color: var(--text-dim); margin-bottom: 0.25rem; }
     .index-value { font-size: 1.5rem; font-weight: 700; }
     .index-change { font-size: 0.9rem; margin-top: 0.25rem; }
@@ -476,7 +475,7 @@
         <div class="top3-reason">{{ t.reason }}</div>
         {% if t.supply_str %}<div class="top3-reason" style="color:var(--green);">💰 {{ t.supply_str }}</div>{% endif %}
         {% if t.theme %}
-        <div class="top3-reason">{{ '업종' if t.theme_kind == 'sector' else '테마' }}: {{ t.theme }} · 주도테마여부: <strong style="color:{{ 'var(--green)' if t.is_theme_leader else 'var(--text-mute)' }};">{{ 'O' if t.is_theme_leader else 'X' }}</strong></div>
+        <div class="top3-reason">{{ '업종' if t.theme_kind == 'sector' else '테마' }}: {{ t.theme }} · 주도테마여부: <strong style="color:{{ 'var(--green)' if t.is_leading_theme else 'var(--text-mute)' }};">{{ 'O' if t.is_leading_theme else 'X' }}</strong></div>
         {% endif %}
       </div>
       {% endfor %}
@@ -648,7 +647,7 @@
                 {{ '업종' if p.theme_kind == 'sector' else '테마' }}:
                 {% if p.theme and p.theme_kind == 'theme' and p.theme_idx %}<a href="https://judal.co.kr/?view=stockList&themeIdx={{ p.theme_idx }}" target="_blank" rel="noopener">{{ p.theme }}</a>
                 {% elif p.theme %}<a href="https://search.naver.com/search.naver?query={{ p.theme|urlencode }}+관련주" target="_blank" rel="noopener">{{ p.theme }}</a>{% else %}-{% endif %}
-                · 주도테마: {{ 'O' if p.is_theme_leader else 'X' }}
+                · 주도테마: {{ 'O' if p.is_leading_theme else 'X' }}
               </div>
             </li>
             {% endfor %}
@@ -841,6 +840,14 @@
       document.body.removeChild(ta);
       if (done) done();
     }
+
+    // 지수 차트 클릭 → 라이트박스 확대 (작은 카드 가시성 보완)
+    document.querySelectorAll('.index-spark img').forEach(function (im) {
+      im.addEventListener('click', function () {
+        document.getElementById('lightbox-img').src = this.src;
+        document.getElementById('lightbox').classList.add('active');
+      });
+    });
   </script>
 </body>
 </html>

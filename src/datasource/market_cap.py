@@ -48,6 +48,50 @@ def get_market_cap_map() -> dict[str, int]:
     return mapping
 
 
+_NAME_CACHE = Path(__file__).resolve().parent.parent.parent / "data" / "name_ticker.json"
+
+
+def _norm_name(name: str) -> str:
+    return str(name or "").replace(" ", "").strip().lower()
+
+
+def get_name_ticker_map() -> dict[str, str]:
+    """{정규화 종목명: 종목코드}. FDR KRX 상장목록(주식, ETF 제외). 일1회 캐시.
+
+    종가베팅 후보의 AI 종목코드 오매칭(엉뚱/ETF 코드)을 종목명 기준으로 교정하는 용도.
+    실패 시 빈 dict.
+    """
+    today = date.today().isoformat()
+    try:
+        if _NAME_CACHE.exists():
+            c = json.loads(_NAME_CACHE.read_text(encoding="utf-8"))
+            if c.get("date") == today and c.get("map"):
+                return {str(k): str(v) for k, v in c["map"].items()}
+    except Exception as exc:
+        logger.debug("name_ticker_cache_read_failed error=%s", exc)
+
+    mapping: dict[str, str] = {}
+    try:
+        import FinanceDataReader as fdr
+        df = fdr.StockListing("KRX")
+        for _, r in df.iterrows():
+            code = str(r.get("Code", "")).zfill(6)
+            nm = _norm_name(r.get("Name", ""))
+            if code and nm and nm not in mapping:  # 첫 등장 우선 (중복명 드묾)
+                mapping[nm] = code
+    except Exception as exc:
+        logger.warning("name_ticker_map_failed error=%s", exc)
+        return {}
+
+    try:
+        _NAME_CACHE.parent.mkdir(parents=True, exist_ok=True)
+        _NAME_CACHE.write_text(json.dumps({"date": today, "map": mapping}), encoding="utf-8")
+    except Exception as exc:
+        logger.debug("name_ticker_cache_write_failed error=%s", exc)
+    logger.info("name_ticker_map_built codes=%d", len(mapping))
+    return mapping
+
+
 def format_marcap(won: int | float | None) -> str:
     """시총(원) → 억 단위 표기. 1조 이상은 '조 억' 가독 표기, 미만은 억."""
     if not won or won <= 0:

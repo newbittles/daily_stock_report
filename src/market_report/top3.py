@@ -86,7 +86,8 @@ def select_top3(screen_picks: list[dict], foreign_buy: set[str] | None = None,
             "change_pct": p.get("change_pct", 0), "score": round(score, 1),
             "reason": " · ".join(why), "theme": p.get("theme", ""),
             "theme_kind": p.get("theme_kind", ""), "theme_idx": p.get("theme_idx", ""),
-            "is_theme_leader": bool(p.get("is_theme_leader")),  # 주도테마 여부 O/X
+            "is_theme_leader": bool(p.get("is_theme_leader")),  # 종목이 테마 주도주인가 (AI 라벨용)
+            "is_leading_theme": bool(p.get("is_leading_theme")),  # 종목 테마가 강세 주도테마인가 (주도테마여부 O/X)
             "endstage": bool(p.get("endstage")),
             "stop_price": p.get("stop_price", 0), "stop_pct": p.get("stop_pct", 0),
             "gap20": round(p.get("gap20", 0), 1),  # 20일선 이격도(%)

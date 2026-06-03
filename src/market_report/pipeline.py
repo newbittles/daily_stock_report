@@ -264,6 +264,23 @@ def _norm_name(name: str) -> str:
     return str(name or "").replace(" ", "").strip().lower()
 
 
+def _set_leading_theme(picks: list[dict], top_themes: list) -> None:
+    """각 종목의 '주도테마 여부'(is_leading_theme) 설정.
+
+    기준: 종목의 테마(p['theme'])가 오늘 **강세(상승) 테마**(top_themes 중 change_pct>0)에
+    속하는가. 'is_theme_leader'(종목 자신이 테마의 top3 주도주)와는 다른 개념이다.
+    예: 로봇·광통신이 강세테마면, 그 테마 소속 종목은 주도주가 아니어도 주도테마=O.
+    """
+    strong = {_norm_name(t.name) for t in (top_themes or []) if getattr(t, "change_pct", 0) > 0}
+    for p in (picks or []):
+        th = _norm_name(p.get("theme", ""))
+        # 업종(sector) 폴백은 '테마'가 아니므로 제외 — judal 테마만 주도테마 판정
+        if th and p.get("theme_kind") == "theme":
+            p["is_leading_theme"] = any(th == s or th in s or s in th for s in strong)
+        else:
+            p["is_leading_theme"] = False
+
+
 def _inject_candidate_quotes(snap: MarketSnapshot) -> None:
     """종가베팅 후보(candidate_picks)에 현재가·등락률 주입 + 관련주(theme_peers) 등락률 보정.
 
@@ -274,6 +291,13 @@ def _inject_candidate_quotes(snap: MarketSnapshot) -> None:
     (본 함수는 후보 차트 생성 전에 호출되므로 보정된 ticker가 차트에 반영됨)
     """
     try:
+        # 권위있는 종목명→코드 맵 (FDR 전체 상장) — AI 코드 오매칭(엉뚱/ETF) 교정의 1차 기준
+        try:
+            from src.datasource.market_cap import get_name_ticker_map
+            name_ticker = get_name_ticker_map()
+        except Exception:
+            name_ticker = {}
+
         by_ticker: dict[str, Any] = {}
         by_name: dict[str, Any] = {}
         for lst in (snap.top_volume, snap.top_gainers, snap.top_losers):
@@ -283,25 +307,34 @@ def _inject_candidate_quotes(snap: MarketSnapshot) -> None:
 
         for p in (snap.candidate_picks or []):
             tk = str(p.get("ticker", "")).strip()
-            # 종목명 매칭 우선(AI rationale가 가리키는 종목) → 코드 보정. 이름 미스 시 코드 매칭.
-            name_hit = by_name.get(_norm_name(p.get("name", "")))
-            hit = name_hit or by_ticker.get(tk)
+            nm_norm = _norm_name(p.get("name", ""))
+            # 1) 종목코드 권위 해석: 종목명으로 전체 상장목록에서 코드 확정 (AI 코드 무시).
+            #    이름이 목록에 없으면 스냅샷 이름매칭, 그것도 없으면 AI 코드 유지.
+            real_tk = name_ticker.get(nm_norm)
+            if not real_tk:
+                snap_hit = by_name.get(nm_norm)
+                real_tk = str(snap_hit.ticker).strip() if snap_hit is not None else ""
+            if real_tk and real_tk != tk:
+                logger.info("candidate_ticker_fixed name=%s ai_ticker=%s → %s",
+                            p.get("name"), tk, real_tk)
+                p["ticker"] = tk = real_tk
+
+            # 2) 시세 주입: 보정된 코드 → 스냅샷 코드매칭, 없으면 이름매칭
+            hit = by_ticker.get(tk) or by_name.get(nm_norm)
             if hit is not None:
-                new_tk = str(hit.ticker).strip()
-                if new_tk and new_tk != tk:
-                    logger.info("candidate_ticker_fixed name=%s ai_ticker=%s → %s",
-                                p.get("name"), tk, new_tk)
-                p["ticker"] = new_tk
                 p["price"] = float(hit.price)
                 p["change_pct"] = float(hit.change_pct)
 
-            # 관련주 등락률 보정 + 종목코드 주입: 스냅샷에 있으면 실값으로 교체 (네이버 링크용 ticker 포함)
+            # 관련주: 스냅샷 있으면 실등락률+코드, 없으면 전체목록 종목명으로 코드만 (네이버 링크 정확)
             for peer in p.get("theme_peers", []) or []:
-                ph = by_name.get(_norm_name(peer.get("name", "")))
+                pn = _norm_name(peer.get("name", ""))
+                ph = by_name.get(pn)
                 if ph is not None:
                     peer["change_pct"] = float(ph.change_pct)
                     peer["ticker"] = str(ph.ticker).strip()
                     peer["matched"] = True
+                elif name_ticker.get(pn):
+                    peer["ticker"] = name_ticker[pn]  # 등락률은 AI값 유지, 링크만 정확
     except Exception as exc:
         logger.warning("candidate_quote_inject_failed error=%s", exc)
 
@@ -382,6 +415,7 @@ async def run_full(
             except Exception as exc:
                 logger.warning("us_sector_fallback_failed error=%s", exc)
             # 시초 Top3 — P4 + 미국 강세테마 연동 가중(w_us) + ATR 손절
+            _set_leading_theme(snap.screen_picks, snap.top_themes)  # 주도테마 여부
             strong_kw = strong_kr_keywords(snap.us_sectors)
             fb = {x["ticker"] for x in await adapter.get_investor_net_buy("foreign", "buy")}
             ib = {x["ticker"] for x in await adapter.get_investor_net_buy("inst", "buy")}
@@ -455,6 +489,9 @@ async def run_full(
                         p["theme_kind"] = "sector"
         except Exception as exc:
             logger.warning("sector_fallback_failed error=%s", exc)
+
+        # 주도테마 여부 — 종목의 테마가 '오늘 강세(주도) 테마'에 속하는가 (theme_leader=종목이 주도주 와 별개)
+        _set_leading_theme(snap.screen_picks, snap.top_themes)
 
         # Top3 종합추천 — 수급(외인/기관 순매수) 수집 후 P4 점수로 3종목 선정
         try:
