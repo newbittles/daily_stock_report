@@ -64,7 +64,9 @@ async def test_collect_us_screening_adds_yf_symbol(monkeypatch) -> None:
         return [pick]
     monkeypatch.setattr("src.screener.us_pipeline.run_us_screening", fake_run)
 
-    monkeypatch.setattr("src.datasource.us.universe.get_extended_universe", lambda: [])
+    async def fake_universe(nasdaq_top=300):
+        return []
+    monkeypatch.setattr("src.datasource.us.universe.get_hybrid_universe", fake_universe)
 
     async def fake_rate():
         return 1500.0
@@ -108,7 +110,7 @@ async def test_correction_badge_only_for_c(monkeypatch) -> None:
         return [a_pick, c_pick]
     monkeypatch.setattr("src.screener.us_pipeline.run_us_screening", fake_run)
 
-    monkeypatch.setattr("src.datasource.us.universe.get_extended_universe", lambda: [])
+    monkeypatch.setattr("src.datasource.us.universe.get_hybrid_universe", lambda nasdaq_top=300: _coro([]))
     monkeypatch.setattr("src.datasource.us.fdr_source.fetch_usd_krw", lambda: _coro(1500.0))
     monkeypatch.setattr("src.datasource.us.fdr_source.fetch_us_market_caps",
                         lambda syms: _coro({s: 1e12 for s in syms}))

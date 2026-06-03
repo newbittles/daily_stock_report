@@ -374,7 +374,7 @@ async def _collect_us_screening(snap: MarketSnapshot) -> None:
     기존 us_screening 모듈(run_us_screening, S&P500 A/B/C/D)을 그대로 재사용.
     실패 시 빈 채로 두어 리포트 자체는 발송되게 한다(best-effort).
     """
-    from src.datasource.us.universe import get_extended_universe
+    from src.datasource.us.universe import get_hybrid_universe
     from src.screener.us_pipeline import run_us_screening
     from src.screener.us_report import STRATEGY_ORDER, _turnover
 
@@ -383,9 +383,10 @@ async def _collect_us_screening(snap: MarketSnapshot) -> None:
     _MARCAP_TOPN = 50          # 시총 조회는 거래대금 상위 N개만(속도)
 
     try:
-        universe = get_extended_universe()  # S&P500 ∪ 관심 성장주/양자주 큐레이션
+        # 하이브리드: S&P500 ∪ 나스닥 거래대금상위(캐시) ∪ 큐레이션 — 발견+보장
+        universe = await get_hybrid_universe()
     except Exception as exc:  # noqa: BLE001
-        logger.warning("us_extended_universe_failed error=%s", exc)
+        logger.warning("us_hybrid_universe_failed error=%s", exc)
         universe = None
     picks = await run_us_screening(universe=universe)
     if not picks:

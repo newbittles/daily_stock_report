@@ -136,6 +136,33 @@ def get_extended_universe() -> list[USStock]:
     return sp + extra
 
 
+async def get_hybrid_universe(nasdaq_top: int = 300) -> list[USStock]:
+    """하이브리드 유니버스(사용자 2026-06-04): S&P500 ∪ 나스닥 거래대금상위 ∪ 큐레이션.
+
+    - 나스닥 거래대금상위(캐시·하루1회): **발견력** — 모르는 신규 테마도 거래대금으로 자동 포착.
+    - 큐레이션 watchlist: **보장** — 양자주 등은 상위 밖이어도 확실히 포함.
+    나스닥 스캔은 _NASDAQ_CACHE로 하루 1회만(07:00 첫 실행 시 ~수분, 이후 당일 캐시).
+    """
+    sp = get_sp500_universe()
+    seen = {u.symbol for u in sp}
+    out: list[USStock] = list(sp)
+    try:
+        hot = await get_nasdaq_hot_universe(top=nasdaq_top)
+    except Exception as exc:  # noqa: BLE001
+        logger.warning("hybrid_nasdaq_hot_failed error=%s", exc)
+        hot = []
+    for h in hot:
+        if h.symbol not in seen:
+            seen.add(h.symbol)
+            out.append(h)
+    for w in US_GROWTH_WATCHLIST:  # 큐레이션 보강(중복 제거)
+        if w.symbol not in seen:
+            seen.add(w.symbol)
+            out.append(w)
+    logger.info("hybrid_universe sp500=%d nasdaq_hot=%d total=%d", len(sp), len(hot), len(out))
+    return out
+
+
 def _nasdaq_listing() -> list[USStock]:
     """나스닥 전체 listing → USStock (Industry를 sector 자리에 best-effort)."""
     import FinanceDataReader as fdr

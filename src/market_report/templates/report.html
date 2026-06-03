@@ -288,7 +288,7 @@
     .theme-info .theme-why { font-size: 0.82rem; color: var(--text); margin-top: 0.3rem; line-height: 1.4; }
     .strat-badge { font-size: 0.72rem; font-weight: 700; background: var(--accent); color: #fff; padding: 1px 6px; border-radius: 4px; }
     .pick-sub { font-size: 0.82rem; color: var(--text-dim); margin-top: 0.2rem; }
-    mark.hl-bold { font-weight: 800; background: #fff3a0; color: #1a1a1a; padding: 0 4px; border-radius: 3px; }
+    .hl-bold { font-weight: 800; color: #e23b3b; }  /* 붉은색 볼드 (가시성) */
     .theme-pct { font-weight: 700; font-size: 0.95rem; }
 
     /* Stock tables */
@@ -517,7 +517,7 @@
           <span class="pick-ticker">{{ p.symbol }}</span> · ${{ "{:,.2f}".format(p.price) }}
           <span class="{{ 'up-text' if p.change_pct >= 0 else 'down-text' }}">{{ '+' if p.change_pct >= 0 else '' }}{{ "{:.2f}".format(p.change_pct) }}%</span>
           {% if p.cross_signal == 'PULLBACK' %}<span class="up-text" style="font-size:0.8rem;">🟢단기눌림</span>{% elif p.cross_signal == 'CORRECTION' %}<span class="down-text" style="font-size:0.8rem;">⚠️조정시작</span>{% endif %}
-          {% if p.marcap_str or p.turnover_str or g.initial == 'B' %}<div class="pick-sub">{% if p.marcap_str %}시총 {{ p.marcap_str }}{% endif %}{% if p.turnover_str %} · 거래대금 {{ p.turnover_str }}{% endif %}{% if g.initial == 'B' %} · 20MA괴리 <mark class="hl-bold">{{ '+' if p.gap20 >= 0 else '' }}{{ p.gap20 }}%</mark>{% endif %}</div>{% endif %}
+          {% if p.marcap_str or p.turnover_str or g.initial == 'B' %}<div class="pick-sub">{% if p.marcap_str %}시총 {{ p.marcap_str }}{% endif %}{% if p.turnover_str %} · 거래대금 {{ p.turnover_str }}{% endif %}{% if g.initial == 'B' %} · 20MA괴리 <strong class="hl-bold">{{ '+' if p.gap20 >= 0 else '' }}{{ p.gap20 }}%</strong>{% endif %}</div>{% endif %}
           {% if p.sector %}<div class="pick-sub">섹터: {{ p.sector }}</div>{% endif %}
           {% if p.reason %}<div class="theme-reason">{{ p.reason }}</div>{% endif %}
         </li>
