@@ -14,6 +14,7 @@ import yaml
 
 from src.alerts.holdings_report import diagnose_holdings
 from src.indicators.core import average_true_range, moving_average, round_to_tick
+from src.patterns.core import ma_cross_signal
 from src.screener.config import load_screener_config
 from src.screener.engine import evaluate_strategy
 from src.screener.pipeline import _is_etf, _is_pref
@@ -142,6 +143,8 @@ async def collect_screen_picks(adapter, per_strategy: int = 8,
         _gap20 = (c[-1].close - _ma20) / _ma20 * 100 if _ma20 else 0.0
         _hi60 = max(x.high for x in c[-60:])
         _nh = (c[-1].close / _hi60 - 0.97) * 100 if _hi60 else 0.0
+        # 5·10 단기 데드크로스 + 20일이격 → 단기눌림(🟢)/조정시작(⚠️) 신호 (보유 종목 홀드·익절 판단용)
+        _cross = ma_cross_signal(_closes)
         # 🔥 과열 판정 (7케이스 검증): BB(20,2) 상단 종가돌파 + 20일이격≥30% + 거래량≥1.8배
         from statistics import pstdev
         _std20 = pstdev(_closes[-20:]) if len(_closes) >= 20 else 0.0
@@ -175,6 +178,7 @@ async def collect_screen_picks(adapter, per_strategy: int = 8,
                     "stop_price": round(_stop_price, 1) if _stop_price else 0,
                     "stop_pct": round(_stop_pct, 1),
                     "overheat": _overheat, "vol_x": round(_volx, 1),
+                    "cross_signal": _cross,  # PULLBACK(🟢 단기눌림)/CORRECTION(⚠️ 조정시작)/None
                     "theme": "",            # pipeline에서 judal 테마/업종 폴백으로 채움
                     "theme_kind": "",       # "theme"(judal 테마) | "sector"(네이버 세분업종)
                     "theme_idx": "",        # judal themeIdx (테마 링크용)

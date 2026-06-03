@@ -1,8 +1,27 @@
 """순수 함수 테스트 — sizing / ma_exit (외부 의존 0)."""
 from __future__ import annotations
 
+from src.indicators.core import moving_average
+from src.patterns.core import ma_cross_signal
 from src.trading.ma_exit import consecutive_below, exit_decision
 from src.trading.sizing import calc_qty, split_sell_qty
+
+
+def test_ma_cross_signal():
+    # 🟢 PULLBACK: 폭등 후 얕은 단기약세 (MA5<MA10 이지만 가격은 MA20 대비 ≥15%)
+    pullback = [100.0] * 25 + [350.0, 400.0, 440.0, 460.0, 470.0, 465.0, 430.0, 410.0, 395.0, 385.0]
+    assert moving_average(pullback, 5)[-1] < moving_average(pullback, 10)[-1]  # 단기 데드
+    assert ma_cross_signal(pullback) == "PULLBACK"
+
+    # ⚠️ CORRECTION: 상승 후 MA20 부근까지 되밀림 (MA5<MA10 + 이격 ≤7%)
+    correction = [100.0] * 20 + [110.0, 120.0, 130.0, 128.0, 124.0, 118.0, 112.0, 108.0, 105.0, 103.0]
+    assert moving_average(correction, 5)[-1] < moving_average(correction, 10)[-1]
+    assert ma_cross_signal(correction) == "CORRECTION"
+
+    # 정배열(MA5>MA10) → None
+    assert ma_cross_signal([float(i) for i in range(1, 40)]) is None
+    # 데이터 부족 → None
+    assert ma_cross_signal([100.0] * 5) is None
 
 
 def test_calc_qty():

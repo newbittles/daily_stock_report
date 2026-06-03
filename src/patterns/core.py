@@ -1020,3 +1020,34 @@ def is_bollinger_breakout(
     if price > upper[-1]:
         return PatternResult(True, "볼린저 상단 돌파", metrics)
     return PatternResult(False, "밴드 내부", metrics)
+
+
+# 5·10 단기 데드크로스 + 20일 이격도 기반 단기조정/끝물 판정 라벨
+CROSS_PULLBACK = "PULLBACK"      # 🟢 추세 위 단기눌림 (보유 지속/매수 기회)
+CROSS_CORRECTION = "CORRECTION"  # ⚠️ 조정시작 (익절/손절 검토)
+
+
+def ma_cross_signal(closes: list[float]) -> str | None:
+    """5<10 단기 데드크로스 상태에서 20일 이격도로 단기조정/끝물 판정 (순수).
+
+    - MA5 < MA10(단기 데드) + 20일이격 ≥ 15% → CROSS_PULLBACK (추세 위 단기눌림)
+    - MA5 < MA10 + 20일이격 ≤ 7%            → CROSS_CORRECTION (조정시작 경고)
+    - 그 외(정배열 또는 이격 7~15%, 데이터 부족) → None
+
+    20일이격 = (종가 - MA20) / MA20 * 100. 표시(🟢/⚠️)·매매행동은 호출측 결정.
+    """
+    if len(closes) < 20:
+        return None
+    ma5 = moving_average(closes, 5)[-1]
+    ma10 = moving_average(closes, 10)[-1]
+    ma20 = moving_average(closes, 20)[-1]
+    if ma5 is None or ma10 is None or not ma20:
+        return None
+    if ma5 >= ma10:  # 단기 데드크로스 아님(정배열)
+        return None
+    gap20 = (closes[-1] - ma20) / ma20 * 100
+    if gap20 >= 15:
+        return CROSS_PULLBACK
+    if gap20 <= 7:
+        return CROSS_CORRECTION
+    return None
