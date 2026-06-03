@@ -95,6 +95,7 @@ class MarketSnapshot:
 
     # 테마
     top_themes: list[ThemeRank] = field(default_factory=list)
+    leading_themes: list[str] = field(default_factory=list)  # 주도 테마(오늘 상위종목이 속한 테마, 랭킹순)
 
     # 뉴스
     market_news: list[NewsItem] = field(default_factory=list)

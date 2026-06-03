@@ -264,18 +264,25 @@ def _norm_name(name: str) -> str:
     return str(name or "").replace(" ", "").strip().lower()
 
 
-def _leading_theme_names(stocks: list, jmap: dict, is_nontheme) -> set[str]:
-    """오늘 '주도테마' 이름 집합 = 상승률/거래량 상위 종목들이 속한 테마(judal).
+def _rank_leading_themes(movers: list, strong_picks: list, jmap: dict, is_nontheme) -> list[str]:
+    """오늘 '주도 테마'를 강도순으로 랭킹 — 상승률/거래량 상위 종목 + 급등 전략픽이 속한 테마.
 
     급등 주도주가 이끄는 테마를 포착(평균등락률 기준의 한계 보완). 예: 로봇(두산로보틱스 등
-    상위) · 광통신(성호전자 상위) → 주도테마로 인식.
+    상위) · 광통신(성호전자 상위). 점수 = 기여 종목 등락률 합(+존재 가중). 원본 테마명 반환.
     """
-    names: set[str] = set()
-    for s in (stocks or []):
+    from collections import defaultdict
+    score: dict[str, float] = defaultdict(float)
+    for s in (movers or []):
+        chg = getattr(s, "change_pct", 0) or 0
+        if chg <= 0:  # 주도=상승 주도. 하락/보합 종목은 제외
+            continue
         jv = jmap.get(str(getattr(s, "ticker", "")).strip())
         if jv and jv.get("theme") and not is_nontheme(jv["theme"]):
-            names.add(_norm_name(jv["theme"]))
-    return names
+            score[jv["theme"]] += chg + 1.0  # +1=존재 가중
+    for p in (strong_picks or []):
+        if p.get("theme_kind") == "theme" and (p.get("change_pct", 0) or 0) >= 5.0 and p.get("theme"):
+            score[p["theme"]] += float(p.get("change_pct", 0) or 0)
+    return sorted(score, key=lambda t: score[t], reverse=True)
 
 
 def _set_leading_theme(picks: list[dict], lead_theme_names: set[str]) -> None:
@@ -424,11 +431,10 @@ async def run_full(
             except Exception as exc:
                 logger.warning("us_sector_fallback_failed error=%s", exc)
             # 시초 Top3 — P4 + 미국 강세테마 연동 가중(w_us) + ATR 손절
-            _lead = _leading_theme_names((snap.top_gainers or []) + (snap.top_volume or []), jmap, _is_nontheme)
-            for _p in snap.screen_picks:
-                if _p.get("theme_kind") == "theme" and (_p.get("change_pct", 0) or 0) >= 5.0:
-                    _lead.add(_norm_name(_p.get("theme", "")))
-            _set_leading_theme(snap.screen_picks, _lead)  # 주도테마 여부
+            _ranked = _rank_leading_themes((snap.top_gainers or []) + (snap.top_volume or []),
+                                           snap.screen_picks, jmap, _is_nontheme)
+            snap.leading_themes = _ranked[:6]
+            _set_leading_theme(snap.screen_picks, {_norm_name(t) for t in _ranked})  # 주도테마 여부
             strong_kw = strong_kr_keywords(snap.us_sectors)
             fb = {x["ticker"] for x in await adapter.get_investor_net_buy("foreign", "buy")}
             ib = {x["ticker"] for x in await adapter.get_investor_net_buy("inst", "buy")}
@@ -503,12 +509,11 @@ async def run_full(
         except Exception as exc:
             logger.warning("sector_fallback_failed error=%s", exc)
 
-        # 주도테마 여부 — 오늘 상위종목(상승률/거래량 상위) + 강하게 오른 전략픽이 속한 테마
-        _lead = _leading_theme_names((snap.top_gainers or []) + (snap.top_volume or []), jmap, _is_nontheme)
-        for _p in snap.screen_picks:  # 급등 전략픽(주도주)의 테마도 주도테마에 포함
-            if _p.get("theme_kind") == "theme" and (_p.get("change_pct", 0) or 0) >= 5.0:
-                _lead.add(_norm_name(_p.get("theme", "")))
-        _set_leading_theme(snap.screen_picks, _lead)
+        # 주도 테마 — 오늘 상위종목(상승률/거래량 상위) + 급등 전략픽이 속한 테마(랭킹순)
+        _ranked = _rank_leading_themes((snap.top_gainers or []) + (snap.top_volume or []),
+                                       snap.screen_picks, jmap, _is_nontheme)
+        snap.leading_themes = _ranked[:6]
+        _set_leading_theme(snap.screen_picks, {_norm_name(t) for t in _ranked})
 
         # Top3 종합추천 — 수급(외인/기관 순매수) 수집 후 P4 점수로 3종목 선정
         try:

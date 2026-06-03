@@ -32,6 +32,22 @@ def _fetch_macro_sync() -> dict:
             }
         except Exception as exc:  # noqa: BLE001
             logger.warning("macro_fetch_failed sym=%s error=%s", sym, exc)
+
+    # 환율 폴백: yfinance KRW=X 일시 실패 시 FDR USD/KRW로 (환율 카드 누락 방지)
+    if "fx" not in out:
+        try:
+            import FinanceDataReader as fdr
+            df = fdr.DataReader("USD/KRW").dropna()
+            if len(df) >= 2:
+                last, prev = float(df["Close"].iloc[-1]), float(df["Close"].iloc[-2])
+                out["fx"] = {
+                    "name": "원/달러",
+                    "value": round(last, 2),
+                    "change_pct": round((last - prev) / prev * 100, 2) if prev else 0.0,
+                }
+                logger.info("macro_fx_fdr_fallback used last=%.2f", last)
+        except Exception as exc:  # noqa: BLE001
+            logger.warning("macro_fx_fdr_fallback_failed error=%s", exc)
     return out
 
 

@@ -91,6 +91,9 @@
       width: 100%;
     }
     .index-spark img { width: 100%; height: auto; object-fit: contain; border-radius: 4px; cursor: zoom-in; display: block; }
+    .lead-themes { margin-bottom: 0.75rem; line-height: 1.9; }
+    .lead-theme-chip { display: inline-block; background: #f59e0b22; color: #fbbf24; border: 1px solid #f59e0b55;
+      border-radius: 999px; padding: 0.15rem 0.6rem; margin: 0.15rem 0.3rem 0.15rem 0; font-size: 0.85rem; font-weight: 600; }
     .index-name { font-size: 0.85rem; color: var(--text-dim); margin-bottom: 0.25rem; }
     .index-value { font-size: 1.5rem; font-weight: 700; }
     .index-change { font-size: 0.9rem; margin-top: 0.25rem; }
@@ -682,6 +685,11 @@
     {# 4. 강세 테마 #}
     {% if snap.top_themes %}
     <section>
+      {% if snap.leading_themes %}
+      <div class="lead-themes">🚀 <strong>주도 테마</strong> <span style="color:var(--text-dim);font-size:0.85rem;">(오늘 상위종목이 속한 테마)</span><br>
+        {% for th in snap.leading_themes %}<span class="lead-theme-chip">{{ th }}</span>{% endfor %}
+      </div>
+      {% endif %}
       <h2><span class="icon">🔥</span>강세/약세 테마 Top {{ snap.top_themes|length }}</h2>
       {% for t in snap.top_themes %}
       <div class="theme">

@@ -90,7 +90,12 @@ def _format_pre_summary(snap: MarketSnapshot) -> str:
         lines.append(snap.summary)
         lines.append("")
 
-    # 강세 테마 Top 3
+    # 주도 테마 (오늘 상위종목이 속한 테마 — 모멘텀)
+    if snap.leading_themes:
+        lines.append("🚀 *주도 테마* (오늘 상위종목): " + " · ".join(snap.leading_themes[:5]))
+        lines.append("")
+
+    # 강세 테마 Top 3 (테마 평균 등락률)
     if snap.top_themes:
         lines.append("🔥 *강세 테마*")
         for t in snap.top_themes[:3]:
@@ -134,6 +139,11 @@ def _format_post_summary(snap: MarketSnapshot) -> str:
 
     if snap.summary:
         lines.append(snap.summary)
+        lines.append("")
+
+    # 주도 테마 (오늘 상위종목이 속한 테마 — 모멘텀)
+    if snap.leading_themes:
+        lines.append("🚀 *주도 테마* (오늘 상위종목): " + " · ".join(snap.leading_themes[:5]))
         lines.append("")
 
     # 강세 테마 Top 3
