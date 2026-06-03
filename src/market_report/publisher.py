@@ -83,7 +83,17 @@ def publish(snap: MarketSnapshot) -> bool:
         logger.error("publish_commit_failed error=%s", msg)
         return False
 
-    # 4. push
+    # 4. 원격 동기화 (rebase) — 서버 자동발행과 개발 머신 푸시가 같은 main을 공유하므로,
+    #    push 전에 origin/main에 리베이스하지 않으면 non-fast-forward로 거부되어 로컬
+    #    리포트 커밋이 쌓이며 분기가 누적된다(2026-06 서버 ahead/behind 52 원인).
+    #    --autostash: 서버의 미커밋 로컬설정(config/screener.yaml 등)을 자동 보존.
+    ok, msg = _run_git("pull", "--rebase", "--autostash", "origin", "main", timeout=120)
+    if not ok:
+        logger.error("publish_pull_rebase_failed error=%s", msg)
+        _run_git("rebase", "--abort")  # 충돌 시 리베이스 상태 정리(다음 발행을 막지 않도록)
+        return False
+
+    # 5. push
     ok, msg = _run_git("push", "origin", "main", timeout=120)
     if not ok:
         logger.error("publish_push_failed error=%s", msg)
