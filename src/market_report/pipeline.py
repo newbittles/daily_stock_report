@@ -372,19 +372,35 @@ async def _collect_us_screening(snap: MarketSnapshot) -> None:
     실패 시 빈 채로 두어 리포트 자체는 발송되게 한다(best-effort).
     """
     from src.screener.us_pipeline import run_us_screening
-    from src.screener.us_report import STRATEGY_ORDER, _reason_for, _turnover
+    from src.screener.us_report import STRATEGY_ORDER, _turnover
 
     picks = await run_us_screening()
     if not picks:
         logger.info("us_screening_no_picks")
         return
 
+    def _pick_reason(p, initial: str = "") -> str:
+        """전략 매칭 reason 중 통화 무관한 것 우선 선택.
+
+        engine 거래대금 reason은 '억'(원화) 포맷이라 미국 달러엔 부적합 → 회피.
+        """
+        cands: list[str] = []
+        for m in p.matches:
+            if initial and m.strategy_name[:1] != initial:
+                continue
+            cands.extend(m.reasons)
+        if not cands and not initial:
+            cands = p.all_reasons
+        non_won = [r for r in cands if "억" not in r and "거래대금" not in r]
+        pool = non_won or cands
+        return pool[0] if pool else ""
+
     def _to_dict(p, initial: str = "") -> dict:
         return {
             "symbol": p.symbol, "name": p.name, "price": round(p.price, 2),
             "change_pct": round(p.change_pct, 2), "sector": p.sector or "",
             "industry": p.industry or "",
-            "reason": _reason_for(p, initial) if initial else (p.all_reasons[0] if p.all_reasons else ""),
+            "reason": _pick_reason(p, initial),
             "cross_signal": p.cross_signal,
         }
 
