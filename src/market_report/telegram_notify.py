@@ -203,6 +203,67 @@ def _format_post_summary(snap: MarketSnapshot) -> str:
     return "\n".join(lines)
 
 
+def _format_midday_summary(snap: MarketSnapshot) -> str:
+    """장중 리포트(정오) — 지수·수급(전일대비)·강세테마·핫종목·전날 추천 Top3 현황.
+
+    텔레그램 전용(웹 없음). 모바일 가독성 위해 항목마다 줄바꿈.
+    """
+    date = snap.generated_at.strftime("%Y-%m-%d %H:%M")
+    lines: list[str] = [f"🟢 *장중 리포트* — {date}", ""]
+
+    # 지수 (코스피·코스닥·환율·유가 각 1줄)
+    lines.extend(_format_index_lines(snap))
+
+    # 투자자 수급 (당일 + 전일 병기, 억)
+    lines.extend(_format_market_flows(snap))
+
+    # AI 한줄 장중 코멘트 (실패 시 결정론 폴백이 summary에 들어있음)
+    if snap.summary:
+        lines.append(f"💡 {snap.summary}")
+        lines.append("")
+
+    # 주도 테마 (오늘 상위종목이 속한 테마)
+    if snap.leading_themes:
+        lines.append("🚀 *주도 테마* (오늘 상위종목):")
+        lines.append(" · ".join(snap.leading_themes[:5]))
+        lines.append("")
+
+    # 강세 테마 Top 3 (테마 평균 등락률)
+    if snap.top_themes:
+        lines.append("🔥 *강세 테마*")
+        for t in snap.top_themes[:3]:
+            sign = "+" if t.change_pct >= 0 else ""
+            lines.append(f"  · {t.name} {sign}{t.change_pct:.2f}%")
+        lines.append("")
+
+    # 핫 종목 (상승률 상위 5 — ETF/우선주 제외된 top_gainers)
+    if snap.top_gainers:
+        lines.append("🔥 *핫 종목* (상승률 상위)")
+        for s in snap.top_gainers[:5]:
+            lines.append(f"  · {_naver_link(s.name, s.ticker)} "
+                         f"{s.price:,.0f}원 (+{s.change_pct:.1f}%)")
+        lines.append("")
+
+    # 전날 추천 Top3 현황 (추천가 대비 + 오늘 등락 둘 다)
+    if snap.prev_top3_status:
+        d = snap.prev_top3_date
+        head = f"🏆 *전날 추천 Top3 현황*"
+        if d:
+            head += f" ({d[5:]} 추천)"
+        lines.append(head)
+        for t in snap.prev_top3_status:
+            rp = t.get("return_pct", 0.0)
+            tp = t.get("today_pct", 0.0)
+            rs = "+" if rp >= 0 else ""
+            ts = "+" if tp >= 0 else ""
+            lines.append(f"  · {_naver_link(t['name'], t['ticker'])} "
+                         f"추천가대비 {rs}{rp:.1f}% (오늘 {ts}{tp:.1f}%)")
+        lines.append("")
+
+    lines.append("_※ 참고용 정보. 투자 판단·책임은 본인._")
+    return "\n".join(lines)
+
+
 def _format_us_morning_summary(snap: MarketSnapshot) -> str:
     """미국장 아침 요약 메시지 (us_morning) — 지수·AI요약·강세섹터·주요종목·한국 시사점."""
     url = report_url(snap)
@@ -290,6 +351,8 @@ async def send_report(snap: MarketSnapshot) -> bool:
 
     if snap.mode == "us_morning":
         text = _format_us_morning_summary(snap)
+    elif snap.mode == "midday":
+        text = _format_midday_summary(snap)
     elif snap.mode == "pre_close":
         text = _format_pre_summary(snap)
     else:

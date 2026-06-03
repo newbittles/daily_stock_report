@@ -51,6 +51,17 @@ async def _holdings_job() -> None:
         logger.exception("holdings_job_failed error=%s", exc)
 
 
+async def _midday_job() -> None:
+    """장중 리포트 (평일 12:00) — 지수·수급·강세테마·핫종목·전날 top3 현황. 텔레그램 전용."""
+    logger.info("midday_job_start now=%s", datetime.now().isoformat())
+    try:
+        from src.market_report.midday import run_midday
+        snap = await run_midday()
+        logger.info("midday_job_done sent=%s", snap is not None)
+    except Exception as exc:
+        logger.exception("midday_job_failed error=%s", exc)
+
+
 async def _dashboard_job() -> None:
     """마감 후 전략 스크린 대시보드 갱신 + GitHub Pages 게시."""
     logger.info("dashboard_job_start now=%s", datetime.now().isoformat())
@@ -90,11 +101,17 @@ def build_scheduler() -> AsyncIOScheduler:
         _dashboard_job, CronTrigger(day_of_week="mon-fri", hour=16, minute=40, timezone=KST),
         id="screen_dashboard", replace_existing=True, misfire_grace_time=900,
     )
-    # 미국장 아침 요약 (07:30 — 미국장 마감 06:00 후, 국장 시작 전)
+    # 미국장 아침 요약 (07:00 — 미국장 마감 후[서머 05:00/겨울 06:00], 국장 시작 전)
+    # 06:30은 겨울철 마감 30분 후라 FDR/yfinance 일봉 미갱신(전일 데이터) 위험 → 07:00 채택.
     scheduler.add_job(
-        _job, CronTrigger(day_of_week="tue-sat", hour=7, minute=30, timezone=KST),
+        _job, CronTrigger(day_of_week="tue-sat", hour=7, minute=0, timezone=KST),
         args=["us_morning"], id="report_us_morning", replace_existing=True,
         misfire_grace_time=900,
+    )
+    # 장중 리포트 (평일 12:00 — 오전장 흐름·전날 추천 top3 현황)
+    scheduler.add_job(
+        _midday_job, CronTrigger(day_of_week="mon-fri", hour=12, minute=0, timezone=KST),
+        id="report_midday", replace_existing=True, misfire_grace_time=600,
     )
     return scheduler
 
@@ -130,7 +147,7 @@ def main() -> int:
         format="%(asctime)s %(levelname)s %(name)s %(message)s",
     )
     parser = argparse.ArgumentParser(description="Daily report scheduler")
-    parser.add_argument("--once", choices=["pre", "post", "us", "holdings", "dashboard"],
+    parser.add_argument("--once", choices=["pre", "post", "us", "holdings", "dashboard", "midday"],
                         help="등록된 잡 1회 즉시 실행 후 종료")
     args = parser.parse_args()
 
@@ -138,6 +155,8 @@ def main() -> int:
         asyncio.run(_holdings_job())
     elif args.once == "dashboard":
         asyncio.run(_dashboard_job())
+    elif args.once == "midday":
+        asyncio.run(_midday_job())
     elif args.once:
         mode = {"pre": "pre_close", "post": "post_close", "us": "us_morning"}[args.once]
         asyncio.run(_job(mode))

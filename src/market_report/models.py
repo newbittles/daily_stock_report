@@ -8,7 +8,7 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from typing import Literal
 
-ReportMode = Literal["pre_close", "post_close", "us_morning"]
+ReportMode = Literal["pre_close", "post_close", "us_morning", "midday"]
 MarketCode = Literal["KOSPI", "KOSDAQ"]
 
 
@@ -123,6 +123,11 @@ class MarketSnapshot:
     # 보유종목 상태 (홀딩/손절/추가매수 — pipeline이 채움)
     holdings_status: list[dict] = field(default_factory=list)  # {name, ticker, state, reason, profit_rate, ...}
     holdings_summary: str = ""  # 보유종목 전체에 대한 AI 종합 코멘트 (analyzer.summarize_holdings)
+
+    # 장중 리포트(midday) — 전날 추천 Top3의 현재 상태 (top3_status가 채움)
+    prev_top3_date: str = ""    # 전날 top3 추천일(YYYY-MM-DD)
+    prev_top3_status: list[dict] = field(default_factory=list)
+    # {ticker, name, rec_price, cur_price, return_pct(추천가대비), today_pct(오늘등락)}
 
     # 차트 URL (renderer가 채움, 상대 경로 — docs/reports/ 기준)
     kospi_spark_url: str = ""

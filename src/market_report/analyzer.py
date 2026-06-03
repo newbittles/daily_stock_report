@@ -232,6 +232,36 @@ def _fallback_summary(snap: MarketSnapshot) -> str:
     return head + (f". 강세 테마: {', '.join(themes)}." if themes else ".")
 
 
+async def summarize_midday(snap: MarketSnapshot) -> str:
+    """장중(정오) 한줄 코멘트 — 지수·수급·강세테마 기반 1~2문장.
+
+    Gemini 1회 시도, 실패/키없음 시 결정론 폴백(_fallback_summary). 종목 추천·매수의견 금지.
+    """
+    settings = get_settings()
+    fallback = _fallback_summary(snap)
+    if not settings.gemini_api_key:
+        return fallback
+
+    context = _build_snapshot_context(snap)
+    prompt = (
+        "다음은 오늘 한국 증시 '장중(정오)' 스냅샷이다. 지금까지의 흐름을 "
+        "1~2문장으로 간결히 코멘트하라(지수 방향·수급·강세테마 중심). "
+        "종목 추천·매수의견·목표가는 절대 쓰지 말 것. 사실을 지어내지 말 것.\n\n"
+        f"{context}"
+    )
+    try:
+        client = genai.Client(api_key=settings.gemini_api_key)
+        resp = client.models.generate_content(
+            model=MODEL_NAME, contents=prompt,
+            config=types.GenerateContentConfig(temperature=0.3),
+        )
+        text = (resp.text or "").strip()
+        return text or fallback
+    except Exception as exc:  # noqa: BLE001
+        logger.warning("midday_summary_failed error=%s", exc)
+        return fallback
+
+
 async def analyze(snap: MarketSnapshot) -> MarketSnapshot:
     """Gemini로 시장 분석. snap을 mutate해서 반환.
 
