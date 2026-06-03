@@ -434,7 +434,7 @@ async def run_full(
             _ranked = _rank_leading_themes((snap.top_gainers or []) + (snap.top_volume or []),
                                            snap.screen_picks, jmap, _is_nontheme)
             snap.leading_themes = _ranked[:6]
-            _set_leading_theme(snap.screen_picks, {_norm_name(t) for t in _ranked})  # 주도테마 여부
+            _set_leading_theme(snap.screen_picks, {_norm_name(t) for t in snap.leading_themes})  # 주도테마 여부
             strong_kw = strong_kr_keywords(snap.us_sectors)
             fb = {x["ticker"] for x in await adapter.get_investor_net_buy("foreign", "buy")}
             ib = {x["ticker"] for x in await adapter.get_investor_net_buy("inst", "buy")}
@@ -513,7 +513,8 @@ async def run_full(
         _ranked = _rank_leading_themes((snap.top_gainers or []) + (snap.top_volume or []),
                                        snap.screen_picks, jmap, _is_nontheme)
         snap.leading_themes = _ranked[:6]
-        _set_leading_theme(snap.screen_picks, {_norm_name(t) for t in _ranked})
+        # O/X는 표시된 주도테마(상위 6)와 일치 — 선택적
+        _set_leading_theme(snap.screen_picks, {_norm_name(t) for t in snap.leading_themes})
 
         # Top3 종합추천 — 수급(외인/기관 순매수) 수집 후 P4 점수로 3종목 선정
         try:
