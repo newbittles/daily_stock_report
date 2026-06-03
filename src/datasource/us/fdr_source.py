@@ -9,8 +9,15 @@ design: docs/02-design/features/us-morning-report.design.md (U1 데이터소스=
 from __future__ import annotations
 
 import asyncio
+import json
 import logging
-from dataclasses import dataclass
+from dataclasses import asdict, dataclass
+from datetime import date
+from pathlib import Path
+
+from src.datasource.base import Candle
+
+_OHLCV_CACHE = Path(__file__).resolve().parent.parent.parent.parent / "data" / "us_ohlcv_cache.json"
 
 logger = logging.getLogger(__name__)
 
@@ -90,3 +97,227 @@ async def fetch_us_sectors(threshold: float = 1.0) -> list[USQuote]:
     quotes = await asyncio.to_thread(_fetch_quotes_sync, US_SECTORS)
     strong = [q for q in quotes if q.change_pct >= threshold]
     return sorted(strong, key=lambda q: q.change_pct, reverse=True)
+
+
+# ─── 미국 종목 스크리닝용 OHLCV 배치 (us_screening) ──────────────────────────
+# 개별 FDR 호출은 503종목×0.3s≈150s로 무겁다 → yfinance 일괄 다운로드로 부하 절감.
+# design: docs/02-design/features/us-screening.design.md §3·§5
+
+
+def _df_to_candles(df) -> list[Candle]:
+    """yfinance OHLCV DataFrame → list[Candle] (NaN·결측 행 제거, 날짜 오름차순)."""
+    import math
+
+    out: list[Candle] = []
+    for idx, row in df.iterrows():
+        try:
+            o, h, l, c = row["Open"], row["High"], row["Low"], row["Close"]
+            v = row.get("Volume", 0)
+            if any(x is None or (isinstance(x, float) and math.isnan(x)) for x in (o, h, l, c)):
+                continue
+            try:
+                date_str = idx.strftime("%Y%m%d")
+            except Exception:
+                date_str = str(idx)[:10].replace("-", "")
+            vol = 0
+            try:
+                vol = int(v) if v == v else 0  # NaN 가드
+            except Exception:
+                vol = 0
+            out.append(Candle(
+                date=date_str,
+                open=float(o), high=float(h), low=float(l), close=float(c),
+                volume=vol,
+            ))
+        except Exception:
+            continue
+    return out
+
+
+def _parse_ohlcv_chunk(data, syms: list[str], out: dict[str, list[Candle]]) -> None:
+    """yfinance 다운로드 결과 → out 에 {symbol: [Candle]} 누적."""
+    if len(syms) == 1:
+        out[syms[0]] = _df_to_candles(data)
+        return
+    for sym in syms:
+        try:
+            sub = data[sym].dropna(how="all")
+            out[sym] = _df_to_candles(sub)
+        except Exception as exc:  # noqa: BLE001
+            logger.debug("us_ohlcv_missing symbol=%s error=%s", sym, exc)
+
+
+def _fetch_ohlcv_batch_sync(symbols: list[str], days: int,
+                            chunk_size: int = 200) -> dict[str, list[Candle]]:
+    """동기 — 청크별 yfinance 일봉 다운로드 → {symbol: [Candle]}.
+
+    대량(수백~수천) 한방 호출은 yfinance rate limit(429)에 취약하므로(전역 §7),
+    청크로 나눠 배치 사이 랜덤 딜레이를 둔다. rate limit 연속 2회 → 중단(모은 만큼 사용).
+    """
+    import random
+    import time
+    from datetime import datetime, timedelta
+
+    import yfinance as yf
+
+    if not symbols:
+        return {}
+    # 일봉 days개 확보 위해 주말·휴장 고려 여유(×1.8 + 10일)
+    start = (datetime.now() - timedelta(days=int(days * 1.8) + 10)).strftime("%Y-%m-%d")
+    out: dict[str, list[Candle]] = {}
+    rate_hits = 0
+    n_chunks = (len(symbols) + chunk_size - 1) // chunk_size
+    for ci in range(n_chunks):
+        part = symbols[ci * chunk_size:(ci + 1) * chunk_size]
+        try:
+            data = yf.download(
+                part, start=start, group_by="ticker",
+                auto_adjust=False, threads=True, progress=False,
+            )
+        except Exception as exc:  # noqa: BLE001
+            msg = str(exc).lower()
+            if "rate" in msg or "too many" in msg or "429" in msg:
+                rate_hits += 1
+                logger.warning("us_ohlcv_rate_limited chunk=%d/%d hits=%d",
+                               ci + 1, n_chunks, rate_hits)
+                if rate_hits >= 2:  # §7 — 연속 rate limit 즉시 중단
+                    logger.warning("us_ohlcv_halt collected=%d", len(out))
+                    break
+                time.sleep(random.uniform(10.0, 20.0))
+                continue
+            logger.warning("us_ohlcv_chunk_failed chunk=%d error=%s", ci + 1, exc)
+            continue
+        _parse_ohlcv_chunk(data, part, out)
+        if ci < n_chunks - 1:
+            time.sleep(random.uniform(1.5, 3.5))  # §7 배치 사이 랜덤 휴식
+    return out
+
+
+def _load_ohlcv_cache(days: int) -> dict[str, list[Candle]]:
+    """당일·동일 days 캐시 로드 → {symbol: [Candle]}. 불일치/없음 시 {}."""
+    try:
+        if _OHLCV_CACHE.exists():
+            c = json.loads(_OHLCV_CACHE.read_text(encoding="utf-8"))
+            if c.get("date") == date.today().isoformat() and c.get("days") == days:
+                return {s: [Candle(**cd) for cd in cds]
+                        for s, cds in c.get("candles", {}).items()}
+    except Exception as exc:  # noqa: BLE001
+        logger.debug("ohlcv_cache_read_failed error=%s", exc)
+    return {}
+
+
+def _save_ohlcv_cache(days: int, candles: dict[str, list[Candle]]) -> None:
+    try:
+        _OHLCV_CACHE.parent.mkdir(parents=True, exist_ok=True)
+        payload = {
+            "date": date.today().isoformat(),
+            "days": days,
+            "candles": {s: [asdict(c) for c in cs] for s, cs in candles.items()},
+        }
+        _OHLCV_CACHE.write_text(json.dumps(payload, ensure_ascii=False), encoding="utf-8")
+    except Exception as exc:  # noqa: BLE001
+        logger.debug("ohlcv_cache_write_failed error=%s", exc)
+
+
+async def fetch_us_ohlcv_batch(
+    symbols: list[str], days: int = 120, use_cache: bool = True,
+) -> dict[str, list[Candle]]:
+    """미국 종목 일봉 일괄 수집 → {symbol: [Candle]} (오름차순).
+
+    use_cache: 같은 날·같은 days 캐시(`data/us_ohlcv_cache.json`)된 심볼은 재다운로드
+    생략(rate limit 회피·반복 실측 고속화). 캐시에 없는 심볼만 다운로드 후 누적 저장.
+    """
+    symbols = list(symbols)
+    cache = _load_ohlcv_cache(days) if use_cache else {}
+    cached = {s: cache[s] for s in symbols if s in cache}
+    missing = [s for s in symbols if s not in cache]
+
+    fresh: dict[str, list[Candle]] = {}
+    if missing:
+        fresh = await asyncio.to_thread(_fetch_ohlcv_batch_sync, missing, days)
+        if use_cache and fresh:
+            merged = {**cache, **fresh}
+            _save_ohlcv_cache(days, merged)
+
+    return {**cached, **fresh}
+
+
+# ─── 1단계: 당일 거래대금 (나스닥 전체 → 핫 유니버스 추출용) ─────────────────
+# 나스닥 3902종목 전체를 상세 일봉으로 받으면 무거우므로(≈96s), 가벼운 최근 시세로
+# 당일 거래대금(=종가×거래량)·등락률만 산출해 상위 N을 1차 추출한다(2단계 필터).
+
+
+def _parse_turnover_chunk(data, syms: list[str], out: dict[str, dict]) -> None:
+    """yfinance 다운로드 결과 → out 에 {price, turnover, change_pct, date} 누적."""
+    multi = len(syms) > 1
+    for sym in syms:
+        try:
+            sub = data[sym] if multi else data
+            sub = sub.dropna(subset=["Close"])
+            if len(sub) < 1:
+                continue
+            last = sub.iloc[-1]
+            price = float(last["Close"])
+            vol = float(last.get("Volume", 0) or 0)
+            prev = float(sub.iloc[-2]["Close"]) if len(sub) >= 2 else price
+            chg = (price - prev) / prev * 100 if prev else 0.0
+            try:
+                last_date = sub.index[-1].strftime("%Y%m%d")
+            except Exception:
+                last_date = ""
+            out[sym] = {
+                "price": round(price, 2),
+                "turnover": price * vol,
+                "change_pct": round(chg, 2),
+                "date": last_date,
+            }
+        except Exception:  # noqa: BLE001
+            continue
+
+
+def _fetch_turnover_sync(symbols: list[str], lookback: int = 7,
+                         chunk_size: int = 350) -> dict[str, dict]:
+    """동기 — 청크별 yfinance 다운로드로 {symbol: {price, turnover, change_pct, date}}.
+
+    3902종목 한방 호출은 yfinance rate limit(429)에 걸리므로(전역 §7), 청크로 나눠
+    배치 사이 랜덤 딜레이를 둔다(고정 딜레이 금지). rate limit 연속 2회 → 중단(모은 만큼 사용).
+    """
+    import random
+    import time
+
+    import yfinance as yf
+
+    if not symbols:
+        return {}
+    out: dict[str, dict] = {}
+    rate_hits = 0
+    n_chunks = (len(symbols) + chunk_size - 1) // chunk_size
+    for ci in range(n_chunks):
+        part = symbols[ci * chunk_size:(ci + 1) * chunk_size]
+        try:
+            data = yf.download(
+                part, period=f"{lookback}d", group_by="ticker",
+                auto_adjust=False, threads=True, progress=False,
+            )
+        except Exception as exc:  # noqa: BLE001
+            msg = str(exc).lower()
+            if "rate" in msg or "too many" in msg or "429" in msg:
+                rate_hits += 1
+                logger.warning("us_turnover_rate_limited chunk=%d/%d hits=%d",
+                               ci + 1, n_chunks, rate_hits)
+                if rate_hits >= 2:  # §7 — 연속 rate limit 즉시 중단, 자동 재시도 금지
+                    logger.warning("us_turnover_halt collected=%d", len(out))
+                    break
+                time.sleep(random.uniform(10.0, 20.0))  # 지수 백오프성 대기
+                continue
+            logger.warning("us_turnover_chunk_failed chunk=%d error=%s", ci + 1, exc)
+            continue
+        _parse_turnover_chunk(data, part, out)
+        if ci < n_chunks - 1:
+            time.sleep(random.uniform(1.5, 3.5))  # §7 배치 사이 랜덤 휴식
+    return out
+
+
+async def fetch_us_daily_turnover(symbols: list[str], lookback: int = 7) -> dict[str, dict]:
+    """미국 종목 당일 거래대금·등락률 일괄 → {symbol: {price, turnover, change_pct, date}}."""
+    return await asyncio.to_thread(_fetch_turnover_sync, list(symbols), lookback)

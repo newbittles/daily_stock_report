@@ -1020,3 +1020,33 @@ def is_bollinger_breakout(
     if price > upper[-1]:
         return PatternResult(True, "볼린저 상단 돌파", metrics)
     return PatternResult(False, "밴드 내부", metrics)
+
+
+def cross_signal(
+    candles: list[Candle], pullback_gap: float = 15.0, correction_gap: float = 7.0,
+) -> str:
+    """5<10 데드크로스 시 20일 이격으로 단기조정/고점 구분 (대세상승주 매매 보조신호).
+
+    5일선 < 10일선(단기 데드크로스) 상태에서 종가의 20일선 이격(%)으로 의미를 가른다:
+      - 이격 >= pullback_gap(15%) → "pullback"  🟢 단기 눌림 (아직 추세 위, 매수 기회)
+      - 이격 <= correction_gap(7%) → "correction" ⚠️ 조정 시작 (20선 근접, 경고)
+      - 그 외 / 데드크로스 아님 → "" (신호 없음)
+
+    domain SSOT — 한국 strategy_section._cross 와 동일 기준(추후 한국도 이 함수로 통일 예정).
+    순수함수: candles(OHLCV) in → 라벨 out.
+    """
+    closes = _closes(candles)
+    if len(closes) < 20:
+        return ""
+    ma5 = moving_average(closes, 5)[-1]
+    ma10 = moving_average(closes, 10)[-1]
+    ma20 = moving_average(closes, 20)[-1]
+    if ma5 is None or ma10 is None or not ma20:
+        return ""
+    if ma5 < ma10:  # 단기 데드크로스
+        gap20 = (closes[-1] - ma20) / ma20 * 100
+        if gap20 >= pullback_gap:
+            return "pullback"
+        if gap20 <= correction_gap:
+            return "correction"
+    return ""

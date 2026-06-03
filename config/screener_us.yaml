@@ -1,0 +1,89 @@
+# ════════════════════════════════════════════════════════════════════════
+#  미국 종목 스크리닝 설정 (us_screening) — 한국 screener.yaml과 분리.
+#  통화·규모 기준이 달러이므로 별도 파일. 전략 로직(conditions)은 한국과 동일
+#  (engine.py 순수함수 재사용 — A/B/C/D 그대로).
+#  design: docs/02-design/features/us-screening.design.md §6
+# ════════════════════════════════════════════════════════════════════════
+#
+#  ⚠️ min_trade_value·min_price 초기값은 '가정'입니다. P3에서 미국 데이터
+#     백테스트로 보정 예정. (CLAUDE.md §2 — 근거 동반·면책)
+#
+# ════════════════════════════════════════════════════════════════════════
+
+# universe 섹션은 us_pipeline이 get_sp500_universe()로 자체 구성하므로 미사용.
+# (P2에서 나스닥100·시총·핫종목 파생 추가 예정)
+
+strategies:
+
+  # ── C. 대세 정배열 주도주 추세추종 (미국 대형주 적합) ──────────────────
+  # 한국 C전략과 동일 로직. 미국 빅테크·반도체 대형주의 장기 우상향 추세추종에
+  # 가장 잘 맞아 P1 우선 적용. 손절: 60일선 2일연속 이탈(알림만, 매도는 본인).
+  - name: "C. 대세 정배열 추세추종"
+    enabled: true
+    description: "대세 정배열 미국 주도주 — 늦게 발견해도 진입, 60일선 손절"
+    conditions:
+      trend_follow:
+        nh_lookback: 60         # 신고가 판정 기간
+        nh_tol: 0.03            # 신고가 -3% 이내
+        div_lookback: 40        # 다이버전스/이격정점 비교 기간
+        div_rsi_margin: 5.0     # RSI 다이버전스 최소 격차(pt)
+        rollover_peak_min: 50.0 # 이격 정점 과열 인정(%)
+        rollover_ratio: 0.55    # 정점 대비 후퇴 시 '꺾임'
+      min_trade_value: 50000000  # $50M 이상 (달러 거래대금 = close×volume)
+    opinion: "추세추종 (C·미국) · 손절=60일선 2일이탈"
+
+  # ── A. 수렴 후 대세상승 시작 (추세 초입) ────────────────────────────────
+  # 한국 A전략과 동일 로직. 박스권 횡보(이평 수렴) 깨고 상승전환 — C(이미 오른
+  # 추세주)와 다른 '초입'을 포착. ma120 사용(155봉 확보로 충족).
+  - name: "A. 수렴 후 대세상승 시작"
+    enabled: true
+    description: "이평선 수렴(박스권) 깨고 상승전환 (수렴 + 종가 이평선 위 + 120선 위)"
+    conditions:
+      convergence_breakout:
+        conv_max: 6.0              # 단기이평(5/10/20) 수렴 이격 상한 %
+        gap120_min: 2.0            # 종가>120선 최소 이격 %
+        strict_align: false        # false=종가 이평선 위(상승전환)
+        require_new_high: false    # 바닥탈출 대박 보존 위해 off
+        require_ma120_rising: false
+        reject_macd_falling: true  # MACD 하락중 제외(약한필수)
+        enable_vol_breakout: false
+      min_trade_value: 50000000    # $50M 이상
+    opinion: "대세상승 진입 (A·미국) · 청산=20선/MACD/일목"
+
+  # ── B. 주도주 20일선 눌림목 (가격급등 후 눌림) ───────────────────────────
+  # 한국 B전략과 동일 로직. 급등(10일 +15%) 후 20일선 위 5일선 눌림. 파라미터는
+  # 한국 기준 1차 적용 — P3 백테스트로 미국 변동성 재튜닝 예정.
+  - name: "B. 주도주 20일선 눌림목"
+    enabled: true
+    description: "가격 급등(10일+15%) 후 20일선 위에서 5일선 눌림 중인 주도주"
+    conditions:
+      ma20_pullback:
+        ma_period: 20
+        surge_lookback: 10
+        surge_pct: 15.0           # ※ 한국 기준 — 미국 변동성 재튜닝 대상
+        max_gap: 0.45
+        require_below_ma5: true
+        min_pullback_pct: 2.0
+        require_ma20_rising: true
+        require_new_high: true
+        new_high_lookback: 60
+      min_trade_value: 50000000
+    opinion: "20일선 눌림목 (B·미국) · 손절=2일연속 20일선 이탈"
+
+  # ── D. 추세 반전 (일목 구름 상향 돌파) ───────────────────────────────────
+  # 한국 D전략과 동일 로직. 하락하던 종목이 일목 구름 상향돌파 + 단기정배열 회복 + MACD 양전환.
+  - name: "D. 추세 반전"
+    enabled: true
+    description: "하락하던 종목이 일목 구름 상향 돌파 + 단기정배열 회복 + MACD 양전환 (추세반전 초입)"
+    conditions:
+      downtrend_reversal:
+        downtrend_lookback: 20
+        use_ichimoku: true
+        cloud_shift: 26
+      min_trade_value: 50000000
+    opinion: "추세 반전 (D·미국) · 손절=60일선 2일이탈"
+
+# 공통 필터 (모든 전략에 추가 적용)
+global_filters:
+  min_price: 5             # $5 미만 페니주 제외
+  exclude_etf: true        # ETF/ETN 제외 (S&P500엔 거의 없으나 안전장치)
