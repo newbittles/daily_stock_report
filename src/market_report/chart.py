@@ -148,73 +148,120 @@ def render_chart(ticker: str, name: str, date: str | None = None) -> Path | None
     return _render_df(df, ticker, name, date)
 
 
+def _candidate_signal_dates(df: "pd.DataFrame", max_bars: int = 45) -> list[str]:
+    """표시 구간(최근 max_bars봉)에서 screener 전략(A/B/C) 신호 발생일 탐색.
+
+    종가베팅 후보 차트의 '전략' 오버레이용 — pykrx OHLCV를 Candle로 변환해
+    각 봉 시점까지의 캔들로 screen_stock을 롤링 평가, 매칭일을 YYYYMMDD로 반환.
+    실패/전략없음 시 빈 리스트 (마커 미표시).
+    """
+    try:
+        from src.datasource.base import Candle
+        from src.screener.config import load_screener_config
+        from src.screener.engine import screen_stock
+
+        strategies = load_screener_config().enabled_strategies()
+        if not strategies:
+            return []
+
+        candles = [
+            Candle(date=idx.strftime("%Y%m%d"), open=float(r.Open), high=float(r.High),
+                   low=float(r.Low), close=float(r.Close), volume=int(r.Volume))
+            for idx, r in df.iterrows()
+        ]
+        n = len(candles)
+        out: list[str] = []
+        for i in range(max(60, n - max_bars), n):
+            chg = 0.0
+            if i >= 1 and candles[i - 1].close > 0:
+                chg = (candles[i].close - candles[i - 1].close) / candles[i - 1].close * 100
+            if screen_stock(strategies, candles[: i + 1], chg):
+                out.append(candles[i].date)
+        return out
+    except Exception as exc:
+        logger.warning("candidate_signal_failed error=%s", exc)
+        return []
+
+
+def render_candidate_chart(ticker: str, name: str, date: str | None = None) -> Path | None:
+    """종가베팅 후보 전용 차트 — 2달 구간 + 이평 + 전략(screener)신호 마커 + MACD + 거래대금."""
+    df = _fetch_ohlcv(ticker, days=250)
+    if df is None or len(df) < 60:
+        logger.warning("chart_skip_insufficient ticker=%s rows=%s", ticker, len(df) if df is not None else 0)
+        return None
+    signal_dates = _candidate_signal_dates(df)
+    return _render_df(df, ticker, name, date, signal_dates=signal_dates, layout="candidate")
+
+
 def _render_df(
     df: "pd.DataFrame", ticker: str, name: str, date: str | None = None,
     signal_dates: list[str] | None = None, buy_dates: list[str] | None = None,
-    out_suffix: str = "",
+    out_suffix: str = "", layout: str = "full",
 ) -> Path | None:
     """DataFrame으로 실제 차트 렌더링.
 
     signal_dates: B 신호 발생일 (YYYYMMDD) → 초록 ▲ 마커
     buy_dates: 사용자 실제 매수일 → 노랑 ★ 마커 (비교용)
+    layout:
+      - "full"     : 캔들+MA+BB+일목 / MACD / RSI / CCI (분석·백테스트용, 150봉)
+      - "candidate": 캔들+MA+전략마커 / MACD / 거래대금 (종가베팅 후보용, 2달≈45봉)
     """
+    candidate = layout == "candidate"
 
-    # ── 지표 계산 ──────────────────────────────────────────────────────────
-    # MA
-    ma_series = {m["period"]: df["Close"].rolling(m["period"]).mean() for m in MA_STYLE}
-
-    # 볼린저밴드
-    bb = BollingerBands(close=df["Close"], window=20, window_dev=2)
-    bb_high = bb.bollinger_hband()
-    bb_low = bb.bollinger_lband()
-    bb_mid = bb.bollinger_mavg()
-
-    # 일목구름
-    tenkan, kijun, span_a, span_b, _chikou = _ichimoku(df)
-
-    # 보조 지표
-    macd_ind = MACD(close=df["Close"], window_slow=26, window_fast=12, window_sign=9)
-    macd_line = macd_ind.macd()
-    macd_sig = macd_ind.macd_signal()
-    macd_hist = macd_ind.macd_diff()
-
-    rsi = RSIIndicator(close=df["Close"], window=14).rsi()
-    cci = CCIIndicator(high=df["High"], low=df["Low"], close=df["Close"], window=20).cci()
-
-    # ── addplot 구성 ──────────────────────────────────────────────────────
-    # 최근 120일만 표시
-    show_len = min(150, len(df))
+    # ── 표시 구간 ──────────────────────────────────────────────────────────
+    show_len = min(45 if candidate else 150, len(df))
     df_show = df.tail(show_len)
 
     def _last(series: pd.Series) -> pd.Series:
         return series.tail(show_len)
 
+    # ── 지표 계산 (공통: MA·MACD) ─────────────────────────────────────────
+    ma_series = {m["period"]: df["Close"].rolling(m["period"]).mean() for m in MA_STYLE}
+    macd_ind = MACD(close=df["Close"], window_slow=26, window_fast=12, window_sign=9)
+    macd_line = macd_ind.macd()
+    macd_sig = macd_ind.macd_signal()
+    macd_hist = macd_ind.macd_diff()
+
     ap = []
-    # MA 5개
-    for m in MA_STYLE:
+    # MA — candidate는 2달 구간이라 단기선(5/10/20) 위주로, 장기선(60/120)은 생략해 가독성↑
+    ma_styles = [m for m in MA_STYLE if m["period"] <= 20] if candidate else MA_STYLE
+    for m in ma_styles:
         ap.append(mpf.make_addplot(
             _last(ma_series[m["period"]]),
             color=m["color"], width=m["width"], panel=0,
         ))
-    # 볼린저밴드 (회색 점선)
-    ap.append(mpf.make_addplot(_last(bb_high), color="#888888", width=0.8, linestyle="--", panel=0))
-    ap.append(mpf.make_addplot(_last(bb_low), color="#888888", width=0.8, linestyle="--", panel=0))
 
-    # 일목구름 선들 (얇게)
-    ap.append(mpf.make_addplot(_last(tenkan), color="#FFA500", width=0.7, panel=0))
-    ap.append(mpf.make_addplot(_last(kijun), color="#1E90FF", width=0.7, panel=0))
-    ap.append(mpf.make_addplot(_last(span_a), color="#2ECC7180", width=0.5, panel=0))
-    ap.append(mpf.make_addplot(_last(span_b), color="#E74C3C80", width=0.5, panel=0))
+    if not candidate:
+        # 볼린저밴드 + 일목구름 (full 전용)
+        bb = BollingerBands(close=df["Close"], window=20, window_dev=2)
+        bb_high, bb_low = bb.bollinger_hband(), bb.bollinger_lband()
+        tenkan, kijun, span_a, span_b, _chikou = _ichimoku(df)
+        ap.append(mpf.make_addplot(_last(bb_high), color="#888888", width=0.8, linestyle="--", panel=0))
+        ap.append(mpf.make_addplot(_last(bb_low), color="#888888", width=0.8, linestyle="--", panel=0))
+        ap.append(mpf.make_addplot(_last(tenkan), color="#FFA500", width=0.7, panel=0))
+        ap.append(mpf.make_addplot(_last(kijun), color="#1E90FF", width=0.7, panel=0))
+        ap.append(mpf.make_addplot(_last(span_a), color="#2ECC7180", width=0.5, panel=0))
+        ap.append(mpf.make_addplot(_last(span_b), color="#E74C3C80", width=0.5, panel=0))
 
-    # 보조 지표 panel
+    # MACD panel (panel 1, 공통)
     ap.append(mpf.make_addplot(_last(macd_line), color="#60a5fa", panel=1, ylabel="MACD"))
     ap.append(mpf.make_addplot(_last(macd_sig), color="#fbbf24", panel=1))
-    ap.append(mpf.make_addplot(
-        _last(macd_hist),
-        type="bar", color="#94a3b855", panel=1,
-    ))
-    ap.append(mpf.make_addplot(_last(rsi), color="#a78bfa", panel=2, ylabel="RSI", ylim=(0, 100)))
-    ap.append(mpf.make_addplot(_last(cci), color="#34d399", panel=3, ylabel="CCI"))
+    ap.append(mpf.make_addplot(_last(macd_hist), type="bar", color="#94a3b855", panel=1))
+
+    if candidate:
+        # 거래대금 panel (panel 2) — 종가×거래량, 양봉 빨강/음봉 파랑 바
+        tv = (df["Close"] * df["Volume"]).astype(float)
+        up_day = df["Close"] >= df["Open"]
+        tv_up = _last(tv.where(up_day))
+        tv_dn = _last(tv.where(~up_day))
+        ap.append(mpf.make_addplot(tv_up, type="bar", color="#ff6b6b", panel=2, ylabel="거래대금"))
+        ap.append(mpf.make_addplot(tv_dn, type="bar", color="#5b9bd5", panel=2))
+    else:
+        # RSI / CCI (full 전용)
+        rsi = RSIIndicator(close=df["Close"], window=14).rsi()
+        cci = CCIIndicator(high=df["High"], low=df["Low"], close=df["Close"], window=20).cci()
+        ap.append(mpf.make_addplot(_last(rsi), color="#a78bfa", panel=2, ylabel="RSI", ylim=(0, 100)))
+        ap.append(mpf.make_addplot(_last(cci), color="#34d399", panel=3, ylabel="CCI"))
 
     # ── 신호/매수일 마커 ──────────────────────────────────────────────────
     def _marker_series(dates: list[str] | None, offset: float):
@@ -246,13 +293,15 @@ def _render_df(
     date_str = date or datetime.now().strftime("%Y-%m-%d")
     out_path = CHARTS_DIR / f"{date_str}-{ticker}{out_suffix}.png"
 
+    panel_ratios = (4, 1.3, 1.6) if candidate else (5, 1.5, 1.5, 1.5)
+    figsize = (8, 6.5) if candidate else (8, 9)
     fig, axes = mpf.plot(
         df_show,
         type="candle",
         style=STYLE,
         addplot=ap,
-        panel_ratios=(5, 1.5, 1.5, 1.5),
-        figsize=(8, 9),
+        panel_ratios=panel_ratios,
+        figsize=figsize,
         title=f"\n{name} ({ticker})",
         tight_layout=True,
         returnfig=True,
@@ -260,33 +309,33 @@ def _render_df(
         warn_too_much_data=300,
     )
 
-    # 일목구름 채움 (span_a/span_b 사이) — NaN 구간 방어
-    ax_main = axes[0]
-    sa = _last(span_a).values
-    sb = _last(span_b).values
-    valid = ~(np.isnan(sa) | np.isnan(sb))
-    if valid.any():
-        x = np.arange(len(df_show))
-        ax_main.fill_between(
-            x, sa, sb,
-            where=valid & (sa >= sb), color="#2ECC7110", interpolate=True,
-        )
-        ax_main.fill_between(
-            x, sa, sb,
-            where=valid & (sa < sb), color="#E74C3C10", interpolate=True,
-        )
+    if candidate:
+        # 거래대금 y축 억 단위 포맷 (panel 2 primary axis = axes[4])
+        from matplotlib.ticker import FuncFormatter
+        axes[4].yaxis.set_major_formatter(
+            FuncFormatter(lambda v, _p: f"{v / 1e8:,.0f}억" if v >= 1e8 else f"{v / 1e4:,.0f}만"))
+    else:
+        # 일목구름 채움 (span_a/span_b 사이) — NaN 구간 방어
+        ax_main = axes[0]
+        sa = _last(span_a).values
+        sb = _last(span_b).values
+        valid = ~(np.isnan(sa) | np.isnan(sb))
+        if valid.any():
+            x = np.arange(len(df_show))
+            ax_main.fill_between(x, sa, sb, where=valid & (sa >= sb), color="#2ECC7110", interpolate=True)
+            ax_main.fill_between(x, sa, sb, where=valid & (sa < sb), color="#E74C3C10", interpolate=True)
 
-    # RSI 30/70 가이드라인
-    axes[4].axhline(30, color="#94a3b8", linewidth=0.5, linestyle=":")
-    axes[4].axhline(70, color="#94a3b8", linewidth=0.5, linestyle=":")
-    # CCI ±100 가이드라인
-    axes[6].axhline(100, color="#94a3b8", linewidth=0.5, linestyle=":")
-    axes[6].axhline(-100, color="#94a3b8", linewidth=0.5, linestyle=":")
+        # RSI 30/70 가이드라인
+        axes[4].axhline(30, color="#94a3b8", linewidth=0.5, linestyle=":")
+        axes[4].axhline(70, color="#94a3b8", linewidth=0.5, linestyle=":")
+        # CCI ±100 가이드라인
+        axes[6].axhline(100, color="#94a3b8", linewidth=0.5, linestyle=":")
+        axes[6].axhline(-100, color="#94a3b8", linewidth=0.5, linestyle=":")
 
     fig.savefig(out_path, dpi=110, bbox_inches="tight", facecolor="#0f172a")
     plt.close(fig)
 
-    logger.info("chart_rendered ticker=%s path=%s", ticker, out_path)
+    logger.info("chart_rendered ticker=%s path=%s layout=%s", ticker, out_path, layout)
     return out_path
 
 

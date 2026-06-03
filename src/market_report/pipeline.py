@@ -8,6 +8,7 @@ from __future__ import annotations
 import asyncio
 import logging
 from datetime import datetime
+from typing import Any
 
 from src.market_report.analyzer import analyze
 from src.market_report.models import MarketSnapshot, ReportMode
@@ -133,6 +134,7 @@ async def generate_report(mode: ReportMode) -> MarketSnapshot:
 
     # 추천 종목별 차트 생성 (마감 전만 — 마감 후는 watchpoints만)
     if snap.mode == "pre_close" and snap.candidate_picks:
+        _inject_candidate_quotes(snap)  # 현재가·등락률 + 관련주 등락률 보정
         await _render_pick_charts(snap)
 
     return snap
@@ -190,10 +192,13 @@ async def _render_pick_charts(snap: MarketSnapshot) -> None:
 
 
 def _render_chart_safe(ticker: str, name: str, date: str) -> str | None:
-    """차트 생성 실패해도 예외 안 던지게 wrap. 성공 시 상대 URL 반환."""
-    from src.market_report.chart import chart_url_rel, render_chart
+    """후보 차트 생성 실패해도 예외 안 던지게 wrap. 성공 시 상대 URL 반환.
+
+    종가베팅 후보는 candidate 레이아웃(2달·전략마커·MACD·거래대금) 사용.
+    """
+    from src.market_report.chart import chart_url_rel, render_candidate_chart
     try:
-        path = render_chart(ticker, name, date)
+        path = render_candidate_chart(ticker, name, date)
         if path is None:
             return None
         return chart_url_rel(ticker, date)
@@ -248,6 +253,43 @@ def _inject_marcap(snap: MarketSnapshot) -> None:
             snap.screen_picks.sort(key=lambda p: -(p.get("marcap") or 0))
     except Exception as exc:
         logger.warning("marcap_inject_failed error=%s", exc)
+
+
+def _norm_name(name: str) -> str:
+    """종목명 매칭용 정규화 — 공백 제거 + 소문자."""
+    return str(name or "").replace(" ", "").strip().lower()
+
+
+def _inject_candidate_quotes(snap: MarketSnapshot) -> None:
+    """종가베팅 후보(candidate_picks)에 현재가·등락률 주입 + 관련주(theme_peers) 등락률 보정.
+
+    AI는 ticker/name만 정확히 내고 시세는 빠지거나(현재가 없음) 관련주 등락률을 0/오값으로
+    내는 경우가 잦다. 14:50 스냅샷의 거래량·상승·하락 상위 종목은 실제 price/change_pct를
+    가지므로 ticker(후보 본체)·name(관련주) 기준으로 매칭해 실데이터로 덮어쓴다.
+    """
+    try:
+        by_ticker: dict[str, Any] = {}
+        by_name: dict[str, Any] = {}
+        for lst in (snap.top_volume, snap.top_gainers, snap.top_losers):
+            for s in (lst or []):
+                by_ticker.setdefault(str(s.ticker).strip(), s)
+                by_name.setdefault(_norm_name(s.name), s)
+
+        for p in (snap.candidate_picks or []):
+            tk = str(p.get("ticker", "")).strip()
+            hit = by_ticker.get(tk) or by_name.get(_norm_name(p.get("name", "")))
+            if hit is not None:
+                p["price"] = float(hit.price)
+                p["change_pct"] = float(hit.change_pct)
+
+            # 관련주 등락률 보정: 스냅샷에 있으면 실값으로 교체
+            for peer in p.get("theme_peers", []) or []:
+                ph = by_name.get(_norm_name(peer.get("name", "")))
+                if ph is not None:
+                    peer["change_pct"] = float(ph.change_pct)
+                    peer["matched"] = True
+    except Exception as exc:
+        logger.warning("candidate_quote_inject_failed error=%s", exc)
 
 
 async def run_full(mode: ReportMode, *, do_publish: bool = True, do_telegram: bool = True) -> MarketSnapshot:
