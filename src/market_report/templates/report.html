@@ -708,6 +708,7 @@
             ({{ '+' if h.profit_rate >= 0 else '' }}{{ "{:.1f}".format(h.profit_rate) }}%)
           </span>
           {% if h.endstage %}<span class="down-text">⚠️끝물</span>{% endif %}
+          {% if h.cross_signal == 'PULLBACK' %}<span class="up-text" style="font-size:0.85rem;">🟢5&lt;10 단기눌림(홀드)</span>{% elif h.cross_signal == 'CORRECTION' %}<span class="down-text" style="font-size:0.85rem;">⚠️5&lt;10 조정시작(익절검토)</span>{% endif %}
           <div class="theme-reason">{{ h.reason }}</div>
         </li>
         {% endfor %}

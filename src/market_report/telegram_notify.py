@@ -8,6 +8,7 @@ import logging
 
 from telegram import Bot
 
+from src.alerts.holdings_report import cross_badge
 from src.config.settings import get_settings
 from src.market_report.models import MarketSnapshot
 from src.market_report.publisher import report_url
@@ -51,8 +52,9 @@ def _format_strategy_holdings(snap: MarketSnapshot) -> list[str]:
         for h in snap.holdings_status:
             em = _STATE_EMOJI.get(h.get("state", "UNKNOWN"), "•")
             sign = "+" if h.get("profit_rate", 0) >= 0 else ""
+            badge = cross_badge(h.get("cross_signal"))
             lines.append(f"  {em} {_naver_link(h['name'], h['ticker'])} "
-                         f"({sign}{h.get('profit_rate', 0):.1f}%) — {h['reason']}")
+                         f"({sign}{h.get('profit_rate', 0):.1f}%){badge} — {h['reason']}")
         lines.append("")
     return lines
 

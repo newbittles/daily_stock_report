@@ -12,11 +12,23 @@ import asyncio
 import logging
 import random
 
-from src.patterns.core import diagnose_holding
+from src.patterns.core import diagnose_holding, ma_cross_signal
 
 logger = logging.getLogger(__name__)
 
 _DISCLAIMER = "※ 참고용 알림입니다. 매매 판단·책임은 본인에게 있습니다."
+
+
+def cross_badge(cross_signal: str | None) -> str:
+    """cross_signal → 텔레그램 배지 텍스트(앞 공백 포함). 없으면 빈 문자열.
+
+    PULLBACK=🟢단기눌림(추세 위, 홀드) / CORRECTION=⚠️조정시작(익절 검토).
+    """
+    if cross_signal == "PULLBACK":
+        return " 🟢단기눌림"
+    if cross_signal == "CORRECTION":
+        return " ⚠️조정시작"
+    return ""
 
 # 상태 코드 → (정렬 우선순위, 그룹 제목, 라인 머리표)
 _STATE_META = {
@@ -56,6 +68,9 @@ async def diagnose_holdings(adapter, holdings: list[dict] | None = None) -> list
 
         r = diagnose_holding(candles)
         state = str(r.metrics.get("state", "UNKNOWN"))
+        # 5·10 단기 데드 + 20일이격 → 단기눌림(🟢 홀드)/조정시작(⚠️ 익절검토) 보조신호 (domain SSOT)
+        # 보유 대세주 홀드/익절 판단용 — 손절 state(STOP/BREAKDOWN)와 별개의 추세 보조 배지
+        cross = ma_cross_signal([c.close for c in candles])
         price = h.get("current_price") or candles[-1].close
         avg = h.get("avg_price")
         profit = h.get("profit_rate")
@@ -76,6 +91,7 @@ async def diagnose_holdings(adapter, holdings: list[dict] | None = None) -> list
             "gap20_pct": r.metrics.get("gap20_pct"),
             "gap60_pct": r.metrics.get("gap60_pct"),
             "endstage": bool(r.metrics.get("endstage")),
+            "cross_signal": cross,  # PULLBACK(🟢 단기눌림·홀드)/CORRECTION(⚠️ 조정시작·익절)/None
         })
     return results
 
@@ -96,8 +112,9 @@ def format_holdings_report(rows: list[dict]) -> str:
             lines.append(f"*{meta[1]}*")
         sign = "+" if r["profit_rate"] >= 0 else ""
         warn = " ⚠️끝물" if r["endstage"] else ""
+        badge = cross_badge(r.get("cross_signal"))
         lines.append(f"{meta[2]} *{r['name']}* `{r['ticker']}` {r['price']:,.0f}원 "
-                     f"({sign}{r['profit_rate']:.1f}%){warn}")
+                     f"({sign}{r['profit_rate']:.1f}%){warn}{badge}")
         # 평단/수량/평가손익 (수동 보유종목 등 제공 시)
         if r.get("avg_price") and r.get("quantity"):
             pl = r.get("eval_pl")
