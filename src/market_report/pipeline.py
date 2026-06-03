@@ -364,6 +364,56 @@ def _inject_candidate_quotes(snap: MarketSnapshot) -> None:
         logger.warning("candidate_quote_inject_failed error=%s", exc)
 
 
+async def _collect_us_screening(snap: MarketSnapshot) -> None:
+    """미국 종목 A/B/C/D 스크리닝 → snap.us_top3 / snap.us_screen_groups.
+
+    us_morning 리포트의 종목 정보를 한국이 아닌 '미국 종목'으로 채운다.
+    기존 us_screening 모듈(run_us_screening, S&P500 A/B/C/D)을 그대로 재사용.
+    실패 시 빈 채로 두어 리포트 자체는 발송되게 한다(best-effort).
+    """
+    from src.screener.us_pipeline import run_us_screening
+    from src.screener.us_report import STRATEGY_ORDER, _reason_for, _turnover
+
+    picks = await run_us_screening()
+    if not picks:
+        logger.info("us_screening_no_picks")
+        return
+
+    def _to_dict(p, initial: str = "") -> dict:
+        return {
+            "symbol": p.symbol, "name": p.name, "price": round(p.price, 2),
+            "change_pct": round(p.change_pct, 2), "sector": p.sector or "",
+            "industry": p.industry or "",
+            "reason": _reason_for(p, initial) if initial else (p.all_reasons[0] if p.all_reasons else ""),
+            "cross_signal": p.cross_signal,
+        }
+
+    # 전략별 그룹 (C·B·A·D 백테스트 우위순) — 각 그룹 거래대금 상위 5
+    groups: list[dict] = []
+    for initial, label in STRATEGY_ORDER:
+        grp = [p for p in picks if any(m.strategy_name[:1] == initial for m in p.matches)]
+        if not grp:
+            continue
+        grp.sort(key=_turnover, reverse=True)
+        groups.append({"label": label, "initial": initial,
+                       "picks": [_to_dict(p, initial) for p in grp[:5]]})
+    snap.us_screen_groups = groups
+
+    # 미국 Top3 — 전체 매칭 종목 중 거래대금 상위 3 (심볼 중복 제거)
+    seen: set[str] = set()
+    top: list = []
+    for p in sorted(picks, key=_turnover, reverse=True):
+        if p.symbol in seen:
+            continue
+        seen.add(p.symbol)
+        top.append(p)
+        if len(top) >= 3:
+            break
+    snap.us_top3 = [_to_dict(p) for p in top]
+    logger.info("us_screening_collected picks=%d top3=%s",
+                len(picks), [p["symbol"] for p in snap.us_top3])
+
+
 async def run_full(
     mode: ReportMode, *, do_publish: bool = True, do_telegram: bool = True, force: bool = False
 ) -> MarketSnapshot:
@@ -410,54 +460,14 @@ async def run_full(
                 return snap
         except Exception as exc:
             logger.warning("us_freshness_check_failed error=%s", exc)
+        # 미국 종목 스크리닝 (A/B/C/D) — 종목 정보를 '미국 종목'으로 채움.
+        # 한국 시초 Top3(구 동작)는 폐기: us_morning 리포트의 종목/Top3/강세테마는 미국만.
+        # 한국장 연결성은 analyze()의 theme_commentary(한국장 시사점)로 유지.
         try:
-            from src.config.settings import get_settings
-            from src.datasource.kis.adapter import KisAdapter
-            from src.market_report.strategy_section import collect_screen_picks
-            from src.market_report.theme_bridge import strong_kr_keywords
-            from src.market_report.top3 import select_top3
-            s = get_settings()
-            adapter = KisAdapter(s.kis_app_key, s.kis_app_secret, s.kis_account_no, s.kis_env)
-            snap.screen_picks = await collect_screen_picks(adapter, drop_today=True)  # 장전 미완성봉 제외
-            # 종목 테마 채우기 (judal → 세분업종 폴백) — 미국 강세테마 매칭에 필요
-            try:
-                from src.market_report.scrapers.judal import _is_nontheme, build_judal_theme_map
-                jmap = await build_judal_theme_map(max_themes=200)
-            except Exception:
-                jmap, _is_nontheme = {}, (lambda _n: False)
-            for p in snap.screen_picks:
-                jv = jmap.get(p["ticker"])
-                if jv and jv.get("theme") and not _is_nontheme(jv["theme"]):
-                    p["theme"], p["theme_kind"], p["theme_idx"] = jv["theme"], "theme", jv.get("idx", "")
-            try:
-                from src.market_report.scrapers.sector import get_stock_sectors
-                need = [p["ticker"] for p in snap.screen_picks if not p.get("theme")]
-                if need:
-                    secs = await get_stock_sectors(need)
-                    for p in snap.screen_picks:
-                        if not p.get("theme") and secs.get(p["ticker"]):
-                            p["theme"], p["theme_kind"] = secs[p["ticker"]], "sector"
-            except Exception as exc:
-                logger.warning("us_sector_fallback_failed error=%s", exc)
-            # 시초 Top3 — P4 + 미국 강세테마 연동 가중(w_us) + ATR 손절
-            _ranked = _rank_leading_themes((snap.top_gainers or []) + (snap.top_volume or []),
-                                           snap.screen_picks, jmap, _is_nontheme)
-            snap.leading_themes = _ranked[:6]
-            _set_leading_theme(snap.screen_picks, {_norm_name(t) for t in snap.leading_themes})  # 주도테마 여부
-            strong_kw = strong_kr_keywords(snap.us_sectors)
-            fb = {x["ticker"] for x in await adapter.get_investor_net_buy("foreign", "buy")}
-            ib = {x["ticker"] for x in await adapter.get_investor_net_buy("inst", "buy")}
-            snap.top3 = select_top3(snap.screen_picks, foreign_buy=fb, inst_buy=ib,
-                                    us_keywords=strong_kw, w_us=2.0, us_sectors=snap.us_sectors)
-            await _inject_supply_streak(snap, adapter)  # 연속 순매수일
-            from src.market_report.analyzer import summarize_stocks
-            await summarize_stocks(snap)
-            logger.info("us_morning_top3 top3=%s us_kw=%d",
-                        [t["name"] for t in snap.top3], len(strong_kw))
+            await _collect_us_screening(snap)
         except Exception as exc:
-            logger.warning("us_morning_strategy_failed error=%s", exc)
+            logger.warning("us_morning_screening_failed error=%s", exc)
 
-        _inject_marcap(snap)
         try:
             render_report(snap)
         except Exception as exc:

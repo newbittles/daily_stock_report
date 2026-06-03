@@ -20,6 +20,9 @@ logger = logging.getLogger(__name__)
 _STATE_EMOJI = {"BREAKDOWN": "🔴", "STOP60": "🔴", "STOP20": "⚠️", "ADD": "🟢",
                 "HOLD": "✅", "NEUTRAL": "➖", "UNKNOWN": "❔"}
 
+# 미국 종목 cross_signal 배지 (앞 공백 포함)
+_US_CROSS = {"PULLBACK": " 🟢단기눌림", "CORRECTION": " ⚠️조정시작"}
+
 
 def _naver_link(name: str, ticker: str) -> str:
     """텔레그램 Markdown 종목 링크 → 네이버 금융 개별 페이지."""
@@ -243,25 +246,37 @@ def _format_us_morning_summary(snap: MarketSnapshot) -> str:
         lines.append(f"🌏 *한국장 시사점*\n{snap.theme_commentary}")
         lines.append("")
 
-    # 미국 강세테마 연동 한국 시초 매수 Top3
-    if getattr(snap, "top3", None):
-        lines.append("🏆 *오늘 시초 매수 Top 3* (미국 강세테마 연동)")
-        for i, t in enumerate(snap.top3, 1):
+    # 미국 추천 Top3 (미국 종목 — 한국 종목 아님)
+    if getattr(snap, "us_top3", None):
+        lines.append("🏆 *미국 추천 Top 3*")
+        for i, t in enumerate(snap.us_top3, 1):
             sign = "+" if t.get("change_pct", 0) >= 0 else ""
-            mc = f" · 시총 {t['marcap_str']}" if t.get("marcap_str") else ""
-            lines.append(f"{i}. {_naver_link(t['name'], t['ticker'])} "
-                         f"{t['price']:,.0f}원 ({sign}{t.get('change_pct', 0):.1f}%){mc}")
-            lines.append(f"   └ {t['reason']}")
-            if t.get("supply_str"):
-                lines.append(f"   💰 {t['supply_str']}")
-            g = t.get("gap20", 0)
-            lines.append(f"   📊 20일선 {'+' if g >= 0 else ''}{g:.1f}%"
-                         + (" 🔥과열" if t.get("overheat") else ""))
+            badge = _US_CROSS.get(t.get("cross_signal"), "")
+            sec = f" · {t['sector']}" if t.get("sector") else ""
+            lines.append(f"{i}. *{t['name']}* `{t['symbol']}` "
+                         f"${t['price']:,.2f} ({sign}{t.get('change_pct', 0):.1f}%){badge}{sec}")
+            if t.get("reason"):
+                lines.append(f"   └ {t['reason']}")
+        lines.append("")
+
+    # 미국 종목 스크리닝 A/B/C/D (전략별)
+    if getattr(snap, "us_screen_groups", None):
+        lines.append("🇺🇸 *미국 종목 스크리닝* (A/B/C/D)")
+        for g in snap.us_screen_groups:
+            picks = g.get("picks", [])
+            if not picks:
+                continue
+            lines.append(f"*{g.get('label', '')}*")
+            for p in picks[:5]:
+                sign = "+" if p.get("change_pct", 0) >= 0 else ""
+                badge = _US_CROSS.get(p.get("cross_signal"), "")
+                lines.append(f"  • `{p['symbol']}` {p['name'][:20]} "
+                             f"${p['price']:,.2f} {sign}{p.get('change_pct', 0):.1f}%{badge}")
         lines.append("")
 
     lines.append(f"📄 [전체 리포트 보기]({url})")
     lines.append("")
-    lines.append("_※ 시초 매수는 갭·변동성 위험이 큽니다. 참고용 정보, 판단·책임은 본인._")
+    lines.append("_※ 미국 A/B/C/D는 참고용 시그널(백테스트 엣지 약함). 매수 추천 아님, 판단·책임은 본인._")
     return "\n".join(lines)
 
 

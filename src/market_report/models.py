@@ -106,6 +106,9 @@ class MarketSnapshot:
     us_indices: list[dict] = field(default_factory=list)   # {symbol, name, price, change_pct}
     us_bigtech: list[dict] = field(default_factory=list)   # 빅테크/주요종목 등락
     us_sectors: list[dict] = field(default_factory=list)   # 강세 섹터/테마 ETF
+    # 미국 종목 스크리닝 (us_morning — A/B/C/D 미국 종목. 한국 top3/screen_picks와 분리)
+    us_top3: list[dict] = field(default_factory=list)         # {symbol, name, price, change_pct, sector, reason, cross_signal}
+    us_screen_groups: list[dict] = field(default_factory=list)  # [{label, initial, picks:[...]}] 전략별(C/B/A/D)
 
     # AI 분석 결과 (analyzer가 채움)
     summary: str = ""           # 시장 한줄 요약

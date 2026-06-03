@@ -461,6 +461,50 @@
       {% endif %}
     </section>
     {% endif %}
+
+    {# 🇺🇸 미국 추천 Top3 (us_morning — 미국 종목) #}
+    {% if snap.us_top3 %}
+    <section class="top3-sec">
+      <h2><span class="icon">🏆</span>미국 추천 Top 3</h2>
+      {% for t in snap.us_top3 %}
+      <div class="top3-card">
+        <div class="top3-head">
+          <span class="top3-rank">{{ loop.index }}</span>
+          <a href="https://finance.yahoo.com/quote/{{ t.symbol }}" target="_blank" rel="noopener">{{ t.name }}</a>
+          <span class="pick-ticker">{{ t.symbol }}</span>
+          <span class="px">${{ "{:,.2f}".format(t.price) }}</span>
+          <span class="{{ 'up-text' if t.change_pct >= 0 else 'down-text' }}">{{ '+' if t.change_pct >= 0 else '' }}{{ "{:.2f}".format(t.change_pct) }}%</span>
+          {% if t.cross_signal == 'PULLBACK' %}<span class="up-text" style="font-size:0.8rem;">🟢단기눌림</span>{% elif t.cross_signal == 'CORRECTION' %}<span class="down-text" style="font-size:0.8rem;">⚠️조정시작</span>{% endif %}
+        </div>
+        {% if t.sector %}<div class="top3-reason">섹터: {{ t.sector }}</div>{% endif %}
+        {% if t.reason %}<div class="top3-reason">{{ t.reason }}</div>{% endif %}
+      </div>
+      {% endfor %}
+    </section>
+    {% endif %}
+
+    {# 🇺🇸 미국 종목 스크리닝 A/B/C/D #}
+    {% if snap.us_screen_groups %}
+    <section>
+      <h2><span class="icon">🇺🇸</span>미국 종목 스크리닝 (A/B/C/D)</h2>
+      {% for g in snap.us_screen_groups %}
+      <h3 style="margin-top:0.8rem;">{{ g.label }}</h3>
+      <ul class="watch-list">
+        {% for p in g.picks %}
+        <li>
+          <a href="https://finance.yahoo.com/quote/{{ p.symbol }}" target="_blank" rel="noopener"><strong>{{ p.name }}</strong></a>
+          <span class="pick-ticker">{{ p.symbol }}</span> · ${{ "{:,.2f}".format(p.price) }}
+          <span class="{{ 'up-text' if p.change_pct >= 0 else 'down-text' }}">{{ '+' if p.change_pct >= 0 else '' }}{{ "{:.2f}".format(p.change_pct) }}%</span>
+          {% if p.sector %}<span style="color:var(--text-dim);font-size:0.85rem;">({{ p.sector }})</span>{% endif %}
+          {% if p.cross_signal == 'PULLBACK' %}<span class="up-text" style="font-size:0.8rem;">🟢단기눌림</span>{% elif p.cross_signal == 'CORRECTION' %}<span class="down-text" style="font-size:0.8rem;">⚠️조정시작</span>{% endif %}
+          {% if p.reason %}<div class="theme-reason">{{ p.reason }}</div>{% endif %}
+        </li>
+        {% endfor %}
+      </ul>
+      {% endfor %}
+      <p class="disclaimer" style="font-size:12px;">※ S&amp;P500 대상 A/B/C/D 참고용 시그널. 백테스트상 기계적 엣지는 약하며 매수 추천이 아닙니다. 판단·책임은 본인.</p>
+    </section>
+    {% endif %}
     {% endif %}
 
     {# ★ 오늘의 추천 Top3 (A/B/C/D + 주도주·거래량·수급 종합) #}
