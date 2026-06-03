@@ -90,9 +90,9 @@ run_us_screening(cfg=screener_us.yaml)
 
 ## 7. 단계 (Phase)
 
-1. **P1 (MVP·현재)**: C전략 + S&P500 + FDR 섹터 + yfinance 배치 + 테스트. 동작 검증.
-2. **P2**: 나스닥100(정적 심볼셋)·시총·핫종목 파생 유니버스 + A전략 + OHLCV 캐시.
-3. **P3**: B·D 전략 + 달러/미국 변동성 기준 파라미터 백테스트 튜닝.
+1. **P1 (완료)**: C전략 + S&P500 + FDR 섹터 + yfinance 배치 + 테스트. 동작 검증.
+2. **P2 (완료)**: A전략 추가 + **나스닥 전체 거래대금 2단계 필터** 유니버스(중소형 급등주) + rate limit 청크화. (나스닥100 정적셋 대신 거래대금 상위 채택)
+3. **P3**: B·D 전략 + 달러/미국 변동성 기준 파라미터 백테스트 튜닝 + OHLCV 일별 캐시.
 4. **P4**: 리포트/발송 통합 (UI 담당 작업과 합류 — 별 워크트리 조율).
 
 ---
@@ -101,9 +101,9 @@ run_us_screening(cfg=screener_us.yaml)
 
 | # | 항목 | 비고 |
 |---|------|------|
-| Q1 | 나스닥100 심볼 출처 | 위키피디아 정적 / ETF(QQQ) 구성종목 — P2 |
-| Q2 | 핫종목 정의 | FDR 실시간 순위 없음 → 풀에서 당일 등락·거래대금 파생 |
-| Q3 | OHLCV 캐시 위치 | `data/us_ohlcv_cache/` 일자별 — P2 |
+| Q1 | ~~나스닥100 심볼 출처~~ | **해소(P2):** 나스닥100 대신 나스닥 전체에서 거래대금 상위 추출(중소형 포함이 사용자 의도) |
+| Q2 | ~~핫종목 정의~~ | **해소(P2):** 나스닥 전체 가벼운 시세→당일 거래대금 상위 N(2단계 필터) |
+| Q3 | OHLCV 캐시 위치 | `data/us_ohlcv_cache/` 일자별 — P3 (현재 combined 27s, rate limit 청크화로 운영 가능) |
 | Q4 | 미국 휴장/서머타임 | 발송 통합(P4) 시 가드 |
 | Q5 | 클래스주 심볼 정규화 | FDR `BRKB`·`BFB` → yfinance `BRK-B`·`BF-B` (P1 실측 2종목 실패) — P2 매핑표 |
 | Q6 | 거래대금 달러 표시 | engine 메시지가 원화 '억' 포맷 → 미국 `$42.8B`가 '140억'으로 표기. **필터 비교($50M)는 정확**, 표시만 P4 리포트단에서 달러 변환 |
@@ -116,3 +116,11 @@ run_us_screening(cfg=screener_us.yaml)
 - 포착 종목이 2026 상반기 강세 섹터와 일치: 반도체(MU·AVGO·AMD·AMAT·KLAC·LRCX), 빅테크(AAPL·ORCL·IBM·CSCO), 보안SW(PANW·CRWD)
 - 섹터 분류·근거 수치·면책 모두 정상. yfinance 배치로 부하 문제 해소 확인
 - 테스트 `tests/test_us_screening.py` 12개 통과. engine·indicators·patterns·한국 pipeline **수정 0**
+
+## 10. P2 검증 결과 (2026-06-03 실측)
+
+- **A전략 추가**(`screener_us.yaml`): A·C 동시 동작, 서로 다른 진입점 포착(A 66 / C 63)
+- **유니버스 2단계 필터**: 나스닥 전체 → 거래대금 상위 253종목(후보 2,445, 126s 캐시) → S&P500과 합쳐 combined 754
+- **combined end-to-end**: 154종목 포착(27s) = S&P500 105 + 나스닥 중소형 49. LEGN(+42%)·AEHR(+21%)·ACMR(+12%)·USAR·TENB·CZR 등 S&P500 외 중소형 급등주 포착 확인
+- **rate limit 대응**(전역 §7): turnover·OHLCV batch 모두 청크(350/200)+랜덤딜레이(1.5~3.5s)+백오프(연속 2회 중단). 3,902종목 한방→429 발생을 청크로 회피
+- Industry 한글 분류 정상. 테스트 16개 통과(신규 4). engine·한국 pipeline **수정 0** 유지
