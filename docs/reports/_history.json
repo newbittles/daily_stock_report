@@ -1,5 +1,14 @@
 [
   {
+    "date": "2026-06-04",
+    "time": "00:06",
+    "mode": "us_morning",
+    "url": "reports/2026-06-04-us.html",
+    "summary": "미국 증시는 혼조세를 보이며 하락 마감했습니다. S&P500과 나스닥, 다우 지수는 하락했지만, 필라델피아 반도체 지수는 상승했습니다.",
+    "kospi_pct": null,
+    "kosdaq_pct": null
+  },
+  {
     "date": "2026-06-03",
     "time": "23:55",
     "mode": "post_close",
