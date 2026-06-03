@@ -92,6 +92,7 @@ class MarketSnapshot:
 
     # 수급 (마감 후만 안정적, 마감 전은 누적)
     flows: list[InvestorFlow] = field(default_factory=list)
+    market_flows: list[dict] = field(default_factory=list)  # 시장 수급표: [{market,personal,foreign,institution,date}] 억
 
     # 테마
     top_themes: list[ThemeRank] = field(default_factory=list)

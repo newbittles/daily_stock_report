@@ -215,6 +215,40 @@ async def fetch_top_losers(market: MarketCode = "KOSPI", top: int = 30) -> list[
     return results
 
 
+def _parse_eok(value: str) -> int:
+    """'+63,537' / '-546' → 정수(억). 부호·콤마 처리."""
+    s = str(value or "").replace(",", "").replace("+", "").strip()
+    try:
+        return int(float(s))
+    except ValueError:
+        return 0
+
+
+async def fetch_market_investor_flows() -> list[dict]:
+    """시장(코스피·코스닥) 투자자별 순매수 — 개인/외국인/기관 (억 단위).
+
+    소스: naver 모바일 API m.stock.naver.com/api/index/{KOSPI|KOSDAQ}/trend (JSON, live).
+    데스크탑 investorDealTrendDay는 JS동적이라 정적 파싱 불가 → 모바일 API 사용.
+    반환: [{market, personal, foreign, institution, date}] (순매수 억, +매수/-매도). 실패 시 빈 리스트.
+    """
+    import json
+    out: list[dict] = []
+    for market in ("KOSPI", "KOSDAQ"):
+        try:
+            raw = await fetch(f"https://m.stock.naver.com/api/index/{market}/trend", encoding="utf-8")
+            d = json.loads(raw)
+            out.append({
+                "market": market,
+                "personal": _parse_eok(d.get("personalValue")),
+                "foreign": _parse_eok(d.get("foreignValue")),
+                "institution": _parse_eok(d.get("institutionalValue")),
+                "date": str(d.get("bizdate", "")).strip(),
+            })
+        except Exception as exc:  # noqa: BLE001
+            logger.warning("market_investor_flows_failed market=%s error=%s", market, exc)
+    return out
+
+
 async def fetch_index(market: MarketCode = "KOSPI") -> IndexQuote | None:
     """코스피/코스닥 지수 현재값.
 

@@ -57,6 +57,20 @@ def _format_strategy_holdings(snap: MarketSnapshot) -> list[str]:
     return lines
 
 
+def _format_market_flows(snap: MarketSnapshot) -> list[str]:
+    """투자자 수급 줄 (개인/외국인/기관 순매수, 억). 시장별 1줄."""
+    if not snap.market_flows:
+        return []
+    lines = ["💰 *투자자 수급* (순매수 억)"]
+    for f in snap.market_flows:
+        mk = "코스피" if f.get("market") == "KOSPI" else "코스닥"
+        lines.append(
+            f"  {mk}: 개인 {f.get('personal', 0):+,} · 외인 {f.get('foreign', 0):+,} · 기관 {f.get('institution', 0):+,}"
+        )
+    lines.append("")
+    return lines
+
+
 def _format_pre_summary(snap: MarketSnapshot) -> str:
     """마감 전 텔레그램 요약 메시지 (Markdown)."""
     url = report_url(snap)
@@ -84,6 +98,9 @@ def _format_pre_summary(snap: MarketSnapshot) -> str:
             lines.append("💱 " + "  ·  ".join(mac))
         if idx_parts or mac:
             lines.append("")
+
+    # 투자자 수급 (개인/외국인/기관 순매수, 억)
+    lines.extend(_format_market_flows(snap))
 
     # AI 한줄 요약
     if snap.summary:
@@ -136,6 +153,9 @@ def _format_post_summary(snap: MarketSnapshot) -> str:
             lines.append("💱 " + "  ·  ".join(mac))
         if idx_parts or mac:
             lines.append("")
+
+    # 투자자 수급
+    lines.extend(_format_market_flows(snap))
 
     if snap.summary:
         lines.append(snap.summary)

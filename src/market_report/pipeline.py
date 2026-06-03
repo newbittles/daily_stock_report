@@ -14,6 +14,7 @@ from src.market_report.analyzer import analyze
 from src.market_report.models import MarketSnapshot, ReportMode
 from src.market_report.scrapers.naver import (
     fetch_index,
+    fetch_market_investor_flows,
     fetch_top_gainers,
     fetch_top_losers,
     fetch_top_volume,
@@ -39,6 +40,7 @@ async def collect_snapshot(mode: ReportMode) -> MarketSnapshot:
         fetch_top_themes(top=10),
         fetch_market_news(top=15),
         fetch_macro(),
+        fetch_market_investor_flows(),
         return_exceptions=True,
     )
 
@@ -71,6 +73,7 @@ async def collect_snapshot(mode: ReportMode) -> MarketSnapshot:
     _macro = _safe(7, {}) or {}
     snap.fx = _macro.get("fx")
     snap.wti = _macro.get("wti")
+    snap.market_flows = _safe(8, []) or []
 
     logger.info(
         "snapshot_collected mode=%s kospi=%s themes=%d news=%d",

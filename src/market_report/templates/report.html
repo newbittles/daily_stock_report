@@ -91,6 +91,11 @@
       width: 100%;
     }
     .index-spark img { width: 100%; height: auto; object-fit: contain; border-radius: 4px; cursor: zoom-in; display: block; }
+    .supply-table { width: 100%; border-collapse: collapse; font-size: 0.95rem; }
+    .supply-table th, .supply-table td { padding: 0.5rem 0.4rem; text-align: right; border-bottom: 1px solid var(--border); }
+    .supply-table th { color: var(--text-dim); font-weight: 600; font-size: 0.85rem; }
+    .supply-table th:first-child, .supply-table td.sup-mk { text-align: left; color: var(--text); font-weight: 700; }
+    .supply-table td { font-variant-numeric: tabular-nums; }
     .lead-themes { margin-bottom: 0.75rem; line-height: 1.9; }
     .lead-theme-chip { display: inline-block; background: #f59e0b22; color: #fbbf24; border: 1px solid #f59e0b55;
       border-radius: 999px; padding: 0.15rem 0.6rem; margin: 0.15rem 0.3rem 0.15rem 0; font-size: 0.85rem; font-weight: 600; }
@@ -530,6 +535,27 @@
         </div>
         {% endif %}
       </div>
+    </section>
+    {% endif %}
+
+    {# 1b. 투자자 수급 현황표 (지수 아래) #}
+    {% if snap.market_flows %}
+    <section>
+      <h2><span class="icon">💰</span>투자자 수급 <span style="color:var(--text-dim);font-size:0.8rem;">({{ snap.market_flows[0].date[4:6] }}/{{ snap.market_flows[0].date[6:8] }} 기준 · 순매수 억원)</span></h2>
+      <table class="supply-table">
+        <thead><tr><th>구분</th><th>개인</th><th>외국인</th><th>기관</th></tr></thead>
+        <tbody>
+        {% for f in snap.market_flows %}
+          <tr>
+            <td class="sup-mk">{{ '코스피' if f.market == 'KOSPI' else '코스닥' }}</td>
+            <td class="{{ 'up-text' if f.personal >= 0 else 'down-text' }}">{{ '+' if f.personal >= 0 else '' }}{{ "{:,}".format(f.personal) }}</td>
+            <td class="{{ 'up-text' if f.foreign >= 0 else 'down-text' }}">{{ '+' if f.foreign >= 0 else '' }}{{ "{:,}".format(f.foreign) }}</td>
+            <td class="{{ 'up-text' if f.institution >= 0 else 'down-text' }}">{{ '+' if f.institution >= 0 else '' }}{{ "{:,}".format(f.institution) }}</td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+      <p style="font-size:11px;color:var(--text-dim);margin-top:0.3rem;">+순매수 / −순매도. 외국인·기관 동반 매수 종목이 수급상 유리.</p>
     </section>
     {% endif %}
 
