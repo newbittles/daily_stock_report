@@ -66,7 +66,8 @@ async def test_collect_us_screening_adds_yf_symbol(monkeypatch) -> None:
     snap = MarketSnapshot(mode="us_morning", generated_at=datetime(2026, 6, 4, 7, 30))
     await P._collect_us_screening(snap)
 
-    assert snap.us_top3[0]["symbol"] == "BRKB"          # 표시는 FDR 심볼 유지
+    assert snap.us_top3[0]["symbol"] == "BRKB"          # 티커(FDR)는 그대로 병기
+    assert snap.us_top3[0]["name"] == "버크셔해서웨이"     # 한국어 종목명으로 표기
     assert snap.us_top3[0]["yf_symbol"] == "BRK-B"       # 야후 링크용 정규화
     assert snap.us_screen_groups[0]["picks"][0]["yf_symbol"] == "BRK-B"
     assert "억" not in snap.us_top3[0]["reason"]          # 원화 '억' reason 회피

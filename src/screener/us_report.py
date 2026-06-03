@@ -1,8 +1,13 @@
 """미국 스크리닝 결과 → 리포트 메시지 빌더 + 텔레그램 발송 (P4).
 
+⚠️ DEPRECATED(2026-06-04, 사용자 결정 A): 텍스트 전용 standalone 발송 경로.
+   미국 종목의 정식 리포트(웹 -us.html + 텔레그램 링크)는 **us_morning**(07:30)이
+   담당한다(pipeline._collect_us_screening + report.html 미국 섹션). 본 모듈은 개발
+   미리보기/스모크용으로만 유지(자동 발송 경로 아님). 신규 기능은 us_morning에 추가.
+
 us_screening 전용 **독립 모듈** — 기존 `market_report` 코어(models/pipeline/analyzer)는
 UI 담당 작업 영역이라 건드리지 않고, 텔레그램 발송 경로(settings·Bot·Notifier)만 재사용.
-us_morning(한국 시초 브릿지)과 별개. build는 순수(값→문자열, 테스트 가능), send만 외부.
+build는 순수(값→문자열, 테스트 가능), send만 외부.
 
 design: docs/02-design/features/us-screening.design.md §13 P4
 """
@@ -11,6 +16,7 @@ from __future__ import annotations
 import logging
 from datetime import date
 
+from src.datasource.us.names_ko import korean_name
 from src.screener.us_pipeline import DISCLAIMER, USStockPick
 
 logger = logging.getLogger(__name__)
@@ -84,7 +90,8 @@ def build_us_screening_report(
             sector = (p.sector[:14]) if p.sector else "-"
             badge = CROSS_BADGE.get(p.cross_signal, "")
             turnover = _fmt_usd_turnover(_turnover(p))
-            body.append(f"• `{p.symbol}` {p.name[:20]} ({sector}) "
+            name_ko = korean_name(p.symbol, p.name)  # 한국어(티커) — 아는 종목만 한국어
+            body.append(f"• `{p.symbol}` {name_ko[:20]} ({sector}) "
                         f"${p.price:,.1f} {p.change_pct:+.1f}% · 거래대금 {turnover}{badge}")
             reason = _reason_for(p, initial)
             if reason:

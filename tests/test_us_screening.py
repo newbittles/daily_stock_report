@@ -365,3 +365,25 @@ def test_report_avoids_won_turnover_shows_dollar():
     assert "억" not in text          # 원화 '억' 표기 사라짐
     assert "$" in text               # 달러 거래대금 표기
     assert "대세 정배열" in text      # 통화 무관 reason 채택
+
+
+# ─── 한국어 종목명 (한국어(티커), 모르면 영문 폴백) ────────────────────────────
+from src.datasource.us.names_ko import korean_name  # noqa: E402
+
+
+@pytest.mark.parametrize("sym,fallback,expected", [
+    ("NVDA", "NVIDIA Corp", "엔비디아"),       # 큐레이션 → 한국어
+    ("BRKB", "Berkshire", "버크셔해서웨이"),     # 듀얼클래스도 한국어
+    ("ZZZZ", "Unknown Co", "Unknown Co"),       # 미등록 → 영문 폴백
+    ("ZZZZ", "", "ZZZZ"),                        # 폴백 없으면 심볼
+])
+def test_korean_name(sym, fallback, expected):
+    assert korean_name(sym, fallback) == expected
+
+
+def test_report_uses_korean_name():
+    """리포트에 영문 대신 한국어 종목명이 표기된다(아는 종목)."""
+    p = _pick("NVDA", "NVIDIA Corp", "반도체", "C. 추세추종", "정배열")
+    text = build_us_screening_report([p], top_n=5, as_of="2026-06-03")
+    assert "엔비디아" in text
+    assert "`NVDA`" in text       # 티커는 그대로 병기 (한국어(티커))
