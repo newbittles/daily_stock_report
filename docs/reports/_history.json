@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-06-03",
+    "time": "23:55",
+    "mode": "post_close",
+    "url": "reports/2026-06-03-post.html",
+    "summary": "AI 분석을 일시적으로 사용할 수 없습니다. 아래 데이터를 직접 참고하세요.",
+    "kospi_pct": 0.15,
+    "kosdaq_pct": -2.29
+  },
+  {
+    "date": "2026-06-03",
     "time": "23:50",
     "mode": "pre_close",
     "url": "reports/2026-06-03-pre.html",
