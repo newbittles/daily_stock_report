@@ -478,7 +478,7 @@
         <div class="top3-meta">
           {% if t.ai_summary %}<button type="button" class="ai-btn" onclick="showAI(this)" data-name="{{ t.name }}" data-summary="{{ t.ai_summary|e }}">🤖 AI요약</button>{% endif %}
           {% if t.marcap_str %}<span class="code">시총 {{ t.marcap_str }}</span>{% endif %}
-          <span class="gap-badge {{ 'overheat' if t.overheat else '' }}">20일선 {{ '+' if t.gap20 >= 0 else '' }}{{ "{:.1f}".format(t.gap20) }}%{% if t.overheat %} 🔥과열(BB돌파·거래량{{ "{:.1f}".format(t.vol_x) }}x){% endif %}</span>
+          <span class="gap-badge {{ 'overheat' if t.overheat else '' }}">20일선 {{ '+' if t.gap20 >= 0 else '' }}{{ "{:.1f}".format(t.gap20) }}%{% if t.overheat %} 🔥과열(BB돌파·거래량{{ "{:.1f}".format(t.vol_x) }}x){% endif %}</span>{% if t.cross_signal == 'pullback' %} <span class="up-text" style="font-size:0.8rem;">🟢5&lt;10 단기눌림</span>{% elif t.cross_signal == 'correction' %} <span class="down-text" style="font-size:0.8rem;">⚠️5&lt;10 조정시작</span>{% endif %}
         </div>
         <div class="top3-reason">{{ t.reason }}</div>
         {% if t.supply_str %}<div class="top3-reason" style="color:var(--green);">💰 {{ t.supply_str }}</div>{% endif %}
@@ -671,7 +671,7 @@
               </div>
               {% endif %}
               <div class="theme-reason">{{ p.reason }}</div>
-              <div class="pick-meta" style="color:{{ 'var(--red)' if p.overheat else 'var(--text-dim)' }};">📊 20일선 이격 {{ '+' if p.gap20 >= 0 else '' }}{{ "{:.1f}".format(p.gap20) }}%{% if p.overheat %} 🔥과열(BB돌파·거래량{{ "{:.1f}".format(p.vol_x) }}x){% endif %}</div>
+              <div class="pick-meta" style="color:{{ 'var(--red)' if p.overheat else 'var(--text-dim)' }};">📊 20일선 이격 {{ '+' if p.gap20 >= 0 else '' }}{{ "{:.1f}".format(p.gap20) }}%{% if p.overheat %} 🔥과열(BB돌파·거래량{{ "{:.1f}".format(p.vol_x) }}x){% endif %}{% if p.cross_signal == 'pullback' %} <span class="up-text">· 🟢5&lt;10 단기눌림(20선이격↑)</span>{% elif p.cross_signal == 'correction' %} <span class="down-text">· ⚠️5&lt;10 조정시작(20선근접)</span>{% endif %}</div>
               <div class="pick-meta">
                 {{ '업종' if p.theme_kind == 'sector' else '테마' }}:
                 {% if p.theme and p.theme_kind == 'theme' and p.theme_idx %}<a href="https://judal.co.kr/?view=stockList&themeIdx={{ p.theme_idx }}" target="_blank" rel="noopener">{{ p.theme }}</a>

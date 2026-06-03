@@ -93,6 +93,7 @@ def select_top3(screen_picks: list[dict], foreign_buy: set[str] | None = None,
             "gap20": round(p.get("gap20", 0), 1),  # 20일선 이격도(%)
             "overheat": bool(p.get("overheat")),   # 🔥과열(BB돌파+이격≥30%+거래량≥1.8배)
             "vol_x": p.get("vol_x", 0),
+            "cross_signal": p.get("cross_signal", ""),  # 5<10 데드+이격 (pullback/correction)
             "lead_strat": p["strategy"].split(".")[0].strip(),  # 대표전략 A/B/C/D
         })
     ranked.sort(key=lambda x: x["score"], reverse=True)

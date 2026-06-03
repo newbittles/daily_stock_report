@@ -140,6 +140,17 @@ async def collect_screen_picks(adapter, per_strategy: int = 8,
         _ma20 = moving_average(_closes, 20)[-1]
         _liq = log10(max(c[-1].close * c[-1].volume, 1))
         _gap20 = (c[-1].close - _ma20) / _ma20 * 100 if _ma20 else 0.0
+        # 5,10 데드크로스 정교화: 데드크로스 시 20일 이격으로 의미 구분
+        #   5<10 데드 + 20선 근접(이격≤7%)  → 조정 시작(경고)
+        #   5<10 데드 + 20선 이격 큼(≥15%) → 단기 눌림(아직 추세 위, 매수 기회)
+        _ma5 = moving_average(_closes, 5)[-1]
+        _ma10 = moving_average(_closes, 10)[-1]
+        _cross = ""
+        if _ma5 is not None and _ma10 is not None and _ma5 < _ma10:  # 데드크로스 상태
+            if _gap20 >= 15:
+                _cross = "pullback"     # 단기 눌림(매수 기회)
+            elif _gap20 <= 7:
+                _cross = "correction"   # 조정 시작(경고)
         _hi60 = max(x.high for x in c[-60:])
         _nh = (c[-1].close / _hi60 - 0.97) * 100 if _hi60 else 0.0
         # 🔥 과열 판정 (7케이스 검증): BB(20,2) 상단 종가돌파 + 20일이격≥30% + 거래량≥1.8배
@@ -175,6 +186,7 @@ async def collect_screen_picks(adapter, per_strategy: int = 8,
                     "stop_price": round(_stop_price, 1) if _stop_price else 0,
                     "stop_pct": round(_stop_pct, 1),
                     "overheat": _overheat, "vol_x": round(_volx, 1),
+                    "cross_signal": _cross,  # ""|"pullback"(단기눌림)|"correction"(조정시작) — 5<10 데드+이격
                     "theme": "",            # pipeline에서 judal 테마/업종 폴백으로 채움
                     "theme_kind": "",       # "theme"(judal 테마) | "sector"(네이버 세분업종)
                     "theme_idx": "",        # judal themeIdx (테마 링크용)
