@@ -30,6 +30,12 @@ class Settings(BaseSettings):
     gemini_api_key: str
     ai_daily_call_limit: int = 100
 
+    # KRX 정보데이터시스템(data.krx.co.kr) 로그인 — pykrx 투자자 수급(개인/외인/기관)
+    # 과거 백필용(선택). 미설정이면 빈 문자열 → 수급은 당일치 누적만(KRX 백필 비활성).
+    # ⚠️ pykrx는 os.environ을 읽으므로, 백필 사용 시 이 값을 os.environ에 export 해야 함.
+    krx_id: str = ""
+    krx_pw: str = ""
+
     # Storage
     db_path: str = "data/stock_bot.db"
 
