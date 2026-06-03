@@ -83,6 +83,29 @@ def _extract_tickers(html: str) -> list[str]:
     return _CODE_PATTERN.findall(html)
 
 
+# 종목명 앵커: <a href="/item/main.naver?code=XXXXXX">종목명</a> — 코드↔이름이 같은 앵커라 정확히 정렬
+_NAME_LINK_PATTERN = re.compile(r'/item/main\.naver\?code=(\d{6})"[^>]*>([^<]+)</a>')
+
+
+def _norm_stock_name(name: str) -> str:
+    """종목명 정규화(공백 제거) — 표(pd.read_html)와 앵커 텍스트의 공백 차이 흡수."""
+    return str(name or "").replace(" ", "").strip()
+
+
+def _name_code_map(html: str) -> dict[str, str]:
+    """정규화 종목명 → 종목코드 (앵커 기준, 첫 등장 우선).
+
+    기존 위치매칭(tickers[i])은 거래량 페이지에서 코드 출현순이 표 행과 어긋나 ticker↔name이
+    뒤섞였다(예: 069500↔LG디스플레이). 같은 앵커에서 코드·이름을 함께 뽑아 이름으로 매칭한다.
+    """
+    m: dict[str, str] = {}
+    for code, name in _NAME_LINK_PATTERN.findall(html):
+        key = _norm_stock_name(name)
+        if key and key not in m:
+            m[key] = code
+    return m
+
+
 async def fetch_top_volume(market: MarketCode = "KOSPI", top: int = 30) -> list[StockRank]:
     """거래량 상위 종목 N개."""
     url = f"{BASE}/sise/sise_quant.naver?sosok={SOSOK[market]}"
@@ -95,21 +118,21 @@ async def fetch_top_volume(market: MarketCode = "KOSPI", top: int = 30) -> list[
     name_col = df.columns[1]
     df = df[df[name_col].astype(str).str.len() > 0]
 
-    # 종목코드 추출 (HTML에서 순서대로 — 1번째는 KODEX/TIGER 등 ETF도 포함)
-    tickers = _extract_tickers(html)
+    # 종목명 → 코드 (앵커 기준, ticker↔name 정합 보장)
+    name_code = _name_code_map(html)
 
-    # 순위 매칭: df의 N 컬럼 순서대로 ticker 매칭
-    # 네이버 페이지 구조상 ETF·일반주가 섞여 나옴
     results: list[StockRank] = []
     for i, (_, row) in enumerate(df.head(top).iterrows()):
-        if i >= len(tickers):
-            break
+        name = str(row.iloc[1]).strip()
+        ticker = name_code.get(_norm_stock_name(name), "")
+        if not ticker:  # 코드 못 찾으면 skip (오정렬 종목 방지)
+            continue
         try:
             results.append(
                 StockRank(
                     rank=i + 1,
-                    ticker=tickers[i],
-                    name=str(row.iloc[1]).strip(),
+                    ticker=ticker,
+                    name=name,
                     price=_to_float(row.iloc[2]),
                     change=_to_float(row.iloc[3]),
                     change_pct=_parse_pct(row.iloc[4]),
@@ -133,17 +156,19 @@ async def fetch_top_gainers(market: MarketCode = "KOSPI", top: int = 30) -> list
     name_col = df.columns[1]
     df = df[df[name_col].astype(str).str.len() > 0]
 
-    tickers = _extract_tickers(html)
+    name_code = _name_code_map(html)
     results: list[StockRank] = []
     for i, (_, row) in enumerate(df.head(top).iterrows()):
-        if i >= len(tickers):
-            break
+        name = str(row.iloc[1]).strip()
+        ticker = name_code.get(_norm_stock_name(name), "")
+        if not ticker:
+            continue
         try:
             results.append(
                 StockRank(
                     rank=i + 1,
-                    ticker=tickers[i],
-                    name=str(row.iloc[1]).strip(),
+                    ticker=ticker,
+                    name=name,
                     price=_to_float(row.iloc[2]),
                     change=_to_float(row.iloc[3]),
                     change_pct=_parse_pct(row.iloc[4]),
@@ -165,17 +190,19 @@ async def fetch_top_losers(market: MarketCode = "KOSPI", top: int = 30) -> list[
     name_col = df.columns[1]
     df = df[df[name_col].astype(str).str.len() > 0]
 
-    tickers = _extract_tickers(html)
+    name_code = _name_code_map(html)
     results: list[StockRank] = []
     for i, (_, row) in enumerate(df.head(top).iterrows()):
-        if i >= len(tickers):
-            break
+        name = str(row.iloc[1]).strip()
+        ticker = name_code.get(_norm_stock_name(name), "")
+        if not ticker:
+            continue
         try:
             results.append(
                 StockRank(
                     rank=i + 1,
-                    ticker=tickers[i],
-                    name=str(row.iloc[1]).strip(),
+                    ticker=ticker,
+                    name=name,
                     price=_to_float(row.iloc[2]),
                     change=_to_float(row.iloc[3]),
                     change_pct=_parse_pct(row.iloc[4]),
