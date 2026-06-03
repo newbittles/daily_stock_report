@@ -536,6 +536,15 @@ async def run_full(
         except Exception as exc:
             logger.warning("top3_failed error=%s", exc)
 
+        # 자동매매 브리지: 보고서 Top3를 JSON으로 남겨 auto_trader가 동일 종목 매수
+        if snap.mode == "pre_close" and snap.top3:
+            try:
+                from datetime import datetime as _dt
+                from src.trading.top3_bridge import persist_top3
+                persist_top3(snap.top3, snap.mode, _dt.now().strftime("%Y-%m-%d"))
+            except Exception as exc:  # 리포트를 깨지 않도록 best-effort
+                logger.warning("top3_persist_failed error=%s", exc)
+
         logger.info("pipeline_strategy_ready picks=%d holdings=%d top3=%d",
                     len(snap.screen_picks), len(snap.holdings_status), len(snap.top3))
 

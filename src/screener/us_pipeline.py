@@ -18,7 +18,7 @@ from pathlib import Path
 from src.datasource.base import Candle
 from src.datasource.us.fdr_source import fetch_us_ohlcv_batch
 from src.datasource.us.universe import USStock, get_sp500_universe
-from src.patterns.core import cross_signal
+from src.patterns.core import ma_cross_signal
 from src.screener.config import ScreenerConfig, load_screener_config
 from src.screener.engine import ScreenMatch, screen_stock
 
@@ -44,7 +44,7 @@ class USStockPick:
     industry: str = ""
     matches: list[ScreenMatch] = field(default_factory=list)
     candles: list[Candle] = field(default_factory=list)
-    cross_signal: str = ""   # ""|"pullback"(🟢단기눌림)|"correction"(⚠️조정시작) — 대세상승주 보조신호
+    cross_signal: str | None = None   # PULLBACK(🟢단기눌림)/CORRECTION(⚠️조정시작)/None — 대세상승주 보조신호
 
     @property
     def opinions(self) -> list[str]:
@@ -116,7 +116,7 @@ async def run_us_screening(
                 industry=u.industry if u else "",
                 matches=matches,
                 candles=candles,
-                cross_signal=cross_signal(candles),
+                cross_signal=ma_cross_signal([c.close for c in candles]),
             ))
 
     logger.info("us_screening_done universe=%d picks=%d", len(symbols), len(picks))

@@ -26,7 +26,7 @@ STRATEGY_ORDER: list[tuple[str, str]] = [
 BACKTEST_NOTE = "_※ 백테스트(750일): 기계적 엣지 약함 — 시그널 보조용, 진입·청산·판단은 본인._"
 
 # cross_signal(5<10 데드+20이격) 배지 — 대세상승주 매매 단기조정/고점 판단 보조
-CROSS_BADGE = {"pullback": " 🟢단기눌림", "correction": " ⚠️조정시작"}
+CROSS_BADGE = {"PULLBACK": " 🟢단기눌림", "CORRECTION": " ⚠️조정시작"}
 
 
 def _turnover(p: USStockPick) -> float:

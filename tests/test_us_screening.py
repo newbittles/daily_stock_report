@@ -272,40 +272,34 @@ def test_build_report_empty():
     assert "참고용" in text
 
 
-# ─── cross_signal (대세상승주 단기조정/고점 보조신호, domain SSOT) ──────────
-from src.patterns.core import cross_signal  # noqa: E402
+# ─── cross_signal (대세상승주 단기조정/고점 보조신호, domain SSOT = ma_cross_signal) ──
+from src.patterns.core import CROSS_CORRECTION, CROSS_PULLBACK, ma_cross_signal  # noqa: E402
 
 
-def _closes_to_candles(closes: list[float]) -> list[Candle]:
-    base = datetime(2024, 1, 1)
-    return [Candle((base + timedelta(days=i)).strftime("%Y%m%d"), c, c, c, c, 1000)
-            for i, c in enumerate(closes)]
-
-
-def test_cross_signal_pullback():
+def test_ma_cross_signal_pullback():
     """급등으로 20선 이격 큼(≥15%) + 최근 5<10 데드 → 단기눌림(매수 기회)."""
     closes = [100] * 5 + [200] * 5 + [400] * 8 + [395, 390]
-    assert cross_signal(_closes_to_candles(closes)) == "pullback"
+    assert ma_cross_signal(closes) == CROSS_PULLBACK
 
 
-def test_cross_signal_correction():
+def test_ma_cross_signal_correction():
     """횡보 후 하락 → 20선 근접(이격≤7%) + 5<10 데드 → 조정 시작(경고)."""
     closes = [200] * 25 + [198, 196, 194, 192, 190]
-    assert cross_signal(_closes_to_candles(closes)) == "correction"
+    assert ma_cross_signal(closes) == CROSS_CORRECTION
 
 
-def test_cross_signal_none_on_uptrend():
-    """정배열 상승(5>10) → 신호 없음."""
+def test_ma_cross_signal_none_on_uptrend():
+    """정배열 상승(5>10) → 신호 없음(None)."""
     closes = [100 + i for i in range(40)]
-    assert cross_signal(_closes_to_candles(closes)) == ""
+    assert ma_cross_signal(closes) is None
 
 
 def test_report_shows_cross_badge():
     """리포트에 cross_signal 배지(🟢단기눌림/⚠️조정시작) 표기."""
     p_pull = _pick("NVDA", "Nvidia", "반도체", "C. 추세추종", "정배열")
-    p_pull.cross_signal = "pullback"
+    p_pull.cross_signal = CROSS_PULLBACK
     p_corr = _pick("AMD", "AMD", "반도체", "C. 추세추종", "정배열")
-    p_corr.cross_signal = "correction"
+    p_corr.cross_signal = CROSS_CORRECTION
     text = build_us_screening_report([p_pull, p_corr], top_n=5, as_of="2026-06-03")
     assert "🟢단기눌림" in text
     assert "⚠️조정시작" in text

@@ -1022,31 +1022,33 @@ def is_bollinger_breakout(
     return PatternResult(False, "밴드 내부", metrics)
 
 
-def cross_signal(
-    candles: list[Candle], pullback_gap: float = 15.0, correction_gap: float = 7.0,
-) -> str:
-    """5<10 데드크로스 시 20일 이격으로 단기조정/고점 구분 (대세상승주 매매 보조신호).
+# 5·10 단기 데드크로스 + 20일 이격도 기반 단기조정/끝물 판정 라벨
+CROSS_PULLBACK = "PULLBACK"      # 🟢 추세 위 단기눌림 (보유 지속/매수 기회)
+CROSS_CORRECTION = "CORRECTION"  # ⚠️ 조정시작 (익절/손절 검토)
 
-    5일선 < 10일선(단기 데드크로스) 상태에서 종가의 20일선 이격(%)으로 의미를 가른다:
-      - 이격 >= pullback_gap(15%) → "pullback"  🟢 단기 눌림 (아직 추세 위, 매수 기회)
-      - 이격 <= correction_gap(7%) → "correction" ⚠️ 조정 시작 (20선 근접, 경고)
-      - 그 외 / 데드크로스 아님 → "" (신호 없음)
 
-    domain SSOT — 한국 strategy_section._cross 와 동일 기준(추후 한국도 이 함수로 통일 예정).
-    순수함수: candles(OHLCV) in → 라벨 out.
+def ma_cross_signal(closes: list[float]) -> str | None:
+    """5<10 단기 데드크로스 상태에서 20일 이격도로 단기조정/끝물 판정 (순수, domain SSOT).
+
+    - MA5 < MA10(단기 데드) + 20일이격 ≥ 15% → CROSS_PULLBACK (추세 위 단기눌림)
+    - MA5 < MA10 + 20일이격 ≤ 7%            → CROSS_CORRECTION (조정시작 경고)
+    - 그 외(정배열 또는 이격 7~15%, 데이터 부족) → None
+
+    20일이격 = (종가 - MA20) / MA20 * 100. 표시(🟢/⚠️)·매매행동은 호출측 결정.
+    한국 strategy_section._cross·미국 us_pipeline 공용 기준.
     """
-    closes = _closes(candles)
     if len(closes) < 20:
-        return ""
+        return None
     ma5 = moving_average(closes, 5)[-1]
     ma10 = moving_average(closes, 10)[-1]
     ma20 = moving_average(closes, 20)[-1]
     if ma5 is None or ma10 is None or not ma20:
-        return ""
-    if ma5 < ma10:  # 단기 데드크로스
-        gap20 = (closes[-1] - ma20) / ma20 * 100
-        if gap20 >= pullback_gap:
-            return "pullback"
-        if gap20 <= correction_gap:
-            return "correction"
-    return ""
+        return None
+    if ma5 >= ma10:  # 단기 데드크로스 아님(정배열)
+        return None
+    gap20 = (closes[-1] - ma20) / ma20 * 100
+    if gap20 >= 15:
+        return CROSS_PULLBACK
+    if gap20 <= 7:
+        return CROSS_CORRECTION
+    return None
