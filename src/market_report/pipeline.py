@@ -264,21 +264,30 @@ def _norm_name(name: str) -> str:
     return str(name or "").replace(" ", "").strip().lower()
 
 
-def _set_leading_theme(picks: list[dict], top_themes: list) -> None:
+def _leading_theme_names(stocks: list, jmap: dict, is_nontheme) -> set[str]:
+    """오늘 '주도테마' 이름 집합 = 상승률/거래량 상위 종목들이 속한 테마(judal).
+
+    급등 주도주가 이끄는 테마를 포착(평균등락률 기준의 한계 보완). 예: 로봇(두산로보틱스 등
+    상위) · 광통신(성호전자 상위) → 주도테마로 인식.
+    """
+    names: set[str] = set()
+    for s in (stocks or []):
+        jv = jmap.get(str(getattr(s, "ticker", "")).strip())
+        if jv and jv.get("theme") and not is_nontheme(jv["theme"]):
+            names.add(_norm_name(jv["theme"]))
+    return names
+
+
+def _set_leading_theme(picks: list[dict], lead_theme_names: set[str]) -> None:
     """각 종목의 '주도테마 여부'(is_leading_theme) 설정.
 
-    기준: 종목의 테마(p['theme'])가 오늘 **강세(상승) 테마**(top_themes 중 change_pct>0)에
-    속하는가. 'is_theme_leader'(종목 자신이 테마의 top3 주도주)와는 다른 개념이다.
-    예: 로봇·광통신이 강세테마면, 그 테마 소속 종목은 주도주가 아니어도 주도테마=O.
+    기준: 종목의 테마(judal)가 '오늘 상위종목이 속한 테마' 집합에 속하는가.
+    'is_theme_leader'(종목 자신이 테마 top3 주도주)와는 다른 개념.
     """
-    strong = {_norm_name(t.name) for t in (top_themes or []) if getattr(t, "change_pct", 0) > 0}
     for p in (picks or []):
         th = _norm_name(p.get("theme", ""))
-        # 업종(sector) 폴백은 '테마'가 아니므로 제외 — judal 테마만 주도테마 판정
-        if th and p.get("theme_kind") == "theme":
-            p["is_leading_theme"] = any(th == s or th in s or s in th for s in strong)
-        else:
-            p["is_leading_theme"] = False
+        # 업종(sector) 폴백은 테마가 아니므로 제외 — judal 테마만 주도테마 판정
+        p["is_leading_theme"] = bool(th and p.get("theme_kind") == "theme" and th in lead_theme_names)
 
 
 def _inject_candidate_quotes(snap: MarketSnapshot) -> None:
@@ -415,7 +424,8 @@ async def run_full(
             except Exception as exc:
                 logger.warning("us_sector_fallback_failed error=%s", exc)
             # 시초 Top3 — P4 + 미국 강세테마 연동 가중(w_us) + ATR 손절
-            _set_leading_theme(snap.screen_picks, snap.top_themes)  # 주도테마 여부
+            _lead = _leading_theme_names((snap.top_gainers or []) + (snap.top_volume or []), jmap, _is_nontheme)
+            _set_leading_theme(snap.screen_picks, _lead)  # 주도테마 여부
             strong_kw = strong_kr_keywords(snap.us_sectors)
             fb = {x["ticker"] for x in await adapter.get_investor_net_buy("foreign", "buy")}
             ib = {x["ticker"] for x in await adapter.get_investor_net_buy("inst", "buy")}
@@ -490,8 +500,9 @@ async def run_full(
         except Exception as exc:
             logger.warning("sector_fallback_failed error=%s", exc)
 
-        # 주도테마 여부 — 종목의 테마가 '오늘 강세(주도) 테마'에 속하는가 (theme_leader=종목이 주도주 와 별개)
-        _set_leading_theme(snap.screen_picks, snap.top_themes)
+        # 주도테마 여부 — 오늘 상승률/거래량 상위 종목이 속한 테마(jmap) = 주도테마
+        _lead = _leading_theme_names((snap.top_gainers or []) + (snap.top_volume or []), jmap, _is_nontheme)
+        _set_leading_theme(snap.screen_picks, _lead)
 
         # Top3 종합추천 — 수급(외인/기관 순매수) 수집 후 P4 점수로 3종목 선정
         try:
