@@ -16,6 +16,12 @@ import sys
 
 from src.market_report.pipeline import run_full
 
+# Windows 콘솔(cp949)에서 이모지/한글 print 시 UnicodeEncodeError 방지
+try:
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")  # type: ignore[union-attr]
+except Exception:
+    pass
+
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s %(levelname)s %(name)s %(message)s",

@@ -33,6 +33,8 @@ def _run_git(*args: str, timeout: int = 60) -> tuple[bool, str]:
             cwd=PROJECT_ROOT,
             capture_output=True,
             text=True,
+            encoding="utf-8",   # git 출력(한글 커밋/파일명)을 OS 기본(cp949) 아닌 UTF-8로 디코드
+            errors="replace",   # 디코드 불가 바이트도 예외 없이 처리 (Windows 발송 중단 방지)
             timeout=timeout,
         )
         if result.returncode != 0:
