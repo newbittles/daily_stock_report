@@ -425,6 +425,9 @@ async def run_full(
                 logger.warning("us_sector_fallback_failed error=%s", exc)
             # 시초 Top3 — P4 + 미국 강세테마 연동 가중(w_us) + ATR 손절
             _lead = _leading_theme_names((snap.top_gainers or []) + (snap.top_volume or []), jmap, _is_nontheme)
+            for _p in snap.screen_picks:
+                if _p.get("theme_kind") == "theme" and (_p.get("change_pct", 0) or 0) >= 5.0:
+                    _lead.add(_norm_name(_p.get("theme", "")))
             _set_leading_theme(snap.screen_picks, _lead)  # 주도테마 여부
             strong_kw = strong_kr_keywords(snap.us_sectors)
             fb = {x["ticker"] for x in await adapter.get_investor_net_buy("foreign", "buy")}
@@ -500,8 +503,11 @@ async def run_full(
         except Exception as exc:
             logger.warning("sector_fallback_failed error=%s", exc)
 
-        # 주도테마 여부 — 오늘 상승률/거래량 상위 종목이 속한 테마(jmap) = 주도테마
+        # 주도테마 여부 — 오늘 상위종목(상승률/거래량 상위) + 강하게 오른 전략픽이 속한 테마
         _lead = _leading_theme_names((snap.top_gainers or []) + (snap.top_volume or []), jmap, _is_nontheme)
+        for _p in snap.screen_picks:  # 급등 전략픽(주도주)의 테마도 주도테마에 포함
+            if _p.get("theme_kind") == "theme" and (_p.get("change_pct", 0) or 0) >= 5.0:
+                _lead.add(_norm_name(_p.get("theme", "")))
         _set_leading_theme(snap.screen_picks, _lead)
 
         # Top3 종합추천 — 수급(외인/기관 순매수) 수집 후 P4 점수로 3종목 선정
