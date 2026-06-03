@@ -28,13 +28,14 @@ def main() -> int:
     parser.add_argument("--dry", action="store_true", help="render만 (push·텔레그램 스킵)")
     parser.add_argument("--no-publish", action="store_true", help="git push 스킵")
     parser.add_argument("--no-tg", action="store_true", help="텔레그램 발송 스킵")
+    parser.add_argument("--force", action="store_true", help="휴장일 스킵 무시하고 강제 실행")
     args = parser.parse_args()
 
     mode = "pre_close" if args.mode == "pre" else "post_close"
     do_publish = not (args.dry or args.no_publish)
     do_telegram = not (args.dry or args.no_tg)
 
-    snap = asyncio.run(run_full(mode, do_publish=do_publish, do_telegram=do_telegram))
+    snap = asyncio.run(run_full(mode, do_publish=do_publish, do_telegram=do_telegram, force=args.force))
 
     print()
     print(f"✅ {snap.mode} 리포트 생성 완료")

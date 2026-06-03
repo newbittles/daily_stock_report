@@ -39,6 +39,10 @@ async def _job(mode: str) -> None:
 async def _holdings_job() -> None:
     """마감 후 보유종목 A/B/C 상태 리포트 (홀딩/손절/추가매수)."""
     logger.info("holdings_job_start now=%s", datetime.now().isoformat())
+    from src.market_report.market_calendar import is_kr_market_open_today
+    if not await is_kr_market_open_today():
+        logger.info("holdings_job_skip — 휴장일")
+        return
     try:
         from src.alerts.holdings_report import run_holdings_report
         rows = await run_holdings_report()
@@ -50,6 +54,10 @@ async def _holdings_job() -> None:
 async def _dashboard_job() -> None:
     """마감 후 전략 스크린 대시보드 갱신 + GitHub Pages 게시."""
     logger.info("dashboard_job_start now=%s", datetime.now().isoformat())
+    from src.market_report.market_calendar import is_kr_market_open_today
+    if not await is_kr_market_open_today():
+        logger.info("dashboard_job_skip — 휴장일")
+        return
     try:
         from src.market_report.screen_dashboard import run_dashboard_job
         path = await run_dashboard_job(days_back=12, do_publish=True)

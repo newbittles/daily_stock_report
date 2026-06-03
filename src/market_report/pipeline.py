@@ -292,17 +292,29 @@ def _inject_candidate_quotes(snap: MarketSnapshot) -> None:
         logger.warning("candidate_quote_inject_failed error=%s", exc)
 
 
-async def run_full(mode: ReportMode, *, do_publish: bool = True, do_telegram: bool = True) -> MarketSnapshot:
+async def run_full(
+    mode: ReportMode, *, do_publish: bool = True, do_telegram: bool = True, force: bool = False
+) -> MarketSnapshot:
     """End-to-end: 데이터 → 분석 → HTML 렌더 → git push → 텔레그램.
 
     각 단계 실패는 다음 단계를 막지 않는다.
     스케줄러·CLI 모두 이 함수를 단일 진입점으로 사용.
+
+    force: 휴장일 스킵을 무시하고 강제 실행 (테스트·수동 발송용).
     """
     from src.market_report.publisher import publish
     from src.market_report.render import render_report
     from src.market_report.telegram_notify import send_report
 
-    logger.info("pipeline_start mode=%s", mode)
+    logger.info("pipeline_start mode=%s force=%s", mode, force)
+
+    # 한국장 휴장일 스킵 (평일 공휴일·임시공휴일·선거일 등). pre/post만 — us_morning은
+    # 미국 캘린더 기준이라 별도(자체 신선도 스킵 보유). 휴장이면 데이터·AI 호출 전에 중단.
+    if mode in ("pre_close", "post_close") and not force:
+        from src.market_report.market_calendar import is_kr_market_open_today
+        if not await is_kr_market_open_today():
+            logger.info("kr_market_closed_skip mode=%s — 휴장일 발송 생략", mode)
+            return MarketSnapshot(mode=mode, generated_at=datetime.now())
 
     # 오래된 차트 정리 (7일 이전 PNG 삭제 — git 용량 누적 방지)
     try:
