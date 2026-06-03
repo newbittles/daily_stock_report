@@ -562,7 +562,7 @@
       <div class="pick {{ 'has-chart' if p.chart_url else '' }}">
         <div class="pick-body">
           <div class="pick-head">
-            <span class="pick-name">{{ p.name }}</span>
+            <a class="pick-name" href="https://finance.naver.com/item/main.naver?code={{ p.ticker }}" target="_blank" rel="noopener">{{ p.name }}</a>
             <span class="pick-meta-group">
               <span class="pick-ticker">{{ p.ticker }}</span>
               <button type="button" class="code-copy" data-code="{{ p.ticker }}" onclick="copyCode(this)" title="종목코드 복사 (MTS 검색창에 붙여넣기)">📋</button>
@@ -579,7 +579,7 @@
             <div class="peer-list">
               {% for peer in p.theme_peers %}
               <span class="peer-chip">
-                {{ peer.name }}
+                {% if peer.ticker %}<a href="https://finance.naver.com/item/main.naver?code={{ peer.ticker }}" target="_blank" rel="noopener">{{ peer.name }}</a>{% else %}<a href="https://search.naver.com/search.naver?query={{ peer.name|urlencode }}+주가" target="_blank" rel="noopener">{{ peer.name }}</a>{% endif %}
                 <span class="pct {{ 'up-text' if peer.change_pct >= 0 else 'down-text' }}">
                   {{ '+' if peer.change_pct >= 0 else '' }}{{ "%.2f"|format(peer.change_pct) }}%
                 </span>

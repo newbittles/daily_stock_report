@@ -25,10 +25,10 @@ from ta.momentum import RSIIndicator  # noqa: E402
 from ta.trend import CCIIndicator, MACD  # noqa: E402
 from ta.volatility import BollingerBands  # noqa: E402
 
-# 한글 폰트 (Windows 기본 Malgun Gothic, 폴백 다수)
-matplotlib.rcParams["font.family"] = [
-    "Malgun Gothic", "AppleGothic", "Noto Sans CJK KR", "DejaVu Sans"
-]
+# 한글 폰트 (Windows 기본 Malgun Gothic, 폴백 다수). mplfinance가 스타일로 font.family를
+# 덮어쓰므로 STYLE의 rc에도 동일 리스트를 넣어야 차트 제목·축의 한글이 깨지지 않는다.
+KOREAN_FONTS = ["Malgun Gothic", "AppleGothic", "Noto Sans CJK KR", "NanumGothic", "DejaVu Sans"]
+matplotlib.rcParams["font.family"] = KOREAN_FONTS
 matplotlib.rcParams["axes.unicode_minus"] = False
 
 logger = logging.getLogger(__name__)
@@ -60,6 +60,8 @@ STYLE = mpf.make_mpf_style(
     gridcolor="#1e293b",
     gridstyle="--",
     rc={
+        "font.family": KOREAN_FONTS,  # mplfinance가 font.family를 덮어쓰는 것 방지 (한글 깨짐 해결)
+        "axes.unicode_minus": False,
         "axes.labelcolor": "#94a3b8",
         "xtick.color": "#94a3b8",
         "ytick.color": "#94a3b8",
@@ -231,11 +233,17 @@ def _render_df(
             color=m["color"], width=m["width"], panel=0,
         ))
 
-    if not candidate:
-        # 볼린저밴드 + 일목구름 (full 전용)
-        bb = BollingerBands(close=df["Close"], window=20, window_dev=2)
-        bb_high, bb_low = bb.bollinger_hband(), bb.bollinger_lband()
-        tenkan, kijun, span_a, span_b, _chikou = _ichimoku(df)
+    # 볼린저밴드 + 일목구름 (양 레이아웃 공통 계산 — 구름 채움은 출력부에서)
+    bb = BollingerBands(close=df["Close"], window=20, window_dev=2)
+    bb_high, bb_low = bb.bollinger_hband(), bb.bollinger_lband()
+    tenkan, kijun, span_a, span_b, _chikou = _ichimoku(df)
+
+    if candidate:
+        # 볼린저밴드 상/하단만 (중심선 제외) — 검은 배경 대비 흰색 bold(width 2)
+        ap.append(mpf.make_addplot(_last(bb_high), color="#ffffff", width=2.0, panel=0))
+        ap.append(mpf.make_addplot(_last(bb_low), color="#ffffff", width=2.0, panel=0))
+        # 일목 선(전환/기준/선행)은 생략 — 구름대(채움)만 표시
+    else:
         ap.append(mpf.make_addplot(_last(bb_high), color="#888888", width=0.8, linestyle="--", panel=0))
         ap.append(mpf.make_addplot(_last(bb_low), color="#888888", width=0.8, linestyle="--", panel=0))
         ap.append(mpf.make_addplot(_last(tenkan), color="#FFA500", width=0.7, panel=0))
@@ -309,21 +317,24 @@ def _render_df(
         warn_too_much_data=300,
     )
 
+    # 일목구름 채움 (span_a/span_b 사이) — 양 레이아웃 공통. candidate는 더 진하게(가독성)
+    ax_main = axes[0]
+    sa = _last(span_a).values
+    sb = _last(span_b).values
+    valid = ~(np.isnan(sa) | np.isnan(sb))
+    if valid.any():
+        x = np.arange(len(df_show))
+        up_c = "#2ECC7133" if candidate else "#2ECC7110"
+        dn_c = "#E74C3C33" if candidate else "#E74C3C10"
+        ax_main.fill_between(x, sa, sb, where=valid & (sa >= sb), color=up_c, interpolate=True)
+        ax_main.fill_between(x, sa, sb, where=valid & (sa < sb), color=dn_c, interpolate=True)
+
     if candidate:
         # 거래대금 y축 억 단위 포맷 (panel 2 primary axis = axes[4])
         from matplotlib.ticker import FuncFormatter
         axes[4].yaxis.set_major_formatter(
             FuncFormatter(lambda v, _p: f"{v / 1e8:,.0f}억" if v >= 1e8 else f"{v / 1e4:,.0f}만"))
     else:
-        # 일목구름 채움 (span_a/span_b 사이) — NaN 구간 방어
-        ax_main = axes[0]
-        sa = _last(span_a).values
-        sb = _last(span_b).values
-        valid = ~(np.isnan(sa) | np.isnan(sb))
-        if valid.any():
-            x = np.arange(len(df_show))
-            ax_main.fill_between(x, sa, sb, where=valid & (sa >= sb), color="#2ECC7110", interpolate=True)
-            ax_main.fill_between(x, sa, sb, where=valid & (sa < sb), color="#E74C3C10", interpolate=True)
 
         # RSI 30/70 가이드라인
         axes[4].axhline(30, color="#94a3b8", linewidth=0.5, linestyle=":")

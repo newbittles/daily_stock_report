@@ -263,9 +263,11 @@ def _norm_name(name: str) -> str:
 def _inject_candidate_quotes(snap: MarketSnapshot) -> None:
     """종가베팅 후보(candidate_picks)에 현재가·등락률 주입 + 관련주(theme_peers) 등락률 보정.
 
-    AI는 ticker/name만 정확히 내고 시세는 빠지거나(현재가 없음) 관련주 등락률을 0/오값으로
-    내는 경우가 잦다. 14:50 스냅샷의 거래량·상승·하락 상위 종목은 실제 price/change_pct를
-    가지므로 ticker(후보 본체)·name(관련주) 기준으로 매칭해 실데이터로 덮어쓴다.
+    AI는 종목명·종목코드를 서로 어긋나게 내는 경우가 잦다(예: name=아남전자인데
+    ticker=003280=다른 종목). 이 경우 ticker로 차트를 그리면 엉뚱한 종목이 표시된다.
+    14:50 스냅샷의 거래량·상승·하락 상위 종목은 실제 name↔ticker↔price를 보유하므로,
+    **종목명 매칭을 우선**해 종목코드를 보정하고(=AI 코드 오매칭 교정) 시세를 덮어쓴다.
+    (본 함수는 후보 차트 생성 전에 호출되므로 보정된 ticker가 차트에 반영됨)
     """
     try:
         by_ticker: dict[str, Any] = {}
@@ -277,16 +279,24 @@ def _inject_candidate_quotes(snap: MarketSnapshot) -> None:
 
         for p in (snap.candidate_picks or []):
             tk = str(p.get("ticker", "")).strip()
-            hit = by_ticker.get(tk) or by_name.get(_norm_name(p.get("name", "")))
+            # 종목명 매칭 우선(AI rationale가 가리키는 종목) → 코드 보정. 이름 미스 시 코드 매칭.
+            name_hit = by_name.get(_norm_name(p.get("name", "")))
+            hit = name_hit or by_ticker.get(tk)
             if hit is not None:
+                new_tk = str(hit.ticker).strip()
+                if new_tk and new_tk != tk:
+                    logger.info("candidate_ticker_fixed name=%s ai_ticker=%s → %s",
+                                p.get("name"), tk, new_tk)
+                p["ticker"] = new_tk
                 p["price"] = float(hit.price)
                 p["change_pct"] = float(hit.change_pct)
 
-            # 관련주 등락률 보정: 스냅샷에 있으면 실값으로 교체
+            # 관련주 등락률 보정 + 종목코드 주입: 스냅샷에 있으면 실값으로 교체 (네이버 링크용 ticker 포함)
             for peer in p.get("theme_peers", []) or []:
                 ph = by_name.get(_norm_name(peer.get("name", "")))
                 if ph is not None:
                     peer["change_pct"] = float(ph.change_pct)
+                    peer["ticker"] = str(ph.ticker).strip()
                     peer["matched"] = True
     except Exception as exc:
         logger.warning("candidate_quote_inject_failed error=%s", exc)
