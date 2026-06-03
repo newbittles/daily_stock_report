@@ -112,21 +112,22 @@ src/datasource/kis/token.py  (KisTokenManager — 기존, 재사용)
 
 ---
 
-## 7. 사전 검증 필요 (plan 단계, 하드코딩 전)
+## 7. 사전 검증 — 완료 (2026-06-03, koreainvestment/open-trading-api `examples_llm`)
 
-프로젝트 규칙 §6 "추측금지". 다음을 **KIS 공식 문서(koreainvestment/open-trading-api GitHub 또는 apiportal)로 검증한 뒤** 상수 확정:
+프로젝트 규칙 §6 "추측금지"에 따라 공식 저장소로 검증 완료. **추정값이 틀렸음을 발견** — 규칙이 막아준 케이스.
 
-| 항목 | 현재 추정값 | 검증 대상 |
-|------|------------|-----------|
-| hashkey 엔드포인트 | `POST /uapi/hashkey` | 경로·헤더·응답 필드 |
-| order-cash 경로 | `/uapi/domestic-stock/v1/trading/order-cash` | 경로·body 필드명 |
-| 모의 매수 TR_ID | `VTTC0802U` (추정) | 공식 확인 |
-| 모의 매도 TR_ID | `VTTC0801U` (추정) | 공식 확인 |
-| 매수가능조회 경로/TR | `inquire-psbl-order` / TR 미확정 | 공식 확인 |
-| body 필드 | CANO·ACNT_PRDT_CD·PDNO·ORD_DVSN·ORD_QTY·ORD_UNPR | 필드명·시장가 처리(ORD_UNPR=0) |
-| 잔고 TR(모의) | `VTTC8434R` (handover 검증치) | 재확인 |
+| 항목 | 추정(기존 메모리) | **공식 검증값** |
+|------|------------------|----------------|
+| hashkey 엔드포인트 | `POST /uapi/hashkey` | ✅ 동일 (응답 `HASH`, `hashkey` 헤더). 현재 KIS상 **선택사항**이나 구현 |
+| order-cash 경로 | `/uapi/domestic-stock/v1/trading/order-cash` | ✅ 동일 |
+| 모의 매수 TR_ID | ~~VTTC0802U~~ | **VTTC0012U** (2025 NXT 개편으로 변경) |
+| 모의 매도 TR_ID | ~~VTTC0801U~~ | **VTTC0011U** |
+| order-cash body | CANO·ACNT_PRDT_CD·PDNO·ORD_DVSN·ORD_QTY·ORD_UNPR | + **EXCG_ID_DVSN_CD("KRX")·SLL_TYPE·CNDT_PRIC** (신규). POST 키 대문자 |
+| 매수가능조회 | `inquire-psbl-order` | ✅ 경로 동일, 모의 TR **VTTC8908R**. 응답 `nrcvb_buy_qty`/`max_buy_qty` |
+| 잔고 TR(모의) | `VTTC8434R` | 잔정 사용(개편 무관 추정), 실제 `--send` 스모크로 최종 확인 |
+| ORD_DVSN | `00`=지정가 / `01`=시장가 | 통념값 사용, `--send` 스모크로 최종 확인 |
 
-신뢰도: 잘 알려진 값이라 ~85%지만, 규칙상 **실제 호출 전 공식 확인 필수**.
+> 비고: 옛 TR_ID(VTTC0802U)로 구현했으면 주문 거부됐을 것. 실제 호출(`--send`)이 최종 empirical 확인.
 
 ---
 
