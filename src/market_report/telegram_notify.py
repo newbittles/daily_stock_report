@@ -140,6 +140,8 @@ def _format_pre_summary(snap: MarketSnapshot) -> str:
         for t in snap.top_themes[:3]:
             sign = "+" if t.change_pct >= 0 else ""
             lines.append(f"  · {t.name} {sign}{t.change_pct:.2f}%")
+            if getattr(t, "description", ""):
+                lines.append(f"    💡 {t.description}")
         lines.append("")
 
     lines.extend(_format_strategy_holdings(snap))
@@ -185,6 +187,8 @@ def _format_post_summary(snap: MarketSnapshot) -> str:
         for t in snap.top_themes[:3]:
             sign = "+" if t.change_pct >= 0 else ""
             lines.append(f"  · {t.name} {sign}{t.change_pct:.2f}%")
+            if getattr(t, "description", ""):
+                lines.append(f"    💡 {t.description}")
         lines.append("")
 
     lines.extend(_format_strategy_holdings(snap))
@@ -234,6 +238,8 @@ def _format_midday_summary(snap: MarketSnapshot) -> str:
         for t in snap.top_themes[:3]:
             sign = "+" if t.change_pct >= 0 else ""
             lines.append(f"  · {t.name} {sign}{t.change_pct:.2f}%")
+            if getattr(t, "description", ""):
+                lines.append(f"    💡 {t.description}")
         lines.append("")
 
     # 핫 종목 (상승률 상위 5 — ETF/우선주 제외된 top_gainers)

@@ -285,6 +285,7 @@
     }
     .theme-info .name { font-weight: 600; }
     .theme-info .leads { font-size: 0.8rem; color: var(--text-dim); margin-top: 0.15rem; }
+    .theme-info .theme-why { font-size: 0.82rem; color: var(--text); margin-top: 0.3rem; line-height: 1.4; }
     .theme-pct { font-weight: 700; font-size: 0.95rem; }
 
     /* Stock tables */
@@ -780,6 +781,9 @@
           <div class="name">{{ t.name }}</div>
           {% if t.leading_stocks %}
           <div class="leads">▸ {{ t.leading_stocks[:3]|join(', ') }}</div>
+          {% endif %}
+          {% if t.description %}
+          <div class="theme-why">💡 {{ t.description }}</div>
           {% endif %}
         </div>
         <div class="theme-pct {{ 'up-text' if t.change_pct >= 0 else 'down-text' }}">

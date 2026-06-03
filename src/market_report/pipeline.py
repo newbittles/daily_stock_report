@@ -593,6 +593,12 @@ async def run_full(
             await summarize_holdings(snap)
         except Exception as exc:
             logger.warning("holdings_summary_skip error=%s", exc)
+        # 강세 테마별 '왜 올랐나' 1~2줄 (뉴스·정책 기대감 연계 → 각 테마 description)
+        try:
+            from src.market_report.analyzer import summarize_themes
+            await summarize_themes(snap)
+        except Exception as exc:
+            logger.warning("theme_summary_skip error=%s", exc)
     except Exception as exc:
         logger.error("pipeline_strategy_failed error=%s", exc)
 

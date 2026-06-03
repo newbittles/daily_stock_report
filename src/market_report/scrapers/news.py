@@ -10,6 +10,7 @@ selector: dd.articleSubject (제목 + 링크)
 from __future__ import annotations
 
 import logging
+from urllib.parse import parse_qs, urlparse
 
 from bs4 import BeautifulSoup
 
@@ -31,6 +32,25 @@ def _normalize_url(href: str) -> str:
     return f"{NEWS_URL_BASE}/news/{href}"
 
 
+def _to_article_url(href: str) -> str:
+    """네이버 구형 news_read.naver?article_id=X&office_id=Y → 최신 기사 URL.
+
+    구형 news_read.naver는 기사 본문이 아닌 뉴스 홈/프레임으로 리디렉션돼(2026-06 실측)
+    클릭해도 기사로 안 간다. n.news.naver.com/article/{office_id}/{article_id}로 변환.
+    파싱 실패 시 기존 정규화로 폴백.
+    """
+    if "article_id" in href and "office_id" in href:
+        try:
+            q = parse_qs(urlparse(href).query)
+            aid = (q.get("article_id") or [""])[0]
+            oid = (q.get("office_id") or [""])[0]
+            if aid and oid:
+                return f"https://n.news.naver.com/article/{oid}/{aid}"
+        except Exception as exc:  # noqa: BLE001
+            logger.debug("news_url_convert_failed href=%s error=%s", href, exc)
+    return _normalize_url(href)
+
+
 async def fetch_market_news(top: int = 15) -> list[NewsItem]:
     """주요 시장 뉴스 N개 (네이버 금융 메인뉴스)."""
     html = await fetch(MAIN_NEWS_URL, encoding="euc-kr")
@@ -49,7 +69,7 @@ async def fetch_market_news(top: int = 15) -> list[NewsItem]:
         seen_titles.add(title)
 
         href = a.get("href", "")
-        url = _normalize_url(href)
+        url = _to_article_url(href)
 
         # 매체·시각 정보 (같은 dl 안의 articleSummary 등에서 추출)
         parent_dl = dd.find_parent("dl")
@@ -98,7 +118,7 @@ async def fetch_market_outlook(top: int = 10) -> list[NewsItem]:
         items.append(
             NewsItem(
                 title=title,
-                url=_normalize_url(a.get("href", "")),
+                url=_to_article_url(a.get("href", "")),
                 source="네이버금융",
                 published_at="",
             )

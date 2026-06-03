@@ -506,6 +506,63 @@ async def summarize_stocks(snap: MarketSnapshot) -> None:
     logger.info("stock_summary_ok n=%d", len(targets))
 
 
+async def summarize_themes(snap: MarketSnapshot) -> None:
+    """강세 테마별 '왜 올랐나' 1~2줄 요약 → 각 ThemeRank.description.
+
+    뉴스·정책/정치 이슈·기대감·대장주 움직임을 근거로(예: 보험 → 정책 기대감).
+    1회 배치 호출. 키 없음/실패 시 description 미설정(렌더 측에서 생략).
+    """
+    import asyncio
+    import random
+
+    settings = get_settings()
+    if not settings.gemini_api_key or not snap.top_themes:
+        return
+
+    targets = snap.top_themes[:6]
+    theme_blob = "\n".join(
+        f"- {t.name} {t.change_pct:+.1f}% [주도주 {', '.join(t.leading_stocks[:3]) or '-'}]"
+        for t in targets)
+    news_blob = "\n".join(f"- {n.title}" for n in (snap.market_news or [])[:15])
+
+    prompt = (
+        "다음은 오늘 한국 증시의 강세 테마와 시장 뉴스다. 각 테마가 **오늘 왜 강세인지** "
+        "1~2문장으로 요약하라. 근거는 ①관련 뉴스 ②정책·정치 이슈나 기대감(예: 보험 → 정책 "
+        "기대감) ③대장주(주도주) 움직임 중심으로. 뉴스에 근거가 없으면 수급·순환매 맥락으로 "
+        "설명하되 사실을 지어내지 말 것. 매수추천·목표가는 쓰지 말 것.\n\n"
+        f"[오늘 강세 테마]\n{theme_blob}\n\n"
+        f"[시장 뉴스 헤드라인]\n{news_blob}\n\n"
+        '반드시 JSON으로만 답하라: {"테마명": "왜 강세인지 1~2문장", ...}'
+    )
+
+    client = genai.Client(api_key=settings.gemini_api_key)
+    data: dict[str, Any] | None = None
+    for attempt in range(3):
+        try:
+            if attempt > 0:
+                await asyncio.sleep(random.uniform(2 * (2 ** (attempt - 1)), 5 * (2 ** (attempt - 1))))
+            response = client.models.generate_content(
+                model=MODEL_NAME, contents=prompt,
+                config=types.GenerateContentConfig(
+                    response_mime_type="application/json", temperature=0.3),
+            )
+            data = json.loads(response.text or "{}")
+            break
+        except Exception as exc:  # noqa: BLE001
+            logger.warning("theme_summary_attempt_failed attempt=%d error=%s", attempt, exc)
+
+    if not isinstance(data, dict):
+        logger.error("theme_summary_failed — 테마 요약 생성 실패")
+        return
+
+    for t in targets:
+        s = data.get(t.name, "")
+        if isinstance(s, (dict, list)):
+            s = json.dumps(s, ensure_ascii=False)
+        t.description = str(s or "").strip()
+    logger.info("theme_summary_ok n=%d", len(targets))
+
+
 _HOLD_STATE_KO = {
     "BREAKDOWN": "추세붕괴", "STOP60": "60선이탈", "STOP20": "20선이탈",
     "ADD": "눌림목(추가매수후보)", "HOLD": "추세양호(홀딩)", "NEUTRAL": "관망", "UNKNOWN": "데이터부족",
