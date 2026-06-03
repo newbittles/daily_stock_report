@@ -303,3 +303,65 @@ def test_report_shows_cross_badge():
     text = build_us_screening_report([p_pull, p_corr], top_n=5, as_of="2026-06-03")
     assert "🟢단기눌림" in text
     assert "⚠️조정시작" in text
+
+
+# ─── 심볼 정규화 (FDR ↔ yfinance, BRKB→BRK-B) ─────────────────────────────
+from src.datasource.us.symbols import to_fdr_symbol, to_yf_symbol  # noqa: E402
+
+
+@pytest.mark.parametrize("fdr_sym,yf_sym", [
+    ("BRKB", "BRK-B"),    # 버크셔 — 실측 비표준
+    ("BFB", "BF-B"),      # 브라운포맨 — 실측 비표준
+    ("AAPL", "AAPL"),     # 일반 — 불변
+    ("FOXA", "FOXA"),     # 듀얼클래스지만 yfinance 동일
+    ("BRK.B", "BRK-B"),   # 닷 형태 일반 규칙(.→-)
+])
+def test_to_yf_symbol(fdr_sym, yf_sym):
+    assert to_yf_symbol(fdr_sym) == yf_sym
+
+
+def test_to_fdr_symbol_roundtrip():
+    for s in ("BRKB", "BFB"):
+        assert to_fdr_symbol(to_yf_symbol(s)) == s
+    assert to_fdr_symbol("AAPL") == "AAPL"  # 매핑 없으면 원본
+
+
+def test_parse_ohlcv_chunk_normalizes_keys():
+    """yfinance 결과가 'BRK-B'로 키잉돼도 FDR 키 'BRKB'로 저장(양방향)."""
+    idx = pd.to_datetime(["2026-05-28", "2026-05-29"])
+    cols = pd.MultiIndex.from_product(
+        [["BRK-B", "AAPL"], ["Open", "High", "Low", "Close", "Volume"]]
+    )
+    df = pd.DataFrame(
+        [[10, 11, 9, 10.5, 1000, 20, 21, 19, 20.5, 2000],
+         [11, 12, 10, 11.5, 1500, 21, 22, 20, 21.5, 2500]],
+        index=idx, columns=cols,
+    )
+    out: dict = {}
+    fdr_source._parse_ohlcv_chunk(df, ["BRKB", "AAPL"], out)
+    assert "BRKB" in out and len(out["BRKB"]) == 2  # FDR 키로 저장
+    assert "AAPL" in out and out["AAPL"][-1].close == 21.5
+    assert out["BRKB"][-1].close == 11.5
+
+
+# ─── 달러 거래대금 표기 (us_report, '억' 원화 회피) ────────────────────────
+from src.screener.us_report import _fmt_usd_turnover  # noqa: E402
+
+
+@pytest.mark.parametrize("value,expected", [
+    (1.5e9, "$1.5B"),
+    (3.4e8, "$340M"),
+    (5e5, "$500K"),
+])
+def test_fmt_usd_turnover(value, expected):
+    assert _fmt_usd_turnover(value) == expected
+
+
+def test_report_avoids_won_turnover_shows_dollar():
+    """engine '거래대금 N억'(원화) reason은 회피하고, 거래대금은 달러로 표기."""
+    p = _pick("NVDA", "Nvidia", "반도체", "C. 추세추종", "거래대금 2억 (OK)")
+    p.matches[0].reasons.append("대세 정배열 + 신고가")  # 통화 무관 대안
+    text = build_us_screening_report([p], top_n=5, as_of="2026-06-03")
+    assert "억" not in text          # 원화 '억' 표기 사라짐
+    assert "$" in text               # 달러 거래대금 표기
+    assert "대세 정배열" in text      # 통화 무관 reason 채택

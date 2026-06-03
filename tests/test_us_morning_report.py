@@ -41,3 +41,32 @@ def test_us_morning_no_korean_stock_links() -> None:
     msg = _format_us_morning_summary(_us_snap())
     assert "finance.naver.com/item" not in msg
     assert "시초 매수" not in msg  # 구 한국 시초 Top3 문구 제거됨
+
+
+async def test_collect_us_screening_adds_yf_symbol(monkeypatch) -> None:
+    """BRKB(FDR) 픽 → us_top3/그룹 dict에 야후링크용 yf_symbol='BRK-B' 부착."""
+    from src.datasource.base import Candle
+    from src.market_report import pipeline as P
+    from src.screener.engine import ScreenMatch
+    from src.screener.us_pipeline import USStockPick
+
+    cs = [Candle("20260602", 450, 455, 448, 452.0, 3_500_000)]
+    pick = USStockPick(
+        symbol="BRKB", name="Berkshire Hathaway", price=452.0, change_pct=1.2,
+        sector="Financials", industry="Insurance",
+        matches=[ScreenMatch(matched=True, strategy_name="C. 추세추종",
+                             opinion="추세", reasons=["거래대금 16억 (OK)", "정배열"])],
+        candles=cs, cross_signal=None,
+    )
+
+    async def fake_run():
+        return [pick]
+    monkeypatch.setattr("src.screener.us_pipeline.run_us_screening", fake_run)
+
+    snap = MarketSnapshot(mode="us_morning", generated_at=datetime(2026, 6, 4, 7, 30))
+    await P._collect_us_screening(snap)
+
+    assert snap.us_top3[0]["symbol"] == "BRKB"          # 표시는 FDR 심볼 유지
+    assert snap.us_top3[0]["yf_symbol"] == "BRK-B"       # 야후 링크용 정규화
+    assert snap.us_screen_groups[0]["picks"][0]["yf_symbol"] == "BRK-B"
+    assert "억" not in snap.us_top3[0]["reason"]          # 원화 '억' reason 회피

@@ -470,7 +470,7 @@
       <div class="top3-card">
         <div class="top3-head">
           <span class="top3-rank">{{ loop.index }}</span>
-          <a href="https://finance.yahoo.com/quote/{{ t.symbol }}" target="_blank" rel="noopener">{{ t.name }}</a>
+          <a href="https://finance.yahoo.com/quote/{{ t.yf_symbol or t.symbol }}" target="_blank" rel="noopener">{{ t.name }}</a>
           <span class="pick-ticker">{{ t.symbol }}</span>
           <span class="px">${{ "{:,.2f}".format(t.price) }}</span>
           <span class="{{ 'up-text' if t.change_pct >= 0 else 'down-text' }}">{{ '+' if t.change_pct >= 0 else '' }}{{ "{:.2f}".format(t.change_pct) }}%</span>
@@ -492,7 +492,7 @@
       <ul class="watch-list">
         {% for p in g.picks %}
         <li>
-          <a href="https://finance.yahoo.com/quote/{{ p.symbol }}" target="_blank" rel="noopener"><strong>{{ p.name }}</strong></a>
+          <a href="https://finance.yahoo.com/quote/{{ p.yf_symbol or p.symbol }}" target="_blank" rel="noopener"><strong>{{ p.name }}</strong></a>
           <span class="pick-ticker">{{ p.symbol }}</span> · ${{ "{:,.2f}".format(p.price) }}
           <span class="{{ 'up-text' if p.change_pct >= 0 else 'down-text' }}">{{ '+' if p.change_pct >= 0 else '' }}{{ "{:.2f}".format(p.change_pct) }}%</span>
           {% if p.sector %}<span style="color:var(--text-dim);font-size:0.85rem;">({{ p.sector }})</span>{% endif %}

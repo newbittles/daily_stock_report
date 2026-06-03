@@ -16,6 +16,7 @@ from datetime import date
 from pathlib import Path
 
 from src.datasource.base import Candle
+from src.datasource.us.symbols import to_yf_symbol
 
 _OHLCV_CACHE = Path(__file__).resolve().parent.parent.parent.parent / "data" / "us_ohlcv_cache.json"
 
@@ -135,13 +136,16 @@ def _df_to_candles(df) -> list[Candle]:
 
 
 def _parse_ohlcv_chunk(data, syms: list[str], out: dict[str, list[Candle]]) -> None:
-    """yfinance 다운로드 결과 → out 에 {symbol: [Candle]} 누적."""
+    """yfinance 다운로드 결과 → out 에 {symbol: [Candle]} 누적.
+
+    syms 는 FDR 심볼. yfinance 결과는 yf 심볼(BRK-B 등)로 키잉돼 있으므로
+    to_yf_symbol()로 조회하고 원래 FDR 키(sym)로 저장한다(양방향 정규화)."""
     if len(syms) == 1:
         out[syms[0]] = _df_to_candles(data)
         return
     for sym in syms:
         try:
-            sub = data[sym].dropna(how="all")
+            sub = data[to_yf_symbol(sym)].dropna(how="all")
             out[sym] = _df_to_candles(sub)
         except Exception as exc:  # noqa: BLE001
             logger.debug("us_ohlcv_missing symbol=%s error=%s", sym, exc)
@@ -171,7 +175,7 @@ def _fetch_ohlcv_batch_sync(symbols: list[str], days: int,
         part = symbols[ci * chunk_size:(ci + 1) * chunk_size]
         try:
             data = yf.download(
-                part, start=start, group_by="ticker",
+                [to_yf_symbol(s) for s in part], start=start, group_by="ticker",
                 auto_adjust=False, threads=True, progress=False,
             )
         except Exception as exc:  # noqa: BLE001
@@ -252,7 +256,7 @@ def _parse_turnover_chunk(data, syms: list[str], out: dict[str, dict]) -> None:
     multi = len(syms) > 1
     for sym in syms:
         try:
-            sub = data[sym] if multi else data
+            sub = data[to_yf_symbol(sym)] if multi else data
             sub = sub.dropna(subset=["Close"])
             if len(sub) < 1:
                 continue
@@ -296,7 +300,7 @@ def _fetch_turnover_sync(symbols: list[str], lookback: int = 7,
         part = symbols[ci * chunk_size:(ci + 1) * chunk_size]
         try:
             data = yf.download(
-                part, period=f"{lookback}d", group_by="ticker",
+                [to_yf_symbol(s) for s in part], period=f"{lookback}d", group_by="ticker",
                 auto_adjust=False, threads=True, progress=False,
             )
         except Exception as exc:  # noqa: BLE001

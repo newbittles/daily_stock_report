@@ -369,6 +369,30 @@ async def analyze(snap: MarketSnapshot) -> MarketSnapshot:
     return snap
 
 
+def _move_label(change_pct: float, cross_signal: str | None = None) -> str:
+    """등락률(+크로스신호) → 방향 라벨. AI가 상승/하락 사유를 맞게 쓰도록 힌트.
+
+    CORRECTION(조정시작=상승 후 하락 전환)은 오늘 등락 부호와 무관히 '조정'으로 본다
+    ('잘 오르다 폭락'한 종목의 하락 사유 설명을 유도).
+    """
+    if cross_signal == "CORRECTION":
+        return "▼조정(상승 후 하락 전환)"
+    if change_pct < 0:
+        return "▼하락"
+    if change_pct > 0:
+        return "▲상승"
+    return "보합"
+
+
+def _summary_target_line(tk: str, p: dict) -> str:
+    """AI 종목요약 프롬프트용 한 줄(종목·등락·방향·테마·주도주). 순수 함수."""
+    chg = float(p.get("change_pct", 0) or 0)
+    lead = "(테마 주도주)" if p.get("is_theme_leader") else ""
+    move = _move_label(chg, p.get("cross_signal"))
+    return (f"- {tk} {p.get('name', '')} | 오늘 {chg:+.1f}% {move} "
+            f"| 테마 {p.get('theme', '-') or '-'}{lead}")
+
+
 async def summarize_stocks(snap: MarketSnapshot) -> None:
     """Top3 + 전략스크린 종목별 AI 요약을 1회 배치 호출로 사전 생성.
 
@@ -394,31 +418,27 @@ async def summarize_stocks(snap: MarketSnapshot) -> None:
     if not targets:
         return
 
-    # 컨텍스트: 강세 테마(주도주) + 시장 뉴스 → "왜 올랐나" 추론 근거
+    # 컨텍스트: 강세 테마(주도주) + 시장 뉴스 → "왜 올랐나/내렸나" 추론 근거
     theme_blob = "\n".join(
         f"- {t.name} {t.change_pct:+.1f}% [주도주 {', '.join(t.leading_stocks[:3]) or '-'}]"
         for t in (snap.top_themes or [])[:10])
     news_blob = "\n".join(f"- {n.title}" for n in (snap.market_news or [])[:15])
 
-    lines = []
-    for tk, p in targets.items():
-        lead = "(테마 주도주)" if p.get("is_theme_leader") else ""
-        lines.append(
-            f"- {tk} {p.get('name', '')} | 오늘 {p.get('change_pct', 0):+.1f}% "
-            f"| 테마 {p.get('theme', '-') or '-'}{lead}"
-        )
-    blob = "\n".join(lines)
+    blob = "\n".join(_summary_target_line(tk, p) for tk, p in targets.items())
 
     prompt = (
         "다음은 오늘 한국 증시에서 시그널이 포착된 종목들이다. 각 종목이 "
-        "**오늘 왜 올랐는지(또는 강세인지)** 를 1~2문장으로 간단히 요약하라.\n"
+        "**오늘 왜 그렇게 움직였는지** 를 1~2문장으로 간단히 요약하라.\n"
+        "- ▲상승 종목: 왜 올랐는지(강세 이유)를 설명.\n"
+        "- ▼하락·조정 종목: 왜 하락(또는 조정)했는지 설명. 특히 '상승 후 하락 전환'이면 "
+        "차익실현·과열 부담·고점 매도 등 하락 사유를 짚어라.\n"
         "근거는 ①주요 뉴스 ②소속 테마 ③주도주 여부 중심으로. "
         "진입가·손절가·매수추천은 절대 언급하지 말 것(그건 따로 표시됨). "
         "뉴스에 근거가 없으면 테마·수급 맥락으로 설명하되, 사실을 지어내지 말 것.\n\n"
         f"[오늘 강세 테마]\n{theme_blob}\n\n"
         f"[시장 뉴스 헤드라인]\n{news_blob}\n\n"
         f"[대상 종목]\n{blob}\n\n"
-        '반드시 JSON으로만 답하라: {"종목코드": "왜 올랐는지 1~2문장", ...}'
+        '반드시 JSON으로만 답하라: {"종목코드": "왜 올랐는지(또는 왜 하락했는지) 1~2문장", ...}'
     )
 
     client = genai.Client(api_key=settings.gemini_api_key)

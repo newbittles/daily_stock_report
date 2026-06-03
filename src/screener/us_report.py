@@ -33,11 +33,27 @@ def _turnover(p: USStockPick) -> float:
     return p.price * (p.candles[-1].volume if p.candles else 0)
 
 
+def _fmt_usd_turnover(value: float) -> str:
+    """달러 거래대금 → 사람이 읽는 표기($1.2B/$340M/$5.0M). 미국은 '억'(원화) 부적합."""
+    if value >= 1e9:
+        return f"${value / 1e9:.1f}B"
+    if value >= 1e6:
+        return f"${value / 1e6:.0f}M"
+    return f"${value / 1e3:.0f}K"
+
+
 def _reason_for(p: USStockPick, initial: str) -> str:
+    """매칭 전략(initial)의 근거 중 '통화 무관'한 것을 고른다.
+
+    engine의 거래대금 reason은 '억'(원화) 포맷이라 미국 달러엔 부적합 → 회피.
+    거래대금은 메인 줄에 달러로 따로 표기하므로 여기선 제외한다(중복·오표기 방지).
+    """
+    reasons: list[str] = []
     for m in p.matches:
-        if m.strategy_name[:1] == initial and m.reasons:
-            return m.reasons[0]
-    return ""
+        if m.strategy_name[:1] == initial:
+            reasons.extend(m.reasons)
+    non_won = [r for r in reasons if "억" not in r and "거래대금" not in r]
+    return non_won[0] if non_won else ""
 
 
 def build_us_screening_report(
@@ -67,8 +83,9 @@ def build_us_screening_report(
         for p in grp[:top_n]:
             sector = (p.sector[:14]) if p.sector else "-"
             badge = CROSS_BADGE.get(p.cross_signal, "")
+            turnover = _fmt_usd_turnover(_turnover(p))
             body.append(f"• `{p.symbol}` {p.name[:20]} ({sector}) "
-                        f"${p.price:,.1f} {p.change_pct:+.1f}%{badge}")
+                        f"${p.price:,.1f} {p.change_pct:+.1f}% · 거래대금 {turnover}{badge}")
             reason = _reason_for(p, initial)
             if reason:
                 body.append(f"   └ {reason}")

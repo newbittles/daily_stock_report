@@ -395,9 +395,13 @@ async def _collect_us_screening(snap: MarketSnapshot) -> None:
         pool = non_won or cands
         return pool[0] if pool else ""
 
+    from src.datasource.us.symbols import to_yf_symbol
+
     def _to_dict(p, initial: str = "") -> dict:
         return {
             "symbol": p.symbol, "name": p.name, "price": round(p.price, 2),
+            # 야후/구글 링크용 정규화 심볼(BRKB→BRK-B). 표시는 symbol, 링크는 yf_symbol.
+            "yf_symbol": to_yf_symbol(p.symbol),
             "change_pct": round(p.change_pct, 2), "sector": p.sector or "",
             "industry": p.industry or "",
             "reason": _pick_reason(p, initial),
