@@ -16,7 +16,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
 if hasattr(sys.stdout, "reconfigure"):
     sys.stdout.reconfigure(encoding="utf-8")  # cp949 콘솔 보호
 
-from src.trading.ma_exit import exit_decision  # noqa: E402
+from src.trading.ma_exit import decide_exit  # noqa: E402
 from src.trading.positions import PositionStore  # noqa: E402
 from src.trading.sizing import calc_qty, split_sell_qty  # noqa: E402
 from src.trading.top3_bridge import load_top3  # noqa: E402
@@ -67,29 +67,27 @@ async def run_sell(adapter, order, store, *, send: bool, notify=None) -> None:
     for pos in open_pos:
         candles = await adapter.get_ohlcv(pos.ticker, days=80)
         closes = [c.close for c in candles]
-        decision = exit_decision(closes)
-        print(f"  {pos.ticker} {pos.name} qty={pos.qty} stage={pos.stage} → {decision}")
-        if decision == "HOLD":
-            continue
-        if decision == "SELL_HALF" and pos.stage < 2:
+        action, reason = decide_exit(closes)
+        print(f"  {pos.ticker} {pos.name} qty={pos.qty} stage={pos.stage} → {action} {reason}")
+        if action == "SELL_HALF" and pos.stage < 2:
             sell_qty, remaining = split_sell_qty(pos.qty)
             if not send:
-                print(f"    SELL_HALF(dry-run) x{sell_qty} (잔여 {remaining})")
+                print(f"    SELL_HALF(dry-run) x{sell_qty} (잔여 {remaining}) — {reason}")
                 continue
             await order.order_cash("sell", pos.ticker, sell_qty, price=0, ord_dvsn="01")
             if remaining > 0:
                 store.update_qty_stage(pos.ticker, remaining, 2)
             else:
                 store.close(pos.ticker)
-            await _emit(notify, f"🔴 모의매도(2차 50%) {pos.name}({pos.ticker}) x{sell_qty} "
-                                f"20MA 2연속이탈 · 잔여 {remaining}")
-        elif decision == "SELL_ALL":
+            await _emit(notify, f"🔴 모의매도(50%) {pos.name}({pos.ticker}) x{sell_qty} "
+                                f"{reason} · 잔여 {remaining}")
+        elif action == "SELL_ALL":
             if not send:
-                print(f"    SELL_ALL(dry-run) x{pos.qty}")
+                print(f"    SELL_ALL(dry-run) x{pos.qty} — {reason}")
                 continue
             await order.order_cash("sell", pos.ticker, pos.qty, price=0, ord_dvsn="01")
             store.close(pos.ticker)
-            await _emit(notify, f"🔴 모의매도(전량) {pos.name}({pos.ticker}) x{pos.qty} 60MA 2연속이탈")
+            await _emit(notify, f"🔴 모의매도(전량) {pos.name}({pos.ticker}) x{pos.qty} {reason}")
 
 
 def _build_clients():

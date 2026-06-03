@@ -24,6 +24,21 @@ def test_ma_cross_signal():
     assert ma_cross_signal([100.0] * 5) is None
 
 
+def test_decide_exit():
+    from src.trading.ma_exit import decide_exit
+
+    # 🟢 PULLBACK → HOLD (건강한 눌림 보호)
+    pullback = [100.0] * 25 + [350.0, 400.0, 440.0, 460.0, 470.0, 465.0, 430.0, 410.0, 395.0, 385.0]
+    assert decide_exit(pullback)[0] == "HOLD"
+    # ⚠️ CORRECTION → SELL_HALF (선제 50%)
+    correction = [100.0] * 20 + [110.0, 120.0, 130.0, 128.0, 124.0, 118.0, 112.0, 108.0, 105.0, 103.0]
+    assert decide_exit(correction)[0] == "SELL_HALF"
+    # 60MA 2연속 이탈 → SELL_ALL (전량 우선)
+    assert decide_exit([100.0] * 61 + [40.0, 40.0])[0] == "SELL_ALL"
+    # 정상 상승 → HOLD
+    assert decide_exit([float(i) for i in range(1, 80)])[0] == "HOLD"
+
+
 def test_calc_qty():
     assert calc_qty(82500) == 12          # 1,000,000 // 82500
     assert calc_qty(1_000_000) == 1
