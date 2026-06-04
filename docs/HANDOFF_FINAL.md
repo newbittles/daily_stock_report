@@ -1,4 +1,14 @@
-# HANDOFF_FINAL — stock_report 단일 최종 인계 (2026-06-04)
+# HANDOFF_FINAL — stock_report 단일 최종 인계 (2026-06-05)
+
+## 0b. 2026-06-05 세션 (서학개미 + 미장 리포트 개선 — 전부 배포 완료)
+서학개미(한국인) 미국주식 **종목별 순매수**를 예탁결제원 SEIBro 데이터 endpoint 직접호출로 구현(무인증·서버OK). 상세 스펙·코드맵은 메모리 [[seibro_netbuy]].
+- 3f4d173: SEIBro 어댑터(`src/datasource/us/seibro_source.py`·`seibro_symbols.py`) + 텔레그램 pre/post "🇰🇷 한국인 매수 TOP5"(개별/ETF 칸 분리, 티커 병기).
+- b25d88e: 미장 종목 가격 포맷 — 장전 `종가(전일%)(프리장%)` / 마감 `장마감 종가(%)(애프터장%)`(us_px 매크로 + postmarket 오버레이). 장전 텔레그램 뉴스 제외→웹 최하단.
+- 1b67cb0: Top3·ABCD·섹터/테마 대장 카드에 `🇰🇷 한국인 순매수 전일N억(최근5일M억)` 배지(kr_nb 매크로 + `_attach_kr_netbuy_to_picks`, 장전·장후 둘 다).
+- ⚠️ 애프터장은 7시 시점 yfinance 시간외 빈값 가능(괄호만 생략), 전일 서학개미는 결제지연/공휴일이면 '전일 —'. 배지는 SEIBro TOP50 권내만.
+
+---
+
 
 > **이 문서가 유일한 최신 인계본이다.** 세션 재시작 시 가장 먼저 읽을 것.
 > 이전 핸드오프(06-02·06-03·06-04 멀티세션)는 전부 이 문서로 대체됨.
@@ -8,9 +18,9 @@
 
 ## 0. 지금 상태 (한눈에)
 
-- **origin/main 최신 커밋**: `c372175` (publisher pull-rebase 수정). 그 위에 이 핸드오프 커밋.
-- **서버(`lotto-server` = 134.185.109.195) = origin/main과 완전 동기화 + 서비스 재시작 완료.**
-- **테스트**: `.venv\Scripts\python.exe -m pytest tests/ -q` → **150 passed** (기준선).
+- **origin/main 최신 커밋**: `1b67cb0` (서학개미 픽별 배지). 2026-06-05 세션 작업 전부 푸시·배포 완료.
+- **서버(`lotto-server` = 134.185.109.195) = origin/main(1b67cb0)과 동기화 + 서비스 재시작 완료.** (로컬수정 `config/screener.yaml` RAM축소판만 autostash 보존)
+- **테스트**: `.venv\Scripts\python.exe -m pytest tests/ -q` → **216 passed** (기준선).
 - **3개 스트림(자동매매·미국스크리닝·리포트) 전부 main 머지 완료.** 백업 브랜치 `backup/pre-merge-2026-06-03`.
 - **SSH**: `ssh lotto-server` (별칭, 키인증 OK). 무암호 sudo 가능(systemctl restart 가능).
 
