@@ -148,9 +148,11 @@ async def test_overlay_premarket(monkeypatch) -> None:
 
     await P._overlay_premarket(snap)
     nv = snap.us_top3[0]
-    assert nv["change_pct"] == 2.5 and nv["close_pct"] == 1.0 and nv["price"] == 460.0 and nv["premkt"]
+    # 등락률은 프리장, 가격은 전일마감가 유지(사용자), 프리장가는 premkt_price 참고
+    assert nv["change_pct"] == 2.5 and nv["close_pct"] == 1.0 and nv["premkt"]
+    assert nv["price"] == 450.0 and nv["premkt_price"] == 460.0
     ap = snap.us_screen_groups[0]["picks"][0]
-    assert ap["change_pct"] == 1.0 and ap["premkt"]
+    assert ap["change_pct"] == 1.0 and ap["premkt"] and ap["price"] == 310.0
     zz = snap.us_screen_groups[0]["picks"][1]
     assert zz["change_pct"] == 3.0 and zz["premkt"] is False  # 미체결 → 마감값 유지
 

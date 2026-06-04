@@ -342,8 +342,8 @@ def _format_us_morning_summary(snap: MarketSnapshot) -> str:
         lines.append("")
 
     if getattr(snap, "us_volume_sectors", None):
-        lines.append("🔥 *거래량 상위 섹터* (Top 4)")
-        for q in snap.us_volume_sectors[:4]:
+        lines.append("🔥 *거래대금 상위 섹터* (Top 5)")
+        for q in snap.us_volume_sectors[:5]:
             sign = "+" if q.get("change_pct", 0) >= 0 else ""
             lines.append(f"  · {q['name']} {sign}{q.get('change_pct', 0):.2f}%")
         lines.append("")

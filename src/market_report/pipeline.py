@@ -102,7 +102,7 @@ async def collect_us_snapshot() -> MarketSnapshot:
     logger.info("us_snapshot_collect_start")
     idx, bt, sec, volsec = await asyncio.gather(
         fetch_us_indices(), fetch_us_bigtech(), fetch_us_sectors(),
-        fetch_us_top_volume_sectors(4),
+        fetch_us_top_volume_sectors(5),
         return_exceptions=True,
     )
 
@@ -563,29 +563,38 @@ async def _collect_us_screening(snap: MarketSnapshot) -> None:
 
 
 async def _overlay_premarket(snap: MarketSnapshot) -> None:
-    """us_top3/us_screen_groups 종목에 프리장 시세/등락률 오버레이 (장전 리포트).
+    """장전 리포트 — 추천종목·스크린·주요종목·강세섹터의 등락률을 프리장 기준으로 오버레이.
 
-    각 pick의 change_pct를 프리장 등락률로, price를 프리장가로 덮어쓴다(마감 등락률은
-    close_pct에 보존). 프리장 미체결 종목은 마감값 유지. yfinance .info per-symbol."""
+    각 dict의 change_pct를 프리장 등락률로, price(있으면)를 프리장가로 덮어쓴다(마감
+    등락률은 close_pct 보존). 프리장 미체결은 마감값 유지. 주요종목·섹터는 프리장순 재정렬."""
     from src.datasource.us.fdr_source import fetch_us_premarket
 
-    dicts: list[dict] = list(snap.us_top3 or [])
+    pick_dicts: list[dict] = list(snap.us_top3 or [])
     for g in (snap.us_screen_groups or []):
-        dicts.extend(g.get("picks", []))
-    syms = list({d["symbol"] for d in dicts})
+        pick_dicts.extend(g.get("picks", []))
+    other_dicts: list[dict] = (list(snap.us_bigtech or []) + list(snap.us_sectors or [])
+                               + list(snap.us_volume_sectors or []))
+    all_dicts = pick_dicts + other_dicts
+    syms = list({d["symbol"] for d in all_dicts if d.get("symbol")})
     if not syms:
         return
     pm = await fetch_us_premarket(syms)
-    for d in dicts:
-        q = pm.get(d["symbol"])
+    for d in all_dicts:
+        q = pm.get(d.get("symbol", ""))
         if q:
             d["premkt"] = True
             d["close_pct"] = d.get("change_pct", 0)   # 마감 등락률 보존
-            d["change_pct"] = q["change_pct"]          # 표시는 프리장 등락률
-            d["price"] = round(q["price"], 2)
+            d["change_pct"] = q["change_pct"]          # 표시 등락률 = 프리장
+            # 가격은 전일마감가 유지(사용자), 프리장가는 참고용으로만 보관
+            d["premkt_price"] = round(q["price"], 2)
         else:
-            d["premkt"] = False
-    logger.info("us_premarket_overlay picks=%d matched=%d", len(dicts), len(pm))
+            d.setdefault("premkt", False)
+    # 주요종목·강세섹터는 프리장 등락률순 재정렬 (거래량섹터는 거래대금순 유지)
+    if snap.us_bigtech:
+        snap.us_bigtech.sort(key=lambda x: x.get("change_pct", 0), reverse=True)
+    if snap.us_sectors:
+        snap.us_sectors.sort(key=lambda x: x.get("change_pct", 0), reverse=True)
+    logger.info("us_premarket_overlay targets=%d matched=%d", len(all_dicts), len(pm))
 
 
 async def run_full(

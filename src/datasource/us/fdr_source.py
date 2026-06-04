@@ -89,11 +89,11 @@ def _fetch_quotes_sync(symbols: dict[str, str]) -> list[USQuote]:
     return out
 
 
-async def fetch_us_top_volume_sectors(top: int = 4) -> list[USQuote]:
-    """섹터 ETF 거래량 상위 top개 → 핫테마용(거래량 내림차순)."""
+async def fetch_us_top_volume_sectors(top: int = 5) -> list[USQuote]:
+    """섹터 ETF 거래대금(종가×거래량) 상위 top개 → 핫테마용(거래대금 내림차순, 사용자)."""
     quotes = await asyncio.to_thread(_fetch_quotes_sync, US_SECTORS)
     ranked = [q for q in quotes if q.volume > 0]
-    ranked.sort(key=lambda q: q.volume, reverse=True)
+    ranked.sort(key=lambda q: q.price * q.volume, reverse=True)
     return ranked[:top]
 
 

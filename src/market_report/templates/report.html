@@ -463,9 +463,9 @@
       </ul>
       {% endif %}
       {% if snap.us_volume_sectors %}
-      <h2 style="margin-top:1rem;"><span class="icon">🔥</span>거래량 상위 섹터 (Top 4)</h2>
+      <h2 style="margin-top:1rem;"><span class="icon">🔥</span>거래대금 상위 섹터 (Top 5)</h2>
       <ul class="watch-list">
-        {% for q in snap.us_volume_sectors[:4] %}
+        {% for q in snap.us_volume_sectors[:5] %}
         <li><strong>{{ q.name }}</strong> <span class="{{ 'up-text' if q.change_pct >= 0 else 'down-text' }}">{{ '+' if q.change_pct >= 0 else '' }}{{ "{:.2f}".format(q.change_pct) }}%</span></li>
         {% endfor %}
       </ul>

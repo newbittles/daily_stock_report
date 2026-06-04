@@ -126,6 +126,25 @@ def _us_morning_prompt(snap: MarketSnapshot, context: str) -> str:
 JSON만 출력하고 다른 설명은 추가하지 마세요."""
 
 
+def _us_premarket_prompt(snap: MarketSnapshot, context: str) -> str:
+    return f"""당신은 미국 증시 전문 애널리스트입니다. 지금은 미국 정규장 개장 전 '프리장(pre-market)' 시간입니다.
+아래 데이터에서 **종목·섹터 등락률은 프리장 기준**, 지수는 직전 정규장 마감 기준입니다.
+한국 투자자를 위해 현재 프리장 상황을 다음 **JSON 형식**으로 해설하세요:
+
+{{
+  "summary": "지금 프리장 분위기 1-2문장 (강세/약세 + 핵심 키워드)",
+  "why_moved": "직전 정규장 마감 후 주요 뉴스·이슈가 무엇이었고 그 결과 프리장에서 어떤 섹터/종목이 상승·하락 중인지 3-4문장",
+  "theme_commentary": "프리장 강세/약세 섹터 해설 + 한국장 시사점 2-3문장"
+}}
+
+수치는 아래 값만 사용하고 지어내지 마세요. 뉴스가 불확실하면 일반적 맥락으로만 설명하세요.
+
+데이터:
+{context}
+
+JSON만 출력하고 다른 설명은 추가하지 마세요."""
+
+
 def _pre_close_prompt(snap: MarketSnapshot, context: str) -> str:
     theme_names = [t.name for t in snap.top_themes[:10]]
     return f"""당신은 한국 주식 시장 전문 애널리스트입니다. 지금 시각은 장 마감 40분 전 (14:50).
@@ -269,7 +288,10 @@ async def analyze(snap: MarketSnapshot) -> MarketSnapshot:
     """
     settings = get_settings()
 
-    if snap.mode in ("us_morning", "us_premarket"):
+    if snap.mode == "us_premarket":
+        context = _build_us_context(snap)
+        prompt = _us_premarket_prompt(snap, context)
+    elif snap.mode == "us_morning":
         context = _build_us_context(snap)
         prompt = _us_morning_prompt(snap, context)
     elif snap.mode == "pre_close":
