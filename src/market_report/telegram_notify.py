@@ -17,6 +17,40 @@ from src.notify.telegram.adapter import TelegramNotifier
 logger = logging.getLogger(__name__)
 
 
+_TG_LIMIT = 3900  # 텔레그램 4096 한도 안전 마진(마크다운 여유)
+
+
+def _split_for_telegram(text: str, limit: int = _TG_LIMIT) -> list[str]:
+    """긴 메시지를 한도 이하 청크로 분할. 섹션(빈 줄)·줄 경계 보존(마크다운 깨짐 방지)."""
+    if len(text) <= limit:
+        return [text]
+    chunks: list[str] = []
+    cur = ""
+    for block in text.split("\n\n"):
+        cand = block if not cur else f"{cur}\n\n{block}"
+        if len(cand) <= limit:
+            cur = cand
+            continue
+        if cur:
+            chunks.append(cur)
+            cur = ""
+        if len(block) <= limit:
+            cur = block
+            continue
+        # 단일 블록이 한도 초과 → 줄 단위로 더 쪼갬
+        for line in block.split("\n"):
+            cand2 = line if not cur else f"{cur}\n{line}"
+            if len(cand2) <= limit:
+                cur = cand2
+            else:
+                if cur:
+                    chunks.append(cur)
+                cur = line[:limit]
+    if cur:
+        chunks.append(cur)
+    return chunks
+
+
 _STATE_EMOJI = {"BREAKDOWN": "🔴", "STOP60": "🔴", "STOP20": "⚠️", "ADD": "🟢",
                 "HOLD": "✅", "NEUTRAL": "➖", "UNKNOWN": "❔"}
 
@@ -462,13 +496,16 @@ async def send_report(snap: MarketSnapshot) -> bool:
     bot = Bot(token=settings.telegram_bot_token)
     notifier = TelegramNotifier(bot=bot)
 
+    # 4096 한도 초과 시 섹션 경계로 분할 발송 (관심테마/섹터대장 추가로 장전 메시지가 길어짐)
+    parts = _split_for_telegram(text)
     # 화이트리스트 전체 수신자에게 발송 (여러 명 가능)
     ok_any = False
     for cid in chat_ids:
         cid = str(cid)
         try:
-            await notifier.send(cid, text)
-            logger.info("telegram_sent mode=%s chat_id=%s", snap.mode, cid)
+            for part in parts:
+                await notifier.send(cid, part)
+            logger.info("telegram_sent mode=%s chat_id=%s parts=%d", snap.mode, cid, len(parts))
             ok_any = True
         except Exception as exc:
             logger.error("telegram_send_failed mode=%s chat_id=%s error=%s", snap.mode, cid, exc)

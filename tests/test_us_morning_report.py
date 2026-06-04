@@ -158,6 +158,17 @@ async def test_overlay_premarket(monkeypatch) -> None:
     assert zz["change_pct"] == 3.0 and zz["premkt"] is False  # 미체결 → 마감값 유지
 
 
+def test_telegram_split_keeps_under_limit() -> None:
+    """긴 메시지(섹터대장+관심테마로 4096 초과)는 섹션 경계로 분할되어 한도 이하."""
+    from src.market_report.telegram_notify import _TG_LIMIT, _split_for_telegram
+    assert _split_for_telegram("짧음") == ["짧음"]
+    big = "\n\n".join(f"*섹션 {i}*\n" + "가" * 200 for i in range(40))
+    assert len(big) > 4096
+    parts = _split_for_telegram(big)
+    assert len(parts) > 1
+    assert all(len(p) <= _TG_LIMIT for p in parts)
+
+
 def test_us_premarket_telegram_header() -> None:
     """장전 리포트 헤더 — '장전(프리장)' + 프리장 기준 안내."""
     from src.market_report.telegram_notify import _format_us_morning_summary
