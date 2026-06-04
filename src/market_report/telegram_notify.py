@@ -389,7 +389,7 @@ def _format_us_morning_summary(snap: MarketSnapshot) -> str:
             picks = g.get("picks", [])
             if not picks:
                 continue
-            is_b = g.get("initial") == "B"
+            show_gap = g.get("initial") in ("B", "C")  # B·C 전략에 20MA 괴리 표시
             lines.append(f"*{g.get('label', '')}*")
             for p in picks[:5]:
                 sign = "+" if p.get("change_pct", 0) >= 0 else ""
@@ -401,7 +401,7 @@ def _format_us_morning_summary(snap: MarketSnapshot) -> str:
                     meta.append(f"시총 {p['marcap_str']}")
                 if p.get("turnover_str"):
                     meta.append(f"거래대금 {p['turnover_str']}")
-                if is_b:  # B전략: 20일선 괴리 형광볼드(#11)
+                if show_gap:  # B·C 전략: 20일선 괴리 형광볼드(#11, #137)
                     g20 = p.get("gap20", 0)
                     meta.append(f"20MA괴리 *{'+' if g20 >= 0 else ''}{g20:.1f}%*")
                 if meta:

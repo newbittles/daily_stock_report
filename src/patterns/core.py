@@ -735,19 +735,17 @@ def is_downtrend_reversal(
     elif price <= ma20[-1]:
         return PatternResult(False, "20일선 미돌파", metrics)
 
-    # 1. 하락 이력 (전환 초입) — 이미 상승추세인 종목 제외
+    # 1. 하락 이력 (전환 초입) — 이미 상승추세인 주도주 제외.
+    #    실제 하락 근거(구름 하단 이탈)만 인정. 5<20 1일 같은 단기 눌림(short_dead)은
+    #    강한 주도주도 흔히 겪어 D 오분류 원인 → 제외(사용자 2026-06-04, AVGO·IBM 사례).
     had_downtrend = ma20[-1] < ma60[-1]  # 중기 역배열 = 초입
-    if not had_downtrend:
+    if not had_downtrend and use_ichimoku and cloud_bot is not None:
         for k in range(2, min(downtrend_lookback, len(closes) - 1) + 1):
-            below_cloud = (use_ichimoku and cloud_bot is not None
-                           and closes[-k] < cloud_bot)
-            short_dead = (ma5[-k] is not None and ma20[-k] is not None
-                          and ma5[-k] < ma20[-k])
-            if below_cloud or short_dead:
+            if closes[-k] < cloud_bot:    # 최근 구름 하단 이탈 = 실제 하락 이력
                 had_downtrend = True
                 break
     if not had_downtrend:
-        return PatternResult(False, "하락전환 이력 없음 (이미 상승추세)", metrics)
+        return PatternResult(False, "하락전환 이력 없음 (이미 상승추세/주도주)", metrics)
 
     align = "20<60(초입)" if ma20[-1] < ma60[-1] else "20>60"
     rv = rsi(closes, 14)[-1]
