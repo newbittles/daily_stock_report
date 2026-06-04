@@ -48,8 +48,11 @@ US_NAME_KO: dict[str, str] = {
 
 
 def korean_name(symbol: str, fallback: str = "") -> str:
-    """FDR 심볼 → 한국어 표시명. 큐레이션에 있으면 한국어, 없으면 영문명(폴백)."""
-    return US_NAME_KO.get(symbol, fallback or symbol)
+    """FDR 심볼 → 한국어 표시명. 큐레이션 → 네이버 캐시(DB) → 영문명(폴백) 순."""
+    if symbol in US_NAME_KO:
+        return US_NAME_KO[symbol]
+    from src.datasource.us.names_db import cached_name
+    return cached_name(symbol) or fallback or symbol
 
 
 # GICS Industry(세부 업종) → 한국어 테마. FDR Sector는 죄다 'Information Technology'라

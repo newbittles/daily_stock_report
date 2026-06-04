@@ -545,6 +545,13 @@ async def _collect_us_screening(snap: MarketSnapshot) -> None:
             "gap20": round(_gap20(p), 1),               # #11 20MA 괴리(B 표시·정렬)
         }
 
+    # 한국어 종목명 DB 채우기(미캐시 종목 네이버 best-effort) — _to_dict 전에 (사용자 154)
+    try:
+        from src.datasource.us.names_db import ensure_names
+        await ensure_names([p.symbol for p in picks] + [p.symbol for p in theme_cands])
+    except Exception as exc:  # noqa: BLE001
+        logger.warning("us_names_ensure_failed error=%s", exc)
+
     # 전략별 그룹 (A·B·C·D 순) — 기본 거래대금 상위 5, B는 20MA 괴리 작은 순(#11)
     groups: list[dict] = []
     for initial, label in STRATEGY_ORDER:
