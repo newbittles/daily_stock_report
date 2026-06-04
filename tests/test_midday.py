@@ -146,16 +146,19 @@ async def test_collect_hot_stocks_filter_and_streak(monkeypatch):
     assert h0["theme"] == "로봇"
     assert h0["streak"] == {"orgn": 2, "frgn": 1, "prsn": 0}   # 연속 순매수일
     assert h0["tv_change"] == 200                              # 거래대금 전일대비 +200%
+    assert h0["tv_today"] == 100 * 300                         # 오늘 거래대금 금액(원)
 
 
 def test_format_hot_stocks_renders():
     from src.market_report.telegram_notify import _format_hot_stocks
     hot = [{"ticker": "454910", "name": "두산로보틱스", "price": 170000, "change_pct": 12.0,
-            "tv_change": 200, "streak": {"orgn": 2, "frgn": 1, "prsn": 0}, "theme": "로봇"}]
+            "tv_today": 1.5e11, "tv_change": 200,
+            "streak": {"orgn": 2, "frgn": 1, "prsn": 0}, "theme": "로봇"}]
     txt = "\n".join(_format_hot_stocks(hot))
     assert "핫 종목" in txt and "상승률 상위" in txt
     assert "두산로보틱스" in txt
-    assert "거래대금 전일比 +200%" in txt
-    assert "기관2일" in txt and "외인1일" in txt
-    assert "개인" not in txt          # prsn=0 → 표시 안 함
+    assert "거래대금 1,500억" in txt              # 금액 표시
+    assert "(전일대비:+200%)" in txt              # 괄호 전일대비
+    assert "수급: 기관2일·외인1일 순매수" in txt   # 아래 줄 수급현황
+    assert "개인" not in txt                      # prsn=0 → 표시 안 함
     assert "테마: 로봇" in txt

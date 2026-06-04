@@ -271,15 +271,17 @@ async def collect_hot_stocks(
         d = {
             "ticker": s.ticker, "name": s.name, "price": s.price,
             "change_pct": round(s.change_pct, 2), "marcap": marcap.get(s.ticker, 0),
-            "theme": themes.get(s.ticker, ""), "tv_change": None,
+            "theme": themes.get(s.ticker, ""), "tv_today": None, "tv_change": None,
             "streak": {"orgn": 0, "frgn": 0, "prsn": 0},
         }
-        try:  # 거래대금 전일대비(%)
+        try:  # 거래대금 금액(오늘) + 전일대비(%)
             candles = await adapter.get_ohlcv(s.ticker, days=3)
-            if len(candles) >= 2:
+            if candles:
                 tv0 = candles[-1].close * candles[-1].volume
-                tv1 = candles[-2].close * candles[-2].volume
-                d["tv_change"] = round((tv0 - tv1) / tv1 * 100, 0) if tv1 else None
+                d["tv_today"] = tv0  # 오늘 거래대금(원)
+                if len(candles) >= 2:
+                    tv1 = candles[-2].close * candles[-2].volume
+                    d["tv_change"] = round((tv0 - tv1) / tv1 * 100, 0) if tv1 else None
         except Exception as exc:  # noqa: BLE001
             logger.debug("hot_tv_failed ticker=%s error=%s", s.ticker, exc)
         try:  # 순매수 연속일 (기관/외인/개인)

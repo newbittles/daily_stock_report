@@ -208,25 +208,30 @@ def _format_post_summary(snap: MarketSnapshot) -> str:
 
 
 def _format_hot_stocks(hot: list[dict]) -> list[str]:
-    """핫종목(거래대금 상위) 텔레그램 라인 — 거래대금 전일대비·순매수 연속일·소속테마.
+    """핫종목 텔레그램 라인 — 거래대금 금액(전일대비:%) + 아래줄 수급현황 + 테마.
 
-    종목 줄 + 아래에 (거래대금 전일比, 기관/외인/개인 순매수 연속일) + 테마. 모바일 가독성."""
+    종목 줄 / 거래대금 X억 (전일대비:+Y%) / 수급: 기관N·외인N·개인N / 테마. 모바일 가독성."""
+    from src.datasource.market_cap import format_marcap
+
     lines: list[str] = ["🔥 *핫 종목* (상승률 상위)"]
     for h in hot:
         sign = "+" if h.get("change_pct", 0) >= 0 else ""
         lines.append(f"  · {_naver_link(h['name'], h['ticker'])} "
                      f"{h['price']:,.0f}원 ({sign}{h.get('change_pct', 0):.1f}%)")
-        sub: list[str] = []
-        tv = h.get("tv_change")
-        if tv is not None:
-            sub.append(f"거래대금 전일比 {'+' if tv >= 0 else ''}{tv:.0f}%")
+        # 거래대금 금액 (전일대비:%)
+        amt = h.get("tv_today")
+        if amt:
+            line = f"거래대금 {format_marcap(amt)}"
+            tv = h.get("tv_change")
+            if tv is not None:
+                line += f" (전일대비:{'+' if tv >= 0 else ''}{tv:.0f}%)"
+            lines.append("    " + line)
+        # 수급현황 (기관/외인/개인 순매수 연속일) — 아래 줄
         st = h.get("streak") or {}
         streak = [f"{lbl}{st[k]}일" for k, lbl in (("orgn", "기관"), ("frgn", "외인"), ("prsn", "개인"))
                   if st.get(k, 0) > 0]
         if streak:
-            sub.append("순매수 " + "·".join(streak))
-        if sub:
-            lines.append("    " + " · ".join(sub))
+            lines.append("    수급: " + "·".join(streak) + " 순매수")
         if h.get("theme"):
             lines.append(f"    테마: {h['theme']}")
     lines.append("")
