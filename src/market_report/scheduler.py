@@ -108,9 +108,9 @@ def build_scheduler() -> AsyncIOScheduler:
         args=["us_morning"], id="report_us_morning", replace_existing=True,
         misfire_grace_time=900,
     )
-    # 장중 리포트 (평일 12:00 — 오전장 흐름·전날 추천 top3 현황)
+    # 장중 리포트 (평일 11:40 — 오전장 흐름·전날 추천 top3 현황)
     scheduler.add_job(
-        _midday_job, CronTrigger(day_of_week="mon-fri", hour=12, minute=0, timezone=KST),
+        _midday_job, CronTrigger(day_of_week="mon-fri", hour=11, minute=40, timezone=KST),
         id="report_midday", replace_existing=True, misfire_grace_time=600,
     )
     return scheduler
