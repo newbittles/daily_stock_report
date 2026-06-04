@@ -440,9 +440,9 @@ async def _collect_us_screening(snap: MarketSnapshot) -> None:
     from src.screener.us_pipeline import run_us_screening
     from src.screener.us_report import STRATEGY_ORDER, _turnover
 
-    _MARCAP_FLOOR_WON = 5e11   # 시총 하한 5천억 (사용자 2026-06-04 B안: 2조→5천억, 워치리스트는 면제)
+    _MARCAP_FLOOR_WON = 4e11   # 시총 하한 4천억 — 전 종목 고정(워치리스트 면제 폐지, 사용자 2026-06-04)
     _PRICE_CAP_WON = 5e6       # 주가 상한 500만원/주
-    _PRICE_FLOOR_USD = 1.0     # 페니주 제외 — $1 미만 컷(워치리스트 포함, 사용자 2026-06-04)
+    _PRICE_FLOOR_USD = 1.5     # 페니주 제외 — $1.5 미만 컷(전 종목, 사용자 2026-06-04)
     _MARCAP_TOPN = 50          # 시총 조회는 거래대금 상위 N개만(속도)
 
     try:
@@ -470,7 +470,6 @@ async def _collect_us_screening(snap: MarketSnapshot) -> None:
     top50 = picks[:_MARCAP_TOPN]  # 추천Top3·전략그룹용(거래대금 상위)
     # 테마 대장 후보 = 전체 매칭에서 테마별 거래대금 1등 (top50 컷 전 — 양자 등 소형테마 보존)
     _watch_themes = {w.sector for w in US_GROWTH_WATCHLIST}
-    _watch_symbols = {w.symbol for w in US_GROWTH_WATCHLIST}  # 시총 하한 면제 대상(큐레이션)
     _by_theme: dict[str, list] = {}
     for p in picks:
         _by_theme.setdefault(_us_theme_fn(p.sector, p.industry), []).append(p)
@@ -478,16 +477,9 @@ async def _collect_us_screening(snap: MarketSnapshot) -> None:
     # 시총 조회 = top50 ∪ 테마대장 후보 (양자 대장도 시총 조회 보장)
     marcaps = await fetch_us_market_caps(
         list({p.symbol for p in top50} | {p.symbol for p in theme_cands}))
-
-    def _cap_ok(p) -> bool:
-        # 워치리스트(양자·우주·AI 등 큐레이션)는 시총 하한 면제 — 리게티형 초기 텐베거 포착(사용자 B안).
-        if p.symbol in _watch_symbols:
-            return True
-        return marcaps.get(p.symbol, 0) * rate >= _MARCAP_FLOOR_WON
-
-    if rate:  # 시총 하한 필터 (워치리스트 면제)
-        picks = [p for p in top50 if _cap_ok(p)]
-        theme_cands = [p for p in theme_cands if _cap_ok(p)]
+    if rate:  # 시총 하한 필터 — 전 종목 4천억 고정(워치리스트도 동일, 사용자 2026-06-04)
+        picks = [p for p in top50 if marcaps.get(p.symbol, 0) * rate >= _MARCAP_FLOOR_WON]
+        theme_cands = [p for p in theme_cands if marcaps.get(p.symbol, 0) * rate >= _MARCAP_FLOOR_WON]
     else:
         picks = top50
     if not picks:

@@ -85,5 +85,5 @@ strategies:
 
 # 공통 필터 (모든 전략에 추가 적용)
 global_filters:
-  min_price: 5             # $5 미만 페니주 제외
+  min_price: 1.5           # $1.5 미만 페니주 제외 (사용자 2026-06-04)
   exclude_etf: true        # ETF/ETN 제외 (S&P500엔 거의 없으나 안전장치)
