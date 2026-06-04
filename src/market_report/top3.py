@@ -12,8 +12,10 @@ import re
 
 _PREF_RE = re.compile(r"우[A-C]?$")  # 우선주(삼성전기우, 한화3우B 등) — Top3에서 제외(보통주 우선)
 
-# P4 가중치 (백테스트 확정) + supply(수급, 실시간 보강)
-WEIGHTS = {"strat": 3.0, "mom": 0.5, "liq": 0.5, "align": 0.1, "nh": 1.0, "supply": 2.0, "end": 6.0}
+# P4 가중치 (백테스트 확정) + supply(수급) + overheat(과열 강등, 사용자 2026-06-05)
+# overheat=5.0: 과열(BB상단 돌파)은 강등하되 완전 제외는 아님(표시 유지). 끝물(6.0) 다음 강한 패널티.
+WEIGHTS = {"strat": 3.0, "mom": 0.5, "liq": 0.5, "align": 0.1, "nh": 1.0, "supply": 2.0,
+           "end": 6.0, "overheat": 5.0}
 _STRAT_W = {"D. 추세 반전": 2.5, "C. 대세 정배열 추세추종": 3.0,
             "B. 주도주 20일선 눌림목": 2.0, "A. 수렴 후 대세상승 시작": 1.5}
 
@@ -54,6 +56,8 @@ def select_top3(screen_picks: list[dict], foreign_buy: set[str] | None = None,
     ranked = []
     for tk, p in by_ticker.items():
         supply = (1 if tk in fb else 0) + (1 if tk in ib else 0)  # 0~2
+        # 과열 = 일봉 BB상단 종가돌파(overheat) OR 4시간봉 BB상단 음봉(overheat_4h). 강등(사용자 2026-06-05).
+        is_overheat = bool(p.get("overheat") or p.get("overheat_4h"))
         from src.market_report.theme_bridge import matched_us_sector, us_theme_match
         us_hit = us_theme_match(p.get("theme", ""), us_kw)  # 미국 강세테마 연동
         score = (
@@ -65,6 +69,7 @@ def select_top3(screen_picks: list[dict], foreign_buy: set[str] | None = None,
             + w["supply"] * supply
             + w_us * (1 if us_hit else 0)
             - w["end"] * (1 if p.get("endstage") else 0)
+            - w["overheat"] * (1 if is_overheat else 0)  # 과열 강등
         )
         # 추천 이유 구성
         why = []
@@ -81,6 +86,10 @@ def select_top3(screen_picks: list[dict], foreign_buy: set[str] | None = None,
         # 테마는 별도 줄로 표기 (reason에서 제외)
         if p.get("endstage"):
             why.append("⚠️끝물주의")
+        if is_overheat:
+            _tf = "·".join([t for t, on in (("일봉", p.get("overheat")),
+                                            ("4시간봉", p.get("overheat_4h"))) if on])
+            why.append(f"🔥과열({_tf} 볼밴상단)—강등")
         ranked.append({
             "ticker": tk, "name": p["name"], "price": p["price"],
             "change_pct": p.get("change_pct", 0), "score": round(score, 1),
@@ -91,7 +100,8 @@ def select_top3(screen_picks: list[dict], foreign_buy: set[str] | None = None,
             "endstage": bool(p.get("endstage")),
             "stop_price": p.get("stop_price", 0), "stop_pct": p.get("stop_pct", 0),
             "gap20": round(p.get("gap20", 0), 1),  # 20일선 이격도(%)
-            "overheat": bool(p.get("overheat")),   # 🔥과열(BB돌파+이격≥30%+거래량≥1.8배)
+            "overheat": is_overheat,               # 🔥과열(일봉 BB상단돌파 ∪ 4H BB상단음봉) — 강등
+            "overheat_4h": bool(p.get("overheat_4h")),
             "vol_x": p.get("vol_x", 0),
             "cross_signal": p.get("cross_signal", ""),  # 5<10 데드+이격 (pullback/correction)
             "lead_strat": p["strategy"].split(".")[0].strip(),  # 대표전략 A/B/C/D

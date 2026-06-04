@@ -938,6 +938,18 @@ async def run_full(
         # O/X는 표시된 주도테마(상위 6)와 일치 — 선택적
         _set_leading_theme(snap.screen_picks, {_norm_name(t) for t in snap.leading_themes})
 
+        # 4시간봉 과열(BB상단 음봉) 부착 — Top3 후보(거래대금 상위 ~12)만 yfinance 조회(사용자 2026-06-05).
+        # best-effort: 실패해도 일봉 과열만으로 진행. 전체 유니버스 조회는 부하 커서 상위만.
+        try:
+            from src.datasource.kr_4h import fetch_4h_overheat
+            _cand = sorted(snap.screen_picks, key=lambda p: p.get("_liq", 0), reverse=True)[:12]
+            _o4 = await fetch_4h_overheat([p["ticker"] for p in _cand])
+            for p in snap.screen_picks:
+                if _o4.get(p["ticker"]):
+                    p["overheat_4h"] = True
+        except Exception as exc:
+            logger.warning("kr_4h_overheat_failed error=%s", exc)
+
         # Top3 종합추천 — 수급(외인/기관 순매수) 수집 후 P4 점수로 3종목 선정
         try:
             from src.market_report.top3 import select_top3
