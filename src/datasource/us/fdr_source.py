@@ -499,6 +499,40 @@ async def fetch_us_postmarket(symbols: list[str]) -> dict[str, dict]:
     return await asyncio.to_thread(_fetch_postmarket_sync, list(symbols))
 
 
+def _fetch_intraday_sync(symbols: list[str]) -> dict[str, dict]:
+    """동기 — yfinance .info로 정규장 '현재(장중)' 가격/등락률. {symbol(FDR키): {price, change_pct}}.
+
+    us_intraday(개장 직후 23:50 KST) 리포트용. 등락률은 regularMarketChangePercent 표기가
+    버전마다 분수/% 혼재라, regularMarketPrice·regularMarketPreviousClose로 직접 계산(결정론).
+    미체결/조회 실패 종목은 생략(부분 결과 허용)."""
+    import random
+    import time
+
+    import yfinance as yf
+
+    out: dict[str, dict] = {}
+    for i, sym in enumerate(symbols):
+        try:
+            info = yf.Ticker(to_yf_symbol(sym)).info
+            price = info.get("regularMarketPrice")
+            prev = info.get("regularMarketPreviousClose") or info.get("previousClose")
+            if price is not None and prev:
+                chg = (float(price) - float(prev)) / float(prev) * 100
+                out[sym] = {"price": float(price), "change_pct": round(chg, 2)}
+        except Exception as exc:  # noqa: BLE001
+            logger.debug("intraday_failed symbol=%s error=%s", sym, exc)
+        if i < len(symbols) - 1:
+            time.sleep(random.uniform(0.1, 0.3))
+    return out
+
+
+async def fetch_us_intraday(symbols: list[str]) -> dict[str, dict]:
+    """미국 종목 장중(정규장 현재) 시세 일괄 → {symbol: {price, change_pct}}. 실패 시 빈 dict."""
+    if not symbols:
+        return {}
+    return await asyncio.to_thread(_fetch_intraday_sync, list(symbols))
+
+
 # ─── 미국 시장 뉴스 — 장전/마감 AI 해설용(장후 뉴스·이슈) ──────────────────────
 
 

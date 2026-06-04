@@ -378,6 +378,9 @@ def _format_us_morning_summary(snap: MarketSnapshot) -> str:
     if snap.mode == "us_premarket":
         lines: list[str] = [f"🌅 *미국장 장전(프리장) 리포트* — {date}",
                             "_종목 등락률은 프리장 기준 · ABCD는 직전 마감 일봉_", ""]
+    elif snap.mode == "us_intraday":
+        lines = [f"🇺🇸 *미국장 장중 리포트* 🕒 — {date}",
+                 "_장중 잠정(개장 직후) · 실시간 등락률 · ABCD는 직전 마감 일봉 · 마감 시 변동 가능_", ""]
     else:
         lines = [f"🌎 *미국 증시 마감 요약* — {date}", ""]
 
@@ -400,13 +403,7 @@ def _format_us_morning_summary(snap: MarketSnapshot) -> str:
         lines.append(f"💡 {snap.why_moved}")
         lines.append("")
 
-    # 뉴스: 장전(us_premarket) 텔레그램에선 제외 → 웹 리포트 최하단으로(사용자 2026-06-05).
-    if getattr(snap, "us_news", None) and snap.mode != "us_premarket":
-        lines.append("📰 *미국 시장 뉴스*")
-        for n in snap.us_news[:5]:
-            src = f" _{n['source']}_" if n.get("source") else ""
-            lines.append(f"  · {n['title']}{src}")
-        lines.append("")
+    # 뉴스: 모든 미국 리포트(장전·장중·마감) 텔레그램에선 제외 → 웹 리포트 최하단으로만(사용자 2026-06-05).
 
     if snap.us_sectors:
         lines.append("🔥 *강세 섹터* (상승률 상위)")
@@ -438,7 +435,7 @@ async def send_report(snap: MarketSnapshot) -> bool:
         logger.warning("telegram_no_chat_id — allowed_chat_ids 비어있음")
         return False
 
-    if snap.mode in ("us_morning", "us_premarket"):
+    if snap.mode in ("us_morning", "us_premarket", "us_intraday"):
         text = _format_us_morning_summary(snap)
     elif snap.mode == "midday":
         text = _format_midday_summary(snap)

@@ -7,6 +7,9 @@
 종가 ${{ "{:,.2f}".format(item.price) }} <span class="{{ 'up-text' if prev >= 0 else 'down-text' }}">(전일 {{ '+' if prev >= 0 else '' }}{{ "{:.2f}".format(prev) }}%)</span>{% if item.premkt %} <span class="{{ 'up-text' if pct >= 0 else 'down-text' }}">(프리장 {{ '+' if pct >= 0 else '' }}{{ "{:.2f}".format(pct) }}%)</span>{% endif %}
 {%- elif mode == 'us_morning' -%}
 장마감 ${{ "{:,.2f}".format(item.price) }} <span class="{{ 'up-text' if pct >= 0 else 'down-text' }}">({{ '+' if pct >= 0 else '' }}{{ "{:.2f}".format(pct) }}%)</span>{% if item.after_pct is defined %} <span class="{{ 'up-text' if item.after_pct >= 0 else 'down-text' }}">(애프터장 {{ '+' if item.after_pct >= 0 else '' }}{{ "{:.2f}".format(item.after_pct) }}%)</span>{% endif %}
+{%- elif mode == 'us_intraday' -%}
+{%- set px = item.intraday_price if item.intraday else item.price -%}
+장중 ${{ "{:,.2f}".format(px) }} <span class="{{ 'up-text' if pct >= 0 else 'down-text' }}">({{ '+' if pct >= 0 else '' }}{{ "{:.2f}".format(pct) }}%)</span>
 {%- else -%}
 ${{ "{:,.2f}".format(item.price) }} <span class="{{ 'up-text' if pct >= 0 else 'down-text' }}">{{ '+' if pct >= 0 else '' }}{{ "{:.2f}".format(pct) }}%</span>
 {%- endif -%}
@@ -464,10 +467,10 @@ ${{ "{:,.2f}".format(item.price) }} <span class="{{ 'up-text' if pct >= 0 else '
         {% endif %}
       </div>
       {# 🤖 AI 시장요약 — 지수 바로 아래 (us_morning/us_premarket) #}
-      {% if snap.mode in ['us_morning', 'us_premarket'] and snap.summary %}
+      {% if snap.mode in ['us_morning', 'us_premarket', 'us_intraday'] and snap.summary %}
       <div class="summary-box" style="margin-top:0.8rem;"><div class="label">🤖 AI 시장 요약</div><p>{{ snap.summary }}</p></div>
       {% endif %}
-      {% if snap.mode in ['us_morning', 'us_premarket'] and snap.theme_commentary %}
+      {% if snap.mode in ['us_morning', 'us_premarket', 'us_intraday'] and snap.theme_commentary %}
       <div class="summary-box" style="margin-top:0.6rem;"><div class="label">🌏 한국장 시사점</div><p>{{ snap.theme_commentary }}</p></div>
       {% endif %}
     </section>
@@ -673,7 +676,7 @@ ${{ "{:,.2f}".format(item.price) }} <span class="{{ 'up-text' if pct >= 0 else '
     {% endif %}
 
     {# 2. AI 요약 (us_morning/us_premarket은 지수 아래에서 이미 표시 → 여기선 KR만) #}
-    {% if snap.summary and snap.mode not in ['us_morning', 'us_premarket'] %}
+    {% if snap.summary and snap.mode not in ['us_morning', 'us_premarket', 'us_intraday'] %}
     <section>
       <h2><span class="icon">🤖</span>AI 시장 요약</h2>
       <div class="summary-box">

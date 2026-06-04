@@ -62,6 +62,62 @@ async def _us_premarket_job() -> None:
         logger.exception("us_premarket_job_failed error=%s", exc)
 
 
+def _us_data_fresh_sync() -> bool:
+    """방금 마감된 미국 세션이 데이터 피드에 반영됐는지(yfinance ^GSPC 최신 일봉 == ET 세션일).
+
+    06:30 조기발행 게이트용. 겨울 마감(06:00 KST) 직후엔 일봉 미갱신이 흔해 False가 나올 수 있고,
+    그러면 06:30은 스킵하고 07:00 안전망이 발행한다(사용자 2026-06-05). 오류 시 보수적으로 False."""
+    try:
+        from datetime import datetime as _dt
+        from datetime import timedelta as _td
+        from zoneinfo import ZoneInfo
+
+        import yfinance as yf
+
+        df = yf.Ticker("^GSPC").history(period="7d")
+        if df is None or df.empty:
+            return False
+        last = df.index[-1].date()
+        et = _dt.now(ZoneInfo("America/New_York")).date()
+        # ET 기준 직전 거래일(주말이면 금요일)이 마지막 일봉으로 들어왔으면 신선
+        expected = et
+        while expected.weekday() >= 5:  # 토/일 → 금
+            expected -= _td(days=1)
+        return last >= expected
+    except Exception as exc:  # noqa: BLE001
+        logger.warning("us_data_fresh_check_failed error=%s", exc)
+        return False
+
+
+async def _us_morning_job(require_fresh: bool) -> None:
+    """미국장 마감 리포트 — 06:30(require_fresh) 조기 + 07:00 안전망. 중복발행 방지(사용자 2026-06-05).
+
+    require_fresh=True(06:30): 오늘 미국 세션 데이터가 확보된 경우에만 발행(아니면 스킵→07:00).
+    require_fresh=False(07:00): 이미 오늘 발행됐으면 스킵, 아니면 발행."""
+    from src.market_report.models import MarketSnapshot
+    from src.market_report.render import report_path
+
+    probe = MarketSnapshot(mode="us_morning", generated_at=datetime.now())
+    if report_path(probe).exists():
+        logger.info("us_morning_job_skip — 오늘 이미 발행됨(require_fresh=%s)", require_fresh)
+        return
+    if require_fresh and not await asyncio.to_thread(_us_data_fresh_sync):
+        logger.info("us_morning_job_defer — 마감데이터 미확보, 07:00 안전망으로 이월")
+        return
+    await _job("us_morning")
+
+
+async def _us_intraday_job() -> None:
+    """미국장 장중 리포트 (평일 23:50 — 개장 직후 장중 시세 + 마감기준 ABCD 3개). 웹+텔레그램."""
+    logger.info("us_intraday_job_start now=%s", datetime.now().isoformat())
+    try:
+        from src.market_report.us_intraday import run_us_intraday
+        snap = await run_us_intraday()
+        logger.info("us_intraday_job_done sent=%s", snap is not None)
+    except Exception as exc:
+        logger.exception("us_intraday_job_failed error=%s", exc)
+
+
 async def _midday_job() -> None:
     """장중 리포트 (평일 12:00) — 지수·수급·강세테마·핫종목·전날 top3 현황. 텔레그램 전용."""
     logger.info("midday_job_start now=%s", datetime.now().isoformat())
@@ -112,12 +168,15 @@ def build_scheduler() -> AsyncIOScheduler:
         _dashboard_job, CronTrigger(day_of_week="mon-fri", hour=16, minute=40, timezone=KST),
         id="screen_dashboard", replace_existing=True, misfire_grace_time=900,
     )
-    # 미국장 아침 요약 (07:00 — 미국장 마감 후[서머 05:00/겨울 06:00], 국장 시작 전)
-    # 06:30은 겨울철 마감 30분 후라 FDR/yfinance 일봉 미갱신(전일 데이터) 위험 → 07:00 채택.
+    # 미국장 아침 요약 — 06:30 조기(데이터 확보 시) + 07:00 안전망(중복발행 방지, 사용자 2026-06-05).
+    # 06:30은 겨울철 마감 30분 후라 일봉 미갱신 위험 → _us_morning_job이 신선도 확인 후 발행/이월.
     scheduler.add_job(
-        _job, CronTrigger(day_of_week="tue-sat", hour=7, minute=0, timezone=KST),
-        args=["us_morning"], id="report_us_morning", replace_existing=True,
-        misfire_grace_time=900,
+        _us_morning_job, CronTrigger(day_of_week="tue-sat", hour=6, minute=30, timezone=KST),
+        args=[True], id="report_us_morning_early", replace_existing=True, misfire_grace_time=900,
+    )
+    scheduler.add_job(
+        _us_morning_job, CronTrigger(day_of_week="tue-sat", hour=7, minute=0, timezone=KST),
+        args=[False], id="report_us_morning", replace_existing=True, misfire_grace_time=900,
     )
     # 장중 리포트 (평일 11:40 — 오전장 흐름·전날 추천 top3 현황)
     scheduler.add_job(
@@ -128,6 +187,11 @@ def build_scheduler() -> AsyncIOScheduler:
     scheduler.add_job(
         _us_premarket_job, CronTrigger(day_of_week="mon-fri", hour=19, minute=0, timezone=KST),
         id="report_us_premarket", replace_existing=True, misfire_grace_time=900,
+    )
+    # 미국장 장중 리포트 (평일 23:50 — 미국 개장 직후, 장중 시세 + 마감기준 ABCD 3개)
+    scheduler.add_job(
+        _us_intraday_job, CronTrigger(day_of_week="mon-fri", hour=23, minute=50, timezone=KST),
+        id="report_us_intraday", replace_existing=True, misfire_grace_time=900,
     )
     return scheduler
 
@@ -164,7 +228,7 @@ def main() -> int:
     )
     parser = argparse.ArgumentParser(description="Daily report scheduler")
     parser.add_argument("--once", choices=["pre", "post", "us", "holdings", "dashboard",
-                                           "midday", "uspre"],
+                                           "midday", "uspre", "usmid"],
                         help="등록된 잡 1회 즉시 실행 후 종료")
     args = parser.parse_args()
 
@@ -176,6 +240,8 @@ def main() -> int:
         asyncio.run(_midday_job())
     elif args.once == "uspre":
         asyncio.run(_us_premarket_job())
+    elif args.once == "usmid":
+        asyncio.run(_us_intraday_job())
     elif args.once:
         mode = {"pre": "pre_close", "post": "post_close", "us": "us_morning"}[args.once]
         asyncio.run(_job(mode))

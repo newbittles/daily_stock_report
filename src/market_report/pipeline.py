@@ -514,11 +514,12 @@ async def _attach_kr_netbuy_to_picks(snap: MarketSnapshot) -> None:
     logger.info("kr_netbuy_pick_attach hit=%d (m5=%d m1=%d)", hit, len(m5), len(m1))
 
 
-async def _collect_us_screening(snap: MarketSnapshot) -> None:
+async def _collect_us_screening(snap: MarketSnapshot, *, per_group: int = 5) -> None:
     """미국 종목 A/B/C/D 스크리닝 → snap.us_top3 / snap.us_screen_groups.
 
     us_morning 리포트의 종목 정보를 한국이 아닌 '미국 종목'으로 채운다.
     기존 us_screening 모듈(run_us_screening, S&P500 A/B/C/D)을 그대로 재사용.
+    per_group: 전략(A/B/C/D)별 노출 종목 수(사용자 2026-06-05: 마감·장중 3개). 기본 5.
     실패 시 빈 채로 두어 리포트 자체는 발송되게 한다(best-effort).
     """
     from src.datasource.us.universe import get_hybrid_universe
@@ -652,7 +653,7 @@ async def _collect_us_screening(snap: MarketSnapshot) -> None:
         else:
             grp.sort(key=_turnover, reverse=True)
         groups.append({"label": label, "initial": initial,
-                       "picks": [_to_dict(p, initial) for p in grp[:5]]})
+                       "picks": [_to_dict(p, initial) for p in grp[:per_group]]})
     snap.us_screen_groups = groups
 
     # 미국 Top3 — 전체 매칭 종목 중 거래대금 상위 3 (심볼 중복 제거)
@@ -738,6 +739,41 @@ async def _overlay_postmarket(snap: MarketSnapshot) -> None:
     logger.info("us_postmarket_overlay targets=%d matched=%d", len(dicts), matched)
 
 
+async def _overlay_intraday(snap: MarketSnapshot) -> None:
+    """us_intraday(장중 리포트, 23:50 KST) — 픽·주요종목·섹터 등락률을 '현재 장중' 기준으로 오버레이.
+
+    _overlay_premarket과 동일 구조(프리장 대신 정규장 현재가). change_pct=장중 등락률,
+    close_pct=직전 마감 등락률 보존, intraday=True. 주요종목·섹터는 장중 등락률순 재정렬.
+    ⚠️ 개장 직후라 값이 흔들림 → 표시단에서 '장중 잠정' 라벨(사용자 합의 2026-06-05)."""
+    from src.datasource.us.fdr_source import fetch_us_intraday
+
+    pick_dicts: list[dict] = list(snap.us_top3 or []) + list(snap.us_theme_leaders or [])
+    for g in (snap.us_screen_groups or []):
+        pick_dicts.extend(g.get("picks", []))
+    other_dicts: list[dict] = list(snap.us_bigtech or []) + list(snap.us_sectors or [])
+    all_dicts = pick_dicts + other_dicts
+    syms = list({d["symbol"] for d in all_dicts if d.get("symbol")})
+    if not syms:
+        return
+    iq = await fetch_us_intraday(syms)
+    for d in all_dicts:
+        q = iq.get(d.get("symbol", ""))
+        if q:
+            d["intraday"] = True
+            d["close_pct"] = d.get("change_pct", 0)   # 직전 마감 등락률 보존
+            d["change_pct"] = q["change_pct"]          # 표시 등락률 = 장중
+            d["intraday_price"] = round(q["price"], 2)
+        else:
+            d.setdefault("intraday", False)
+    if snap.us_bigtech:
+        snap.us_bigtech.sort(key=lambda x: x.get("change_pct", 0), reverse=True)
+    if snap.us_sectors:
+        snap.us_sectors.sort(key=lambda x: x.get("change_pct", 0), reverse=True)
+    if snap.us_theme_leaders:
+        snap.us_theme_leaders.sort(key=lambda x: x.get("change_pct", 0), reverse=True)
+    logger.info("us_intraday_overlay targets=%d matched=%d", len(all_dicts), len(iq))
+
+
 async def _collect_sector_leaders(snap: MarketSnapshot) -> None:
     """표시될 강세4 + 약세4 섹터의 대장주(시총1등) → snap.us_sector_leaders (주요 종목).
 
@@ -819,7 +855,7 @@ async def run_full(
         # 한국 시초 Top3(구 동작)는 폐기: us_morning 리포트의 종목/Top3/강세테마는 미국만.
         # 한국장 연결성은 analyze()의 theme_commentary(한국장 시사점)로 유지.
         try:
-            await _collect_us_screening(snap)
+            await _collect_us_screening(snap, per_group=3)  # 마감 리포트 ABCD 3개(사용자 2026-06-05)
         except Exception as exc:
             logger.warning("us_morning_screening_failed error=%s", exc)
         try:

@@ -43,7 +43,8 @@ def report_path(snap: MarketSnapshot) -> Path:
     """리포트 출력 경로."""
     date_str = snap.generated_at.strftime("%Y-%m-%d")
     suffix = {"pre_close": "pre", "post_close": "post", "us_morning": "us",
-              "midday": "midday", "us_premarket": "us-pre"}.get(snap.mode, "post")
+              "midday": "midday", "us_premarket": "us-pre",
+              "us_intraday": "us-mid"}.get(snap.mode, "post")
     return REPORTS_DIR / f"{date_str}-{suffix}.html"
 
 
@@ -51,7 +52,8 @@ def report_url_rel(snap: MarketSnapshot) -> str:
     """index.html → 리포트 상대 URL."""
     date_str = snap.generated_at.strftime("%Y-%m-%d")
     suffix = {"pre_close": "pre", "post_close": "post", "us_morning": "us",
-              "midday": "midday", "us_premarket": "us-pre"}.get(snap.mode, "post")
+              "midday": "midday", "us_premarket": "us-pre",
+              "us_intraday": "us-mid"}.get(snap.mode, "post")
     return f"reports/{date_str}-{suffix}.html"
 
 
@@ -68,6 +70,7 @@ def render_report(snap: MarketSnapshot) -> Path:
         "us_morning": "미국 증시 아침 요약",
         "midday": "장중 시장 리포트",
         "us_premarket": "미국장 장전(프리장) 리포트",
+        "us_intraday": "미국장 장중 리포트 (잠정)",
     }.get(snap.mode, "시장 리포트")
     html = template.render(title=title, snap=snap)
 
