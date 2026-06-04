@@ -389,88 +389,9 @@ def _format_us_morning_summary(snap: MarketSnapshot) -> str:
                 lines.append(f"  · {q['name']} {sign}{q.get('change_pct', 0):.2f}%")
             lines.append("")
 
-    if getattr(snap, "us_sector_leaders", None):
-        lines.append("📈 *주요 종목* (섹터 대장)")
-        for t in snap.us_sector_leaders:
-            sign = "+" if t.get("change_pct", 0) >= 0 else ""
-            lines.append(f"  · {t['name']} `{t['symbol']}` ({t['sector']}) "
-                         f"${t['price']:,.2f} ({sign}{t.get('change_pct', 0):.1f}%)")
-        lines.append("")
-    if getattr(snap, "us_theme_leaders", None):
-        lines.append("🧬 *관심 테마 대장* (양자·우주·AI 등)")
-        for t in snap.us_theme_leaders:
-            sign = "+" if t.get("change_pct", 0) >= 0 else ""
-            badge = _US_CROSS.get(t.get("cross_signal"), "")
-            theme = f" ({t['sector']})" if t.get("sector") else ""
-            lines.append(f"• *{t['name']}* `{t['symbol']}`{theme} "
-                         f"${t['price']:,.2f} ({sign}{t.get('change_pct', 0):.1f}%){badge}")
-            meta = []
-            if t.get("strategies"):
-                meta.append(f"전략 {'/'.join(t['strategies'])}")
-            if t.get("marcap_str"):
-                meta.append(f"시총 {t['marcap_str']}")
-            if t.get("turnover_str"):
-                meta.append(f"거래대금 {t['turnover_str']}")
-            if meta:
-                lines.append("   " + " · ".join(meta))
-        lines.append("")
-
-    if snap.theme_commentary:
-        lines.append(f"🌏 *한국장 시사점*\n{snap.theme_commentary}")
-        lines.append("")
-
-    # 미국 추천 Top3 (미국 종목 — 한국 종목 아님)
-    if getattr(snap, "us_top3", None):
-        lines.append("🏆 *미국 추천 Top 3*")
-        for i, t in enumerate(snap.us_top3, 1):
-            sign = "+" if t.get("change_pct", 0) >= 0 else ""
-            badge = _US_CROSS.get(t.get("cross_signal"), "")
-            lines.append(f"{i}. *{t['name']}* `{t['symbol']}` "
-                         f"${t['price']:,.2f} ({sign}{t.get('change_pct', 0):.1f}%){badge}")
-            meta = []
-            if t.get("strategies"):
-                meta.append(f"전략 {'/'.join(t['strategies'])}")  # #4 A/B/C/D
-            if t.get("marcap_str"):
-                meta.append(f"시총 {t['marcap_str']}")           # #2 원화
-            if t.get("turnover_str"):
-                meta.append(f"거래대금 {t['turnover_str']}")
-            if meta:
-                lines.append("   " + " · ".join(meta))
-            if t.get("sector"):
-                lines.append(f"   테마: {t['sector']}")           # #6 줄바꿈 (GICS Industry 세분)
-            if t.get("reason"):
-                lines.append(f"   └ {t['reason']}")
-        lines.append("")
-
-    # 미국 종목 스크리닝 A/B/C/D (전략별, A→D 순)
-    if getattr(snap, "us_screen_groups", None):
-        lines.append("🇺🇸 *미국 종목 스크리닝* (A/B/C/D)")
-        for g in snap.us_screen_groups:
-            picks = g.get("picks", [])
-            if not picks:
-                continue
-            show_gap = g.get("initial") in ("B", "C")  # B·C 전략에 20MA 괴리 표시
-            lines.append(f"*{g.get('label', '')}*")
-            for p in picks[:5]:
-                sign = "+" if p.get("change_pct", 0) >= 0 else ""
-                badge = _US_CROSS.get(p.get("cross_signal"), "")
-                lines.append(f"  • `{p['symbol']}` {p['name'][:20]} "
-                             f"${p['price']:,.2f} {sign}{p.get('change_pct', 0):.1f}%{badge}")
-                meta = []
-                if p.get("marcap_str"):
-                    meta.append(f"시총 {p['marcap_str']}")
-                if p.get("turnover_str"):
-                    meta.append(f"거래대금 {p['turnover_str']}")
-                if show_gap:  # B·C 전략: 20일선 괴리 형광볼드(#11, #137)
-                    g20 = p.get("gap20", 0)
-                    meta.append(f"20MA괴리 *{'+' if g20 >= 0 else ''}{g20:.1f}%*")
-                if meta:
-                    lines.append("     " + " · ".join(meta))
-                if p.get("sector"):
-                    lines.append(f"     테마: {p['sector']}")  # #6 줄바꿈 (GICS Industry 세분)
-        lines.append("")
-
-    lines.append(f"📄 [전체 리포트 보기]({url})")
+    # 종목 상세(주요종목·관심테마·Top3·스크리닝)는 텔레그램에서 생략 → 웹 링크로(사용자 2026-06-04).
+    # 텔레그램은 '시황(지수·AI요약·뉴스) + 주도섹터'까지만. 웹 report.html은 전체 섹션 유지.
+    lines.append(f"📄 *종목·추천·스크리닝 전체 보기* → [리포트 열기]({url})")
     lines.append("")
     lines.append("_※ 미국 A/B/C/D는 참고용 시그널(백테스트 엣지 약함). 매수 추천 아님, 판단·책임은 본인._")
     return "\n".join(lines)

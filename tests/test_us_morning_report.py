@@ -25,15 +25,18 @@ def _us_snap() -> MarketSnapshot:
     return snap
 
 
-def test_us_morning_shows_us_stocks() -> None:
+def test_us_morning_telegram_is_overview_only() -> None:
+    """텔레그램 = 시황(지수)+주도섹터까지만, 종목 상세는 웹 링크로(사용자 2026-06-04)."""
     msg = _format_us_morning_summary(_us_snap())
-    assert "미국 추천 Top 3" in msg
-    assert "NVDA" in msg and "NVIDIA" in msg
-    assert "$1,200.5" in msg  # 달러 표기
-    assert "미국 종목 스크리닝" in msg
-    assert "AVGO" in msg
-    # 한국장 연결성 코멘트는 유지
-    assert "한국장 시사점" in msg
+    # 시황·주도섹터는 포함
+    assert "반도체" in msg                # 주도섹터
+    assert "강세 섹터" in msg
+    assert "리포트 열기" in msg            # 웹 링크
+    # 종목 상세(Top3·스크리닝·시사점)는 텔레그램에서 제거 → 웹으로
+    assert "미국 추천 Top 3" not in msg
+    assert "NVDA" not in msg and "AVGO" not in msg
+    assert "미국 종목 스크리닝" not in msg
+    assert "한국장 시사점" not in msg
 
 
 def test_us_morning_no_korean_stock_links() -> None:
