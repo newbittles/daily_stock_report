@@ -468,8 +468,21 @@
         {% endfor %}
       </ul>
       {% endif %}
+      {% if snap.us_sector_leaders %}
+      <h2 style="margin-top:1rem;"><span class="icon">📈</span>주요 종목 (섹터 대장)</h2>
+      <ul class="watch-list">
+        {% for t in snap.us_sector_leaders %}
+        <li>
+          <a href="https://search.naver.com/search.naver?query={{ (t.name ~ ' 주가') | urlencode }}" target="_blank" rel="noopener"><strong>{{ t.name }}</strong></a>
+          <span class="pick-ticker">{{ t.symbol }}</span> <span style="color:var(--text-dim);font-size:0.82rem;">({{ t.sector }})</span>
+          · ${{ "{:,.2f}".format(t.price) }}
+          <span class="{{ 'up-text' if t.change_pct >= 0 else 'down-text' }}">{{ '+' if t.change_pct >= 0 else '' }}{{ "{:.1f}".format(t.change_pct) }}%</span>
+        </li>
+        {% endfor %}
+      </ul>
+      {% endif %}
       {% if snap.us_theme_leaders %}
-      <h2 style="margin-top:1rem;"><span class="icon">📈</span>주요 종목 (테마 대장 · 시총순)</h2>
+      <h2 style="margin-top:1rem;"><span class="icon">🧬</span>관심 테마 대장 (양자·우주·AI 등)</h2>
       <ul class="watch-list">
         {% for t in snap.us_theme_leaders %}
         <li>
@@ -480,13 +493,6 @@
           <span class="{{ 'up-text' if t.change_pct >= 0 else 'down-text' }}">{{ '+' if t.change_pct >= 0 else '' }}{{ "{:.1f}".format(t.change_pct) }}%</span>
           {% if t.sector %}<div class="pick-sub">테마: {{ t.sector }}{% if t.marcap_str %} · 시총 {{ t.marcap_str }}{% endif %}{% if t.turnover_str %} · 거래대금 {{ t.turnover_str }}{% endif %}</div>{% endif %}
         </li>
-        {% endfor %}
-      </ul>
-      {% elif snap.us_bigtech %}
-      <h2 style="margin-top:1rem;"><span class="icon">📈</span>주요 종목</h2>
-      <ul class="watch-list">
-        {% for q in snap.us_bigtech[:8] %}
-        <li><strong>{{ q.name }}</strong> <span class="{{ 'up-text' if q.change_pct >= 0 else 'down-text' }}">{{ '+' if q.change_pct >= 0 else '' }}{{ "{:.2f}".format(q.change_pct) }}%</span></li>
         {% endfor %}
       </ul>
       {% endif %}

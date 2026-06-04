@@ -579,13 +579,11 @@ async def _collect_us_screening(snap: MarketSnapshot) -> None:
             break
     snap.us_top3 = [_to_dict(p) for p in top]
 
-    # 주요 종목 = 테마별 대장(theme_cands, 전체 매칭 기준). 큐레이션 테마(양자·우주·AI 등)
-    # 우선 노출 + 나머지 상승률순. (대형주 테마가 다 차지해 양자가 가려지던 것 해소, 142·143)
+    # 관심 테마 대장 = 큐레이션 테마(양자·우주·AI·원자력 등)만, 별도 노출(사용자 162).
+    # (섹터 대장은 별도 — us_sector_leaders. 양자는 ETF 섹터에 없어 여기 둠.)
     _watch = [p for p in theme_cands if _us_theme_fn(p.sector, p.industry) in _watch_themes]
-    _other = [p for p in theme_cands if _us_theme_fn(p.sector, p.industry) not in _watch_themes]
     _watch.sort(key=lambda p: p.change_pct, reverse=True)
-    _other.sort(key=lambda p: p.change_pct, reverse=True)
-    snap.us_theme_leaders = [_to_dict(p) for p in (_watch + _other)[:15]]
+    snap.us_theme_leaders = [_to_dict(p) for p in _watch[:10]]
 
     logger.info("us_screening_collected picks=%d top3=%s theme_leaders=%d",
                 len(picks), [p["symbol"] for p in snap.us_top3], len(snap.us_theme_leaders))
@@ -625,6 +623,37 @@ async def _overlay_premarket(snap: MarketSnapshot) -> None:
     if snap.us_theme_leaders:
         snap.us_theme_leaders.sort(key=lambda x: x.get("change_pct", 0), reverse=True)
     logger.info("us_premarket_overlay targets=%d matched=%d", len(all_dicts), len(pm))
+
+
+async def _collect_sector_leaders(snap: MarketSnapshot) -> None:
+    """표시될 강세4 + 약세4 섹터의 대장주(시총1등) → snap.us_sector_leaders (주요 종목).
+
+    장전이면 대장주 등락률도 프리장 기준으로 오버레이(가격은 마감가 유지)."""
+    secs = snap.us_sectors or []
+    if not secs:
+        return
+    strong = [s.get("name", "") for s in secs[:4]]
+    weak = [s.get("name", "") for s in sorted(secs, key=lambda x: x.get("change_pct", 0))[:4]]
+    try:
+        from src.datasource.us.fdr_source import fetch_sector_leaders
+        leaders = await fetch_sector_leaders(strong + weak)
+    except Exception as exc:  # noqa: BLE001
+        logger.warning("us_sector_leaders_failed error=%s", exc)
+        return
+    if snap.mode == "us_premarket" and leaders:
+        try:
+            from src.datasource.us.fdr_source import fetch_us_premarket
+            pm = await fetch_us_premarket([d["symbol"] for d in leaders])
+            for d in leaders:
+                q = pm.get(d["symbol"])
+                if q:
+                    d["close_pct"] = d.get("change_pct", 0)
+                    d["change_pct"] = q["change_pct"]
+                    d["premkt"] = True
+        except Exception as exc:  # noqa: BLE001
+            logger.warning("us_sector_leaders_premarket_failed error=%s", exc)
+    snap.us_sector_leaders = leaders
+    logger.info("us_sector_leaders=%d", len(leaders))
 
 
 async def run_full(
@@ -680,6 +709,10 @@ async def run_full(
             await _collect_us_screening(snap)
         except Exception as exc:
             logger.warning("us_morning_screening_failed error=%s", exc)
+        try:
+            await _collect_sector_leaders(snap)  # 주요종목 = 섹터 대장
+        except Exception as exc:
+            logger.warning("us_morning_sector_leaders_failed error=%s", exc)
 
         try:
             render_report(snap)

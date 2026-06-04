@@ -25,6 +25,7 @@ async def run_us_premarket(
         return None
 
     from src.market_report.pipeline import (
+        _collect_sector_leaders,
         _collect_us_screening,
         _overlay_premarket,
         _render_candles,
@@ -43,6 +44,10 @@ async def run_us_premarket(
         await _overlay_premarket(snap)       # 프리장 시세/등락률 오버레이
     except Exception as exc:  # noqa: BLE001
         logger.warning("us_premarket_overlay_failed error=%s", exc)
+    try:
+        await _collect_sector_leaders(snap)  # 주요종목 = 강세4+약세4 섹터 대장
+    except Exception as exc:  # noqa: BLE001
+        logger.warning("us_premarket_sector_leaders_failed error=%s", exc)
 
     try:
         from src.market_report.analyzer import analyze

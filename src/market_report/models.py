@@ -111,7 +111,8 @@ class MarketSnapshot:
     us_news: list[dict] = field(default_factory=list)          # 미국 시장 뉴스 헤드라인 [{title, source}]
     # 미국 종목 스크리닝 (us_morning — A/B/C/D 미국 종목. 한국 top3/screen_picks와 분리)
     us_top3: list[dict] = field(default_factory=list)         # {symbol, name, price, change_pct, sector, reason, cross_signal}
-    us_theme_leaders: list[dict] = field(default_factory=list)  # 테마(섹터)별 대장주 — 시총 우선(주요 종목)
+    us_sector_leaders: list[dict] = field(default_factory=list)  # 강세/약세 섹터별 대장주(주요 종목)
+    us_theme_leaders: list[dict] = field(default_factory=list)  # 관심 테마(양자·우주·AI 등) 대장 — 별도
     us_screen_groups: list[dict] = field(default_factory=list)  # [{label, initial, picks:[...]}] 전략별(C/B/A/D)
 
     # AI 분석 결과 (analyzer가 채움)

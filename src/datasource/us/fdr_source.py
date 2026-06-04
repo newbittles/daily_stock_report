@@ -89,6 +89,36 @@ def _fetch_quotes_sync(symbols: dict[str, str]) -> list[USQuote]:
     return out
 
 
+# 각 섹터(US_SECTORS 한국어 테마명)의 대장주 — 시총 1등(사용자 2026-06-04). FDR 심볼.
+US_SECTOR_LEADER: dict[str, str] = {
+    "반도체": "NVDA", "기술/IT": "MSFT", "에너지": "XOM", "금융": "JPM",
+    "헬스케어/바이오": "LLY", "경기소비재": "AMZN", "방산/우주항공": "GE",
+    "태양광/신재생": "FSLR", "2차전지/리튬": "ALB",
+}
+
+
+async def fetch_sector_leaders(sector_names: list[str]) -> list[dict]:
+    """표시된 섹터들의 대장주 시세 → [{sector, symbol, name, price, change_pct}].
+
+    섹터별 대장(시총1등) 시세를 한 번에 조회. 한국어명은 korean_name로 표시단에서.
+    """
+    from src.datasource.us.names_ko import korean_name
+
+    pairs = [(sec, US_SECTOR_LEADER[sec]) for sec in dict.fromkeys(sector_names)
+             if sec in US_SECTOR_LEADER]
+    if not pairs:
+        return []
+    quotes = await asyncio.to_thread(_fetch_quotes_sync, {tk: tk for _, tk in pairs})
+    qmap = {q.symbol: q for q in quotes}
+    out: list[dict] = []
+    for sec, tk in pairs:
+        q = qmap.get(tk)
+        if q:
+            out.append({"sector": sec, "symbol": tk, "name": korean_name(tk, tk),
+                        "price": round(q.price, 2), "change_pct": round(q.change_pct, 2)})
+    return out
+
+
 async def fetch_us_top_volume_sectors(top: int = 5) -> list[USQuote]:
     """섹터 ETF 거래대금(종가×거래량) 상위 top개 → 핫테마용(거래대금 내림차순, 사용자)."""
     quotes = await asyncio.to_thread(_fetch_quotes_sync, US_SECTORS)

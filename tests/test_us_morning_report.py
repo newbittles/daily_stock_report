@@ -87,7 +87,7 @@ async def test_collect_us_screening_adds_yf_symbol(monkeypatch) -> None:
     assert snap.us_top3[0]["strategies"] == ["C"]         # #4 전략 표시
     assert snap.us_top3[0]["marcap_str"]                  # #2 시총(원화) 채워짐
     assert snap.us_top3[0]["turnover_str"]                # #2 거래대금(원화)
-    assert snap.us_theme_leaders and snap.us_theme_leaders[0]["symbol"] == "BRKB"  # #142 테마 대장
+    assert snap.us_theme_leaders == []  # #162 BRKB(Insurance)는 관심테마(양자 등) 아님 → 비어있음
 
 
 async def test_correction_badge_only_for_c(monkeypatch) -> None:
