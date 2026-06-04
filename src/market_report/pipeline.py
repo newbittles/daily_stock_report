@@ -456,15 +456,28 @@ async def _collect_us_screening(snap: MarketSnapshot) -> None:
 
     from src.datasource.us.fdr_source import fetch_us_market_caps, fetch_usd_krw
 
+    from src.datasource.us.names_ko import us_theme as _us_theme_fn
+    from src.datasource.us.universe import US_GROWTH_WATCHLIST
+
     rate = await fetch_usd_krw()  # USD→KRW (0이면 환산·필터 스킵, best-effort)
     if rate:  # 주가 상한 필터 (price는 이미 있음 — 무료, marcap 조회 전 선필터)
         picks = [p for p in picks if p.price * rate <= _PRICE_CAP_WON]
-    # 거래대금 상위 N개만 남겨 시총 조회 부담 최소화(표시는 어차피 거래대금 상위)
     picks.sort(key=_turnover, reverse=True)
-    picks = picks[:_MARCAP_TOPN]
-    marcaps = await fetch_us_market_caps([p.symbol for p in picks])  # 상위 N개만 시총 조회
+    top50 = picks[:_MARCAP_TOPN]  # 추천Top3·전략그룹용(거래대금 상위)
+    # 테마 대장 후보 = 전체 매칭에서 테마별 거래대금 1등 (top50 컷 전 — 양자 등 소형테마 보존)
+    _watch_themes = {w.sector for w in US_GROWTH_WATCHLIST}
+    _by_theme: dict[str, list] = {}
+    for p in picks:
+        _by_theme.setdefault(_us_theme_fn(p.sector, p.industry), []).append(p)
+    theme_cands = [max(m, key=_turnover) for m in _by_theme.values()]
+    # 시총 조회 = top50 ∪ 테마대장 후보 (양자 대장도 시총 조회 보장)
+    marcaps = await fetch_us_market_caps(
+        list({p.symbol for p in top50} | {p.symbol for p in theme_cands}))
     if rate:  # 시총 하한 필터
-        picks = [p for p in picks if marcaps.get(p.symbol, 0) * rate >= _MARCAP_FLOOR_WON]
+        picks = [p for p in top50 if marcaps.get(p.symbol, 0) * rate >= _MARCAP_FLOOR_WON]
+        theme_cands = [p for p in theme_cands if marcaps.get(p.symbol, 0) * rate >= _MARCAP_FLOOR_WON]
+    else:
+        picks = top50
     if not picks:
         logger.info("us_screening_all_filtered")
         return
@@ -558,15 +571,13 @@ async def _collect_us_screening(snap: MarketSnapshot) -> None:
             break
     snap.us_top3 = [_to_dict(p) for p in top]
 
-    # 주요 종목 = 테마(섹터)별 대장 — 테마 내 1등은 시총 우선(사용자 142·145).
-    # 리스트는 상승률순 + 모든 테마 노출(시총순 컷이면 대형주 테마가 다 차지해 양자 등 가려짐).
-    by_theme: dict[str, list] = {}
-    for p in picks:
-        by_theme.setdefault(us_theme(p.sector, p.industry), []).append(p)
-    leaders = [max(members, key=lambda p: marcaps.get(p.symbol, 0))
-               for members in by_theme.values()]
-    leaders.sort(key=lambda p: p.change_pct, reverse=True)  # 상승률순(강한 테마 먼저)
-    snap.us_theme_leaders = [_to_dict(p) for p in leaders[:12]]
+    # 주요 종목 = 테마별 대장(theme_cands, 전체 매칭 기준). 큐레이션 테마(양자·우주·AI 등)
+    # 우선 노출 + 나머지 상승률순. (대형주 테마가 다 차지해 양자가 가려지던 것 해소, 142·143)
+    _watch = [p for p in theme_cands if _us_theme_fn(p.sector, p.industry) in _watch_themes]
+    _other = [p for p in theme_cands if _us_theme_fn(p.sector, p.industry) not in _watch_themes]
+    _watch.sort(key=lambda p: p.change_pct, reverse=True)
+    _other.sort(key=lambda p: p.change_pct, reverse=True)
+    snap.us_theme_leaders = [_to_dict(p) for p in (_watch + _other)[:15]]
 
     logger.info("us_screening_collected picks=%d top3=%s theme_leaders=%d",
                 len(picks), [p["symbol"] for p in snap.us_top3], len(snap.us_theme_leaders))
