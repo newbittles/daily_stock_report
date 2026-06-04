@@ -475,7 +475,8 @@ async def _collect_us_screening(snap: MarketSnapshot) -> None:
         if not grp:
             continue
         if initial == "B":
-            grp.sort(key=lambda p: abs(_gap20(p)))      # 괴리 작은(20선 근접) 순
+            # 시총>거래대금 순(사용자 2026-06-04). 이격도(gap20)는 참고 표시만.
+            grp.sort(key=lambda p: (marcaps.get(p.symbol, 0), _turnover(p)), reverse=True)
         else:
             grp.sort(key=_turnover, reverse=True)
         groups.append({"label": label, "initial": initial,
