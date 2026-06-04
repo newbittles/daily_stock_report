@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-06-04",
+    "time": "14:40",
+    "mode": "pre_close",
+    "url": "reports/2026-06-04-pre.html",
+    "summary": "코스피는 외국인 매도세에 약세를 보였으나, 코스닥은 강한 상승세를 보이며 시장 분위기를 주도하고 있습니다.",
+    "kospi_pct": -0.96,
+    "kosdaq_pct": 2.28
+  },
+  {
+    "date": "2026-06-04",
     "time": "13:32",
     "mode": "midday",
     "url": "reports/2026-06-04-midday.html",
