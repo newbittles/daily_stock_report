@@ -400,7 +400,8 @@ def _format_us_morning_summary(snap: MarketSnapshot) -> str:
         lines.append(f"💡 {snap.why_moved}")
         lines.append("")
 
-    if getattr(snap, "us_news", None):
+    # 뉴스: 장전(us_premarket) 텔레그램에선 제외 → 웹 리포트 최하단으로(사용자 2026-06-05).
+    if getattr(snap, "us_news", None) and snap.mode != "us_premarket":
         lines.append("📰 *미국 시장 뉴스*")
         for n in snap.us_news[:5]:
             src = f" _{n['source']}_" if n.get("source") else ""

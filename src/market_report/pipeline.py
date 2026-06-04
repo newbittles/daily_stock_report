@@ -671,6 +671,31 @@ async def _overlay_premarket(snap: MarketSnapshot) -> None:
     logger.info("us_premarket_overlay targets=%d matched=%d", len(all_dicts), len(pm))
 
 
+async def _overlay_postmarket(snap: MarketSnapshot) -> None:
+    """us_morning(아침 마감 리포트) — 추천종목·스크린·주요종목에 애프터장(시간외) 등락률 부착.
+
+    change_pct(장마감 등락률)는 보존하고, after_pct/after_price만 추가한다(표시: 장마감
+    종가(등락률)(애프터장등락률), 사용자 2026-06-05). 미체결 종목은 부착 안 함(best-effort)."""
+    from src.datasource.us.fdr_source import fetch_us_postmarket
+
+    dicts: list[dict] = list(snap.us_top3 or []) + list(snap.us_theme_leaders or []) \
+        + list(snap.us_sector_leaders or [])
+    for g in (snap.us_screen_groups or []):
+        dicts.extend(g.get("picks", []))
+    syms = list({d["symbol"] for d in dicts if d.get("symbol")})
+    if not syms:
+        return
+    pm = await fetch_us_postmarket(syms)
+    matched = 0
+    for d in dicts:
+        q = pm.get(d.get("symbol", ""))
+        if q:
+            d["after_pct"] = q["change_pct"]
+            d["after_price"] = round(q["price"], 2)
+            matched += 1
+    logger.info("us_postmarket_overlay targets=%d matched=%d", len(dicts), matched)
+
+
 async def _collect_sector_leaders(snap: MarketSnapshot) -> None:
     """표시될 강세4 + 약세4 섹터의 대장주(시총1등) → snap.us_sector_leaders (주요 종목).
 
@@ -759,6 +784,10 @@ async def run_full(
             await _collect_sector_leaders(snap)  # 주요종목 = 섹터 대장
         except Exception as exc:
             logger.warning("us_morning_sector_leaders_failed error=%s", exc)
+        try:
+            await _overlay_postmarket(snap)  # 애프터장(시간외) 등락률 부착 (장마감 종가 옆 병기)
+        except Exception as exc:
+            logger.warning("us_morning_postmarket_failed error=%s", exc)
 
         try:
             render_report(snap)

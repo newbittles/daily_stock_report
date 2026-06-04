@@ -1,3 +1,16 @@
+{# 미국 종목 가격 표시 매크로 — 모드별 포맷(사용자 2026-06-05).
+   us_premarket: 종가(전일등락률)(프리장등락률) / us_morning: 장마감 종가(등락률)(애프터장등락률) / 그 외: $가(등락률) #}
+{%- macro us_px(item, mode) -%}
+{%- set pct = item.change_pct|default(0) -%}
+{%- if mode == 'us_premarket' -%}
+{%- set prev = item.close_pct if item.premkt else pct -%}
+종가 ${{ "{:,.2f}".format(item.price) }} <span class="{{ 'up-text' if prev >= 0 else 'down-text' }}">(전일 {{ '+' if prev >= 0 else '' }}{{ "{:.2f}".format(prev) }}%)</span>{% if item.premkt %} <span class="{{ 'up-text' if pct >= 0 else 'down-text' }}">(프리장 {{ '+' if pct >= 0 else '' }}{{ "{:.2f}".format(pct) }}%)</span>{% endif %}
+{%- elif mode == 'us_morning' -%}
+장마감 ${{ "{:,.2f}".format(item.price) }} <span class="{{ 'up-text' if pct >= 0 else 'down-text' }}">({{ '+' if pct >= 0 else '' }}{{ "{:.2f}".format(pct) }}%)</span>{% if item.after_pct is defined %} <span class="{{ 'up-text' if item.after_pct >= 0 else 'down-text' }}">(애프터장 {{ '+' if item.after_pct >= 0 else '' }}{{ "{:.2f}".format(item.after_pct) }}%)</span>{% endif %}
+{%- else -%}
+${{ "{:,.2f}".format(item.price) }} <span class="{{ 'up-text' if pct >= 0 else 'down-text' }}">{{ '+' if pct >= 0 else '' }}{{ "{:.2f}".format(pct) }}%</span>
+{%- endif -%}
+{%- endmacro -%}
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -475,8 +488,7 @@
         <li>
           <a href="https://search.naver.com/search.naver?query={{ (t.name ~ ' 주가') | urlencode }}" target="_blank" rel="noopener"><strong>{{ t.name }}</strong></a>
           <span class="pick-ticker">{{ t.symbol }}</span> <span style="color:var(--text-dim);font-size:0.82rem;">({{ t.sector }})</span>
-          · ${{ "{:,.2f}".format(t.price) }}
-          <span class="{{ 'up-text' if t.change_pct >= 0 else 'down-text' }}">{{ '+' if t.change_pct >= 0 else '' }}{{ "{:.1f}".format(t.change_pct) }}%</span>
+          · {{ us_px(t, snap.mode) }}
         </li>
         {% endfor %}
       </ul>
@@ -489,8 +501,7 @@
           <a href="https://search.naver.com/search.naver?query={{ (t.name ~ ' 주가') | urlencode }}" target="_blank" rel="noopener"><strong>{{ t.name }}</strong></a>
           <span class="pick-ticker">{{ t.symbol }}</span>
           {% if t.strategies %}<span class="strat-badge">{{ t.strategies|join('/') }}</span>{% endif %}
-          · ${{ "{:,.2f}".format(t.price) }}
-          <span class="{{ 'up-text' if t.change_pct >= 0 else 'down-text' }}">{{ '+' if t.change_pct >= 0 else '' }}{{ "{:.1f}".format(t.change_pct) }}%</span>
+          · {{ us_px(t, snap.mode) }}
           {% if t.sector %}<div class="pick-sub">테마: {{ t.sector }}{% if t.marcap_str %} · 시총 {{ t.marcap_str }}{% endif %}{% if t.turnover_str %} · 거래대금 {{ t.turnover_str }}{% endif %}</div>{% endif %}
         </li>
         {% endfor %}
@@ -499,18 +510,7 @@
     </section>
     {% endif %}
 
-    {# 📰 미국 시장 뉴스 (us_morning/us_premarket) #}
-    {% if snap.us_news %}
-    <section>
-      <h2><span class="icon">📰</span>미국 시장 뉴스</h2>
-      {% for n in snap.us_news[:8] %}
-      <div class="news-item">
-        <span class="news-title">{{ n.title }}</span>
-        {% if n.source %}<div class="news-meta"><span class="news-source">{{ n.source }}</span></div>{% endif %}
-      </div>
-      {% endfor %}
-    </section>
-    {% endif %}
+    {# 📰 미국 시장 뉴스 → 리포트 최하단으로 이동(사용자 2026-06-05). 본문 끝 참조. #}
 
     {# 🇺🇸 미국 추천 Top3 (us_morning — 미국 종목) #}
     {% if snap.us_top3 %}
@@ -523,8 +523,7 @@
           <a href="https://search.naver.com/search.naver?query={{ (t.name ~ ' 주가') | urlencode }}" target="_blank" rel="noopener">{{ t.name }}</a>
           <span class="pick-ticker">{{ t.symbol }}</span>
           {% if t.strategies %}<span class="strat-badge">{{ t.strategies | join('/') }}</span>{% endif %}
-          <span class="px">${{ "{:,.2f}".format(t.price) }}</span>
-          <span class="{{ 'up-text' if t.change_pct >= 0 else 'down-text' }}">{{ '+' if t.change_pct >= 0 else '' }}{{ "{:.2f}".format(t.change_pct) }}%</span>
+          <span class="px">{{ us_px(t, snap.mode) }}</span>
           {% if t.cross_signal == 'PULLBACK' %}<span class="up-text" style="font-size:0.8rem;">🟢단기눌림</span>{% elif t.cross_signal == 'CORRECTION' %}<span class="down-text" style="font-size:0.8rem;">⚠️조정시작</span>{% endif %}
         </div>
         {% if t.marcap_str or t.turnover_str %}<div class="pick-sub">{% if t.marcap_str %}시총 {{ t.marcap_str }}{% endif %}{% if t.turnover_str %} · 거래대금 {{ t.turnover_str }}{% endif %}</div>{% endif %}
@@ -545,8 +544,7 @@
         {% for p in g.picks %}
         <li>
           <a href="https://search.naver.com/search.naver?query={{ (p.name ~ ' 주가') | urlencode }}" target="_blank" rel="noopener"><strong>{{ p.name }}</strong></a>
-          <span class="pick-ticker">{{ p.symbol }}</span> · ${{ "{:,.2f}".format(p.price) }}
-          <span class="{{ 'up-text' if p.change_pct >= 0 else 'down-text' }}">{{ '+' if p.change_pct >= 0 else '' }}{{ "{:.2f}".format(p.change_pct) }}%</span>
+          <span class="pick-ticker">{{ p.symbol }}</span> · {{ us_px(p, snap.mode) }}
           {% if p.cross_signal == 'PULLBACK' %}<span class="up-text" style="font-size:0.8rem;">🟢단기눌림</span>{% elif p.cross_signal == 'CORRECTION' %}<span class="down-text" style="font-size:0.8rem;">⚠️조정시작</span>{% endif %}
           {% if p.marcap_str or p.turnover_str or g.initial == 'B' %}<div class="pick-sub">{% if p.marcap_str %}시총 {{ p.marcap_str }}{% endif %}{% if p.turnover_str %} · 거래대금 {{ p.turnover_str }}{% endif %}{% if g.initial in ['B', 'C'] %} · 20MA괴리 <strong class="hl-bold">{{ '+' if p.gap20 >= 0 else '' }}{{ p.gap20 }}%</strong>{% endif %}</div>{% endif %}
           {% if p.sector %}<div class="pick-sub">테마: {{ p.sector }}</div>{% endif %}
@@ -935,6 +933,19 @@
           {% if n.source %}<span class="news-source">{{ n.source }}</span>{% endif %}
           {% if n.published_at %} · {{ n.published_at }}{% endif %}
         </div>
+      </div>
+      {% endfor %}
+    </section>
+    {% endif %}
+
+    {# 📰 미국 시장 뉴스 (us_morning/us_premarket) — 리포트 최하단(사용자 2026-06-05) #}
+    {% if snap.us_news %}
+    <section>
+      <h2><span class="icon">📰</span>미국 시장 뉴스</h2>
+      {% for n in snap.us_news[:8] %}
+      <div class="news-item">
+        <span class="news-title">{{ n.title }}</span>
+        {% if n.source %}<div class="news-meta"><span class="news-source">{{ n.source }}</span></div>{% endif %}
       </div>
       {% endfor %}
     </section>
