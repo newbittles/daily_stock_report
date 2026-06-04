@@ -557,8 +557,18 @@ async def _collect_us_screening(snap: MarketSnapshot) -> None:
         if len(top) >= 3:
             break
     snap.us_top3 = [_to_dict(p) for p in top]
-    logger.info("us_screening_collected picks=%d top3=%s",
-                len(picks), [p["symbol"] for p in snap.us_top3])
+
+    # 주요 종목 = 테마(섹터)별 대장 — 시총 우선(사용자 142). 양자주 등 테마 1등을 노출.
+    by_theme: dict[str, list] = {}
+    for p in picks:
+        by_theme.setdefault(us_theme(p.sector, p.industry), []).append(p)
+    leaders = [max(members, key=lambda p: marcaps.get(p.symbol, 0))
+               for members in by_theme.values()]
+    leaders.sort(key=lambda p: marcaps.get(p.symbol, 0), reverse=True)  # 시총순
+    snap.us_theme_leaders = [_to_dict(p) for p in leaders[:8]]
+
+    logger.info("us_screening_collected picks=%d top3=%s theme_leaders=%d",
+                len(picks), [p["symbol"] for p in snap.us_top3], len(snap.us_theme_leaders))
 
 
 async def _overlay_premarket(snap: MarketSnapshot) -> None:
@@ -568,7 +578,7 @@ async def _overlay_premarket(snap: MarketSnapshot) -> None:
     등락률은 close_pct 보존). 프리장 미체결은 마감값 유지. 주요종목·섹터는 프리장순 재정렬."""
     from src.datasource.us.fdr_source import fetch_us_premarket
 
-    pick_dicts: list[dict] = list(snap.us_top3 or [])
+    pick_dicts: list[dict] = list(snap.us_top3 or []) + list(snap.us_theme_leaders or [])
     for g in (snap.us_screen_groups or []):
         pick_dicts.extend(g.get("picks", []))
     other_dicts: list[dict] = list(snap.us_bigtech or []) + list(snap.us_sectors or [])

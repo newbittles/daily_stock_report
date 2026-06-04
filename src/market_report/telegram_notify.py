@@ -348,7 +348,25 @@ def _format_us_morning_summary(snap: MarketSnapshot) -> str:
                 lines.append(f"  · {q['name']} {sign}{q.get('change_pct', 0):.2f}%")
             lines.append("")
 
-    if snap.us_bigtech:
+    if getattr(snap, "us_theme_leaders", None):
+        lines.append("📈 *주요 종목* (테마 대장 · 시총순)")
+        for t in snap.us_theme_leaders:
+            sign = "+" if t.get("change_pct", 0) >= 0 else ""
+            badge = _US_CROSS.get(t.get("cross_signal"), "")
+            theme = f" ({t['sector']})" if t.get("sector") else ""
+            lines.append(f"• *{t['name']}* `{t['symbol']}`{theme} "
+                         f"${t['price']:,.2f} ({sign}{t.get('change_pct', 0):.1f}%){badge}")
+            meta = []
+            if t.get("strategies"):
+                meta.append(f"전략 {'/'.join(t['strategies'])}")
+            if t.get("marcap_str"):
+                meta.append(f"시총 {t['marcap_str']}")
+            if t.get("turnover_str"):
+                meta.append(f"거래대금 {t['turnover_str']}")
+            if meta:
+                lines.append("   " + " · ".join(meta))
+        lines.append("")
+    elif snap.us_bigtech:  # 폴백
         lines.append("📈 *주요 상승 종목*")
         for q in snap.us_bigtech[:5]:
             sign = "+" if q.get("change_pct", 0) >= 0 else ""

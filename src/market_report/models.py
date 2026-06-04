@@ -110,6 +110,7 @@ class MarketSnapshot:
     us_volume_sectors: list[dict] = field(default_factory=list)  # (deprecated — 강세/약세로 통합)
     # 미국 종목 스크리닝 (us_morning — A/B/C/D 미국 종목. 한국 top3/screen_picks와 분리)
     us_top3: list[dict] = field(default_factory=list)         # {symbol, name, price, change_pct, sector, reason, cross_signal}
+    us_theme_leaders: list[dict] = field(default_factory=list)  # 테마(섹터)별 대장주 — 시총 우선(주요 종목)
     us_screen_groups: list[dict] = field(default_factory=list)  # [{label, initial, picks:[...]}] 전략별(C/B/A/D)
 
     # AI 분석 결과 (analyzer가 채움)
