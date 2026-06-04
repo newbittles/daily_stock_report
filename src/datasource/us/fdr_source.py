@@ -398,3 +398,38 @@ def _fetch_usd_krw_sync() -> float:
 async def fetch_usd_krw() -> float:
     """USD/KRW 환율. 미국 시총·거래대금을 원화(조/억)로 환산할 때 사용. 실패 시 0.0."""
     return await asyncio.to_thread(_fetch_usd_krw_sync)
+
+
+# ─── 프리장(pre-market) 시세 — 미국장 장전 리포트용 ──────────────────────────
+
+
+def _fetch_premarket_sync(symbols: list[str]) -> dict[str, dict]:
+    """동기 — yfinance .info로 프리장 가격/등락률. {symbol(FDR키): {price, change_pct}}.
+
+    preMarketPrice/preMarketChangePercent(이미 %단위). 종목당 1회라 분산 딜레이.
+    프리장 미체결 종목은 생략(부분 결과 허용)."""
+    import random
+    import time
+
+    import yfinance as yf
+
+    out: dict[str, dict] = {}
+    for i, sym in enumerate(symbols):
+        try:
+            info = yf.Ticker(to_yf_symbol(sym)).info
+            pp = info.get("preMarketPrice")
+            if pp is not None:
+                pc = info.get("preMarketChangePercent")
+                out[sym] = {"price": float(pp), "change_pct": round(float(pc or 0), 2)}
+        except Exception as exc:  # noqa: BLE001
+            logger.debug("premarket_failed symbol=%s error=%s", sym, exc)
+        if i < len(symbols) - 1:
+            time.sleep(random.uniform(0.1, 0.3))
+    return out
+
+
+async def fetch_us_premarket(symbols: list[str]) -> dict[str, dict]:
+    """미국 종목 프리장 시세 일괄 → {symbol: {price, change_pct}}. 실패 시 빈 dict."""
+    if not symbols:
+        return {}
+    return await asyncio.to_thread(_fetch_premarket_sync, list(symbols))

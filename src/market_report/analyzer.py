@@ -218,7 +218,7 @@ def _fallback_summary(snap: MarketSnapshot) -> str:
     담도록 보장. 'AI 분석 불가' 단순 메시지 대신 실제 지수·테마 수치를 제공한다.
     """
     parts: list[str] = []
-    if snap.mode == "us_morning":
+    if snap.mode in ("us_morning", "us_premarket"):
         for q in (snap.us_indices or [])[:2]:
             parts.append(f"{q.get('name', '')} {q.get('price', 0):,.0f}({q.get('change_pct', 0):+.2f}%)")
         secs = [q.get("name", "") for q in (snap.us_sectors or [])[:3] if q.get("name")]
@@ -269,7 +269,7 @@ async def analyze(snap: MarketSnapshot) -> MarketSnapshot:
     """
     settings = get_settings()
 
-    if snap.mode == "us_morning":
+    if snap.mode in ("us_morning", "us_premarket"):
         context = _build_us_context(snap)
         prompt = _us_morning_prompt(snap, context)
     elif snap.mode == "pre_close":

@@ -444,11 +444,11 @@
         </div>
         {% endif %}
       </div>
-      {# 🤖 AI 시장요약 — 지수 바로 아래 (us_morning) #}
-      {% if snap.mode == 'us_morning' and snap.summary %}
+      {# 🤖 AI 시장요약 — 지수 바로 아래 (us_morning/us_premarket) #}
+      {% if snap.mode in ['us_morning', 'us_premarket'] and snap.summary %}
       <div class="summary-box" style="margin-top:0.8rem;"><div class="label">🤖 AI 시장 요약</div><p>{{ snap.summary }}</p></div>
       {% endif %}
-      {% if snap.mode == 'us_morning' and snap.theme_commentary %}
+      {% if snap.mode in ['us_morning', 'us_premarket'] and snap.theme_commentary %}
       <div class="summary-box" style="margin-top:0.6rem;"><div class="label">🌏 한국장 시사점</div><p>{{ snap.theme_commentary }}</p></div>
       {% endif %}
     </section>
@@ -633,8 +633,8 @@
     </section>
     {% endif %}
 
-    {# 2. AI 요약 (us_morning은 지수 바로 아래에서 이미 표시 → 여기선 KR만) #}
-    {% if snap.summary and snap.mode != 'us_morning' %}
+    {# 2. AI 요약 (us_morning/us_premarket은 지수 아래에서 이미 표시 → 여기선 KR만) #}
+    {% if snap.summary and snap.mode not in ['us_morning', 'us_premarket'] %}
     <section>
       <h2><span class="icon">🤖</span>AI 시장 요약</h2>
       <div class="summary-box">

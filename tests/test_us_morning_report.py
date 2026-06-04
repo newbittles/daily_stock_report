@@ -127,3 +127,39 @@ async def test_correction_badge_only_for_c(monkeypatch) -> None:
 
 async def _coro(v):
     return v
+
+
+# ─── 미국장 장전(프리장) 리포트 ────────────────────────────────────────────
+async def test_overlay_premarket(monkeypatch) -> None:
+    """프리장 오버레이 — change_pct를 프리장 등락률로, close_pct에 마감 보존."""
+    from src.market_report import pipeline as P
+
+    snap = MarketSnapshot(mode="us_premarket", generated_at=datetime(2026, 6, 4, 19, 0))
+    snap.us_top3 = [{"symbol": "NVDA", "change_pct": 1.0, "price": 450.0}]
+    snap.us_screen_groups = [{"initial": "C", "picks": [
+        {"symbol": "AAPL", "change_pct": -1.0, "price": 310.0},
+        {"symbol": "ZZZZ", "change_pct": 3.0, "price": 50.0},  # 프리장 미체결
+    ]}]
+
+    async def fake_pm(syms):
+        return {"NVDA": {"price": 460.0, "change_pct": 2.5},
+                "AAPL": {"price": 313.0, "change_pct": 1.0}}
+    monkeypatch.setattr("src.datasource.us.fdr_source.fetch_us_premarket", fake_pm)
+
+    await P._overlay_premarket(snap)
+    nv = snap.us_top3[0]
+    assert nv["change_pct"] == 2.5 and nv["close_pct"] == 1.0 and nv["price"] == 460.0 and nv["premkt"]
+    ap = snap.us_screen_groups[0]["picks"][0]
+    assert ap["change_pct"] == 1.0 and ap["premkt"]
+    zz = snap.us_screen_groups[0]["picks"][1]
+    assert zz["change_pct"] == 3.0 and zz["premkt"] is False  # 미체결 → 마감값 유지
+
+
+def test_us_premarket_telegram_header() -> None:
+    """장전 리포트 헤더 — '장전(프리장)' + 프리장 기준 안내."""
+    from src.market_report.telegram_notify import _format_us_morning_summary
+    snap = MarketSnapshot(mode="us_premarket", generated_at=datetime(2026, 6, 4, 19, 0))
+    snap.us_indices = [{"name": "S&P500", "price": 6800.0, "change_pct": 1.0}]
+    msg = _format_us_morning_summary(snap)
+    assert "장전" in msg and "프리장 기준" in msg
+    assert "us-pre.html" in msg  # 웹 링크

@@ -51,6 +51,17 @@ async def _holdings_job() -> None:
         logger.exception("holdings_job_failed error=%s", exc)
 
 
+async def _us_premarket_job() -> None:
+    """미국장 장전 리포트 (평일 19:00 — 미국 프리장 시세 + 마감기준 ABCD). 웹+텔레그램."""
+    logger.info("us_premarket_job_start now=%s", datetime.now().isoformat())
+    try:
+        from src.market_report.us_premarket import run_us_premarket
+        snap = await run_us_premarket()
+        logger.info("us_premarket_job_done sent=%s", snap is not None)
+    except Exception as exc:
+        logger.exception("us_premarket_job_failed error=%s", exc)
+
+
 async def _midday_job() -> None:
     """장중 리포트 (평일 12:00) — 지수·수급·강세테마·핫종목·전날 top3 현황. 텔레그램 전용."""
     logger.info("midday_job_start now=%s", datetime.now().isoformat())
@@ -113,6 +124,11 @@ def build_scheduler() -> AsyncIOScheduler:
         _midday_job, CronTrigger(day_of_week="mon-fri", hour=11, minute=40, timezone=KST),
         id="report_midday", replace_existing=True, misfire_grace_time=600,
     )
+    # 미국장 장전(프리장) 리포트 (평일 19:00 — 미국 프리장 시간대)
+    scheduler.add_job(
+        _us_premarket_job, CronTrigger(day_of_week="mon-fri", hour=19, minute=0, timezone=KST),
+        id="report_us_premarket", replace_existing=True, misfire_grace_time=900,
+    )
     return scheduler
 
 
@@ -147,7 +163,8 @@ def main() -> int:
         format="%(asctime)s %(levelname)s %(name)s %(message)s",
     )
     parser = argparse.ArgumentParser(description="Daily report scheduler")
-    parser.add_argument("--once", choices=["pre", "post", "us", "holdings", "dashboard", "midday"],
+    parser.add_argument("--once", choices=["pre", "post", "us", "holdings", "dashboard",
+                                           "midday", "uspre"],
                         help="등록된 잡 1회 즉시 실행 후 종료")
     args = parser.parse_args()
 
@@ -157,6 +174,8 @@ def main() -> int:
         asyncio.run(_dashboard_job())
     elif args.once == "midday":
         asyncio.run(_midday_job())
+    elif args.once == "uspre":
+        asyncio.run(_us_premarket_job())
     elif args.once:
         mode = {"pre": "pre_close", "post": "post_close", "us": "us_morning"}[args.once]
         asyncio.run(_job(mode))

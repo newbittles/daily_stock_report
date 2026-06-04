@@ -306,10 +306,14 @@ def _format_midday_summary(snap: MarketSnapshot) -> str:
 
 
 def _format_us_morning_summary(snap: MarketSnapshot) -> str:
-    """미국장 아침 요약 메시지 (us_morning) — 지수·AI요약·강세섹터·주요종목·한국 시사점."""
+    """미국장 요약 메시지 (us_morning=마감 / us_premarket=프리장) — 지수·AI·섹터·종목·시사점."""
     url = report_url(snap)
     date = snap.generated_at.strftime("%Y-%m-%d %H:%M")
-    lines: list[str] = [f"🌎 *미국 증시 마감 요약* — {date}", ""]
+    if snap.mode == "us_premarket":
+        lines: list[str] = [f"🌅 *미국장 장전(프리장) 리포트* — {date}",
+                            "_종목 등락률은 프리장 기준 · ABCD는 직전 마감 일봉_", ""]
+    else:
+        lines = [f"🌎 *미국 증시 마감 요약* — {date}", ""]
 
     if snap.us_indices:
         parts = []
@@ -420,7 +424,7 @@ async def send_report(snap: MarketSnapshot) -> bool:
         logger.warning("telegram_no_chat_id — allowed_chat_ids 비어있음")
         return False
 
-    if snap.mode == "us_morning":
+    if snap.mode in ("us_morning", "us_premarket"):
         text = _format_us_morning_summary(snap)
     elif snap.mode == "midday":
         text = _format_midday_summary(snap)

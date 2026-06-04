@@ -8,7 +8,7 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from typing import Literal
 
-ReportMode = Literal["pre_close", "post_close", "us_morning", "midday"]
+ReportMode = Literal["pre_close", "post_close", "us_morning", "midday", "us_premarket"]
 MarketCode = Literal["KOSPI", "KOSDAQ"]
 
 

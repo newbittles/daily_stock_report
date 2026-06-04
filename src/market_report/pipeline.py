@@ -562,6 +562,32 @@ async def _collect_us_screening(snap: MarketSnapshot) -> None:
                 len(picks), [p["symbol"] for p in snap.us_top3])
 
 
+async def _overlay_premarket(snap: MarketSnapshot) -> None:
+    """us_top3/us_screen_groups 종목에 프리장 시세/등락률 오버레이 (장전 리포트).
+
+    각 pick의 change_pct를 프리장 등락률로, price를 프리장가로 덮어쓴다(마감 등락률은
+    close_pct에 보존). 프리장 미체결 종목은 마감값 유지. yfinance .info per-symbol."""
+    from src.datasource.us.fdr_source import fetch_us_premarket
+
+    dicts: list[dict] = list(snap.us_top3 or [])
+    for g in (snap.us_screen_groups or []):
+        dicts.extend(g.get("picks", []))
+    syms = list({d["symbol"] for d in dicts})
+    if not syms:
+        return
+    pm = await fetch_us_premarket(syms)
+    for d in dicts:
+        q = pm.get(d["symbol"])
+        if q:
+            d["premkt"] = True
+            d["close_pct"] = d.get("change_pct", 0)   # 마감 등락률 보존
+            d["change_pct"] = q["change_pct"]          # 표시는 프리장 등락률
+            d["price"] = round(q["price"], 2)
+        else:
+            d["premkt"] = False
+    logger.info("us_premarket_overlay picks=%d matched=%d", len(dicts), len(pm))
+
+
 async def run_full(
     mode: ReportMode, *, do_publish: bool = True, do_telegram: bool = True, force: bool = False
 ) -> MarketSnapshot:
