@@ -125,6 +125,10 @@ class MarketSnapshot:
     holdings_status: list[dict] = field(default_factory=list)  # {name, ticker, state, reason, profit_rate, ...}
     holdings_summary: str = ""  # 보유종목 전체에 대한 AI 종합 코멘트 (analyzer.summarize_holdings)
 
+    # 핫종목 — 거래대금 상위 + 시총 하한 필터 (거래대금 전일대비·순매수 연속일·소속테마)
+    hot_stocks: list[dict] = field(default_factory=list)
+    # {ticker, name, price, change_pct, marcap, theme, tv_change(거래대금전일대비%), streak:{orgn,frgn,prsn}}
+
     # 장중 리포트(midday) — 전날 추천 Top3의 현재 상태 (top3_status가 채움)
     prev_top3_date: str = ""    # 전날 top3 추천일(YYYY-MM-DD)
     prev_top3_status: list[dict] = field(default_factory=list)

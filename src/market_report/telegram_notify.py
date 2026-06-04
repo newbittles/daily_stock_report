@@ -207,6 +207,32 @@ def _format_post_summary(snap: MarketSnapshot) -> str:
     return "\n".join(lines)
 
 
+def _format_hot_stocks(hot: list[dict]) -> list[str]:
+    """핫종목(거래대금 상위) 텔레그램 라인 — 거래대금 전일대비·순매수 연속일·소속테마.
+
+    종목 줄 + 아래에 (거래대금 전일比, 기관/외인/개인 순매수 연속일) + 테마. 모바일 가독성."""
+    lines: list[str] = ["🔥 *핫 종목* (거래대금 상위)"]
+    for h in hot:
+        sign = "+" if h.get("change_pct", 0) >= 0 else ""
+        lines.append(f"  · {_naver_link(h['name'], h['ticker'])} "
+                     f"{h['price']:,.0f}원 ({sign}{h.get('change_pct', 0):.1f}%)")
+        sub: list[str] = []
+        tv = h.get("tv_change")
+        if tv is not None:
+            sub.append(f"거래대금 전일比 {'+' if tv >= 0 else ''}{tv:.0f}%")
+        st = h.get("streak") or {}
+        streak = [f"{lbl}{st[k]}일" for k, lbl in (("orgn", "기관"), ("frgn", "외인"), ("prsn", "개인"))
+                  if st.get(k, 0) > 0]
+        if streak:
+            sub.append("순매수 " + "·".join(streak))
+        if sub:
+            lines.append("    " + " · ".join(sub))
+        if h.get("theme"):
+            lines.append(f"    테마: {h['theme']}")
+    lines.append("")
+    return lines
+
+
 def _format_midday_summary(snap: MarketSnapshot) -> str:
     """장중 리포트(정오) — 지수·수급(전일대비)·강세테마·핫종목·전날 추천 Top3 현황.
 
@@ -242,8 +268,10 @@ def _format_midday_summary(snap: MarketSnapshot) -> str:
                 lines.append(f"    💡 {t.description}")
         lines.append("")
 
-    # 핫 종목 (상승률 상위 5 — ETF/우선주 제외된 top_gainers)
-    if snap.top_gainers:
+    # 핫 종목 (거래대금 상위 5, 시총 5000억↑) + 거래대금 전일대비·순매수 연속일·소속테마
+    if getattr(snap, "hot_stocks", None):
+        lines.extend(_format_hot_stocks(snap.hot_stocks))
+    elif snap.top_gainers:  # 폴백(수집 실패 시 상승률 상위)
         lines.append("🔥 *핫 종목* (상승률 상위)")
         for s in snap.top_gainers[:5]:
             lines.append(f"  · {_naver_link(s.name, s.ticker)} "

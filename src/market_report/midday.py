@@ -32,24 +32,33 @@ async def run_midday(*, do_telegram: bool = True, force: bool = False) -> Market
     try:
         from src.config.settings import get_settings
         from src.datasource.kis.adapter import KisAdapter
+        from src.market_report.pipeline import collect_hot_stocks
         from src.market_report.top3_status import (
             fetch_prev_top3_status,
             find_prev_top3,
         )
 
+        s = get_settings()
+        adapter = KisAdapter(s.kis_app_key, s.kis_app_secret, s.kis_account_no, s.kis_env)
+
+        # 핫종목 (거래대금 상위 + 시총 3000억 필터 + 거래대금 전일대비·순매수 연속일·소속테마)
+        try:
+            snap.hot_stocks = await collect_hot_stocks(snap, adapter, top=5)
+        except Exception as exc:  # noqa: BLE001
+            logger.warning("midday_hot_stocks_failed error=%s", exc)
+
+        # 전날 추천 Top3 현황
         today = snap.generated_at.strftime("%Y-%m-%d")
         prev = find_prev_top3(today)
         if prev:
             date, picks = prev
-            s = get_settings()
-            adapter = KisAdapter(s.kis_app_key, s.kis_app_secret, s.kis_account_no, s.kis_env)
             snap.prev_top3_status = await fetch_prev_top3_status(picks, adapter)
             snap.prev_top3_date = date
             logger.info("midday_prev_top3 date=%s count=%d", date, len(snap.prev_top3_status))
         else:
             logger.info("midday_prev_top3_none — 직전 거래일 top3 파일 없음")
     except Exception as exc:  # noqa: BLE001
-        logger.warning("midday_prev_top3_failed error=%s", exc)
+        logger.warning("midday_kis_failed error=%s", exc)
 
     # 강세 테마는 collect_snapshot의 snap.top_themes(naver, 빠름)로 충분.
     # 주도테마(judal) 역인덱스는 정오 최초 크롤이 무거워 midday에선 생략(가벼운 알림 유지).
@@ -63,7 +72,7 @@ async def run_midday(*, do_telegram: bool = True, force: bool = False) -> Market
 
     logger.info("midday_ready kospi=%s themes=%d hot=%d prev_top3=%d",
                 snap.kospi.value if snap.kospi else "fail",
-                len(snap.top_themes), len(snap.top_gainers or []),
+                len(snap.top_themes), len(snap.hot_stocks or []),
                 len(snap.prev_top3_status))
 
     if do_telegram:

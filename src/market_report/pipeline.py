@@ -234,6 +234,62 @@ def _supply_streak(rows: list[dict], key: str) -> int:
     return n
 
 
+async def collect_hot_stocks(
+    snap: MarketSnapshot, adapter, top: int = 5, min_marcap_won: float = 5e11,
+) -> list[dict]:
+    """거래대금 상위 + 시총 하한(5000억) 핫종목 → 거래대금 전일대비·순매수 연속일·소속테마.
+
+    장중/마감 리포트 공용(사용자 2026-06-04). 후보=top_volume(거래대금 trade_value순),
+    시총 3000억 미만 잡주 제외. 종목당 KIS 일봉·투자자 조회(Top5라 가벼움).
+    """
+    from src.datasource.market_cap import get_market_cap_map
+
+    cands = sorted((snap.top_volume or []),
+                   key=lambda s: getattr(s, "trade_value", 0) or 0, reverse=True)
+    marcap: dict[str, int] = {}
+    try:
+        marcap = get_market_cap_map()
+    except Exception as exc:  # noqa: BLE001
+        logger.warning("hot_marcap_failed error=%s", exc)
+    picked = [s for s in cands if marcap.get(s.ticker, 0) >= min_marcap_won][:top]
+    if not picked:
+        return []
+
+    themes: dict[str, str] = {}
+    try:
+        from src.market_report.scrapers.sector import get_stock_sectors
+        themes = await get_stock_sectors([s.ticker for s in picked])
+    except Exception as exc:  # noqa: BLE001
+        logger.warning("hot_sector_failed error=%s", exc)
+
+    out: list[dict] = []
+    for s in picked:
+        d = {
+            "ticker": s.ticker, "name": s.name, "price": s.price,
+            "change_pct": round(s.change_pct, 2), "marcap": marcap.get(s.ticker, 0),
+            "theme": themes.get(s.ticker, ""), "tv_change": None,
+            "streak": {"orgn": 0, "frgn": 0, "prsn": 0},
+        }
+        try:  # 거래대금 전일대비(%)
+            candles = await adapter.get_ohlcv(s.ticker, days=3)
+            if len(candles) >= 2:
+                tv0 = candles[-1].close * candles[-1].volume
+                tv1 = candles[-2].close * candles[-2].volume
+                d["tv_change"] = round((tv0 - tv1) / tv1 * 100, 0) if tv1 else None
+        except Exception as exc:  # noqa: BLE001
+            logger.debug("hot_tv_failed ticker=%s error=%s", s.ticker, exc)
+        try:  # 순매수 연속일 (기관/외인/개인)
+            rows = await adapter.get_stock_investor_daily(s.ticker, days=10)
+            d["streak"] = {"orgn": _supply_streak(rows, "orgn"),
+                           "frgn": _supply_streak(rows, "frgn"),
+                           "prsn": _supply_streak(rows, "prsn")}
+        except Exception as exc:  # noqa: BLE001
+            logger.debug("hot_streak_failed ticker=%s error=%s", s.ticker, exc)
+        out.append(d)
+    logger.info("hot_stocks collected=%d", len(out))
+    return out
+
+
 async def _inject_supply_streak(snap: MarketSnapshot, adapter) -> None:
     """Top3 종목별 기관/외국인 연속 순매수일 → supply_str (예 '기관 순매수(3일) · 외국인 순매수(2일)')."""
     for t in (snap.top3 or []):

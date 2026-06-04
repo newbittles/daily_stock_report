@@ -110,3 +110,52 @@ def test_format_midday_mobile_linebreaks():
     # 코스피와 코스닥은 서로 다른 줄
     kospi_line = next(ln for ln in msg.split("\n") if "코스피" in ln)
     assert "코스닥" not in kospi_line
+
+
+# ─── 핫종목 (거래대금 상위 + 시총필터 + 전일대비·순매수연속일·테마) ──────────────
+async def test_collect_hot_stocks_filter_and_streak(monkeypatch):
+    """시총 5000억↑만, 거래대금순, 거래대금 전일대비·순매수 연속일·테마 채움."""
+    from src.datasource.base import Candle
+    from src.market_report import pipeline as P
+    from src.market_report.models import StockRank
+
+    snap = MarketSnapshot(mode="midday", generated_at=datetime(2026, 6, 4, 11, 40))
+    snap.top_volume = [
+        StockRank(1, "454910", "두산로보틱스", 170000, 0, 12.0, 1000, trade_value=5000),
+        StockRank(2, "000001", "잡주", 500, 0, 29.0, 9999, trade_value=8000),   # 시총 미달
+        StockRank(3, "005930", "삼성전자", 80000, 0, 1.0, 500, trade_value=3000),
+    ]
+    monkeypatch.setattr("src.datasource.market_cap.get_market_cap_map",
+                        lambda: {"454910": 6e12, "000001": 1e11, "005930": 400e12})
+
+    async def fake_sectors(codes, max_fetch=40):
+        return {"454910": "로봇", "005930": "반도체"}
+    monkeypatch.setattr("src.market_report.scrapers.sector.get_stock_sectors", fake_sectors)
+
+    class FakeAdapter:
+        async def get_ohlcv(self, ticker, days=3):
+            return [Candle("20260603", 100, 100, 100, 100, 100),
+                    Candle("20260604", 100, 100, 100, 100, 300)]  # 거래대금 +200%
+
+        async def get_stock_investor_daily(self, ticker, days=10):
+            return [{"orgn": 10, "frgn": 5, "prsn": -2}, {"orgn": 3, "frgn": -1, "prsn": 1}]
+
+    hot = await P.collect_hot_stocks(snap, FakeAdapter(), top=5, min_marcap_won=5e11)
+    assert [h["ticker"] for h in hot] == ["454910", "005930"]  # 잡주(시총미달) 제외, 거래대금순
+    h0 = hot[0]
+    assert h0["theme"] == "로봇"
+    assert h0["streak"] == {"orgn": 2, "frgn": 1, "prsn": 0}   # 연속 순매수일
+    assert h0["tv_change"] == 200                              # 거래대금 전일대비 +200%
+
+
+def test_format_hot_stocks_renders():
+    from src.market_report.telegram_notify import _format_hot_stocks
+    hot = [{"ticker": "454910", "name": "두산로보틱스", "price": 170000, "change_pct": 12.0,
+            "tv_change": 200, "streak": {"orgn": 2, "frgn": 1, "prsn": 0}, "theme": "로봇"}]
+    txt = "\n".join(_format_hot_stocks(hot))
+    assert "핫 종목" in txt and "거래대금 상위" in txt
+    assert "두산로보틱스" in txt
+    assert "거래대금 전일比 +200%" in txt
+    assert "기관2일" in txt and "외인1일" in txt
+    assert "개인" not in txt          # prsn=0 → 표시 안 함
+    assert "테마: 로봇" in txt
