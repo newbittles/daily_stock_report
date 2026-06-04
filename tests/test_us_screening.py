@@ -164,10 +164,10 @@ def test_screener_us_config_loads_a_and_c():
     enabled = cfg.enabled_strategies()
     initials = {s.name[:1] for s in enabled}
     assert {"A", "B", "C", "D"} <= initials
-    # 달러 기준: 거래대금 $50M, 최소가 $5
+    # 달러 기준: 거래대금 $50M, 최소가 $1.5(페니주 제외, 사용자 2026-06-04)
     for s in enabled:
         assert s.conditions.get("min_trade_value") == 50_000_000
-    assert cfg.global_filters.get("min_price") == 5
+    assert cfg.global_filters.get("min_price") == 1.5
 
 
 # ─── 유니버스 확장 (나스닥 핫 + combined) ──────────────────────────────────

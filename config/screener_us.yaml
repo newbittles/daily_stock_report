@@ -42,6 +42,7 @@ strategies:
       convergence_breakout:
         conv_max: 6.0              # 단기이평(5/10/20) 수렴 이격 상한 %
         gap120_min: 2.0            # 종가>120선 최소 이격 %
+        gap120_max: 20.0           # 종가-120선 이격 상한 20% — '막 올라탄 초입'만(과확장 대형주는 C로) (사용자 2026-06-04)
         strict_align: false        # false=종가 이평선 위(상승전환)
         require_new_high: false    # 바닥탈출 대박 보존 위해 off
         require_ma120_rising: false
