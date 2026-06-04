@@ -366,7 +366,7 @@ def _format_us_morning_summary(snap: MarketSnapshot) -> str:
             if meta:
                 lines.append("   " + " · ".join(meta))
             if t.get("sector"):
-                lines.append(f"   섹터: {t['sector']}")           # #6 줄바꿈
+                lines.append(f"   테마: {t['sector']}")           # #6 줄바꿈 (GICS Industry 세분)
             if t.get("reason"):
                 lines.append(f"   └ {t['reason']}")
         lines.append("")
@@ -396,7 +396,7 @@ def _format_us_morning_summary(snap: MarketSnapshot) -> str:
                 if meta:
                     lines.append("     " + " · ".join(meta))
                 if p.get("sector"):
-                    lines.append(f"     섹터: {p['sector']}")  # #6 줄바꿈
+                    lines.append(f"     테마: {p['sector']}")  # #6 줄바꿈 (GICS Industry 세분)
         lines.append("")
 
     lines.append(f"📄 [전체 리포트 보기]({url})")

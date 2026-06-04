@@ -497,7 +497,7 @@
           {% if t.cross_signal == 'PULLBACK' %}<span class="up-text" style="font-size:0.8rem;">🟢단기눌림</span>{% elif t.cross_signal == 'CORRECTION' %}<span class="down-text" style="font-size:0.8rem;">⚠️조정시작</span>{% endif %}
         </div>
         {% if t.marcap_str or t.turnover_str %}<div class="pick-sub">{% if t.marcap_str %}시총 {{ t.marcap_str }}{% endif %}{% if t.turnover_str %} · 거래대금 {{ t.turnover_str }}{% endif %}</div>{% endif %}
-        {% if t.sector %}<div class="pick-sub">섹터: {{ t.sector }}</div>{% endif %}
+        {% if t.sector %}<div class="pick-sub">테마: {{ t.sector }}</div>{% endif %}
         {% if t.reason %}<div class="top3-reason">{{ t.reason }}</div>{% endif %}
       </div>
       {% endfor %}
@@ -518,7 +518,7 @@
           <span class="{{ 'up-text' if p.change_pct >= 0 else 'down-text' }}">{{ '+' if p.change_pct >= 0 else '' }}{{ "{:.2f}".format(p.change_pct) }}%</span>
           {% if p.cross_signal == 'PULLBACK' %}<span class="up-text" style="font-size:0.8rem;">🟢단기눌림</span>{% elif p.cross_signal == 'CORRECTION' %}<span class="down-text" style="font-size:0.8rem;">⚠️조정시작</span>{% endif %}
           {% if p.marcap_str or p.turnover_str or g.initial == 'B' %}<div class="pick-sub">{% if p.marcap_str %}시총 {{ p.marcap_str }}{% endif %}{% if p.turnover_str %} · 거래대금 {{ p.turnover_str }}{% endif %}{% if g.initial == 'B' %} · 20MA괴리 <strong class="hl-bold">{{ '+' if p.gap20 >= 0 else '' }}{{ p.gap20 }}%</strong>{% endif %}</div>{% endif %}
-          {% if p.sector %}<div class="pick-sub">섹터: {{ p.sector }}</div>{% endif %}
+          {% if p.sector %}<div class="pick-sub">테마: {{ p.sector }}</div>{% endif %}
           {% if p.reason %}<div class="theme-reason">{{ p.reason }}</div>{% endif %}
         </li>
         {% endfor %}

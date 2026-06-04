@@ -387,3 +387,20 @@ def test_report_uses_korean_name():
     text = build_us_screening_report([p], top_n=5, as_of="2026-06-03")
     assert "엔비디아" in text
     assert "`NVDA`" in text       # 티커는 그대로 병기 (한국어(티커))
+
+
+# ─── GICS Industry → 한국어 테마 세분화 (Information Technology 거침 해소) ──────
+from src.datasource.us.names_ko import us_theme  # noqa: E402
+
+
+@pytest.mark.parametrize("sector,industry,expected", [
+    ("Information Technology", "Semiconductors", "반도체"),
+    ("Information Technology", "Semiconductor Materials & Equipment", "반도체장비"),
+    ("Information Technology", "Application Software", "소프트웨어"),
+    ("Information Technology", "Internet Services & Infrastructure", "클라우드/인프라"),
+    ("양자컴퓨팅", "양자컴퓨팅", "양자컴퓨팅"),            # 큐레이션 한국어 통과
+    ("Financials", "Some Rare Industry", "Some Rare Industry"),  # 미매핑 → 영문 세분 폴백
+    ("Energy", "", "Energy"),                                # industry 없으면 sector
+])
+def test_us_theme(sector, industry, expected):
+    assert us_theme(sector, industry) == expected

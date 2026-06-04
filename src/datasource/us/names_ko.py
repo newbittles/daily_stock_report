@@ -50,3 +50,124 @@ US_NAME_KO: dict[str, str] = {
 def korean_name(symbol: str, fallback: str = "") -> str:
     """FDR 심볼 → 한국어 표시명. 큐레이션에 있으면 한국어, 없으면 영문명(폴백)."""
     return US_NAME_KO.get(symbol, fallback or symbol)
+
+
+# GICS Industry(세부 업종) → 한국어 테마. FDR Sector는 죄다 'Information Technology'라
+# 거칠어서(2026-06-04 사용자), Industry를 한국어 테마로 매핑해 세분화한다. 미매핑은 영문 폴백.
+US_INDUSTRY_KO: dict[str, str] = {
+    # IT / 반도체 / 소프트웨어
+    "Semiconductors": "반도체",
+    "Semiconductor Materials & Equipment": "반도체장비",
+    "Application Software": "소프트웨어",
+    "Systems Software": "시스템소프트웨어",
+    "Internet Services & Infrastructure": "클라우드/인프라",
+    "Interactive Media & Services": "인터넷/플랫폼",
+    "Interactive Home Entertainment": "게임",
+    "Communications Equipment": "통신장비",
+    "Technology Hardware, Storage & Peripherals": "IT하드웨어",
+    "Electronic Equipment & Instruments": "전자장비",
+    "Electronic Components": "전자부품",
+    "Electronic Manufacturing Services": "EMS(전자제조)",
+    "IT Consulting & Other Services": "IT서비스",
+    "Data Processing & Outsourced Services": "데이터/아웃소싱",
+    "Transaction & Payment Processing Services": "결제",
+    "Technology Distributors": "IT유통",
+    "Consumer Electronics": "가전",
+    "Financial Exchanges & Data": "거래소/금융데이터",
+    # 통신/미디어
+    "Integrated Telecommunication Services": "통신",
+    "Wireless Telecommunication Services": "무선통신",
+    "Cable & Satellite": "케이블/위성",
+    "Movies & Entertainment": "미디어/엔터",
+    "Broadcasting": "방송",
+    "Advertising": "광고",
+    "Publishing": "출판",
+    # 헬스케어
+    "Pharmaceuticals": "제약",
+    "Biotechnology": "바이오",
+    "Health Care Equipment": "의료기기",
+    "Health Care Supplies": "의료용품",
+    "Health Care Services": "헬스케어서비스",
+    "Health Care Technology": "헬스케어테크",
+    "Health Care Distributors": "의약품유통",
+    "Health Care Facilities": "병원/시설",
+    "Managed Health Care": "건강보험",
+    "Life Sciences Tools & Services": "생명과학도구",
+    # 금융
+    "Diversified Banks": "은행",
+    "Regional Banks": "지방은행",
+    "Investment Banking & Brokerage": "투자은행/증권",
+    "Asset Management & Custody Banks": "자산운용",
+    "Consumer Finance": "소비자금융",
+    "Property & Casualty Insurance": "손해보험",
+    "Life & Health Insurance": "생명/건강보험",
+    "Multi-line Insurance": "종합보험",
+    "Insurance Brokers": "보험중개",
+    "Reinsurance": "재보험",
+    # 소비재
+    "Automobile Manufacturers": "자동차",
+    "Automotive Parts & Equipment": "자동차부품",
+    "Automotive Retail": "자동차유통",
+    "Restaurants": "외식",
+    "Hotels, Resorts & Cruise Lines": "호텔/레저",
+    "Casinos & Gaming": "카지노/게이밍",
+    "Apparel, Accessories & Luxury Goods": "의류/명품",
+    "Apparel Retail": "의류유통",
+    "Footwear": "신발",
+    "Broadline Retail": "종합소매",
+    "Home Improvement Retail": "홈데코/건자재유통",
+    "Consumer Staples Merchandise Retail": "필수소비재유통",
+    "Packaged Foods & Meats": "식품",
+    "Soft Drinks & Non-alcoholic Beverages": "음료",
+    "Brewers": "주류",
+    "Distillers & Vintners": "주류",
+    "Tobacco": "담배",
+    "Household Products": "생활용품",
+    "Personal Care Products": "퍼스널케어",
+    "Leisure Products": "레저용품",
+    # 산업재
+    "Aerospace & Defense": "항공우주/방산",
+    "Industrial Machinery & Supplies & Components": "산업기계",
+    "Construction Machinery & Heavy Transportation Equipment": "건설기계",
+    "Construction & Engineering": "건설/엔지니어링",
+    "Electrical Components & Equipment": "전기장비",
+    "Heavy Electrical Equipment": "중전기",
+    "Building Products": "건자재",
+    "Industrial Conglomerates": "복합산업",
+    "Passenger Airlines": "항공",
+    "Rail Transportation": "철도",
+    "Air Freight & Logistics": "항공물류",
+    "Trading Companies & Distributors": "상사/유통",
+    "Research & Consulting Services": "컨설팅",
+    "Human Resource & Employment Services": "인력서비스",
+    # 에너지/소재/유틸리티
+    "Integrated Oil & Gas": "석유/가스",
+    "Oil & Gas Exploration & Production": "석유개발(E&P)",
+    "Oil & Gas Equipment & Services": "유전서비스",
+    "Oil & Gas Refining & Marketing": "정유",
+    "Oil & Gas Storage & Transportation": "에너지인프라",
+    "Electric Utilities": "전력",
+    "Multi-Utilities": "종합유틸리티",
+    "Independent Power Producers & Energy Traders": "발전/전력거래",
+    "Specialty Chemicals": "특수화학",
+    "Commodity Chemicals": "화학",
+    "Industrial Gases": "산업가스",
+    "Fertilizers & Agricultural Chemicals": "비료/농화학",
+    "Steel": "철강",
+    "Copper": "구리",
+    "Gold": "금",
+    "Construction Materials": "건설소재",
+}
+
+
+def us_theme(sector: str = "", industry: str = "") -> str:
+    """미국 종목 표시 테마 — GICS Industry를 한국어로 세분 매핑.
+
+    매핑 있으면 한국어 테마, 없으면 영문 Industry(섹터보다 세분), 그것도 없으면 sector.
+    큐레이션 watchlist는 sector/industry가 이미 한국어 테마라 그대로 통과.
+    """
+    if industry:
+        if industry in US_INDUSTRY_KO:
+            return US_INDUSTRY_KO[industry]
+        return industry  # 미매핑 GICS(영문)도 'Information Technology'보다는 세분
+    return sector or ""
