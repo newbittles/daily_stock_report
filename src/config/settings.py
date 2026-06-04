@@ -36,6 +36,10 @@ class Settings(BaseSettings):
     krx_id: str = ""
     krx_pw: str = ""
 
+    # 예탁결제원 외화증권 결제정보(data.go.kr) — 서학개미(한국인 미국주식) 종목별 순매수.
+    # 미설정이면 빈 문자열 → 서학개미 배지 비활성(선택 기능).
+    ksd_api_key: str = ""
+
     # Storage
     db_path: str = "data/stock_bot.db"
 
