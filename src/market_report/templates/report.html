@@ -493,6 +493,19 @@
     </section>
     {% endif %}
 
+    {# 📰 미국 시장 뉴스 (us_morning/us_premarket) #}
+    {% if snap.us_news %}
+    <section>
+      <h2><span class="icon">📰</span>미국 시장 뉴스</h2>
+      {% for n in snap.us_news[:8] %}
+      <div class="news-item">
+        <span class="news-title">{{ n.title }}</span>
+        {% if n.source %}<div class="news-meta"><span class="news-source">{{ n.source }}</span></div>{% endif %}
+      </div>
+      {% endfor %}
+    </section>
+    {% endif %}
+
     {# 🇺🇸 미국 추천 Top3 (us_morning — 미국 종목) #}
     {% if snap.us_top3 %}
     <section class="top3-sec">

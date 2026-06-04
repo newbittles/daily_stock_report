@@ -435,3 +435,33 @@ async def fetch_us_premarket(symbols: list[str]) -> dict[str, dict]:
     if not symbols:
         return {}
     return await asyncio.to_thread(_fetch_premarket_sync, list(symbols))
+
+
+# ─── 미국 시장 뉴스 — 장전/마감 AI 해설용(장후 뉴스·이슈) ──────────────────────
+
+
+def _fetch_us_news_sync(top: int) -> list[dict]:
+    """동기 — yfinance ^GSPC.news로 미국 시장 헤드라인. [{title, source}]."""
+    import yfinance as yf
+
+    out: list[dict] = []
+    try:
+        news = yf.Ticker("^GSPC").news or []
+    except Exception as exc:  # noqa: BLE001
+        logger.warning("us_news_failed error=%s", exc)
+        news = []
+    for x in news[:top]:
+        if not isinstance(x, dict):
+            continue
+        c = x.get("content") if isinstance(x.get("content"), dict) else x
+        title = c.get("title") or x.get("title")
+        prov = c.get("provider") if isinstance(c.get("provider"), dict) else None
+        pub = prov.get("displayName") if prov else x.get("publisher")
+        if title:
+            out.append({"title": str(title).strip(), "source": str(pub or "")})
+    return out
+
+
+async def fetch_us_news(top: int = 10) -> list[dict]:
+    """미국 시장 뉴스 헤드라인 → [{title, source}]. 실패 시 빈 리스트."""
+    return await asyncio.to_thread(_fetch_us_news_sync, top)

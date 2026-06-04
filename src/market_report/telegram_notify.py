@@ -334,6 +334,13 @@ def _format_us_morning_summary(snap: MarketSnapshot) -> str:
         lines.append(f"💡 {snap.why_moved}")
         lines.append("")
 
+    if getattr(snap, "us_news", None):
+        lines.append("📰 *미국 시장 뉴스*")
+        for n in snap.us_news[:5]:
+            src = f" _{n['source']}_" if n.get("source") else ""
+            lines.append(f"  · {n['title']}{src}")
+        lines.append("")
+
     if snap.us_sectors:
         lines.append("🔥 *강세 섹터* (상승률 상위)")
         for q in snap.us_sectors[:4]:

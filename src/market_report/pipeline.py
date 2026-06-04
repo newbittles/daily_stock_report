@@ -96,11 +96,11 @@ async def collect_us_snapshot() -> MarketSnapshot:
     from dataclasses import asdict
 
     from src.datasource.us.fdr_source import (
-        fetch_us_bigtech, fetch_us_indices, fetch_us_sectors,
+        fetch_us_bigtech, fetch_us_indices, fetch_us_news, fetch_us_sectors,
     )
     logger.info("us_snapshot_collect_start")
-    idx, bt, sec = await asyncio.gather(
-        fetch_us_indices(), fetch_us_bigtech(), fetch_us_sectors(),
+    idx, bt, sec, news = await asyncio.gather(
+        fetch_us_indices(), fetch_us_bigtech(), fetch_us_sectors(), fetch_us_news(10),
         return_exceptions=True,
     )
 
@@ -115,6 +115,7 @@ async def collect_us_snapshot() -> MarketSnapshot:
     snap.us_bigtech = [asdict(q) for q in _safe(bt)]
     # 섹터 전체(상승률순) 보관 — 표시단에서 강세 top4 / 약세 bottom4 슬라이스 (사용자 2026-06-04)
     snap.us_sectors = [asdict(q) for q in _safe(sec)]
+    snap.us_news = _safe(news)  # 미국 시장 뉴스 헤드라인 (장후 뉴스·이슈 AI 해설용)
     # 금/유가 (미국 지수 2x2 하단 — 금 좌, 유가 우)
     try:
         from src.market_report.scrapers.macro import fetch_macro

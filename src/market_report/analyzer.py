@@ -102,9 +102,14 @@ def _build_us_context(snap: MarketSnapshot) -> str:
         for q in snap.us_bigtech:
             lines.append(f"  {q['name']} {q['change_pct']:+.2f}%")
     if snap.us_sectors:
-        lines.append("\n[강세 섹터 ETF]")
+        lines.append("\n[섹터 ETF 등락]")
         for q in snap.us_sectors:
             lines.append(f"  {q['name']} {q['change_pct']:+.2f}%")
+    if getattr(snap, "us_news", None):
+        lines.append("\n[미국 시장 뉴스 헤드라인]")
+        for n in snap.us_news[:10]:
+            src = f" ({n['source']})" if n.get("source") else ""
+            lines.append(f"  - {n['title']}{src}")
     return "\n".join(lines)
 
 
