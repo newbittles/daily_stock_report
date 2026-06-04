@@ -429,6 +429,49 @@ def _inject_candidate_quotes(snap: MarketSnapshot) -> None:
         logger.warning("candidate_quote_inject_failed error=%s", exc)
 
 
+def _is_etf_name(name_en: str) -> bool:
+    """SEIBro 영문명으로 ETF/ETN 여부 판정(개별종목 칸과 분리용). 대부분 'ETF'/'ETN' 포함."""
+    u = name_en.upper()
+    return "ETF" in u or "ETN" in u
+
+
+async def _collect_kr_us_netbuy(snap: MarketSnapshot) -> None:
+    """서학개미(한국인) 미국주식 순매수 → snap.kr_us_netbuy (SEIBro, 최근 5거래일 누적).
+
+    개별종목/ETF를 한 리스트에 is_etf 플래그로 담는다(표시단에서 칸 분리, 사용자 2026-06-05).
+    금액은 억원(USD×환율/1e8), 종목명 옆 티커 표시. pre/post 둘 다.
+    SEIBro/환율 실패 시 빈 채로 둠(best-effort — 섹션 생략, 리포트는 발송).
+    """
+    from src.datasource.us.fdr_source import fetch_usd_krw
+    from src.datasource.us.names_ko import korean_name
+    from src.datasource.us.seibro_source import fetch_us_net_buy
+    from src.datasource.us.seibro_symbols import ticker_for
+
+    rows = await fetch_us_net_buy(trading_days=5, top=50)  # 50개 받아 개별/ETF 각 TOP5 확보
+    if not rows:
+        return
+    rate = await fetch_usd_krw()  # USD→KRW. 0이면 억 환산 불가 → USD만 보관
+    out: list[dict] = []
+    for r in rows:
+        ticker = ticker_for(r.isin)
+        name = korean_name(ticker, "") if ticker else ""
+        if not name:
+            # ETF·미매핑 종목은 영문명(가독성 위해 title-case, 약어는 대문자 복원)
+            name = r.name_en.title()
+            for acro in ("Etf", "Adr", "Ads"):
+                name = name.replace(f" {acro}", f" {acro.upper()}")
+        out.append({
+            "ticker": ticker,
+            "name": name,
+            "net_buy_usd": r.net_buy_amt,
+            "net_buy_eok": round(r.net_buy_amt * rate / 1e8) if rate else 0,
+            "is_etf": _is_etf_name(r.name_en),
+        })
+    snap.kr_us_netbuy = out
+    n_stock = sum(1 for o in out if not o["is_etf"])
+    logger.info("kr_us_netbuy_ready n=%d stocks=%d etfs=%d", len(out), n_stock, len(out) - n_stock)
+
+
 async def _collect_us_screening(snap: MarketSnapshot) -> None:
     """미국 종목 A/B/C/D 스크리닝 → snap.us_top3 / snap.us_screen_groups.
 
@@ -829,6 +872,13 @@ async def run_full(
         logger.error("pipeline_strategy_failed error=%s", exc)
 
     _inject_marcap(snap)
+
+    # 🇰🇷 서학개미(한국인) 미국주식 순매수 TOP5 — pre/post 둘 다(SEIBro, 5거래일). best-effort.
+    try:
+        await _collect_kr_us_netbuy(snap)
+    except Exception as exc:
+        logger.warning("kr_us_netbuy_failed error=%s", exc)
+
     try:
         render_report(snap)
     except Exception as exc:

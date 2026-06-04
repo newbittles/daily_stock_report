@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<vector beforeServletCall="1780607661614" afterServletCall="1780607668091" result="5">
+    <data vectorkey="0" type="Document">
+        <result><RNUM value="1"/><NATION_NM value="미국"/><ISIN value="US5951121038"/><KOR_SECN_NM value="MICRON TECHNOLOGY INC"/><SUM_FRSEC_BUY_AMT value="1496502003"/><SUM_FRSEC_SELL_AMT value="671675388"/><SUM_FRSEC_TOT_AMT value="2168177391"/><SUM_FRSEC_NET_BUY_AMT value="824826616"/></result>
+    </data>
+    <data vectorkey="1" type="Document">
+        <result><RNUM value="2"/><NATION_NM value="미국"/><ISIN value="US77926X3200"/><KOR_SECN_NM value="ROUNDHILL MEMORY ETF"/><SUM_FRSEC_BUY_AMT value="559069485"/><SUM_FRSEC_SELL_AMT value="170165776"/><SUM_FRSEC_TOT_AMT value="729235261"/><SUM_FRSEC_NET_BUY_AMT value="388903709"/></result>
+    </data>
+    <data vectorkey="2" type="Document">
+        <result><RNUM value="3"/><NATION_NM value="미국"/><ISIN value="US0420682058"/><KOR_SECN_NM value="ARM HOLDINGS PLC SPON ADS EACH REP 1 ORD SHS"/><SUM_FRSEC_BUY_AMT value="367163740"/><SUM_FRSEC_SELL_AMT value="102214056"/><SUM_FRSEC_TOT_AMT value="469377796"/><SUM_FRSEC_NET_BUY_AMT value="264949683"/></result>
+    </data>
+    <data vectorkey="3" type="Document">
+        <result><RNUM value="4"/><NATION_NM value="미국"/><ISIN value="US5738741041"/><KOR_SECN_NM value="MARVELL TECHNOLOGY INC"/><SUM_FRSEC_BUY_AMT value="435186606"/><SUM_FRSEC_SELL_AMT value="195145627"/><SUM_FRSEC_TOT_AMT value="630332234"/><SUM_FRSEC_NET_BUY_AMT value="240040979"/></result>
+    </data>
+    <data vectorkey="4" type="Document">
+        <result><RNUM value="5"/><NATION_NM value="미국"/><ISIN value="US02079K3059"/><KOR_SECN_NM value="ALPHABET INC CL A"/><SUM_FRSEC_BUY_AMT value="549743755"/><SUM_FRSEC_SELL_AMT value="324600575"/><SUM_FRSEC_TOT_AMT value="874344330"/><SUM_FRSEC_NET_BUY_AMT value="225143179"/></result>
+    </data>
+</vector>

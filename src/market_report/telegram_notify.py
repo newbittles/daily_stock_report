@@ -142,6 +142,36 @@ def _format_market_flows(snap: MarketSnapshot) -> list[str]:
     return lines
 
 
+def _format_kr_us_netbuy(snap: MarketSnapshot) -> list[str]:
+    """🇰🇷 서학개미 미국주식 순매수 — 개별종목/ETF 칸 분리(SEIBro, 5거래일 누적, 억원).
+
+    개별종목·ETF 각 TOP5(사용자 2026-06-05). 종목명 옆 티커 표시(있으면).
+    pre/post 둘 다. 데이터 없으면 섹션 생략(best-effort).
+    """
+    rows = getattr(snap, "kr_us_netbuy", None) or []
+    if not rows:
+        return []
+    stocks = [r for r in rows if not r.get("is_etf")][:5]
+    etfs = [r for r in rows if r.get("is_etf")][:5]
+
+    lines: list[str] = []
+
+    def _emit(title: str, items: list[dict]) -> None:
+        if not items:
+            return
+        lines.append(title)
+        for i, r in enumerate(items, 1):
+            eok = r.get("net_buy_eok", 0) or 0
+            tk = r.get("ticker") or ""
+            label = f"{r.get('name', '')}({tk})" if tk else r.get("name", "")
+            lines.append(f"  {i}. {label} +{eok:,.0f}억")
+        lines.append("")
+
+    _emit("🇰🇷 *한국인 매수 TOP5 — 개별종목* (서학개미·5거래일 순매수)", stocks)
+    _emit("📦 *한국인 매수 TOP5 — ETF*", etfs)
+    return lines
+
+
 def _format_pre_summary(snap: MarketSnapshot) -> str:
     """마감 전 텔레그램 요약 메시지 (Markdown)."""
     url = report_url(snap)
@@ -179,6 +209,7 @@ def _format_pre_summary(snap: MarketSnapshot) -> str:
         lines.append("")
 
     lines.extend(_format_strategy_holdings(snap))
+    lines.extend(_format_kr_us_netbuy(snap))  # 🇰🇷 한국인 매수 TOP5 (서학개미)
     lines.append(f"📄 [전체 리포트 보기]({url})")
     lines.append("")
     lines.append("_※ 참고용 정보. 투자 판단·책임은 본인._")
@@ -235,6 +266,7 @@ def _format_post_summary(snap: MarketSnapshot) -> str:
             lines.append(f"  · {w}")
         lines.append("")
 
+    lines.extend(_format_kr_us_netbuy(snap))  # 🇰🇷 한국인 매수 TOP5 (서학개미)
     lines.append(f"📄 [전체 리포트 보기]({url})")
     lines.append("")
     lines.append("_※ 참고용 정보. 투자 판단·책임은 본인._")

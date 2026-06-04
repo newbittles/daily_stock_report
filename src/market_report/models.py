@@ -114,6 +114,8 @@ class MarketSnapshot:
     us_sector_leaders: list[dict] = field(default_factory=list)  # 강세/약세 섹터별 대장주(주요 종목)
     us_theme_leaders: list[dict] = field(default_factory=list)  # 관심 테마(양자·우주·AI 등) 대장 — 별도
     us_screen_groups: list[dict] = field(default_factory=list)  # [{label, initial, picks:[...]}] 전략별(C/B/A/D)
+    # 서학개미(한국인) 미국주식 종목별 순매수 — SEIBro, 최근 5거래일 누적 (pre/post 둘 다 표시)
+    kr_us_netbuy: list[dict] = field(default_factory=list)  # [{rank, ticker, name, net_buy_eok, net_buy_usd}]
 
     # AI 분석 결과 (analyzer가 채움)
     summary: str = ""           # 시장 한줄 요약

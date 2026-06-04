@@ -1,0 +1,58 @@
+"""SEIBro ISIN → 미국 티커(FDR/yfinance 심볼) 매핑 — 서학개미 순매수를 스크리닝과 교차용.
+
+SEIBro는 종목 식별을 ISIN + 영문명으로 준다(티커 없음). 미국 스크리닝(FDR)은 티커 기준이라
+교차/한국어명 표시를 하려면 ISIN→티커가 필요하다.
+
+매핑 출처:
+  - ✅ 관측-검증: 2026-06-05 SEIBro 응답에서 ISIN+영문명을 직접 확인하고 티커 확정.
+  - 🔵 메가캡: 서학개미 단골(테슬라·엔비디아·애플 등)은 이번 구간 TOP50엔 없었지만
+    배지 매칭을 위해 공개 식별자(고신뢰)로 선등록. 새 ISIN 관측 시 ✅로 승격/보정.
+
+미매핑(ETF·신규상장 등)은 티커 없이 영문명으로만 표시(배지 생략). 점진 확충.
+"""
+from __future__ import annotations
+
+# ISIN → FDR 티커. (값 미검증 하드코딩 지양 — 아래는 관측 응답에서 ISIN+명을 함께 본 것)
+ISIN_TO_TICKER: dict[str, str] = {
+    # ✅ 2026-06-05 SEIBro 미국 순매수 TOP50 응답에서 직접 관측
+    "US5951121038": "MU",    # MICRON TECHNOLOGY INC
+    "US0420682058": "ARM",   # ARM HOLDINGS PLC SPON ADS
+    "US5738741041": "MRVL",  # MARVELL TECHNOLOGY INC
+    "US02079K3059": "GOOGL", # ALPHABET INC CL A
+    "US4592001014": "IBM",   # INTERNATIONAL BUSINESS MACHINES CORP
+    "US24703L2025": "DELL",  # DELL TECHNOLOGIES INC CL C
+    "US4581401001": "INTC",  # INTEL CORP
+    "US1725731079": "CRCL",  # Circle Internet
+    "US21873S1087": "CRWV",  # CoreWeave Inc
+    "US8334451098": "SNOW",  # SNOWFLAKE INC
+    "US81762P1021": "NOW",   # SERVICENOW INC
+    "US90138F1021": "TWLO",  # TWILIO INC CL A
+    "US82706C1080": "SIMO",  # SILICON MOTION TECHNOLOGY CORP ADR
+    "US83417M1045": "SEDG",  # SOLAREDGE TECHNOLOGIES INC
+    "US25402D1028": "DOCN",  # DIGITALOCEAN HOLDINGS INC
+    "US00971T1016": "AKAM",  # AKAMAI TECHNOLOGIES INC
+    "US2193501051": "GLW",   # CORNING INC
+    "US03823U1025": "AAOI",  # APPLIED OPTOELECTRONICS INC
+    "US7475251036": "QCOM",  # QUALCOMM INC
+    "US22266T1097": "CPNG",  # COUPANG INC
+    "US7391281067": "POWL",  # POWELL INDUSTRIES INC
+    "KYG393871085": "GFS",   # GLOBALFOUNDRIES INC
+    "US6078281002": "MOD",   # MODINE MANUFACTURING CO
+    "US34379V1035": "FLNC",  # FLUENCE ENERGY INC
+    # 🔵 서학개미 단골 메가캡(공개 식별자, 고신뢰) — 배지 매칭용 선등록
+    "US88160R1014": "TSLA",  # TESLA INC
+    "US67066G1040": "NVDA",  # NVIDIA CORP
+    "US0378331005": "AAPL",  # APPLE INC
+    "US5949181045": "MSFT",  # MICROSOFT CORP
+    "US0231351067": "AMZN",  # AMAZON.COM INC
+    "US30303M1027": "META",  # META PLATFORMS INC
+    "US0079031078": "AMD",   # ADVANCED MICRO DEVICES
+    "US11135F1012": "AVGO",  # BROADCOM INC
+    "US69608A1088": "PLTR",  # PALANTIR TECHNOLOGIES
+    "US64110L1061": "NFLX",  # NETFLIX INC
+}
+
+
+def ticker_for(isin: str) -> str:
+    """ISIN → FDR 티커. 미매핑이면 빈 문자열(배지 생략·영문명만 표시)."""
+    return ISIN_TO_TICKER.get(isin, "")
