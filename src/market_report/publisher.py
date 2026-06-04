@@ -21,7 +21,8 @@ GITHUB_PAGES_BASE = "https://newbittles.github.io/daily_stock_report"
 def report_url(snap: MarketSnapshot) -> str:
     """배포된 리포트의 절대 URL."""
     date = snap.generated_at.strftime("%Y-%m-%d")
-    suffix = {"pre_close": "pre", "post_close": "post", "us_morning": "us"}.get(snap.mode, "post")
+    suffix = {"pre_close": "pre", "post_close": "post", "us_morning": "us",
+              "midday": "midday"}.get(snap.mode, "post")
     return f"{GITHUB_PAGES_BASE}/reports/{date}-{suffix}.html"
 
 

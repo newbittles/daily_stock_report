@@ -16,8 +16,10 @@ from src.market_report.models import MarketSnapshot
 logger = logging.getLogger(__name__)
 
 
-async def run_midday(*, do_telegram: bool = True, force: bool = False) -> MarketSnapshot | None:
-    """장중 리포트 생성·발송. 휴장일이면 None(스킵)."""
+async def run_midday(
+    *, do_telegram: bool = True, do_publish: bool = True, force: bool = False,
+) -> MarketSnapshot | None:
+    """장중 리포트 생성·웹발행·발송. 휴장일이면 None(스킵)."""
     from src.market_report.market_calendar import is_kr_market_open_today
 
     if not force and not await is_kr_market_open_today():
@@ -75,6 +77,26 @@ async def run_midday(*, do_telegram: bool = True, force: bool = False) -> Market
                 len(snap.top_themes), len(snap.hot_stocks or []),
                 len(snap.prev_top3_status))
 
+    # 지수 차트 (마감전/후 포맷과 동일하게)
+    try:
+        from src.market_report.pipeline import _render_candles
+        await _render_candles(snap)
+    except Exception as exc:  # noqa: BLE001
+        logger.warning("midday_candles_failed error=%s", exc)
+
+    # 웹 렌더 + GitHub Pages 발행
+    try:
+        from src.market_report.render import render_report
+        render_report(snap)
+    except Exception as exc:  # noqa: BLE001
+        logger.error("midday_render_failed error=%s", exc)
+    if do_publish:
+        try:
+            from src.market_report.publisher import publish
+            publish(snap)
+        except Exception as exc:  # noqa: BLE001
+            logger.error("midday_publish_failed error=%s", exc)
+
     if do_telegram:
         try:
             from src.market_report.telegram_notify import send_report
@@ -92,7 +114,9 @@ if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s %(message)s")
     ap = argparse.ArgumentParser(description="장중 리포트(정오)")
     ap.add_argument("--no-tg", action="store_true", help="텔레그램 발송 스킵")
+    ap.add_argument("--no-publish", action="store_true", help="웹 발행(git push) 스킵")
     ap.add_argument("--force", action="store_true", help="휴장일 스킵 무시")
     args = ap.parse_args()
-    snap = asyncio.run(run_midday(do_telegram=not args.no_tg, force=args.force))
+    snap = asyncio.run(run_midday(
+        do_telegram=not args.no_tg, do_publish=not args.no_publish, force=args.force))
     print("✅ 장중 리포트 완료" if snap else "휴장일 — 스킵")

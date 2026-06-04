@@ -97,11 +97,11 @@ def test_format_midday_has_all_sections():
     assert "추천가대비 -1.0%" in msg and "오늘 -0.5%" in msg
 
 
-def test_format_midday_no_web_link():
-    """장중 리포트는 텔레그램 전용 — 웹 '전체 리포트 보기' 링크 없음."""
+def test_format_midday_has_web_link():
+    """장중 리포트도 웹 발행(마감전/후 포맷) — '전체 리포트 보기' 링크 포함."""
     msg = _format_midday_summary(_midday_snap())
-    assert "전체 리포트 보기" not in msg
-    assert "github.io" not in msg
+    assert "전체 리포트 보기" in msg
+    assert "midday.html" in msg
 
 
 def test_format_midday_mobile_linebreaks():

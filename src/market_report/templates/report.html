@@ -818,6 +818,46 @@
     </section>
     {% endif %}
 
+    {# 🔥 핫 종목 (거래대금 상위 + 시총필터 — midday) #}
+    {% if snap.hot_stocks %}
+    <section>
+      <h2><span class="icon">🔥</span>핫 종목 (상승률 상위)</h2>
+      <ul class="watch-list">
+        {% for h in snap.hot_stocks %}
+        <li>
+          <a href="https://finance.naver.com/item/main.naver?code={{ h.ticker }}" target="_blank" rel="noopener"><strong>{{ h.name }}</strong></a>
+          <span class="pick-ticker">{{ h.ticker }}</span> · {{ "{:,.0f}".format(h.price) }}원
+          <span class="{{ 'up-text' if h.change_pct >= 0 else 'down-text' }}">{{ '+' if h.change_pct >= 0 else '' }}{{ "{:.1f}".format(h.change_pct) }}%</span>
+          {% if h.tv_today %}<div class="pick-sub">거래대금 {{ fmt_won(h.tv_today) }}{% if h.tv_change is not none %} (전일대비:{{ '+' if h.tv_change >= 0 else '' }}{{ "{:.0f}".format(h.tv_change) }}%){% endif %}</div>{% endif %}
+          {% set st = h.streak or {} %}
+          {% set streak = [] %}
+          {% if st.orgn and st.orgn > 0 %}{% set _ = streak.append('기관' ~ st.orgn ~ '일') %}{% endif %}
+          {% if st.frgn and st.frgn > 0 %}{% set _ = streak.append('외인' ~ st.frgn ~ '일') %}{% endif %}
+          {% if st.prsn and st.prsn > 0 %}{% set _ = streak.append('개인' ~ st.prsn ~ '일') %}{% endif %}
+          {% if streak %}<div class="pick-sub">수급: {{ streak|join('·') }} 순매수</div>{% endif %}
+          {% if h.theme %}<div class="pick-sub">테마: {{ h.theme }}</div>{% endif %}
+        </li>
+        {% endfor %}
+      </ul>
+    </section>
+    {% endif %}
+
+    {# 🏆 전날 추천 Top3 현황 (midday) #}
+    {% if snap.prev_top3_status %}
+    <section>
+      <h2><span class="icon">🏆</span>전날 추천 Top3 현황{% if snap.prev_top3_date %} ({{ snap.prev_top3_date[5:] }} 추천){% endif %}</h2>
+      <ul class="watch-list">
+        {% for t in snap.prev_top3_status %}
+        <li>
+          <a href="https://finance.naver.com/item/main.naver?code={{ t.ticker }}" target="_blank" rel="noopener"><strong>{{ t.name }}</strong></a>
+          <span class="{{ 'up-text' if t.return_pct >= 0 else 'down-text' }}">추천가대비 {{ '+' if t.return_pct >= 0 else '' }}{{ "{:.1f}".format(t.return_pct) }}%</span>
+          <span class="pick-sub">(오늘 {{ '+' if t.today_pct >= 0 else '' }}{{ "{:.1f}".format(t.today_pct) }}%)</span>
+        </li>
+        {% endfor %}
+      </ul>
+    </section>
+    {% endif %}
+
     {# 5. 거래량/상승/하락 상위 - 탭 #}
     {% if snap.top_volume or snap.top_gainers or snap.top_losers %}
     <section>

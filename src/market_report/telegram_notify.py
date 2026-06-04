@@ -299,6 +299,8 @@ def _format_midday_summary(snap: MarketSnapshot) -> str:
                          f"추천가대비 {rs}{rp:.1f}% (오늘 {ts}{tp:.1f}%)")
         lines.append("")
 
+    lines.append(f"📄 [전체 리포트 보기]({report_url(snap)})")
+    lines.append("")
     lines.append("_※ 참고용 정보. 투자 판단·책임은 본인._")
     return "\n".join(lines)
 
