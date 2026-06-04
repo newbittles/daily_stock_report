@@ -11,6 +11,12 @@
 ${{ "{:,.2f}".format(item.price) }} <span class="{{ 'up-text' if pct >= 0 else 'down-text' }}">{{ '+' if pct >= 0 else '' }}{{ "{:.2f}".format(pct) }}%</span>
 {%- endif -%}
 {%- endmacro -%}
+{# 서학개미(한국인) 순매수금액 배지 — 전일 + 최근5거래일(억원). SEIBro TOP50 교차분만(사용자 2026-06-05). #}
+{%- macro kr_nb(item) -%}
+{%- if item.kr_netbuy_5d_eok is defined and item.kr_netbuy_5d_eok is not none -%}
+<div class="pick-sub" style="color:var(--green);">🇰🇷 한국인 순매수 {% if item.kr_netbuy_prev_eok is not none %}전일 {{ '{:+,}'.format(item.kr_netbuy_prev_eok) }}억{% else %}전일 —{% endif %} (최근5일 {{ '{:+,}'.format(item.kr_netbuy_5d_eok) }}억)</div>
+{%- endif -%}
+{%- endmacro -%}
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -489,6 +495,7 @@ ${{ "{:,.2f}".format(item.price) }} <span class="{{ 'up-text' if pct >= 0 else '
           <a href="https://search.naver.com/search.naver?query={{ (t.name ~ ' 주가') | urlencode }}" target="_blank" rel="noopener"><strong>{{ t.name }}</strong></a>
           <span class="pick-ticker">{{ t.symbol }}</span> <span style="color:var(--text-dim);font-size:0.82rem;">({{ t.sector }})</span>
           · {{ us_px(t, snap.mode) }}
+          {{ kr_nb(t) }}
         </li>
         {% endfor %}
       </ul>
@@ -503,6 +510,7 @@ ${{ "{:,.2f}".format(item.price) }} <span class="{{ 'up-text' if pct >= 0 else '
           {% if t.strategies %}<span class="strat-badge">{{ t.strategies|join('/') }}</span>{% endif %}
           · {{ us_px(t, snap.mode) }}
           {% if t.sector %}<div class="pick-sub">테마: {{ t.sector }}{% if t.marcap_str %} · 시총 {{ t.marcap_str }}{% endif %}{% if t.turnover_str %} · 거래대금 {{ t.turnover_str }}{% endif %}</div>{% endif %}
+          {{ kr_nb(t) }}
         </li>
         {% endfor %}
       </ul>
@@ -528,6 +536,7 @@ ${{ "{:,.2f}".format(item.price) }} <span class="{{ 'up-text' if pct >= 0 else '
         </div>
         {% if t.marcap_str or t.turnover_str %}<div class="pick-sub">{% if t.marcap_str %}시총 {{ t.marcap_str }}{% endif %}{% if t.turnover_str %} · 거래대금 {{ t.turnover_str }}{% endif %}</div>{% endif %}
         {% if t.sector %}<div class="pick-sub">테마: {{ t.sector }}</div>{% endif %}
+        {{ kr_nb(t) }}
         {% if t.reason %}<div class="top3-reason">{{ t.reason }}</div>{% endif %}
       </div>
       {% endfor %}
@@ -548,6 +557,7 @@ ${{ "{:,.2f}".format(item.price) }} <span class="{{ 'up-text' if pct >= 0 else '
           {% if p.cross_signal == 'PULLBACK' %}<span class="up-text" style="font-size:0.8rem;">🟢단기눌림</span>{% elif p.cross_signal == 'CORRECTION' %}<span class="down-text" style="font-size:0.8rem;">⚠️조정시작</span>{% endif %}
           {% if p.marcap_str or p.turnover_str or g.initial == 'B' %}<div class="pick-sub">{% if p.marcap_str %}시총 {{ p.marcap_str }}{% endif %}{% if p.turnover_str %} · 거래대금 {{ p.turnover_str }}{% endif %}{% if g.initial in ['B', 'C'] %} · 20MA괴리 <strong class="hl-bold">{{ '+' if p.gap20 >= 0 else '' }}{{ p.gap20 }}%</strong>{% endif %}</div>{% endif %}
           {% if p.sector %}<div class="pick-sub">테마: {{ p.sector }}</div>{% endif %}
+          {{ kr_nb(p) }}
           {% if p.reason %}<div class="theme-reason">{{ p.reason }}</div>{% endif %}
         </li>
         {% endfor %}

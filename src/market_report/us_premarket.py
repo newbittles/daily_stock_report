@@ -25,6 +25,7 @@ async def run_us_premarket(
         return None
 
     from src.market_report.pipeline import (
+        _attach_kr_netbuy_to_picks,
         _collect_sector_leaders,
         _collect_us_screening,
         _overlay_premarket,
@@ -48,6 +49,10 @@ async def run_us_premarket(
         await _collect_sector_leaders(snap)  # 주요종목 = 강세4+약세4 섹터 대장
     except Exception as exc:  # noqa: BLE001
         logger.warning("us_premarket_sector_leaders_failed error=%s", exc)
+    try:
+        await _attach_kr_netbuy_to_picks(snap)  # 픽별 서학개미 순매수금액(전일+5일)
+    except Exception as exc:  # noqa: BLE001
+        logger.warning("us_premarket_kr_netbuy_failed error=%s", exc)
 
     try:
         from src.market_report.analyzer import analyze

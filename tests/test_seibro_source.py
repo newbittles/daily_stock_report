@@ -136,6 +136,61 @@ def test_is_etf_name() -> None:
     assert _is_etf_name("ARM HOLDINGS PLC SPON ADS") is False
 
 
+def test_prev_trading_day_skips_weekend() -> None:
+    from datetime import date
+
+    # 2026-06-08 월요일 → 전일=6/7(일)→6/6(토)→6/5(금)
+    assert ss.prev_trading_day(end=date(2026, 6, 7)) == "20260605"  # 일
+    assert ss.prev_trading_day(end=date(2026, 6, 6)) == "20260605"  # 토
+    assert ss.prev_trading_day(end=date(2026, 6, 4)) == "20260604"  # 목(평일 그대로)
+
+
+def test_fetch_explicit_range_key(monkeypatch, tmp_path) -> None:
+    """start_dt/end_dt 지정 시 그 구간으로 조회·캐시(key에 반영)."""
+    monkeypatch.setattr(ss, "_CACHE", tmp_path / "c.json")
+    seen = {}
+
+    def fake_fetch(start_dt, end_dt, top):
+        seen["range"] = (start_dt, end_dt)
+        return ss.parse_netbuy_xml(_FIXTURE.read_bytes())
+
+    monkeypatch.setattr(ss, "_fetch_sync", fake_fetch)
+    asyncio.run(ss.fetch_us_net_buy(top=50, start_dt="20260604", end_dt="20260604"))
+    assert seen["range"] == ("20260604", "20260604")
+
+
+def test_attach_kr_netbuy_to_picks(monkeypatch) -> None:
+    """Top3/스크린 픽에 서학개미 순매수금액(전일+5일)이 티커 교차로 부착되는지."""
+    from datetime import datetime
+
+    from src.datasource.us import fdr_source, seibro_source
+    from src.datasource.us import seibro_symbols  # noqa: F401
+    from src.market_report.models import MarketSnapshot
+    from src.market_report.pipeline import _attach_kr_netbuy_to_picks
+
+    rows = ss.parse_netbuy_xml(_FIXTURE.read_bytes())  # MU, ARM, MRVL, GOOGL 등(매핑됨)
+
+    async def fake_netbuy(*a, **k):
+        return rows
+
+    async def fake_rate():
+        return 1450.0
+
+    monkeypatch.setattr(seibro_source, "fetch_us_net_buy", fake_netbuy)
+    monkeypatch.setattr(fdr_source, "fetch_usd_krw", fake_rate)
+
+    snap = MarketSnapshot(mode="us_morning", generated_at=datetime(2026, 6, 5, 7, 0))
+    snap.us_top3 = [{"symbol": "MU", "name": "마이크론", "price": 1.0, "change_pct": 0.0}]
+    snap.us_screen_groups = [{"label": "C", "initial": "C", "picks": [
+        {"symbol": "ZZZZ", "name": "권외", "price": 1.0, "change_pct": 0.0}]}]
+    asyncio.run(_attach_kr_netbuy_to_picks(snap))
+
+    mu = snap.us_top3[0]
+    assert mu["kr_netbuy_5d_eok"] is not None and mu["kr_netbuy_5d_eok"] > 0  # MICRON 824M×1450/1e8
+    # TOP50 권외(미매칭) 종목엔 부착 안 됨
+    assert "kr_netbuy_5d_eok" not in snap.us_screen_groups[0]["picks"][0]
+
+
 def test_telegram_section_empty_when_no_data() -> None:
     from datetime import datetime
 

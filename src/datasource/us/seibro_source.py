@@ -108,6 +108,17 @@ def parse_netbuy_xml(xml_bytes: bytes) -> list[SeibroNetBuy]:
     return out
 
 
+def prev_trading_day(end: date | None = None) -> str:
+    """가장 최근 거래일(주말 스킵) YYYYMMDD — '전일' 단일일 순매수 조회용.
+
+    공휴일은 미반영(거래소 캘린더 없이) → 공휴일이면 빈 결과가 나오고 배지는 생략(best-effort).
+    """
+    d = end or (date.today() - timedelta(days=1))
+    while d.weekday() >= 5:  # 토(5)·일(6)
+        d -= timedelta(days=1)
+    return d.strftime("%Y%m%d")
+
+
 def lookback_range(trading_days: int = 5, end: date | None = None) -> tuple[str, str]:
     """최근 N거래일 누적 조회용 (START_DT, END_DT) YYYYMMDD.
 
@@ -178,13 +189,16 @@ def _save_cache(key: str, rows: list[SeibroNetBuy]) -> None:
 
 async def fetch_us_net_buy(
     trading_days: int = 5, top: int = 50, use_cache: bool = True,
+    *, start_dt: str | None = None, end_dt: str | None = None,
 ) -> list[SeibroNetBuy]:
-    """서학개미 미국 종목별 순매수 TOP — 최근 N거래일 누적 (순매수 내림차순).
+    """서학개미 미국 종목별 순매수 TOP (순매수 내림차순).
 
-    use_cache: 같은 날·같은 (days, top) 조회는 캐시(`data/seibro_netbuy_cache.json`) 재사용.
+    start_dt/end_dt(YYYYMMDD) 둘 다 주면 그 구간, 아니면 최근 N거래일 누적.
+    use_cache: 같은 날·같은 구간·top 조회는 캐시(`data/seibro_netbuy_cache.json`) 재사용.
     실패/HARD STOP 시 빈 리스트(리포트는 best-effort로 섹션 생략).
     """
-    start_dt, end_dt = lookback_range(trading_days)
+    if not (start_dt and end_dt):
+        start_dt, end_dt = lookback_range(trading_days)
     key = f"{start_dt}_{end_dt}_{top}"
     if use_cache:
         cached = _load_cache(key)

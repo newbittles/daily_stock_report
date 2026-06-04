@@ -472,6 +472,48 @@ async def _collect_kr_us_netbuy(snap: MarketSnapshot) -> None:
     logger.info("kr_us_netbuy_ready n=%d stocks=%d etfs=%d", len(out), n_stock, len(out) - n_stock)
 
 
+async def _attach_kr_netbuy_to_picks(snap: MarketSnapshot) -> None:
+    """미국 추천 Top3/ABCD/섹터·테마 대장 픽에 서학개미 순매수금액 부착(전일 + 최근5거래일).
+
+    SEIBro TOP50(전일 단일일 + 5거래일 누적)에서 ISIN→티커로 매핑해, 각 픽의 symbol과
+    교차되면 kr_netbuy_prev_eok / kr_netbuy_5d_eok(억원) 부착. 장전·장후 둘 다(사용자 2026-06-05).
+    TOP50 권외 종목은 부착 안 함(배지 생략). SEIBro/환율 실패 시 조용히 건너뜀(best-effort)."""
+    from src.datasource.us.fdr_source import fetch_usd_krw
+    from src.datasource.us.seibro_source import fetch_us_net_buy, prev_trading_day
+    from src.datasource.us.seibro_symbols import ticker_for
+
+    rate = await fetch_usd_krw()
+    if not rate:
+        return
+    five = await fetch_us_net_buy(trading_days=5, top=50)
+    pday = prev_trading_day()
+    prev = await fetch_us_net_buy(top=50, start_dt=pday, end_dt=pday)
+
+    def _ticker_eok(rows: list) -> dict[str, int]:
+        m: dict[str, int] = {}
+        for r in rows:
+            tk = ticker_for(r.isin)
+            if tk:
+                m[tk] = round(r.net_buy_amt * rate / 1e8)
+        return m
+
+    m5, m1 = _ticker_eok(five), _ticker_eok(prev)
+    if not (m5 or m1):
+        return
+    dicts: list[dict] = list(snap.us_top3 or []) + list(snap.us_theme_leaders or []) \
+        + list(snap.us_sector_leaders or [])
+    for g in (snap.us_screen_groups or []):
+        dicts.extend(g.get("picks", []))
+    hit = 0
+    for d in dicts:
+        sym = d.get("symbol", "")
+        if sym in m5 or sym in m1:
+            d["kr_netbuy_5d_eok"] = m5.get(sym)
+            d["kr_netbuy_prev_eok"] = m1.get(sym)
+            hit += 1
+    logger.info("kr_netbuy_pick_attach hit=%d (m5=%d m1=%d)", hit, len(m5), len(m1))
+
+
 async def _collect_us_screening(snap: MarketSnapshot) -> None:
     """미국 종목 A/B/C/D 스크리닝 → snap.us_top3 / snap.us_screen_groups.
 
@@ -788,6 +830,10 @@ async def run_full(
             await _overlay_postmarket(snap)  # 애프터장(시간외) 등락률 부착 (장마감 종가 옆 병기)
         except Exception as exc:
             logger.warning("us_morning_postmarket_failed error=%s", exc)
+        try:
+            await _attach_kr_netbuy_to_picks(snap)  # 픽별 서학개미 순매수금액(전일+5일)
+        except Exception as exc:
+            logger.warning("us_morning_kr_netbuy_failed error=%s", exc)
 
         try:
             render_report(snap)
