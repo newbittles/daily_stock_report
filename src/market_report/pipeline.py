@@ -440,8 +440,9 @@ async def _collect_us_screening(snap: MarketSnapshot) -> None:
     from src.screener.us_pipeline import run_us_screening
     from src.screener.us_report import STRATEGY_ORDER, _turnover
 
-    _MARCAP_FLOOR_WON = 2e12   # 시총 하한 2조 (사용자 2026-06-04)
+    _MARCAP_FLOOR_WON = 5e11   # 시총 하한 5천억 (사용자 2026-06-04 B안: 2조→5천억, 워치리스트는 면제)
     _PRICE_CAP_WON = 5e6       # 주가 상한 500만원/주
+    _PRICE_FLOOR_USD = 1.0     # 페니주 제외 — $1 미만 컷(워치리스트 포함, 사용자 2026-06-04)
     _MARCAP_TOPN = 50          # 시총 조회는 거래대금 상위 N개만(속도)
 
     try:
@@ -461,12 +462,15 @@ async def _collect_us_screening(snap: MarketSnapshot) -> None:
     from src.datasource.us.universe import US_GROWTH_WATCHLIST
 
     rate = await fetch_usd_krw()  # USD→KRW (0이면 환산·필터 스킵, best-effort)
+    # 페니주 제외($1 미만) — 워치리스트 포함 전체 적용(시총 면제와 무관, 사용자 2026-06-04).
+    picks = [p for p in picks if p.price >= _PRICE_FLOOR_USD]
     if rate:  # 주가 상한 필터 (price는 이미 있음 — 무료, marcap 조회 전 선필터)
         picks = [p for p in picks if p.price * rate <= _PRICE_CAP_WON]
     picks.sort(key=_turnover, reverse=True)
     top50 = picks[:_MARCAP_TOPN]  # 추천Top3·전략그룹용(거래대금 상위)
     # 테마 대장 후보 = 전체 매칭에서 테마별 거래대금 1등 (top50 컷 전 — 양자 등 소형테마 보존)
     _watch_themes = {w.sector for w in US_GROWTH_WATCHLIST}
+    _watch_symbols = {w.symbol for w in US_GROWTH_WATCHLIST}  # 시총 하한 면제 대상(큐레이션)
     _by_theme: dict[str, list] = {}
     for p in picks:
         _by_theme.setdefault(_us_theme_fn(p.sector, p.industry), []).append(p)
@@ -474,9 +478,16 @@ async def _collect_us_screening(snap: MarketSnapshot) -> None:
     # 시총 조회 = top50 ∪ 테마대장 후보 (양자 대장도 시총 조회 보장)
     marcaps = await fetch_us_market_caps(
         list({p.symbol for p in top50} | {p.symbol for p in theme_cands}))
-    if rate:  # 시총 하한 필터
-        picks = [p for p in top50 if marcaps.get(p.symbol, 0) * rate >= _MARCAP_FLOOR_WON]
-        theme_cands = [p for p in theme_cands if marcaps.get(p.symbol, 0) * rate >= _MARCAP_FLOOR_WON]
+
+    def _cap_ok(p) -> bool:
+        # 워치리스트(양자·우주·AI 등 큐레이션)는 시총 하한 면제 — 리게티형 초기 텐베거 포착(사용자 B안).
+        if p.symbol in _watch_symbols:
+            return True
+        return marcaps.get(p.symbol, 0) * rate >= _MARCAP_FLOOR_WON
+
+    if rate:  # 시총 하한 필터 (워치리스트 면제)
+        picks = [p for p in top50 if _cap_ok(p)]
+        theme_cands = [p for p in theme_cands if _cap_ok(p)]
     else:
         picks = top50
     if not picks:
