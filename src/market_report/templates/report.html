@@ -858,8 +858,8 @@
     </section>
     {% endif %}
 
-    {# 5. 거래량/상승/하락 상위 - 탭 #}
-    {% if snap.top_volume or snap.top_gainers or snap.top_losers %}
+    {# 5. 거래량/상승/하락 상위 - 탭 (midday는 핫종목과 중복이라 숨김 — 메시지 구조 우선) #}
+    {% if (snap.top_volume or snap.top_gainers or snap.top_losers) and snap.mode != 'midday' %}
     <section>
       <h2><span class="icon">💹</span>종목 순위</h2>
       <div class="tabs">
