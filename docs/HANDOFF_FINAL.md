@@ -5,7 +5,9 @@
 - 3f4d173: SEIBro 어댑터(`src/datasource/us/seibro_source.py`·`seibro_symbols.py`) + 텔레그램 pre/post "🇰🇷 한국인 매수 TOP5"(개별/ETF 칸 분리, 티커 병기).
 - b25d88e: 미장 종목 가격 포맷 — 장전 `종가(전일%)(프리장%)` / 마감 `장마감 종가(%)(애프터장%)`(us_px 매크로 + postmarket 오버레이). 장전 텔레그램 뉴스 제외→웹 최하단.
 - 1b67cb0: Top3·ABCD·섹터/테마 대장 카드에 `🇰🇷 한국인 순매수 전일N억(최근5일M억)` 배지(kr_nb 매크로 + `_attach_kr_netbuy_to_picks`, 장전·장후 둘 다).
-- ⚠️ 애프터장은 7시 시점 yfinance 시간외 빈값 가능(괄호만 생략), 전일 서학개미는 결제지연/공휴일이면 '전일 —'. 배지는 SEIBro TOP50 권내만.
+- 4a9e188/6d07093: **미국장 장중 리포트(us_intraday)** 신설 — 평일 23:50 KST(개장 직후), `src/market_report/us_intraday.py` + `_overlay_intraday`(현재 장중 시세) + `fetch_us_intraday`. 가격=실시간만("장중 $X (장중%)"). **마감 06:30 조기발행**(`_us_morning_job(require_fresh)` + `_us_data_fresh_sync` yfinance ^GSPC 신선도 게이트) + **07:00 안전망**(중복발행 방지: report_path 존재 체크). **ABCD 3개**(`_collect_us_screening(per_group=3)` 장전·마감·장중). **미국 뉴스 전 모드 텔레그램 제외**(웹 최하단만). 신규 모드 us_intraday(ReportMode/publisher us-mid/render title). `--once usmid`.
+- ⚠️ 애프터장은 7시 시점 yfinance 시간외 빈값 가능(괄호만 생략), 전일 서학개미는 결제지연/공휴일이면 '전일 —'. 배지는 SEIBro TOP50 권내만. 장중 리포트는 개장 직후라 값 흔들림('잠정' 라벨).
+- 미국 리포트 스케줄: 장전 19:00 / 장중 23:50 / 마감 06:30(게이트)+07:00(안전망), 전부 ABCD 3개.
 
 ---
 
@@ -18,9 +20,9 @@
 
 ## 0. 지금 상태 (한눈에)
 
-- **origin/main 최신 커밋**: `1b67cb0` (서학개미 픽별 배지). 2026-06-05 세션 작업 전부 푸시·배포 완료.
-- **서버(`lotto-server` = 134.185.109.195) = origin/main(1b67cb0)과 동기화 + 서비스 재시작 완료.** (로컬수정 `config/screener.yaml` RAM축소판만 autostash 보존)
-- **테스트**: `.venv\Scripts\python.exe -m pytest tests/ -q` → **216 passed** (기준선).
+- **origin/main 최신 커밋**: `6d07093` (미국장 장중 리포트). 2026-06-05 세션 작업 전부 푸시·배포 완료.
+- **서버(`lotto-server` = 134.185.109.195) = origin/main과 동기화 + 서비스 재시작 완료.** (로컬수정 `config/screener.yaml` RAM축소판만 autostash 보존)
+- **테스트**: `.venv\Scripts\python.exe -m pytest tests/ -q` → **220 passed** (기준선).
 - **3개 스트림(자동매매·미국스크리닝·리포트) 전부 main 머지 완료.** 백업 브랜치 `backup/pre-merge-2026-06-03`.
 - **SSH**: `ssh lotto-server` (별칭, 키인증 OK). 무암호 sudo 가능(systemctl restart 가능).
 
