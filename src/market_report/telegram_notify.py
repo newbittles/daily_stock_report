@@ -211,7 +211,7 @@ def _format_hot_stocks(hot: list[dict]) -> list[str]:
     """핫종목(거래대금 상위) 텔레그램 라인 — 거래대금 전일대비·순매수 연속일·소속테마.
 
     종목 줄 + 아래에 (거래대금 전일比, 기관/외인/개인 순매수 연속일) + 테마. 모바일 가독성."""
-    lines: list[str] = ["🔥 *핫 종목* (거래대금 상위)"]
+    lines: list[str] = ["🔥 *핫 종목* (상승률 상위)"]
     for h in hot:
         sign = "+" if h.get("change_pct", 0) >= 0 else ""
         lines.append(f"  · {_naver_link(h['name'], h['ticker'])} "

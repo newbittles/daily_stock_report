@@ -153,7 +153,7 @@ def test_format_hot_stocks_renders():
     hot = [{"ticker": "454910", "name": "두산로보틱스", "price": 170000, "change_pct": 12.0,
             "tv_change": 200, "streak": {"orgn": 2, "frgn": 1, "prsn": 0}, "theme": "로봇"}]
     txt = "\n".join(_format_hot_stocks(hot))
-    assert "핫 종목" in txt and "거래대금 상위" in txt
+    assert "핫 종목" in txt and "상승률 상위" in txt
     assert "두산로보틱스" in txt
     assert "거래대금 전일比 +200%" in txt
     assert "기관2일" in txt and "외인1일" in txt

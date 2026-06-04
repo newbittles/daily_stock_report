@@ -237,15 +237,19 @@ def _supply_streak(rows: list[dict], key: str) -> int:
 async def collect_hot_stocks(
     snap: MarketSnapshot, adapter, top: int = 5, min_marcap_won: float = 5e11,
 ) -> list[dict]:
-    """거래대금 상위 + 시총 하한(5000억) 핫종목 → 거래대금 전일대비·순매수 연속일·소속테마.
+    """상승률>거래대금 순 + 시총 하한(5000억) 핫종목 → 거래대금 전일대비·순매수 연속일·소속테마.
 
-    장중/마감 리포트 공용(사용자 2026-06-04). 후보=top_volume(거래대금 trade_value순),
-    시총 3000억 미만 잡주 제외. 종목당 KIS 일봉·투자자 조회(Top5라 가벼움).
+    장중/마감 리포트 공용(사용자 2026-06-04). 후보=상승률상위∪거래량상위, 상승률 우선 정렬,
+    시총 5000억 미만 잡주 제외. 종목당 KIS 일봉·투자자 조회(Top5라 가벼움).
     """
     from src.datasource.market_cap import get_market_cap_map
 
-    cands = sorted((snap.top_volume or []),
-                   key=lambda s: getattr(s, "trade_value", 0) or 0, reverse=True)
+    # 후보 = 상승률 상위 ∪ 거래량 상위(중복 제거). 정렬 = 상승률 > 거래대금 순(사용자 2026-06-04).
+    pool: dict[str, object] = {}
+    for s in (snap.top_gainers or []) + (snap.top_volume or []):
+        pool.setdefault(s.ticker, s)
+    cands = sorted(pool.values(),
+                   key=lambda s: (s.change_pct, getattr(s, "trade_value", 0) or 0), reverse=True)
     marcap: dict[str, int] = {}
     try:
         marcap = get_market_cap_map()
