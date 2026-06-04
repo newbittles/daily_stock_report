@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-06-04",
+    "time": "18:24",
+    "mode": "us_premarket",
+    "url": "reports/2026-06-04-us-pre.html",
+    "summary": "미국 증시는 전반적으로 하락 마감했으나, 필라델피아 반도체 지수는 상승하며 차별화된 모습을 보였습니다. 빅테크 중에서는 메타와 AMD가 강세를 보인 반면, 일부 대형 기술주들은 하락했습니다.",
+    "kospi_pct": null,
+    "kosdaq_pct": null
+  },
+  {
+    "date": "2026-06-04",
     "time": "16:30",
     "mode": "post_close",
     "url": "reports/2026-06-04-post.html",
