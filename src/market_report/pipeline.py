@@ -558,14 +558,15 @@ async def _collect_us_screening(snap: MarketSnapshot) -> None:
             break
     snap.us_top3 = [_to_dict(p) for p in top]
 
-    # 주요 종목 = 테마(섹터)별 대장 — 시총 우선(사용자 142). 양자주 등 테마 1등을 노출.
+    # 주요 종목 = 테마(섹터)별 대장 — 테마 내 1등은 시총 우선(사용자 142·145).
+    # 리스트는 상승률순 + 모든 테마 노출(시총순 컷이면 대형주 테마가 다 차지해 양자 등 가려짐).
     by_theme: dict[str, list] = {}
     for p in picks:
         by_theme.setdefault(us_theme(p.sector, p.industry), []).append(p)
     leaders = [max(members, key=lambda p: marcaps.get(p.symbol, 0))
                for members in by_theme.values()]
-    leaders.sort(key=lambda p: marcaps.get(p.symbol, 0), reverse=True)  # 시총순
-    snap.us_theme_leaders = [_to_dict(p) for p in leaders[:8]]
+    leaders.sort(key=lambda p: p.change_pct, reverse=True)  # 상승률순(강한 테마 먼저)
+    snap.us_theme_leaders = [_to_dict(p) for p in leaders[:12]]
 
     logger.info("us_screening_collected picks=%d top3=%s theme_leaders=%d",
                 len(picks), [p["symbol"] for p in snap.us_top3], len(snap.us_theme_leaders))
@@ -602,6 +603,8 @@ async def _overlay_premarket(snap: MarketSnapshot) -> None:
         snap.us_bigtech.sort(key=lambda x: x.get("change_pct", 0), reverse=True)
     if snap.us_sectors:
         snap.us_sectors.sort(key=lambda x: x.get("change_pct", 0), reverse=True)
+    if snap.us_theme_leaders:
+        snap.us_theme_leaders.sort(key=lambda x: x.get("change_pct", 0), reverse=True)
     logger.info("us_premarket_overlay targets=%d matched=%d", len(all_dicts), len(pm))
 
 
