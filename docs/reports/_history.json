@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-06-05",
+    "time": "08:13",
+    "mode": "post_close",
+    "url": "reports/2026-06-05-post.html",
+    "summary": "오늘 코스피와 코스닥 지수는 보합권에서 마감했으며, AI 관련주들의 숨 고르기와 일부 반도체주의 약세 속에서 테마별 차별화 장세가 나타났습니다.",
+    "kospi_pct": -0.0,
+    "kosdaq_pct": -0.0
+  },
+  {
+    "date": "2026-06-05",
     "time": "07:00",
     "mode": "us_morning",
     "url": "reports/2026-06-05-us.html",
