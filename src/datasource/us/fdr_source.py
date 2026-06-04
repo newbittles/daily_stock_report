@@ -109,10 +109,12 @@ async def fetch_us_bigtech() -> list[USQuote]:
 
 
 async def fetch_us_sectors(threshold: float = 1.0) -> list[USQuote]:
-    """섹터 ETF 등락 → 강세 섹터(>=threshold%) 내림차순. 미국 강세테마 추출용."""
+    """섹터 ETF 등락 → **전체** 섹터 상승률 내림차순(강세/약세 모두). threshold 무시(호환).
+
+    강세 섹터=앞쪽, 약세 섹터=뒤쪽(가장 음수). 호출측에서 top/bottom 슬라이스.
+    """
     quotes = await asyncio.to_thread(_fetch_quotes_sync, US_SECTORS)
-    strong = [q for q in quotes if q.change_pct >= threshold]
-    return sorted(strong, key=lambda q: q.change_pct, reverse=True)
+    return sorted(quotes, key=lambda q: q.change_pct, reverse=True)
 
 
 # ─── 미국 종목 스크리닝용 OHLCV 배치 (us_screening) ──────────────────────────

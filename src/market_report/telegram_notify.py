@@ -335,18 +335,18 @@ def _format_us_morning_summary(snap: MarketSnapshot) -> str:
         lines.append("")
 
     if snap.us_sectors:
-        lines.append("🔥 *강세 섹터*")
-        for q in snap.us_sectors[:5]:
+        lines.append("🔥 *강세 섹터* (상승률 상위)")
+        for q in snap.us_sectors[:4]:
             sign = "+" if q.get("change_pct", 0) >= 0 else ""
             lines.append(f"  · {q['name']} {sign}{q.get('change_pct', 0):.2f}%")
         lines.append("")
-
-    if getattr(snap, "us_volume_sectors", None):
-        lines.append("🔥 *거래대금 상위 섹터* (Top 5)")
-        for q in snap.us_volume_sectors[:5]:
-            sign = "+" if q.get("change_pct", 0) >= 0 else ""
-            lines.append(f"  · {q['name']} {sign}{q.get('change_pct', 0):.2f}%")
-        lines.append("")
+        weak = sorted(snap.us_sectors, key=lambda x: x.get("change_pct", 0))[:4]
+        if weak:
+            lines.append("🔻 *약세 섹터* (하락률 상위)")
+            for q in weak:
+                sign = "+" if q.get("change_pct", 0) >= 0 else ""
+                lines.append(f"  · {q['name']} {sign}{q.get('change_pct', 0):.2f}%")
+            lines.append("")
 
     if snap.us_bigtech:
         lines.append("📈 *주요 상승 종목*")

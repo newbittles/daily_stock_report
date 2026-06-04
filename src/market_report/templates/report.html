@@ -452,20 +452,18 @@
       <div class="summary-box" style="margin-top:0.6rem;"><div class="label">🌏 한국장 시사점</div><p>{{ snap.theme_commentary }}</p></div>
       {% endif %}
     </section>
-    {% if snap.us_sectors or snap.us_bigtech or snap.us_volume_sectors %}
+    {% if snap.us_sectors or snap.us_bigtech %}
     <section>
       {% if snap.us_sectors %}
-      <h2><span class="icon">🔥</span>강세 섹터</h2>
+      <h2><span class="icon">🔥</span>강세 섹터 (상승률 상위)</h2>
       <ul class="watch-list">
-        {% for q in snap.us_sectors %}
-        <li><strong>{{ q.name }}</strong> <span class="up-text">{{ '+' if q.change_pct >= 0 else '' }}{{ "{:.2f}".format(q.change_pct) }}%</span></li>
+        {% for q in snap.us_sectors[:4] %}
+        <li><strong>{{ q.name }}</strong> <span class="{{ 'up-text' if q.change_pct >= 0 else 'down-text' }}">{{ '+' if q.change_pct >= 0 else '' }}{{ "{:.2f}".format(q.change_pct) }}%</span></li>
         {% endfor %}
       </ul>
-      {% endif %}
-      {% if snap.us_volume_sectors %}
-      <h2 style="margin-top:1rem;"><span class="icon">🔥</span>거래대금 상위 섹터 (Top 5)</h2>
+      <h2 style="margin-top:1rem;"><span class="icon">🔻</span>약세 섹터 (하락률 상위)</h2>
       <ul class="watch-list">
-        {% for q in snap.us_volume_sectors[:5] %}
+        {% for q in (snap.us_sectors|sort(attribute='change_pct'))[:4] %}
         <li><strong>{{ q.name }}</strong> <span class="{{ 'up-text' if q.change_pct >= 0 else 'down-text' }}">{{ '+' if q.change_pct >= 0 else '' }}{{ "{:.2f}".format(q.change_pct) }}%</span></li>
         {% endfor %}
       </ul>
