@@ -1102,3 +1102,30 @@ def gave_back_recent_gain(
     c_retrace = cl[-(retrace_days + 1)] if len(cl) > retrace_days else cl[0]
     giveback = c_retrace - cur                # 최근 retrace_days일 하락폭
     return giveback / gain >= frac
+
+
+def is_surge_start(
+    candles: list[Candle], breakout_lookback: int = 20, vol_mult: float = 2.0,
+    max_gap20: float = 22.0, min_chg: float = 4.0,
+) -> PatternResult:
+    """급등 초입 — 20일 신고가 돌파 + 거래량 급증 + 당일 강세 + 아직 20일선 과이격 전.
+
+    추세확인(C: 정배열+신고가)보다 1~2일 빠른 '돌파 첫날' 진입을 노림(사용자 2026-06-05).
+    과열 추격 방지: 20일선 이격 max_gap20 이하만(이미 한참 오른 종목 제외).
+    """
+    closes = _closes(candles)
+    if len(candles) < breakout_lookback + 21:
+        return PatternResult(False, "데이터 부족")
+    bo = is_breakout(candles, lookback=breakout_lookback, vol_mult=vol_mult)
+    if not bo.matched:
+        return PatternResult(False, "돌파아님")
+    ma20 = moving_average(closes, 20)[-1]
+    gap20 = (closes[-1] - ma20) / ma20 * 100 if ma20 else 0.0
+    chg = (closes[-1] - closes[-2]) / closes[-2] * 100 if closes[-2] else 0.0
+    if gap20 > max_gap20:
+        return PatternResult(False, f"과이격({gap20:.0f}%)")
+    if chg < min_chg:
+        return PatternResult(False, f"강세약함({chg:+.1f}%)")
+    vr = bo.metrics.get("vol_ratio", 0)
+    return PatternResult(True, f"급등초입 ({breakout_lookback}일돌파·거래량{vr:.1f}배·당일{chg:+.1f}%·20선{gap20:+.0f}%)",
+                         {"gap20": gap20, "chg": chg, "vol_ratio": vr})

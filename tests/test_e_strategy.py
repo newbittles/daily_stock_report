@@ -60,3 +60,20 @@ def test_format_e_picks_kr_and_us() -> None:
                      "change_pct": -0.5, "rsi": 25, "reason": "x"}]
     out = "\n".join(_format_e_picks(snap))
     assert "마이크론(MU)" in out and "$95.50" in out
+
+
+def test_is_surge_start() -> None:
+    """급등 초입 = 20일 신고가 돌파 + 거래량 급증 + 당일 강세 + 과이격 전."""
+    from src.datasource.base import Candle
+    from src.patterns.core import is_surge_start
+
+    def _c(close, vol, high=None, openp=None):
+        return Candle(date="1", open=openp or close, high=high or close, low=close, close=close, volume=vol)
+
+    base = [_c(100.0, 1000) for _ in range(40)]               # 40일 횡보(저거래량)
+    surge = base + [_c(108.0, 3000, high=109)]                # 돌파일: +8%, 거래량 3배, 신고가
+    assert is_surge_start(surge).matched is True
+    # 돌파 아님(신고가 미달)
+    assert is_surge_start(base + [_c(99.0, 3000)]).matched is False
+    # 거래량 부족
+    assert is_surge_start(base + [_c(108.0, 1100, high=109)]).matched is False
