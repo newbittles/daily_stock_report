@@ -752,6 +752,7 @@ ${{ "{:,.2f}".format(item.price) }} <span class="{{ 'up-text' if pct >= 0 else '
             <span class="pick-meta-group">
               <span class="pick-ticker">{{ p.ticker }}</span>
               <button type="button" class="code-copy" data-code="{{ p.ticker }}" onclick="copyCode(this)" title="종목코드 복사 (MTS 검색창에 붙여넣기)">📋</button>
+              {% if p.strategies is defined %}{% if p.strategies %}<span class="strat-badge">{{ p.strategies|join('/') }} 시그널</span>{% else %}<span class="strat-badge" style="background:var(--text-dim);">ABCD 미해당(AI선정)</span>{% endif %}{% endif %}
               {% if p.price %}
               <span class="px">{{ "{:,.0f}".format(p.price) }}원</span>
               <span class="{{ 'up-text' if p.change_pct >= 0 else 'down-text' }}">{{ '+' if p.change_pct >= 0 else '' }}{{ "{:.2f}".format(p.change_pct) }}%</span>

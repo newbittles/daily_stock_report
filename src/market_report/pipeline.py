@@ -146,9 +146,46 @@ async def generate_report(mode: ReportMode) -> MarketSnapshot:
     # 추천 종목별 차트 생성 (마감 전만 — 마감 후는 watchpoints만)
     if snap.mode == "pre_close" and snap.candidate_picks:
         _inject_candidate_quotes(snap)  # 현재가·등락률 + 관련주 등락률 보정
+        await _inject_candidate_strategies(snap)  # 종가베팅 후보에 ABCD 전략 매칭 라벨(사용자 2026-06-05)
         await _render_pick_charts(snap)
 
     return snap
+
+
+async def _inject_candidate_strategies(snap: MarketSnapshot) -> None:
+    """종가베팅 후보(AI 선정)에 해당 ABCD 전략 라벨 부착 → snap.candidate_picks[i]['strategies'].
+
+    AI가 고른 후보가 실제 A/B/C/D 기준에 부합하는지 투명화(사용자 2026-06-05). 각 후보 일봉으로
+    스크리너 엔진 재평가 → 매칭 전략 리스트(빈 리스트=ABCD 미해당). best-effort(실패 시 미부착)."""
+    from src.config.settings import get_settings
+    from src.datasource.kis.adapter import KisAdapter
+    from src.screener.config import load_screener_config
+    from src.screener.engine import evaluate_strategy
+
+    try:
+        s = get_settings()
+        adapter = KisAdapter(s.kis_app_key, s.kis_app_secret, s.kis_account_no, s.kis_env)
+        strategies = load_screener_config().enabled_strategies()
+    except Exception as exc:  # noqa: BLE001
+        logger.warning("candidate_strategies_setup_failed error=%s", exc)
+        return
+    for p in snap.candidate_picks:
+        tk = p.get("ticker", "")
+        if not tk:
+            continue
+        try:
+            c = await adapter.get_ohlcv(tk, days=180)
+        except Exception as exc:  # noqa: BLE001
+            logger.debug("candidate_strat_ohlcv_failed ticker=%s error=%s", tk, exc)
+            continue
+        if len(c) < 60:
+            continue
+        chg = (c[-1].close - c[-2].close) / c[-2].close * 100 if len(c) >= 2 and c[-2].close else 0.0
+        p["strategies"] = [st.name.split(".")[0].strip() for st in strategies
+                           if evaluate_strategy(st.name, st.opinion, st.conditions, c, chg).matched]
+    n_abcd = sum(1 for p in snap.candidate_picks if p.get("strategies"))
+    logger.info("candidate_strategies_injected total=%d abcd_matched=%d",
+                len(snap.candidate_picks), n_abcd)
 
 
 # 지수 2x2 각 항목 캔들 대상 — (심볼, 키, 소스)
