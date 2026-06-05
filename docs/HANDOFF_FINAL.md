@@ -35,6 +35,8 @@
 - **색상 최종**(커밋 05e522d): 등락률 퍼센트 텍스트=상승 초록(--green)/하락 빨강(--red). 캔들차트 봉은 상승=빨강/하락=파랑 그대로(사용자 확정, 의도적 혼용). report.html .up-text/.down-text/index-card.
 - **버그수정 us_intraday 코스피요약**(커밋 9e4e342): 장중 모드가 analyzer else(KR post_close 프롬프트)+_market_context KR분기로 빠져 미국 장중 리포트에 코스피 요약 들어감 → 미국 컨텍스트+_us_morning_prompt 라우팅. 240테스트. 교훈: 새 mode 추가 시 analyzer 2곳(_market_context·analyze 프롬프트선택) 반드시 포함.
 - 미국 리포트 스케줄: 장전 19:00+21:50(2차) / 장중 개장직후(섬머22:40/일반23:40 DST) / 마감 06:30(게이트)+07:00(안전망), 전부 ABCD 3개.
+- **E/급등초입 보조정보**(커밋 f44b95e, #305~307): 두 섹션에 시총·거래량(만주)·거래대금·테마·서학개미(US만) 추가. KR=collect_screen_picks(volume·trade_value)+_inject_marcap(marcap·turnover)+테마fill 확장. US=_collect_us_screening(_extra: marcap/turnover/volume/theme)+_attach_kr_netbuy 풀 확장. 표시=telegram _pick_detail_line + report.html sec_detail 매크로.
+- **미국 종목별 AI버튼**(커밋 2a25bda, #309): analyzer.summarize_us_stocks(symbol 배치 '왜 움직였나' 한국어) → us_report_runner+run_full us_morning에서 analyze 직후 호출. report.html us_top3·스크린·섹터/테마대장·E·급등초입에 🤖버튼. KR summarize_stocks도 E/급등초입 포함 확장. 245테스트.
 
 ### 0f. 2026-06-06 세션 (리팩토링 — 리포트 출력 불변)
 사용자(/goal): 자는 동안 리포트 구조·내용·결과 **절대 불변** 전제로 한국/미국 중복코드 공통화. 백업+골든검증.
@@ -43,7 +45,7 @@
 - **통합2 오버레이**(커밋 f5945ee): _overlay_premarket/_overlay_intraday → _overlay_live_quote(fetch·플래그키만 파라미터). _overlay_postmarket은 로직 달라 별도 유지. test_overlay_intraday_shares_logic 추가.
 - **검증**: 244테스트 + 전 모듈 import + 6개 모드 render 스모크 + 동작불변(by construction). 골든=기존 render/format 테스트(test_us_intraday·us_morning_report)가 출력 고정.
 - **안 건드린 것(의도적)**: analyzer 프롬프트(=AI출력 바뀜), scheduler 잡 래퍼·run_full(핫패스 고위험·저가치), KR/US 데이터수집(KIS vs FDR — 진짜 중복 아님). → '절대 불변' 우선, 과리팩토링 회피.
-- ⚠️ **서버 미배포**(약속대로): main에 push·검증만. 영향 경로(us_premarket 19:00·us_intraday 22:40)는 내일 저녁부터라 아침 확인 후 배포. 즉시 롤백=backup 브랜치.
+- ✅ **서버 배포 완료**(사용자 "푸시해" 후): 06:30 publisher 자동 pull로 이미 반영+06:30 us_morning 정상발행, 이후 재시작·라이브 스모크(run_us_premarket no-send: mode=us_premarket top3=3 groups=4 에러0) 통과. 즉시 롤백=backup 브랜치.
 
 ### 0c. 2026-06-05 세션 후반 (과열 추천수정 + 보유 KIS연동 + NXT조사)
 - **과열 추천 수정**(커밋 652cd87, origin/main 최신): 삼성화재·신세계가 4H BB상단 돌파 과열인데 추천돼 손실 → 수정. (1) 일봉 과열=BB(20,2)상단 종가돌파 단독(기존 이격30%·거래량1.8배 AND게이트 제거→보조). (2) `src/datasource/kr_4h.py` 신규: yfinance 1h→4h 리샘플, 4H과열=(종가>BB상단 돌파)OR(상단 음봉거부). ※실측: 삼성화재·신세계 마지막4H가 'BB상단 돌파 양봉'이라 음봉만으론 못 걸러서 돌파도 OR포함. (3) top3 점수 강등(overheat weight 5.0, 제외 아님)+🔥표시. pipeline에서 Top3후보 거래대금상위12만 4H조회. 226테스트. 서버 배포·검증완료(삼성화재/신세계 과열 True).
@@ -61,7 +63,7 @@
 
 ## 0. 지금 상태 (한눈에)
 
-- **origin/main 최신 커밋**: `f5945ee`(US 리팩토링: 러너+오버레이 통합) + 서버 자동리포트 커밋. 2026-06-05 세션 전부 배포 완료.
+- **origin/main 최신 커밋**: `2a25bda`(미국 종목별 AI버튼 #309) + 서버 자동리포트 커밋. 2026-06-05~06 세션 전부 배포 완료(리팩토링 포함 서버 라이브).
 - **서버(`lotto-server` = 134.185.109.195) = origin/main과 동기화 + 서비스 재시작 완료.** (로컬수정 `config/screener.yaml` RAM축소판만 autostash 보존)
 - **테스트**: `.venv\Scripts\python.exe -m pytest tests/ -q` → **240 passed** (기준선).
 - **3개 스트림(자동매매·미국스크리닝·리포트) 전부 main 머지 완료.** 백업 브랜치 `backup/pre-merge-2026-06-03`.
