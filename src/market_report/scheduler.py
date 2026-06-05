@@ -183,10 +183,15 @@ def build_scheduler() -> AsyncIOScheduler:
         _midday_job, CronTrigger(day_of_week="mon-fri", hour=11, minute=40, timezone=KST),
         id="report_midday", replace_existing=True, misfire_grace_time=600,
     )
-    # 미국장 장전(프리장) 리포트 (평일 19:00 — 미국 프리장 시간대)
+    # 미국장 장전(프리장) 리포트 (평일 19:00 — 이른 프리장)
     scheduler.add_job(
         _us_premarket_job, CronTrigger(day_of_week="mon-fri", hour=19, minute=0, timezone=KST),
         id="report_us_premarket", replace_existing=True, misfire_grace_time=900,
+    )
+    # 미국장 장전(프리장) 리포트 2차 (평일 21:50 — 개장 임박, 더 정확한 프리장 시세, 사용자 2026-06-05)
+    scheduler.add_job(
+        _us_premarket_job, CronTrigger(day_of_week="mon-fri", hour=21, minute=50, timezone=KST),
+        id="report_us_premarket_late", replace_existing=True, misfire_grace_time=900,
     )
     # 미국장 장중 리포트 (평일 23:50 — 미국 개장 직후, 장중 시세 + 마감기준 ABCD 3개)
     scheduler.add_job(
