@@ -39,8 +39,8 @@
 ### 0f. 2026-06-06 세션 (리팩토링 — 리포트 출력 불변)
 사용자(/goal): 자는 동안 리포트 구조·내용·결과 **절대 불변** 전제로 한국/미국 중복코드 공통화. 백업+골든검증.
 - **백업**: 브랜치 backup/pre-refactor-2026-06-06 + 태그 backup-refactor-2026-06-06.
-- **통합1 US 러너**(커밋 6b1c0fe): us_premarket/us_intraday가 overlay·extra_steps만 다르고 동일 → 로 통합. 두 모듈은 얇은 래퍼(_build_premarket_top은 장전 특화 유지). 호출순서·예외·로그라벨 동일 재현. test_us_runner.py 와이어링 검증.
-- **통합2 오버레이**(커밋 f5945ee): _overlay_premarket/_overlay_intraday → (fetch·플래그키만 파라미터). _overlay_postmarket은 로직 달라 별도 유지. test_overlay_intraday_shares_logic 추가.
+- **통합1 US 러너**(커밋 6b1c0fe): us_premarket/us_intraday가 overlay·extra_steps만 다르고 동일 → us_report_runner.run_us_report로 통합. 두 모듈은 얇은 래퍼(_build_premarket_top은 장전 특화 유지). 호출순서·예외·로그라벨 동일 재현. test_us_runner.py 와이어링 검증.
+- **통합2 오버레이**(커밋 f5945ee): _overlay_premarket/_overlay_intraday → _overlay_live_quote(fetch·플래그키만 파라미터). _overlay_postmarket은 로직 달라 별도 유지. test_overlay_intraday_shares_logic 추가.
 - **검증**: 244테스트 + 전 모듈 import + 6개 모드 render 스모크 + 동작불변(by construction). 골든=기존 render/format 테스트(test_us_intraday·us_morning_report)가 출력 고정.
 - **안 건드린 것(의도적)**: analyzer 프롬프트(=AI출력 바뀜), scheduler 잡 래퍼·run_full(핫패스 고위험·저가치), KR/US 데이터수집(KIS vs FDR — 진짜 중복 아님). → '절대 불변' 우선, 과리팩토링 회피.
 - ⚠️ **서버 미배포**(약속대로): main에 push·검증만. 영향 경로(us_premarket 19:00·us_intraday 22:40)는 내일 저녁부터라 아침 확인 후 배포. 즉시 롤백=backup 브랜치.
