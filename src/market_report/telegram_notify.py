@@ -172,6 +172,29 @@ def _format_kr_us_netbuy(snap: MarketSnapshot) -> list[str]:
     return lines
 
 
+def _fmt_vol(v) -> str:
+    """거래량(주) 표기 — 1만주 이상은 만주, 아니면 주(콤마)."""
+    n = int(v or 0)
+    return f"{n / 10000:.0f}만주" if n >= 10000 else f"{n:,}주"
+
+
+def _pick_detail_line(p: dict) -> str:
+    """E/급등초입 픽 보조 1줄 — 시총·거래량·거래대금·테마·서학개미(US, 사용자 2026-06-05)."""
+    det: list[str] = []
+    if p.get("marcap_str"):
+        det.append(f"시총 {p['marcap_str']}")
+    if p.get("volume"):
+        det.append(f"거래량 {_fmt_vol(p['volume'])}")
+    if p.get("turnover_str"):
+        det.append(f"거래대금 {p['turnover_str']}")
+    if p.get("theme"):
+        det.append(f"테마 {p['theme']}")
+    nb = p.get("kr_netbuy_prev_eok")
+    if nb is not None:
+        det.append(f"🇰🇷한국인 전일 {nb:+,}억")
+    return ("    " + " · ".join(det)) if det else ""
+
+
 def _format_e_picks(snap: MarketSnapshot) -> list[str]:
     """🩹 E 과매도 반등 후보 — 최근 주도주(신고가)였다가 일봉&4시간봉 RSI≤30(사용자 2026-06-05).
 
@@ -191,6 +214,9 @@ def _format_e_picks(snap: MarketSnapshot) -> list[str]:
         else:             # US
             head = f"{nm}({tk}) ${p.get('price', 0):,.2f}"
         lines.append(f"  · {head} ({sign}{chg:.1f}%) RSI{p.get('rsi', 0):.0f}")
+        det = _pick_detail_line(p)
+        if det:
+            lines.append(det)
     lines.append("")
     return lines
 
@@ -214,6 +240,9 @@ def _format_surge_picks(snap: MarketSnapshot) -> list[str]:
         else:
             head = f"{nm}({tk}) ${p.get('price', 0):,.2f}"
         lines.append(f"  · {head} ({sign}{chg:.1f}%)")
+        det = _pick_detail_line(p)
+        if det:
+            lines.append(det)
     lines.append("")
     return lines
 

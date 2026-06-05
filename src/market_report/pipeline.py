@@ -351,18 +351,24 @@ async def _inject_supply_streak(snap: MarketSnapshot, adapter) -> None:
 
 
 def _inject_marcap(snap: MarketSnapshot) -> None:
-    """모든 종목(top3·screen_picks·candidate_picks)에 시가총액(원) 주입 — 리포트 표기용."""
+    """모든 종목(top3·screen_picks·candidate_picks·e_picks·surge_picks)에 시가총액(원) 주입 — 표기용.
+
+    e_picks/surge_picks는 거래대금(trade_value→turnover_str)도 함께 포맷(사용자 2026-06-05).
+    """
     try:
         from src.datasource.market_cap import format_marcap, get_market_cap_map
         mm = get_market_cap_map()
         if not mm:
             return
-        for lst in (snap.top3, snap.screen_picks, snap.candidate_picks):
+        for lst in (snap.top3, snap.screen_picks, snap.candidate_picks, snap.e_picks, snap.surge_picks):
             for p in (lst or []):
                 tk = str(p.get("ticker", "")).strip()
                 if tk:
                     p["marcap"] = mm.get(tk, 0)
                     p["marcap_str"] = format_marcap(p["marcap"])
+                # KR e/surge: 거래대금(원) 포맷 (US는 _collect_us_screening에서 이미 turnover_str)
+                if p.get("trade_value") and not p.get("turnover_str"):
+                    p["turnover_str"] = format_marcap(p["trade_value"])
         # 전략 스크린은 시총 내림차순 정렬 (전략별 그룹 내 순서 유지됨)
         if snap.screen_picks:
             snap.screen_picks.sort(key=lambda p: -(p.get("marcap") or 0))
@@ -538,7 +544,7 @@ async def _attach_kr_netbuy_to_picks(snap: MarketSnapshot) -> None:
     if not (m5 or m1):
         return
     dicts: list[dict] = list(snap.us_top3 or []) + list(snap.us_theme_leaders or []) \
-        + list(snap.us_sector_leaders or [])
+        + list(snap.us_sector_leaders or []) + list(snap.e_picks or []) + list(snap.surge_picks or [])
     for g in (snap.us_screen_groups or []):
         dicts.extend(g.get("picks", []))
     hit = 0
@@ -739,16 +745,25 @@ async def _collect_us_screening(snap: MarketSnapshot, *, per_group: int = 5) -> 
                 ch = ((cs[-1].close - cs[-2].close) / cs[-2].close * 100
                       if len(cs) >= 2 and cs[-2].close else 0.0)
                 u = meta2.get(sym)
+                # 공통 표기필드(시총·거래량·거래대금·테마) — 사용자 2026-06-05
+                _extra = {
+                    "marcap_str": _won(marcaps.get(sym, 0)),
+                    "turnover_str": _won(cs[-1].close * cs[-1].volume),
+                    "volume": cs[-1].volume,
+                    "theme": us_theme(u.sector, u.industry) if u else "",
+                    "theme_kind": "sector",
+                }
                 er = oversold_leader(cs)
                 if er.matched:
                     e_cand.append({"symbol": sym, "name": korean_name(sym, u.name if u else sym),
                                    "price": round(cs[-1].close, 2), "change_pct": round(ch, 2),
-                                   "rsi": round(float(er.metrics.get("rsi", 0)), 0), "reason": er.reason})
+                                   "rsi": round(float(er.metrics.get("rsi", 0)), 0), "reason": er.reason,
+                                   **_extra})
                 sr = is_surge_start(cs)
                 if sr.matched:
                     surge.append({"symbol": sym, "name": korean_name(sym, u.name if u else sym),
                                   "price": round(cs[-1].close, 2), "change_pct": round(ch, 2),
-                                  "reason": sr.reason})
+                                  "reason": sr.reason, **_extra})
             e_cand.sort(key=lambda x: x["rsi"])  # 가장 과매도부터 4H 확인
             e_cand = e_cand[:12]
             from src.datasource.kr_4h import fetch_4h_rsi_oversold
@@ -1004,6 +1019,26 @@ async def run_full(
                         p["theme_kind"] = "sector"
         except Exception as exc:
             logger.warning("sector_fallback_failed error=%s", exc)
+
+        # E/급등초입 픽에도 테마 부착(judal → 네이버 세분업종 폴백, 사용자 2026-06-05)
+        try:
+            _sec_picks = (snap.e_picks or []) + (snap.surge_picks or [])
+            for p in _sec_picks:
+                jv = jmap.get(p.get("ticker", ""))
+                if jv and jv.get("theme") and not _is_nontheme(jv["theme"]):
+                    p["theme"] = jv["theme"]
+                    p["theme_kind"] = "theme"
+                    p["theme_idx"] = jv.get("idx", "")
+            _need2 = [p["ticker"] for p in _sec_picks if p.get("ticker") and not p.get("theme")]
+            if _need2:
+                from src.market_report.scrapers.sector import get_stock_sectors
+                _sec2 = await get_stock_sectors(_need2)
+                for p in _sec_picks:
+                    if not p.get("theme") and _sec2.get(p.get("ticker", "")):
+                        p["theme"] = _sec2[p["ticker"]]
+                        p["theme_kind"] = "sector"
+        except Exception as exc:  # noqa: BLE001
+            logger.warning("sec_picks_theme_failed error=%s", exc)
 
         # 주도 테마 — 오늘 상위종목(상승률/거래량 상위) + 급등 전략픽이 속한 테마(랭킹순)
         _ranked = _rank_leading_themes((snap.top_gainers or []) + (snap.top_volume or []),

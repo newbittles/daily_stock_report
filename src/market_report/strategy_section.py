@@ -210,6 +210,7 @@ async def collect_screen_picks(adapter, per_strategy: int = 8,
                     "ticker": tk, "name": nm, "price": round(c[-1].close, 1),
                     "change_pct": round(change_pct, 2), "gap20": round(_gap20, 1),
                     "rsi": round(float(_er.metrics.get("rsi", 0)), 0), "reason": _er.reason,
+                    "volume": c[-1].volume, "trade_value": c[-1].close * c[-1].volume,
                 })
         # 급등 초입(20일 신고가 돌파+거래량급증+당일강세) — 별도 수집(사용자 2026-06-05)
         if surge_out is not None and len(surge_out) < 40:
@@ -220,6 +221,7 @@ async def collect_screen_picks(adapter, per_strategy: int = 8,
                     "ticker": tk, "name": nm, "price": round(c[-1].close, 1),
                     "change_pct": round(change_pct, 2), "gap20": round(_gap20, 1),
                     "vol_x": round(_volx, 1), "reason": _sr.reason,
+                    "volume": c[-1].volume, "trade_value": c[-1].close * c[-1].volume,
                 })
     return picks
 

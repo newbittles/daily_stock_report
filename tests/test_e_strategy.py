@@ -87,3 +87,13 @@ def test_format_surge_picks() -> None:
                          "change_pct": 14.1, "reason": "급등초입"}]
     out = "\n".join(_format_surge_picks(snap))
     assert "급등 초입" in out and "LG씨엔에스" in out and "+14.1%" in out
+
+
+def test_pick_detail_line() -> None:
+    """E/급등초입 보조줄 — 시총·거래량·거래대금·테마·서학개미(US) 표기(사용자 2026-06-05)."""
+    from src.market_report.telegram_notify import _pick_detail_line
+    kr = _pick_detail_line({"marcap_str": "420조", "volume": 12500000, "turnover_str": "8750억", "theme": "반도체"})
+    assert "시총 420조" in kr and "거래량 1250만주" in kr and "거래대금 8750억" in kr and "테마 반도체" in kr
+    assert "한국인" not in kr  # KR은 서학개미 없음
+    us = _pick_detail_line({"marcap_str": "3000조", "theme": "반도체", "kr_netbuy_prev_eok": 120})
+    assert "🇰🇷한국인 전일 +120억" in us

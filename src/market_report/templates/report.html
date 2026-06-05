@@ -20,6 +20,17 @@ ${{ "{:,.2f}".format(item.price) }} <span class="{{ 'up-text' if pct >= 0 else '
 <div class="pick-sub" style="color:var(--green);">🇰🇷 한국인 순매수 {% if item.kr_netbuy_prev_eok is not none %}전일 {{ '{:+,}'.format(item.kr_netbuy_prev_eok) }}억{% else %}전일 —{% endif %} (최근5일 {{ '{:+,}'.format(item.kr_netbuy_5d_eok) }}억)</div>
 {%- endif -%}
 {%- endmacro -%}
+{# E/급등초입 픽 보조정보 — 시총·거래량·거래대금·테마·서학개미(US) (사용자 2026-06-05) #}
+{%- macro sec_detail(item) -%}
+{%- set parts = [] -%}
+<div class="pick-meta">
+{%- if item.marcap_str %}시총 {{ item.marcap_str }}{% endif -%}
+{%- if item.volume %} · 거래량 {% if item.volume >= 10000 %}{{ "{:,.0f}".format(item.volume / 10000) }}만주{% else %}{{ "{:,}".format(item.volume) }}주{% endif %}{% endif -%}
+{%- if item.turnover_str %} · 거래대금 {{ item.turnover_str }}{% endif -%}
+{%- if item.theme %} · 테마: {% if item.theme_kind == 'theme' and item.theme_idx %}<a href="https://judal.co.kr/?view=stockList&themeIdx={{ item.theme_idx }}" target="_blank" rel="noopener">{{ item.theme }}</a>{% else %}{{ item.theme }}{% endif %}{% endif -%}
+{%- if item.kr_netbuy_prev_eok is defined and item.kr_netbuy_prev_eok is not none %} · <span style="color:var(--green);">🇰🇷한국인 전일 {{ '{:+,}'.format(item.kr_netbuy_prev_eok) }}억(5일 {{ '{:+,}'.format(item.kr_netbuy_5d_eok or 0) }}억)</span>{% endif -%}
+</div>
+{%- endmacro -%}
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -660,6 +671,7 @@ ${{ "{:,.2f}".format(item.price) }} <span class="{{ 'up-text' if pct >= 0 else '
           <span class="{{ 'up-text' if p.change_pct >= 0 else 'down-text' }}">{{ '+' if p.change_pct >= 0 else '' }}{{ "{:.2f}".format(p.change_pct) }}%</span>
           <span style="color:var(--text-dim);font-size:0.8rem;">RSI {{ "{:.0f}".format(p.rsi) }}</span>
           {% if p.reason %}<div class="theme-reason">{{ p.reason }}</div>{% endif %}
+          {{ sec_detail(p) }}
         </li>
         {% endfor %}
       </ul>
@@ -683,6 +695,7 @@ ${{ "{:,.2f}".format(item.price) }} <span class="{{ 'up-text' if pct >= 0 else '
           {% endif %}
           <span class="{{ 'up-text' if p.change_pct >= 0 else 'down-text' }}">{{ '+' if p.change_pct >= 0 else '' }}{{ "{:.2f}".format(p.change_pct) }}%</span>
           {% if p.reason %}<div class="theme-reason">{{ p.reason }}</div>{% endif %}
+          {{ sec_detail(p) }}
         </li>
         {% endfor %}
       </ul>
