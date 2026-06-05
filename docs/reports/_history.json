@@ -1,5 +1,14 @@
 [
   {
+    "date": "2026-06-06",
+    "time": "06:30",
+    "mode": "us_morning",
+    "url": "reports/2026-06-06-us.html",
+    "summary": "미국 증시는 금리 인상 우려와 AI 관련주 조정으로 큰 폭 하락했습니다. 특히 나스닥과 필라델피아 반도체 지수가 각각 4% 이상, 10% 이상 급락하며 시장 전반의 약세를 주도했습니다.",
+    "kospi_pct": null,
+    "kosdaq_pct": null
+  },
+  {
     "date": "2026-06-05",
     "time": "22:40",
     "mode": "us_intraday",
