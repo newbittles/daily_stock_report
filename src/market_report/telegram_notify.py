@@ -195,6 +195,29 @@ def _format_e_picks(snap: MarketSnapshot) -> list[str]:
     return lines
 
 
+def _format_surge_picks(snap: MarketSnapshot) -> list[str]:
+    """🚀 급등 초입 — 20일 신고가 돌파+거래량급증+당일강세(추세확인보다 빠른 진입, 사용자 2026-06-05).
+
+    별도 섹션(Top3 비포함, 백테스트 +23.8% 신호). KR(6자리)·US(symbol) 공용. 없으면 생략.
+    """
+    sp = getattr(snap, "surge_picks", None) or []
+    if not sp:
+        return []
+    lines = ["🚀 *급등 초입* (20일돌파+거래량급증, 추세확인보다 빠름)"]
+    for p in sp[:5]:
+        nm = p.get("name", "")
+        tk = str(p.get("ticker") or p.get("symbol") or "")
+        chg = p.get("change_pct", 0) or 0
+        sign = "+" if chg >= 0 else ""
+        if tk.isdigit():
+            head = f"{_naver_link(nm, tk)} {p.get('price', 0):,.0f}원"
+        else:
+            head = f"{nm}({tk}) ${p.get('price', 0):,.2f}"
+        lines.append(f"  · {head} ({sign}{chg:.1f}%)")
+    lines.append("")
+    return lines
+
+
 def _format_pre_summary(snap: MarketSnapshot) -> str:
     """마감 전 텔레그램 요약 메시지 (Markdown)."""
     url = report_url(snap)
@@ -233,6 +256,7 @@ def _format_pre_summary(snap: MarketSnapshot) -> str:
 
     lines.extend(_format_strategy_holdings(snap))
     lines.extend(_format_e_picks(snap))       # 🩹 E 과매도 반등 후보
+    lines.extend(_format_surge_picks(snap))   # 🚀 급등 초입
     lines.append(f"📄 [전체 리포트 보기]({url})")
     lines.append("")
     lines.append("_※ 참고용 정보. 투자 판단·책임은 본인._")
@@ -299,6 +323,7 @@ def _format_post_summary(snap: MarketSnapshot) -> str:
         lines.append("")
 
     lines.extend(_format_e_picks(snap))       # 🩹 E 과매도 반등 후보
+    lines.extend(_format_surge_picks(snap))   # 🚀 급등 초입
     lines.append(f"📄 [전체 리포트 보기]({url})")
     lines.append("")
     lines.append("_※ 참고용 정보. 투자 판단·책임은 본인._")

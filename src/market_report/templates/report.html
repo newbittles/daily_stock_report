@@ -667,6 +667,29 @@ ${{ "{:,.2f}".format(item.price) }} <span class="{{ 'up-text' if pct >= 0 else '
     </section>
     {% endif %}
 
+    {# 🚀 급등 초입 — 20일 신고가 돌파+거래량급증+당일강세 (추세확인보다 빠른 진입, KR/US 별도 섹션) #}
+    {% if snap.surge_picks %}
+    <section>
+      <h2><span class="icon">🚀</span>급등 초입 <span style="color:var(--text-dim);font-size:0.8rem;">(20일 신고가 돌파·거래량 급증)</span></h2>
+      <ul class="watch-list">
+        {% for p in snap.surge_picks %}
+        <li>
+          {% if p.ticker %}
+          <a href="https://finance.naver.com/item/main.naver?code={{ p.ticker }}" target="_blank" rel="noopener"><strong>{{ p.name }}</strong></a>
+          <span class="pick-ticker">{{ p.ticker }}</span> · {{ "{:,.0f}".format(p.price) }}원
+          {% else %}
+          <a href="https://search.naver.com/search.naver?query={{ (p.name ~ ' 주가') | urlencode }}" target="_blank" rel="noopener"><strong>{{ p.name }}</strong></a>
+          <span class="pick-ticker">{{ p.symbol }}</span> · ${{ "{:,.2f}".format(p.price) }}
+          {% endif %}
+          <span class="{{ 'up-text' if p.change_pct >= 0 else 'down-text' }}">{{ '+' if p.change_pct >= 0 else '' }}{{ "{:.2f}".format(p.change_pct) }}%</span>
+          {% if p.reason %}<div class="theme-reason">{{ p.reason }}</div>{% endif %}
+        </li>
+        {% endfor %}
+      </ul>
+      <p class="disclaimer" style="font-size:12px;">※ 급등 초입(추세확인보다 빠른 돌파 진입) 참고용. 백테스트 표본 적고 상승장 기준 — 가짜 신호·되돌림 위험, 매수 추천 아님.</p>
+    </section>
+    {% endif %}
+
     {# 1. 지수 #}
     {% if snap.kospi or snap.kosdaq %}
     <section>

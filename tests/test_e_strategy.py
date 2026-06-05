@@ -77,3 +77,13 @@ def test_is_surge_start() -> None:
     assert is_surge_start(base + [_c(99.0, 3000)]).matched is False
     # 거래량 부족
     assert is_surge_start(base + [_c(108.0, 1100, high=109)]).matched is False
+
+
+def test_format_surge_picks() -> None:
+    from src.market_report.models import MarketSnapshot
+    from src.market_report.telegram_notify import _format_surge_picks
+    snap = MarketSnapshot(mode="pre_close", generated_at=datetime(2026, 6, 5, 14, 40))
+    snap.surge_picks = [{"ticker": "064400", "name": "LG씨엔에스", "price": 94600,
+                         "change_pct": 14.1, "reason": "급등초입"}]
+    out = "\n".join(_format_surge_picks(snap))
+    assert "급등 초입" in out and "LG씨엔에스" in out and "+14.1%" in out

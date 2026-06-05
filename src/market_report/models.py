@@ -137,6 +137,8 @@ class MarketSnapshot:
 
     # E전략: 과매도 반등 후보 — 최근 주도주(신고가 경신)였다가 일봉&4시간봉 RSI≤30. KR/US 공용(별도 섹션)
     e_picks: list[dict] = field(default_factory=list)  # [{ticker/symbol, name, price, change_pct, rsi, reason}]
+    # 급등 초입: 20일 신고가 돌파+거래량급증+당일강세(추세확인보다 빠름). KR/US 공용(별도 섹션, Top3 비포함)
+    surge_picks: list[dict] = field(default_factory=list)  # [{ticker/symbol, name, price, change_pct, reason}]
 
     # 핫종목 — 거래대금 상위 + 시총 하한 필터 (거래대금 전일대비·순매수 연속일·소속테마)
     hot_stocks: list[dict] = field(default_factory=list)

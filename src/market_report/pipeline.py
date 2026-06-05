@@ -730,25 +730,33 @@ async def _collect_us_screening(snap: MarketSnapshot, *, per_group: int = 5) -> 
         if uni_syms:
             ohlcv = await fetch_us_ohlcv_batch(uni_syms, days=120)  # 캐시 히트(스크리닝과 동일)
             meta2 = {u.symbol: u for u in (universe or [])}
+            from src.patterns.core import is_surge_start
             e_cand: list[dict] = []
+            surge: list[dict] = []
             for sym, cs in ohlcv.items():
                 if len(cs) < 60 or cs[-1].close < _PRICE_FLOOR_USD:
-                    continue
-                er = oversold_leader(cs)
-                if not er.matched:
                     continue
                 ch = ((cs[-1].close - cs[-2].close) / cs[-2].close * 100
                       if len(cs) >= 2 and cs[-2].close else 0.0)
                 u = meta2.get(sym)
-                e_cand.append({"symbol": sym, "name": korean_name(sym, u.name if u else sym),
-                               "price": round(cs[-1].close, 2), "change_pct": round(ch, 2),
-                               "rsi": round(float(er.metrics.get("rsi", 0)), 0), "reason": er.reason})
+                er = oversold_leader(cs)
+                if er.matched:
+                    e_cand.append({"symbol": sym, "name": korean_name(sym, u.name if u else sym),
+                                   "price": round(cs[-1].close, 2), "change_pct": round(ch, 2),
+                                   "rsi": round(float(er.metrics.get("rsi", 0)), 0), "reason": er.reason})
+                sr = is_surge_start(cs)
+                if sr.matched:
+                    surge.append({"symbol": sym, "name": korean_name(sym, u.name if u else sym),
+                                  "price": round(cs[-1].close, 2), "change_pct": round(ch, 2),
+                                  "reason": sr.reason})
             e_cand.sort(key=lambda x: x["rsi"])  # 가장 과매도부터 4H 확인
             e_cand = e_cand[:12]
             from src.datasource.kr_4h import fetch_4h_rsi_oversold
             _ok = await fetch_4h_rsi_oversold([p["symbol"] for p in e_cand], market="US")
             snap.e_picks = [p for p in e_cand if p["symbol"] in _ok][:7]
-            logger.info("us_e_picks_ready daily=%d final=%d", len(e_cand), len(snap.e_picks))
+            snap.surge_picks = sorted(surge, key=lambda x: x["change_pct"], reverse=True)[:7]
+            logger.info("us_e_picks_ready daily=%d final=%d surge=%d",
+                        len(e_cand), len(snap.e_picks), len(snap.surge_picks))
     except Exception as exc:  # noqa: BLE001
         logger.warning("us_e_picks_failed error=%s", exc)
 
@@ -974,7 +982,9 @@ async def run_full(
         s = get_settings()
         adapter = KisAdapter(s.kis_app_key, s.kis_app_secret, s.kis_account_no, s.kis_env)
         _e_cand: list[dict] = []
-        snap.screen_picks = await collect_screen_picks(adapter, e_out=_e_cand)
+        _surge: list[dict] = []
+        snap.screen_picks = await collect_screen_picks(adapter, e_out=_e_cand, surge_out=_surge)
+        snap.surge_picks = sorted(_surge, key=lambda p: p.get("change_pct", 0), reverse=True)[:7]
         snap.holdings_status = await collect_holdings_status(adapter)
         # E전략 4시간봉 게이트 — 일봉 과매도 주도주 후보 중 4H RSI(14)≤30도 충족하는 종목만(사용자 2026-06-05)
         if _e_cand:
