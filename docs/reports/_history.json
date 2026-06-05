@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-06-05",
+    "time": "14:40",
+    "mode": "pre_close",
+    "url": "reports/2026-06-05-pre.html",
+    "summary": "코스피와 코스닥 모두 큰 폭의 하락세를 보이며 투자 심리가 위축된 하루입니다.",
+    "kospi_pct": -4.27,
+    "kosdaq_pct": -3.61
+  },
+  {
+    "date": "2026-06-05",
     "time": "11:40",
     "mode": "midday",
     "url": "reports/2026-06-05-midday.html",
