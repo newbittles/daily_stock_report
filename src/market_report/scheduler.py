@@ -107,8 +107,25 @@ async def _us_morning_job(require_fresh: bool) -> None:
     await _job("us_morning")
 
 
-async def _us_intraday_job() -> None:
-    """미국장 장중 리포트 (평일 23:50 — 개장 직후 장중 시세 + 마감기준 ABCD 3개). 웹+텔레그램."""
+def _us_is_dst() -> bool:
+    """현재 미국 동부가 서머타임(DST)인가 — 미국 개장 시각이 KST로 22:30(섬머)/23:30(일반)."""
+    from datetime import datetime as _dt
+    from datetime import timedelta as _td
+    from zoneinfo import ZoneInfo
+    try:
+        return _dt.now(ZoneInfo("America/New_York")).dst() != _td(0)
+    except Exception:  # noqa: BLE001
+        return False
+
+
+async def _us_intraday_job(summer: bool | None = None) -> None:
+    """미국장 장중 리포트 (개장 직후). DST 맞춰 22:40(섬머)/23:40(일반) 중 1회만(사용자 2026-06-05).
+
+    summer 지정 시 현재 미국 DST와 일치할 때만 실행 → 두 잡 중 정확히 하나만 발행.
+    """
+    if summer is not None and summer != _us_is_dst():
+        logger.info("us_intraday_skip — DST 불일치(summer=%s, dst=%s)", summer, _us_is_dst())
+        return
     logger.info("us_intraday_job_start now=%s", datetime.now().isoformat())
     try:
         from src.market_report.us_intraday import run_us_intraday
@@ -193,10 +210,14 @@ def build_scheduler() -> AsyncIOScheduler:
         _us_premarket_job, CronTrigger(day_of_week="mon-fri", hour=21, minute=50, timezone=KST),
         id="report_us_premarket_late", replace_existing=True, misfire_grace_time=900,
     )
-    # 미국장 장중 리포트 (평일 23:50 — 미국 개장 직후, 장중 시세 + 마감기준 ABCD 3개)
+    # 미국장 장중 리포트 — 개장 직후(변동 큼), DST 맞춰 1회: 섬머 22:40 / 일반 23:40 (사용자 2026-06-05)
     scheduler.add_job(
-        _us_intraday_job, CronTrigger(day_of_week="mon-fri", hour=23, minute=50, timezone=KST),
-        id="report_us_intraday", replace_existing=True, misfire_grace_time=900,
+        _us_intraday_job, CronTrigger(day_of_week="mon-fri", hour=22, minute=40, timezone=KST),
+        args=[True], id="report_us_intraday_dst", replace_existing=True, misfire_grace_time=900,
+    )
+    scheduler.add_job(
+        _us_intraday_job, CronTrigger(day_of_week="mon-fri", hour=23, minute=40, timezone=KST),
+        args=[False], id="report_us_intraday_std", replace_existing=True, misfire_grace_time=900,
     )
     return scheduler
 
