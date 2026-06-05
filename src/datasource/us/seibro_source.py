@@ -49,7 +49,7 @@ _BODY_TMPL = (
     f'<W2XPATH value="{_W2XPATH}"/>'
     '<PG_START value="1"/><PG_END value="{top}"/>'
     '<START_DT value="{start}"/><END_DT value="{end}"/>'
-    '<S_TYPE value="2"/><S_COUNTRY value="US"/><D_TYPE value="4"/>'
+    '<S_TYPE value="2"/><S_COUNTRY value="US"/><D_TYPE value="{d_type}"/>'
     "</reqParam>"
 )
 
@@ -130,9 +130,11 @@ def lookback_range(trading_days: int = 5, end: date | None = None) -> tuple[str,
     return start.strftime("%Y%m%d"), end.strftime("%Y%m%d")
 
 
-def _fetch_sync(start_dt: str, end_dt: str, top: int) -> list[SeibroNetBuy]:
-    """동기 — SEIBro POST(재시도3·지수백오프·HARD STOP). 전역 §7 / 프로젝트 §6."""
-    body = _BODY_TMPL.format(start=start_dt, end=end_dt, top=top).encode("utf-8")
+def _fetch_sync(start_dt: str, end_dt: str, top: int, d_type: str = "4") -> list[SeibroNetBuy]:
+    """동기 — SEIBro POST(재시도3·지수백오프·HARD STOP). 전역 §7 / 프로젝트 §6.
+
+    d_type: 4=순매수상위(매수세), 2=매도결제금액상위(순매도 종목 포함 — net_buy_amt 음수)."""
+    body = _BODY_TMPL.format(start=start_dt, end=end_dt, top=top, d_type=d_type).encode("utf-8")
     last_err: Exception | None = None
     for attempt in range(3):
         try:
@@ -204,9 +206,30 @@ async def fetch_us_net_buy(
         cached = _load_cache(key)
         if cached is not None:
             return cached
-    rows = await asyncio.to_thread(_fetch_sync, start_dt, end_dt, top)
+    rows = await asyncio.to_thread(_fetch_sync, start_dt, end_dt, top, "4")
     if rows:
         rows.sort(key=lambda x: x.net_buy_amt, reverse=True)
         if use_cache:
             _save_cache(key, rows)
     return rows
+
+
+async def fetch_us_net_sell(
+    trading_days: int = 5, top: int = 3, use_cache: bool = True,
+) -> list[SeibroNetBuy]:
+    """서학개미 미국 종목별 '순매도'(자금 유출) TOP — 매도결제금액 상위(D_TYPE=2) 중 순매수 음수만.
+
+    SEIBro는 순매도 랭킹을 직접 주지 않지만 매도결제금액 상위(D_TYPE=2)에 net_buy_amt 음수(순매도)
+    종목이 포함된다(실측). 그중 가장 음수인 순(자금 가장 많이 빠진) top개 반환. 실패 시 빈 리스트.
+    """
+    start_dt, end_dt = lookback_range(trading_days)
+    key = f"{start_dt}_{end_dt}_sell"
+    if use_cache:
+        cached = _load_cache(key)
+        if cached is not None:
+            return cached
+    rows = await asyncio.to_thread(_fetch_sync, start_dt, end_dt, 50, "2")
+    sellers = sorted([r for r in rows if r.net_buy_amt < 0], key=lambda x: x.net_buy_amt)[:top]
+    if rows and use_cache:
+        _save_cache(key, sellers)
+    return sellers

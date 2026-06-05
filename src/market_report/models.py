@@ -118,6 +118,7 @@ class MarketSnapshot:
     us_screen_groups: list[dict] = field(default_factory=list)  # [{label, initial, picks:[...]}] 전략별(C/B/A/D)
     # 서학개미(한국인) 미국주식 종목별 순매수 — SEIBro, 최근 5거래일 누적 (pre/post 둘 다 표시)
     kr_us_netbuy: list[dict] = field(default_factory=list)  # [{rank, ticker, name, net_buy_eok, net_buy_usd}]
+    kr_us_netsell: list[dict] = field(default_factory=list)  # 한국인 순매도(자금유출) TOP3 [{ticker,name,net_sell_eok}] (#318)
 
     # AI 분석 결과 (analyzer가 채움)
     summary: str = ""           # 시장 한줄 요약

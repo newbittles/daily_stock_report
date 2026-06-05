@@ -609,6 +609,40 @@ ${{ "{:,.2f}".format(item.price) }} <span class="{{ 'up-text' if pct >= 0 else '
     {% endif %}
     {% endif %}
 
+    {# 🇰🇷 한국인 자금흐름 (US — 서학개미 순매수 TOP5 + 순매도 TOP3, 자금 유입/유출, 사용자 #318) #}
+    {% if snap.mode in ['us_morning', 'us_premarket', 'us_intraday'] and (snap.kr_us_netbuy or snap.kr_us_netsell) %}
+    {% set _stocks = snap.kr_us_netbuy | rejectattr('is_etf') | list %}
+    {% set _etfs = snap.kr_us_netbuy | selectattr('is_etf') | list %}
+    <section>
+      <h2><span class="icon">🇰🇷</span>한국인 자금흐름 <span style="color:var(--text-dim);font-size:0.8rem;">(서학개미 · 최근 5거래일 순매수/순매도, 억원)</span></h2>
+      {% if _stocks %}
+      <h3 style="margin-top:0.6rem;color:var(--green);">💰 순매수 TOP5 — 개별종목</h3>
+      <ul class="watch-list">
+        {% for r in _stocks[:5] %}
+        <li><strong>{{ r.name }}</strong>{% if r.ticker %} <span class="pick-ticker">{{ r.ticker }}</span>{% endif %} <span style="color:var(--green);">+{{ "{:,}".format(r.net_buy_eok) }}억</span></li>
+        {% endfor %}
+      </ul>
+      {% endif %}
+      {% if _etfs %}
+      <h3 style="margin-top:0.6rem;color:var(--green);">📦 순매수 TOP5 — ETF</h3>
+      <ul class="watch-list">
+        {% for r in _etfs[:5] %}
+        <li><strong>{{ r.name }}</strong>{% if r.ticker %} <span class="pick-ticker">{{ r.ticker }}</span>{% endif %} <span style="color:var(--green);">+{{ "{:,}".format(r.net_buy_eok) }}억</span></li>
+        {% endfor %}
+      </ul>
+      {% endif %}
+      {% if snap.kr_us_netsell %}
+      <h3 style="margin-top:0.6rem;color:var(--red);">🔻 순매도 TOP3 — 자금 유출</h3>
+      <ul class="watch-list">
+        {% for r in snap.kr_us_netsell[:3] %}
+        <li><strong>{{ r.name }}</strong>{% if r.ticker %} <span class="pick-ticker">{{ r.ticker }}</span>{% endif %} <span style="color:var(--red);">−{{ "{:,}".format(r.net_sell_eok) }}억</span></li>
+        {% endfor %}
+      </ul>
+      {% endif %}
+      <p class="disclaimer" style="font-size:12px;">※ 예탁결제원(SEIBro) 최근 5거래일 한국인 순매수/순매도 결제금액. 자금이 어디로 유입·유출되는지 참고용.</p>
+    </section>
+    {% endif %}
+
     {# ★ 오늘의 추천 Top3 (A/B/C/D + 주도주·거래량·수급 종합) #}
     {% if snap.top3 %}
     <section class="top3-sec">

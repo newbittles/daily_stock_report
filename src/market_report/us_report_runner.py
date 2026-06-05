@@ -40,6 +40,7 @@ async def run_us_report(
 
     from src.market_report.pipeline import (
         _attach_kr_netbuy_to_picks,
+        _collect_kr_us_netbuy,
         _collect_sector_leaders,
         _collect_us_screening,
         _render_candles,
@@ -60,6 +61,7 @@ async def run_us_report(
     await _step(overlay(snap), "overlay")                               # 프리장/장중 시세 오버레이
     await _step(_collect_sector_leaders(snap), "sector_leaders")        # 주요종목 = 강세4+약세4 섹터 대장
     await _step(_attach_kr_netbuy_to_picks(snap), "kr_netbuy")          # 픽별 서학개미 순매수금액(전일+5일)
+    await _step(_collect_kr_us_netbuy(snap), "kr_netflow")              # 한국인 자금흐름 매수TOP5+매도TOP3(#318)
     if extra_steps is not None:
         try:
             extra_steps(snap)

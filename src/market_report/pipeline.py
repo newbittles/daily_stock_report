@@ -514,6 +514,29 @@ async def _collect_kr_us_netbuy(snap: MarketSnapshot) -> None:
     n_stock = sum(1 for o in out if not o["is_etf"])
     logger.info("kr_us_netbuy_ready n=%d stocks=%d etfs=%d", len(out), n_stock, len(out) - n_stock)
 
+    # 순매도(자금 유출) TOP3 — 매도결제금액 상위 중 순매수 음수(사용자 #318: 자금이 어디로 빠지는지)
+    try:
+        from src.datasource.us.seibro_source import fetch_us_net_sell
+        srows = await fetch_us_net_sell(trading_days=5, top=3)
+        sell_out: list[dict] = []
+        for r in srows:
+            ticker = ticker_for(r.isin)
+            name = korean_name(ticker, "") if ticker else ""
+            if not name:
+                name = r.name_en.title()
+                for acro in ("Etf", "Adr", "Ads"):
+                    name = name.replace(f" {acro}", f" {acro.upper()}")
+            sell_out.append({
+                "ticker": ticker, "name": name,
+                "net_sell_usd": -r.net_buy_amt,  # 양수(유출 규모)
+                "net_sell_eok": round(-r.net_buy_amt * rate / 1e8) if rate else 0,
+                "is_etf": _is_etf_name(r.name_en),
+            })
+        snap.kr_us_netsell = sell_out
+        logger.info("kr_us_netsell_ready n=%d", len(sell_out))
+    except Exception as exc:  # noqa: BLE001
+        logger.warning("kr_us_netsell_failed error=%s", exc)
+
 
 async def _attach_kr_netbuy_to_picks(snap: MarketSnapshot) -> None:
     """미국 추천 Top3/ABCD/섹터·테마 대장 픽에 서학개미 순매수금액 부착(전일 + 최근5거래일).
@@ -947,6 +970,10 @@ async def run_full(
             await _attach_kr_netbuy_to_picks(snap)  # 픽별 서학개미 순매수금액(전일+5일)
         except Exception as exc:
             logger.warning("us_morning_kr_netbuy_failed error=%s", exc)
+        try:
+            await _collect_kr_us_netbuy(snap)  # 한국인 자금흐름 매수TOP5+매도TOP3(#318)
+        except Exception as exc:
+            logger.warning("us_morning_kr_netflow_failed error=%s", exc)
         try:
             from src.market_report.analyzer import summarize_us_stocks
             await summarize_us_stocks(snap)  # 종목별 AI 요약(🤖 버튼, 사용자 #309)
