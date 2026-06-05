@@ -779,6 +779,9 @@ ${{ "{:,.2f}".format(item.price) }} <span class="{{ 'up-text' if pct >= 0 else '
         </tbody>
       </table>
       <p style="font-size:11px;color:var(--text-dim);margin-top:0.3rem;">+순매수 / −순매도(억원). 외국인·기관 동반 매수가 수급상 유리. {% if snap.market_flows_history|length < 3 %}· 3일치는 거래일마다 누적됩니다.{% endif %}</p>
+      {% if snap.flows_summary %}
+      <div class="summary-box" style="margin-top:0.6rem;"><div class="label">🔎 수급 요약 (최근 일주일 · 연속·전일/전주대비)</div><p>{{ snap.flows_summary }}</p></div>
+      {% endif %}
     </section>
     {% endif %}
 

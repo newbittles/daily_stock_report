@@ -610,6 +610,62 @@ async def summarize_us_stocks(snap: MarketSnapshot) -> None:
     logger.info("us_stock_summary_ok n=%d", len(targets))
 
 
+async def summarize_flows(snap: MarketSnapshot) -> None:
+    """최근 일주일 시장 수급(개인/기관/외국인) 흐름 AI 요약 → snap.flows_summary (사용자 #313/#316).
+
+    연속 순매수/순매도·전일대비·전주대비를 결정론으로 계산(1차 근거) → AI가 2~3문장 narrate.
+    AI 실패/키없음 시 결정론 팩트 문장 폴백. KR 전용(pre/post).
+    """
+    from src.market_report.flows_history import compute_flow_stats, load_flows_series
+
+    series = load_flows_series(10)
+    stats = compute_flow_stats(series) if series else {}
+    if not stats:
+        return
+
+    inv_ko = {"personal": "개인", "foreign": "외국인", "institution": "기관"}
+    mk_ko = {"kospi": "코스피", "kosdaq": "코스닥"}
+
+    def _eok(v) -> str:
+        return f"{v:+,}억" if v is not None else "—"
+
+    lines: list[str] = []
+    for mk in ("kospi", "kosdaq"):
+        for inv in ("foreign", "institution", "personal"):
+            s = stats.get(f"{mk}_{inv}")
+            if not s:
+                continue
+            stk = s["streak"]
+            stk_str = (f"{abs(stk)}일 연속 순{'매수' if stk > 0 else '매도'}" if stk else "혼조")
+            lines.append(
+                f"{mk_ko[mk]} {inv_ko[inv]}: 당일 {_eok(s['today'])}({stk_str}), "
+                f"전일 {_eok(s['prev'])}, 전주(5일전) {_eok(s['week_ago'])}, 최근5일합 {_eok(s['week_sum'])}")
+    fact_blob = "\n".join(lines)
+    snap.flows_summary = " · ".join(lines[:4])  # 기본 = 결정론 팩트(외인·기관 우선)
+
+    settings = get_settings()
+    if not settings.gemini_api_key or not fact_blob:
+        return
+    prompt = (
+        "다음은 최근 거래일 한국 증시 투자자별 순매수(억원, +매수/−매도) 데이터다.\n"
+        "외국인·기관 수급을 중심으로 최근 일주일 흐름을 2~3문장으로 요약하라.\n"
+        "반드시 포함: ①연속 순매수/순매도(며칠째인지) ②전일대비·전주대비 증감 흐름(늘었나/줄었나·매수전환/매도전환).\n"
+        "매수추천·개별종목 언급 금지. 숫자는 천단위 콤마. 사실만, 지어내지 말 것.\n\n"
+        f"{fact_blob}"
+    )
+    try:
+        client = genai.Client(api_key=settings.gemini_api_key)
+        resp = client.models.generate_content(
+            model=MODEL_NAME, contents=prompt,
+            config=types.GenerateContentConfig(temperature=0.3))
+        txt = (resp.text or "").strip()
+        if txt:
+            snap.flows_summary = txt
+        logger.info("flows_summary_ok len=%d", len(snap.flows_summary))
+    except Exception as exc:  # noqa: BLE001
+        logger.warning("flows_summary_failed error=%s — 결정론 폴백 유지", exc)
+
+
 async def summarize_themes(snap: MarketSnapshot) -> None:
     """강세 테마별 '왜 올랐나' 1~2줄 요약 → 각 ThemeRank.description.
 

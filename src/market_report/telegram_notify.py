@@ -142,6 +142,14 @@ def _format_market_flows(snap: MarketSnapshot) -> list[str]:
     return lines
 
 
+def _format_flows_summary(snap: MarketSnapshot) -> list[str]:
+    """🔎 AI 수급 요약 — 최근 일주일 흐름·연속 순매수/매도·전일/전주대비 (사용자 #313). 없으면 생략."""
+    s = getattr(snap, "flows_summary", "")
+    if not s:
+        return []
+    return [f"🔎 *수급 요약*\n{s}", ""]
+
+
 def _format_kr_us_netbuy(snap: MarketSnapshot) -> list[str]:
     """🇰🇷 서학개미 미국주식 순매수 — 개별종목/ETF 칸 분리(SEIBro, 5거래일 누적, 억원).
 
@@ -261,6 +269,7 @@ def _format_pre_summary(snap: MarketSnapshot) -> str:
 
     # 투자자 수급 (당일 + 전일 병기, 억)
     lines.extend(_format_market_flows(snap))
+    lines.extend(_format_flows_summary(snap))   # 🔎 AI 수급 요약(수급칸 바로 아래)
 
     # AI 한줄 요약
     if snap.summary:
@@ -306,6 +315,7 @@ def _format_post_summary(snap: MarketSnapshot) -> str:
 
     # 투자자 수급 (당일 + 전일 병기)
     lines.extend(_format_market_flows(snap))
+    lines.extend(_format_flows_summary(snap))   # 🔎 AI 수급 요약(수급칸 바로 아래)
 
     if snap.summary:
         lines.append(snap.summary)
@@ -403,6 +413,7 @@ def _format_midday_summary(snap: MarketSnapshot) -> str:
 
     # 투자자 수급 (당일 + 전일 병기, 억)
     lines.extend(_format_market_flows(snap))
+    lines.extend(_format_flows_summary(snap))   # 🔎 AI 수급 요약(수급칸 바로 아래)
 
     # AI 한줄 장중 코멘트 (실패 시 결정론 폴백이 summary에 들어있음)
     if snap.summary:

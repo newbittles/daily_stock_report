@@ -1109,6 +1109,12 @@ async def run_full(
             await summarize_holdings(snap)
         except Exception as exc:
             logger.warning("holdings_summary_skip error=%s", exc)
+        # AI 수급 요약 — 최근 일주일 개인/기관/외인 흐름·연속·전일/전주대비 (사용자 #313/#316)
+        try:
+            from src.market_report.analyzer import summarize_flows
+            await summarize_flows(snap)
+        except Exception as exc:
+            logger.warning("flows_summary_skip error=%s", exc)
         # 강세 테마별 '왜 올랐나' 1~2줄 (뉴스·정책 기대감 연계 → 각 테마 description)
         try:
             from src.market_report.analyzer import summarize_themes

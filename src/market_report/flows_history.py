@@ -60,3 +60,53 @@ def update_flows_history(today: list[dict], keep_days: int = 3) -> list[dict]:
             "kosdaq": day.get("KOSDAQ", {}),
         })
     return out
+
+
+def load_flows_series(days: int = 10) -> list[dict]:
+    """저장된 수급 히스토리에서 최근 days 거래일을 최신순으로 읽기(upsert 없음, AI 수급요약용)."""
+    store: dict[str, dict] = {}
+    try:
+        if _CACHE.exists():
+            store = json.loads(_CACHE.read_text(encoding="utf-8")) or {}
+    except Exception as exc:  # noqa: BLE001
+        logger.debug("flows_series_read_failed error=%s", exc)
+        return []
+    out: list[dict] = []
+    for d in sorted(store.keys(), reverse=True)[:days]:
+        day = store[d]
+        out.append({"date": d, "kospi": day.get("KOSPI", {}), "kosdaq": day.get("KOSDAQ", {})})
+    return out
+
+
+_INVESTORS = ("personal", "foreign", "institution")
+
+
+def compute_flow_stats(series: list[dict]) -> dict:
+    """최신순 수급 series → 시장(kospi/kosdaq)·투자자(개인/외인/기관)별 통계(순수·결정론).
+
+    각 키 "{market}_{investor}": {today, streak(연속 순매수+/순매도− 일수, 부호포함),
+    prev(전일), week_ago(5거래일 전), week_sum(최근5일 합)}. 데이터 없으면 키 생략.
+    """
+    stats: dict[str, dict] = {}
+    for mk in ("kospi", "kosdaq"):
+        for inv in _INVESTORS:
+            vals = [v for r in series if (v := (r.get(mk) or {}).get(inv)) is not None]
+            if not vals:
+                continue
+            today = vals[0]
+            sign = 1 if today > 0 else (-1 if today < 0 else 0)
+            streak = 0
+            if sign != 0:
+                for v in vals:
+                    if v != 0 and (v > 0) == (today > 0):
+                        streak += 1
+                    else:
+                        break
+            stats[f"{mk}_{inv}"] = {
+                "today": today,
+                "streak": streak * sign,
+                "prev": vals[1] if len(vals) > 1 else None,
+                "week_ago": vals[5] if len(vals) > 5 else None,
+                "week_sum": sum(vals[:5]),
+            }
+    return stats
