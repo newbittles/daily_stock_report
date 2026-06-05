@@ -761,13 +761,14 @@ async def _collect_us_screening(snap: MarketSnapshot, *, per_group: int = 5) -> 
         logger.warning("us_e_picks_failed error=%s", exc)
 
 
-async def _overlay_premarket(snap: MarketSnapshot) -> None:
-    """장전 리포트 — 추천종목·스크린·주요종목·강세섹터의 등락률을 프리장 기준으로 오버레이.
+async def _overlay_live_quote(snap: MarketSnapshot, fetch_fn, flag: str,
+                              price_key: str, log_label: str) -> None:
+    """장전/장중 공용 시세 오버레이 — 픽·주요종목·섹터 change_pct를 실시간 기준으로 덮어씀.
 
-    각 dict의 change_pct를 프리장 등락률로, price(있으면)를 프리장가로 덮어쓴다(마감
-    등락률은 close_pct 보존). 프리장 미체결은 마감값 유지. 주요종목·섹터는 프리장순 재정렬."""
-    from src.datasource.us.fdr_source import fetch_us_premarket
-
+    프리장(flag='premkt')·장중(flag='intraday')이 동일 로직(fetch_fn·키만 다름) → 통합.
+    change_pct=실시간 등락률, close_pct=직전 마감 등락률 보존, flag=True, price_key=실시간가.
+    미체결은 마감값 유지(flag=False). 주요종목·섹터·테마대장은 실시간 등락률순 재정렬.
+    """
     pick_dicts: list[dict] = list(snap.us_top3 or []) + list(snap.us_theme_leaders or [])
     for g in (snap.us_screen_groups or []):
         pick_dicts.extend(g.get("picks", []))
@@ -776,25 +777,29 @@ async def _overlay_premarket(snap: MarketSnapshot) -> None:
     syms = list({d["symbol"] for d in all_dicts if d.get("symbol")})
     if not syms:
         return
-    pm = await fetch_us_premarket(syms)
+    q_map = await fetch_fn(syms)
     for d in all_dicts:
-        q = pm.get(d.get("symbol", ""))
+        q = q_map.get(d.get("symbol", ""))
         if q:
-            d["premkt"] = True
-            d["close_pct"] = d.get("change_pct", 0)   # 마감 등락률 보존
-            d["change_pct"] = q["change_pct"]          # 표시 등락률 = 프리장
-            # 가격은 전일마감가 유지(사용자), 프리장가는 참고용으로만 보관
-            d["premkt_price"] = round(q["price"], 2)
+            d[flag] = True
+            d["close_pct"] = d.get("change_pct", 0)   # 직전 마감 등락률 보존
+            d["change_pct"] = q["change_pct"]          # 표시 등락률 = 실시간(프리장/장중)
+            # 가격은 전일마감가 유지(사용자), 실시간가는 참고용으로만 보관
+            d[price_key] = round(q["price"], 2)
         else:
-            d.setdefault("premkt", False)
-    # 주요종목·섹터는 프리장 등락률순 재정렬 (섹터 전체 → 표시단에서 강세/약세 슬라이스)
-    if snap.us_bigtech:
-        snap.us_bigtech.sort(key=lambda x: x.get("change_pct", 0), reverse=True)
-    if snap.us_sectors:
-        snap.us_sectors.sort(key=lambda x: x.get("change_pct", 0), reverse=True)
-    if snap.us_theme_leaders:
-        snap.us_theme_leaders.sort(key=lambda x: x.get("change_pct", 0), reverse=True)
-    logger.info("us_premarket_overlay targets=%d matched=%d", len(all_dicts), len(pm))
+            d.setdefault(flag, False)
+    # 주요종목·섹터·테마대장은 실시간 등락률순 재정렬 (섹터 전체 → 표시단에서 강세/약세 슬라이스)
+    for coll in (snap.us_bigtech, snap.us_sectors, snap.us_theme_leaders):
+        if coll:
+            coll.sort(key=lambda x: x.get("change_pct", 0), reverse=True)
+    logger.info("%s targets=%d matched=%d", log_label, len(all_dicts), len(q_map))
+
+
+async def _overlay_premarket(snap: MarketSnapshot) -> None:
+    """장전 리포트 — change_pct를 프리장 기준으로 오버레이(close_pct=마감 보존). 공용 로직 사용."""
+    from src.datasource.us.fdr_source import fetch_us_premarket
+
+    await _overlay_live_quote(snap, fetch_us_premarket, "premkt", "premkt_price", "us_premarket_overlay")
 
 
 async def _overlay_postmarket(snap: MarketSnapshot) -> None:
@@ -823,38 +828,12 @@ async def _overlay_postmarket(snap: MarketSnapshot) -> None:
 
 
 async def _overlay_intraday(snap: MarketSnapshot) -> None:
-    """us_intraday(장중 리포트, 23:50 KST) — 픽·주요종목·섹터 등락률을 '현재 장중' 기준으로 오버레이.
+    """us_intraday(장중, 23:50/개장직후) — change_pct를 '현재 장중' 기준으로 오버레이. 공용 로직 사용.
 
-    _overlay_premarket과 동일 구조(프리장 대신 정규장 현재가). change_pct=장중 등락률,
-    close_pct=직전 마감 등락률 보존, intraday=True. 주요종목·섹터는 장중 등락률순 재정렬.
     ⚠️ 개장 직후라 값이 흔들림 → 표시단에서 '장중 잠정' 라벨(사용자 합의 2026-06-05)."""
     from src.datasource.us.fdr_source import fetch_us_intraday
 
-    pick_dicts: list[dict] = list(snap.us_top3 or []) + list(snap.us_theme_leaders or [])
-    for g in (snap.us_screen_groups or []):
-        pick_dicts.extend(g.get("picks", []))
-    other_dicts: list[dict] = list(snap.us_bigtech or []) + list(snap.us_sectors or [])
-    all_dicts = pick_dicts + other_dicts
-    syms = list({d["symbol"] for d in all_dicts if d.get("symbol")})
-    if not syms:
-        return
-    iq = await fetch_us_intraday(syms)
-    for d in all_dicts:
-        q = iq.get(d.get("symbol", ""))
-        if q:
-            d["intraday"] = True
-            d["close_pct"] = d.get("change_pct", 0)   # 직전 마감 등락률 보존
-            d["change_pct"] = q["change_pct"]          # 표시 등락률 = 장중
-            d["intraday_price"] = round(q["price"], 2)
-        else:
-            d.setdefault("intraday", False)
-    if snap.us_bigtech:
-        snap.us_bigtech.sort(key=lambda x: x.get("change_pct", 0), reverse=True)
-    if snap.us_sectors:
-        snap.us_sectors.sort(key=lambda x: x.get("change_pct", 0), reverse=True)
-    if snap.us_theme_leaders:
-        snap.us_theme_leaders.sort(key=lambda x: x.get("change_pct", 0), reverse=True)
-    logger.info("us_intraday_overlay targets=%d matched=%d", len(all_dicts), len(iq))
+    await _overlay_live_quote(snap, fetch_us_intraday, "intraday", "intraday_price", "us_intraday_overlay")
 
 
 async def _collect_sector_leaders(snap: MarketSnapshot) -> None:

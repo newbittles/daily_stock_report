@@ -89,3 +89,26 @@ async def test_weekend_skip_returns_none(monkeypatch) -> None:
 
     out = await R.run_us_report("us_premarket", _overlay, do_telegram=False, do_publish=False)
     assert out is None
+
+
+async def test_overlay_intraday_shares_logic(monkeypatch) -> None:
+    """_overlay_intraday — 공용 _overlay_live_quote 경유: change_pct=장중, close_pct=마감 보존, intraday 플래그."""
+    from src.market_report import pipeline as P
+
+    snap = MarketSnapshot(mode="us_intraday", generated_at=datetime(2026, 6, 5, 23, 50))
+    snap.us_top3 = [{"symbol": "NVDA", "change_pct": 1.0, "price": 450.0}]
+    snap.us_screen_groups = [{"initial": "C", "picks": [
+        {"symbol": "AAPL", "change_pct": -1.0, "price": 310.0},
+        {"symbol": "ZZZZ", "change_pct": 3.0, "price": 50.0},  # 미체결
+    ]}]
+
+    async def fake_iq(syms):
+        return {"NVDA": {"price": 462.0, "change_pct": 2.7}, "AAPL": {"price": 312.0, "change_pct": 0.5}}
+    monkeypatch.setattr("src.datasource.us.fdr_source.fetch_us_intraday", fake_iq)
+
+    await P._overlay_intraday(snap)
+    nv = snap.us_top3[0]
+    assert nv["change_pct"] == 2.7 and nv["close_pct"] == 1.0 and nv["intraday"] is True
+    assert nv["price"] == 450.0 and nv["intraday_price"] == 462.0  # 가격은 마감 유지
+    zz = snap.us_screen_groups[0]["picks"][1]
+    assert zz["change_pct"] == 3.0 and zz["intraday"] is False  # 미체결 → 마감값 유지
