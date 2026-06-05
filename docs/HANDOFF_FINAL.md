@@ -7,6 +7,9 @@
 - 1b67cb0: Top3·ABCD·섹터/테마 대장 카드에 `🇰🇷 한국인 순매수 전일N억(최근5일M억)` 배지(kr_nb 매크로 + `_attach_kr_netbuy_to_picks`, 장전·장후 둘 다).
 - 4a9e188/6d07093: **미국장 장중 리포트(us_intraday)** 신설 — 평일 23:50 KST(개장 직후), `src/market_report/us_intraday.py` + `_overlay_intraday`(현재 장중 시세) + `fetch_us_intraday`. 가격=실시간만("장중 $X (장중%)"). **마감 06:30 조기발행**(`_us_morning_job(require_fresh)` + `_us_data_fresh_sync` yfinance ^GSPC 신선도 게이트) + **07:00 안전망**(중복발행 방지: report_path 존재 체크). **ABCD 3개**(`_collect_us_screening(per_group=3)` 장전·마감·장중). **미국 뉴스 전 모드 텔레그램 제외**(웹 최하단만). 신규 모드 us_intraday(ReportMode/publisher us-mid/render title). `--once usmid`.
 - ⚠️ 애프터장은 7시 시점 yfinance 시간외 빈값 가능(괄호만 생략), 전일 서학개미는 결제지연/공휴일이면 '전일 —'. 배지는 SEIBro TOP50 권내만. 장중 리포트는 개장 직후라 값 흔들림('잠정' 라벨).
+- **E전략(과매도 반등) + Top3 B가중치**(커밋 ab9fe87, 배포완료): E = 최근 주도주(`patterns.oversold_leader`: 최근60봉내 120일신고가 경신) AND 일봉 RSI(14)≤30 AND 4시간봉 RSI≤30(`kr_4h.fetch_4h_rsi_oversold` KR/US). KR=collect_screen_picks(e_out=)+pipeline 4H게이트, US=_collect_us_screening 캐시OHLCV 전체평가+4H게이트 → snap.e_picks(KR ticker/US symbol). '🩹 E 과매도 반등후보' 섹션(텔레그램 KR pre/post, 웹 KR+US; US텔레그램은 overview-only라 웹만). Top3 비포함. top3 _STRAT_W B 2.0→2.8. 234테스트.
+  - ⚠️ **미해결 제안(사용자 응답대기)**: 삼성전기 사례 분석 결과 B 눌림목이 Top3에 잘 안 드는 근본원인 = score의 모멘텀항(w_mom×당일등락률)이 '눌림목 조정일(−)'을 페널티함. B종목 모멘텀 페널티 완화 or '최근 조정폭' 보너스 추가 제안함(미적용).
+  - 보류: 사용자 "통신 확인" 의미 확인 요청중. 보유종목 KIS연동(0c)·NXT(0b) 16:30 라이브 의미검증 대기.
 - 미국 리포트 스케줄: 장전 19:00 / 장중 23:50 / 마감 06:30(게이트)+07:00(안전망), 전부 ABCD 3개.
 
 ### 0c. 2026-06-05 세션 후반 (과열 추천수정 + 보유 KIS연동 + NXT조사)
@@ -25,7 +28,7 @@
 
 ## 0. 지금 상태 (한눈에)
 
-- **origin/main 최신 커밋**: `c6b8e07` (마감후 시간외 NXT 상위상승률). 2026-06-05 세션 작업 전부 푸시·배포 완료.
+- **origin/main 최신 커밋**: `ab9fe87` (E전략 + Top3 B가중치). 2026-06-05 세션 작업 전부 푸시·배포 완료.
 - **서버(`lotto-server` = 134.185.109.195) = origin/main과 동기화 + 서비스 재시작 완료.** (로컬수정 `config/screener.yaml` RAM축소판만 autostash 보존)
 - **테스트**: `.venv\Scripts\python.exe -m pytest tests/ -q` → **220 passed** (기준선).
 - **3개 스트림(자동매매·미국스크리닝·리포트) 전부 main 머지 완료.** 백업 브랜치 `backup/pre-merge-2026-06-03`.
