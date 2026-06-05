@@ -22,7 +22,8 @@
 - **#244 "통신 확인"**: 답 늦어서 한 핑(액션 없음).
 - **#258 종가베팅 후보 ABCD 라벨**(커밋 2223cff): `pipeline._inject_candidate_strategies`가 각 candidate_pick(AI선정) 일봉을 스크리너 재평가→`strategies` 라벨. report.html 종가베팅 후보 섹션에 'B/C 시그널'/'ABCD 미해당(AI선정)' 배지. **확인결과: Top3=ABCD 반영O(select_top3), 종가베팅후보=AI선정(ABCD 게이트X)→라벨로 투명화**. (원하면 후보도 ABCD필터 가능, 미적용)
 - **#259 B 급반전 제외**(커밋 c3cb2d7): `patterns.gave_back_recent_gain`(최근3일 하락 ≥ 최근10일 상승분×0.5) → `collect_screen_picks`에서 B픽 skip. 검증: 삼성에스디에스(018260) +120%→3일내 -30%(56%반납) 제외O, 삼성전기 유지. 임계값(0.5/3일/10일) 조정가능. ⚠️KR만 적용(US B는 미적용).
-- 236 테스트. **운영교훈 재확인: 평일 16:40~16:43(대시보드)·기타 잡 실행 중 서버 재시작 금지.**
+- **#261 B 고점대비 낙폭 표시**(커밋 cd55e11): B 시그널 설명란(Top3·스크린·US 포함)에 '· 고점대비 -X%'(60일 고점 대비). strategy_section/top3/_to_dict에 high_dd 필드. 237테스트.
+- 237 테스트. **운영교훈 재확인: 평일 16:40~16:43(대시보드)·기타 잡 실행 중 서버 재시작 금지.**
 - 미국 리포트 스케줄: 장전 19:00 / 장중 23:50 / 마감 06:30(게이트)+07:00(안전망), 전부 ABCD 3개.
 
 ### 0c. 2026-06-05 세션 후반 (과열 추천수정 + 보유 KIS연동 + NXT조사)
@@ -41,9 +42,9 @@
 
 ## 0. 지금 상태 (한눈에)
 
-- **origin/main 최신 커밋**: `c3cb2d7`(B 급반전 제외) + 서버 자동리포트 커밋. 2026-06-05 세션 전부 배포 완료.
+- **origin/main 최신 커밋**: `cd55e11`(B 고점대비 낙폭 표시) + 서버 자동리포트 커밋. 2026-06-05 세션 전부 배포 완료.
 - **서버(`lotto-server` = 134.185.109.195) = origin/main과 동기화 + 서비스 재시작 완료.** (로컬수정 `config/screener.yaml` RAM축소판만 autostash 보존)
-- **테스트**: `.venv\Scripts\python.exe -m pytest tests/ -q` → **220 passed** (기준선).
+- **테스트**: `.venv\Scripts\python.exe -m pytest tests/ -q` → **237 passed** (기준선).
 - **3개 스트림(자동매매·미국스크리닝·리포트) 전부 main 머지 완료.** 백업 브랜치 `backup/pre-merge-2026-06-03`.
 - **SSH**: `ssh lotto-server` (별칭, 키인증 OK). 무암호 sudo 가능(systemctl restart 가능).
 
