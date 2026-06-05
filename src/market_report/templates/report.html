@@ -848,48 +848,39 @@ ${{ "{:,.2f}".format(item.price) }} <span class="{{ 'up-text' if pct >= 0 else '
     </section>
     {% endif %}
 
-    {# 3c. 전략 스크린 A/B/C/D — 전략별 칸 분리 + 복사버튼 + 상승률 + 테마 + 네이버링크 #}
-    {% if snap.screen_picks %}
+    {# 3c. 전략 스크린 — 종목당 1줄(중복제거)·종합점수순·매칭전략 다 표기 (사용자 2026-06-05) #}
+    {% if snap.screen_ranked %}
     <section>
-      <h2><span class="icon">🎯</span>전략 스크린</h2>
-      <div class="strat-grid">
-        {% for strat in snap.screen_picks|map(attribute='strategy')|unique|sort %}
-        {% set items = snap.screen_picks|selectattr('strategy','equalto',strat)|list %}
-        {% set codes = items|map(attribute='ticker')|join(' ') %}
-        <div class="strat-col">
-          <div class="strat-head">
-            <span class="strat-name">{{ strat }}</span>
-            <button class="copy-btn" data-codes="{{ codes }}" onclick="copyWatch(this)">📋 관심등록 복사</button>
+      <h2><span class="icon">🎯</span>전략 스크린 <span style="color:var(--text-dim);font-size:0.8rem;">(종합점수순 · 매칭전략 표기)</span>
+        <button class="copy-btn" data-codes="{{ snap.screen_ranked|map(attribute='ticker')|join(' ') }}" onclick="copyWatch(this)">📋 관심등록 복사</button>
+      </h2>
+      <ul class="watch-list">
+        {% for p in snap.screen_ranked %}
+        <li>
+          <a href="https://finance.naver.com/item/main.naver?code={{ p.ticker }}" target="_blank" rel="noopener"><strong>{{ p.name }}</strong></a>
+          <button type="button" class="code-copy" data-code="{{ p.ticker }}" onclick="copyCode(this)" title="종목코드 복사 (MTS 검색창에 붙여넣기)">📋</button>
+          <span class="strat-badge">{{ p.strategies|join('·') }} 시그널</span>
+          <span class="px">{{ "{:,.0f}".format(p.price) }}원</span>
+          <span class="{{ 'up-text' if p.change_pct >= 0 else 'down-text' }}">{{ '+' if p.change_pct >= 0 else '' }}{{ "{:.1f}".format(p.change_pct) }}%</span>
+          {% if p.endstage %}<span class="down-text">⚠️끝물</span>{% endif %}
+          {% if p.ai_summary or p.marcap_str %}
+          <div class="pick-line">
+            {% if p.ai_summary %}<button type="button" class="ai-btn" onclick="showAI(this)" data-name="{{ p.name }}" data-summary="{{ p.ai_summary|e }}">🤖 AI요약</button>{% endif %}
+            {% if p.marcap_str %}<span class="code">시총 {{ p.marcap_str }}</span>{% endif %}
           </div>
-          <ul class="watch-list">
-            {% for p in items %}
-            <li>
-              <a href="https://finance.naver.com/item/main.naver?code={{ p.ticker }}" target="_blank" rel="noopener"><strong>{{ p.name }}</strong></a>
-              <button type="button" class="code-copy" data-code="{{ p.ticker }}" onclick="copyCode(this)" title="종목코드 복사 (MTS 검색창에 붙여넣기)">📋</button>
-              <span class="px">{{ "{:,.0f}".format(p.price) }}원</span>
-              <span class="{{ 'up-text' if p.change_pct >= 0 else 'down-text' }}">{{ '+' if p.change_pct >= 0 else '' }}{{ "{:.1f}".format(p.change_pct) }}%</span>
-              {% if p.endstage %}<span class="down-text">⚠️끝물</span>{% endif %}
-              {% if p.ai_summary or p.marcap_str %}
-              <div class="pick-line">
-                {% if p.ai_summary %}<button type="button" class="ai-btn" onclick="showAI(this)" data-name="{{ p.name }}" data-summary="{{ p.ai_summary|e }}">🤖 AI요약</button>{% endif %}
-                {% if p.marcap_str %}<span class="code">시총 {{ p.marcap_str }}</span>{% endif %}
-              </div>
-              {% endif %}
-              <div class="theme-reason">{{ p.reason }}</div>
-              <div class="pick-meta" style="color:{{ 'var(--red)' if p.overheat else 'var(--text-dim)' }};">📊 20일선 이격 {% if p.strategy and p.strategy[0] == 'B' and p.gap20 >= -5 and p.gap20 <= 5 %}<strong style="color:var(--red);">{{ '+' if p.gap20 >= 0 else '' }}{{ "{:.1f}".format(p.gap20) }}%</strong>{% else %}{{ '+' if p.gap20 >= 0 else '' }}{{ "{:.1f}".format(p.gap20) }}%{% endif %}{% if p.overheat %} 🔥과열(BB돌파·거래량{{ "{:.1f}".format(p.vol_x) }}x){% endif %}{% if p.cross_signal == 'PULLBACK' %} <span class="up-text">· 🟢5&lt;10 단기눌림(20선이격↑)</span>{% elif p.cross_signal == 'CORRECTION' %} <span class="down-text">· ⚠️5&lt;10 조정시작(20선근접)</span>{% endif %}</div>
-              <div class="pick-meta">
-                {{ '업종' if p.theme_kind == 'sector' else '테마' }}:
-                {% if p.theme and p.theme_kind == 'theme' and p.theme_idx %}<a href="https://judal.co.kr/?view=stockList&themeIdx={{ p.theme_idx }}" target="_blank" rel="noopener">{{ p.theme }}</a>
-                {% elif p.theme %}<a href="https://search.naver.com/search.naver?query={{ p.theme|urlencode }}+관련주" target="_blank" rel="noopener">{{ p.theme }}</a>{% else %}-{% endif %}
-                · 주도테마: {{ 'O' if p.is_leading_theme else 'X' }}
-              </div>
-            </li>
-            {% endfor %}
-          </ul>
-        </div>
+          {% endif %}
+          <div class="theme-reason">{{ p.reason }}</div>
+          <div class="pick-meta" style="color:{{ 'var(--red)' if p.overheat else 'var(--text-dim)' }};">📊 20일선 이격 {% if 'B' in p.strategies and p.gap20 >= -5 and p.gap20 <= 5 %}<strong style="color:var(--red);">{{ '+' if p.gap20 >= 0 else '' }}{{ "{:.1f}".format(p.gap20) }}%</strong>{% else %}{{ '+' if p.gap20 >= 0 else '' }}{{ "{:.1f}".format(p.gap20) }}%{% endif %}{% if p.overheat %} 🔥과열(BB돌파·거래량{{ "{:.1f}".format(p.vol_x) }}x){% endif %}{% if p.cross_signal == 'PULLBACK' %} <span class="up-text">· 🟢5&lt;10 단기눌림</span>{% elif p.cross_signal == 'CORRECTION' %} <span class="down-text">· ⚠️5&lt;10 조정시작</span>{% endif %}</div>
+          <div class="pick-meta">
+            {{ '업종' if p.theme_kind == 'sector' else '테마' }}:
+            {% if p.theme and p.theme_kind == 'theme' and p.theme_idx %}<a href="https://judal.co.kr/?view=stockList&themeIdx={{ p.theme_idx }}" target="_blank" rel="noopener">{{ p.theme }}</a>
+            {% elif p.theme %}<a href="https://search.naver.com/search.naver?query={{ p.theme|urlencode }}+관련주" target="_blank" rel="noopener">{{ p.theme }}</a>{% else %}-{% endif %}
+            · 주도테마: {{ 'O' if p.is_leading_theme else 'X' }}
+          </div>
+        </li>
         {% endfor %}
-      </div>
-      <p class="disclaimer" style="font-size:12px;">※ 참고용 시그널입니다. 매수 추천이 아니며 판단·책임은 본인에게 있습니다. · 📋 복사 → 텔레그램에 붙여넣으면 일괄 관심등록.</p>
+      </ul>
+      <p class="disclaimer" style="font-size:12px;">※ 종목당 1줄·종합점수순. 같은 종목이 여러 전략에 잡히면 'A·C·D 시그널'처럼 묶어 표기. 참고용이며 매수 추천 아님. · 📋 일괄 관심등록.</p>
     </section>
     {% endif %}
 

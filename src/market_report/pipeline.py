@@ -1046,10 +1046,12 @@ async def run_full(
             logger.warning("kr_4h_overheat_failed error=%s", exc)
 
         # Top3 종합추천 — 수급(외인/기관 순매수) 수집 후 P4 점수로 3종목 선정
+        _kr_fb, _kr_ib = set(), set()
         try:
             from src.market_report.top3 import select_top3
             fb = {x["ticker"] for x in await adapter.get_investor_net_buy("foreign", "buy")}
             ib = {x["ticker"] for x in await adapter.get_investor_net_buy("inst", "buy")}
+            _kr_fb, _kr_ib = fb, ib
             snap.top3 = select_top3(snap.screen_picks, foreign_buy=fb, inst_buy=ib)
             await _inject_supply_streak(snap, adapter)  # 연속 순매수일
             logger.info("pipeline_top3_ready top3=%s", [t["name"] for t in snap.top3])
@@ -1098,6 +1100,14 @@ async def run_full(
         logger.error("pipeline_strategy_failed error=%s", exc)
 
     _inject_marcap(snap)
+
+    # 전략 스크린 표시용 — 종목당 1개로 중복제거 + 종합점수순 + 매칭전략 다 표기(사용자 2026-06-05).
+    # marcap/ai 주입 후 빌드(screen_picks가 enrich된 상태). select_top3 재사용(return_all).
+    try:
+        from src.market_report.top3 import select_top3 as _sel
+        snap.screen_ranked = _sel(snap.screen_picks, foreign_buy=_kr_fb, inst_buy=_kr_ib, return_all=True)
+    except Exception as exc:
+        logger.warning("screen_ranked_failed error=%s", exc)
 
     # (서학개미 미국주식 순매수 TOP5는 한국장 리포트에서 제외 — 미국 데이터라 부적절, 사용자 2026-06-05.
     #  미국 리포트 종목 카드에는 서학개미 순매수 배지가 그대로 표시됨.)

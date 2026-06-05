@@ -36,7 +36,7 @@ def _strat_weight(name: str) -> float:
 def select_top3(screen_picks: list[dict], foreign_buy: set[str] | None = None,
                 inst_buy: set[str] | None = None, w: dict | None = None,
                 us_keywords: set[str] | None = None, w_us: float = 0.0,
-                us_sectors: list[dict] | None = None) -> list[dict]:
+                us_sectors: list[dict] | None = None, return_all: bool = False) -> list[dict]:
     """A/B/C/D 스크린 결과 → 종합점수 상위 3종목. 추천 이유 동반.
 
     foreign_buy/inst_buy: 외국인/기관 순매수 상위 종목코드 집합(수급 가산).
@@ -56,7 +56,9 @@ def select_top3(screen_picks: list[dict], foreign_buy: set[str] | None = None,
         sw = _strat_weight(p["strategy"])
         cur = by_ticker.get(tk)
         if cur is None or sw > cur["_sw"]:
-            by_ticker[tk] = {**p, "_sw": sw, "_strats": set()}
+            # 대표 픽 교체 시 기존 _strats를 승계(누적 유지) — 안 그러면 먼저 매칭된 전략 유실(버그 수정)
+            _strats = cur["_strats"] if cur else set()
+            by_ticker[tk] = {**p, "_sw": sw, "_strats": _strats}
         by_ticker[tk]["_strats"].add(p["strategy"].split(".")[0].strip())
 
     ranked = []
@@ -121,8 +123,12 @@ def select_top3(screen_picks: list[dict], foreign_buy: set[str] | None = None,
             "vol_x": p.get("vol_x", 0),
             "cross_signal": p.get("cross_signal", ""),  # 5<10 데드+이격 (pullback/correction)
             "lead_strat": p["strategy"].split(".")[0].strip(),  # 대표전략 A/B/C/D
+            "strategies": sorted(p["_strats"]),         # 매칭된 전략 전부(중복표기, 사용자 2026-06-05)
+            "ai_summary": p.get("ai_summary", ""), "marcap_str": p.get("marcap_str", ""),
         })
     ranked.sort(key=lambda x: x["score"], reverse=True)
+    if return_all:  # 전략 스크린용 — 종목당 1개(중복제거)·점수순 전체(사용자 2026-06-05)
+        return ranked
     # 전략 다양성 — 같은 전략 최대 2개 (C 독점 방지 → 주도주+눌림목 균형)
     out: list[dict] = []
     strat_cnt: dict[str, int] = {}

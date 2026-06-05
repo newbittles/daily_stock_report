@@ -106,3 +106,18 @@ def test_top3_demotes_4h_overheat() -> None:
     ccc = next(o for o in out if o["ticker"] == "CCC")
     assert ccc["overheat"] is True and ccc["overheat_4h"] is True
     assert "4시간봉" in ccc["reason"]
+
+
+def test_select_top3_return_all_dedups_with_strategies() -> None:
+    """return_all: 종목당 1개(중복제거) + strategies에 매칭전략 전부(사용자 2026-06-05)."""
+    base = {"price": 1000.0, "change_pct": 1.0, "gap20": 3.0, "_liq": 5.0, "_nh": 1.0}
+    picks = [
+        {"ticker": "KB", "name": "KB금융", "strategy": "A. 수렴 후 대세상승 시작", **base},
+        {"ticker": "KB", "name": "KB금융", "strategy": "C. 대세 정배열 추세추종", **base},
+        {"ticker": "KB", "name": "KB금융", "strategy": "D. 추세 반전", **base},
+        {"ticker": "X", "name": "엑스", "strategy": "B. 주도주 20일선 눌림목", **base},
+    ]
+    out = select_top3(picks, return_all=True)
+    assert len(out) == 2  # KB금융 3건 → 1건으로 중복제거 + X
+    kb = next(o for o in out if o["ticker"] == "KB")
+    assert set(kb["strategies"]) == {"A", "C", "D"}

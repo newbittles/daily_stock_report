@@ -128,6 +128,8 @@ class MarketSnapshot:
     top3: list[dict] = field(default_factory=list)           # {ticker, name, price, change_pct, score, reason, ...}
     # 전략 스크린 결과 (A/B/C — 오늘 포착, pipeline이 KIS로 채움)
     screen_picks: list[dict] = field(default_factory=list)   # {strategy, ticker, name, price, reason, endstage}
+    # 전략 스크린 표시용 — 종목당 1개로 중복제거+점수순 정렬(매칭전략 다 표기, 사용자 2026-06-05)
+    screen_ranked: list[dict] = field(default_factory=list)
     # 보유종목 상태 (홀딩/손절/추가매수 — pipeline이 채움)
     holdings_status: list[dict] = field(default_factory=list)  # {name, ticker, state, reason, profit_rate, ...}
     holdings_summary: str = ""  # 보유종목 전체에 대한 AI 종합 코멘트 (analyzer.summarize_holdings)
