@@ -21,6 +21,10 @@ WEIGHTS = {"strat": 3.0, "mom": 0.5, "liq": 0.5, "align": 0.1, "nh": 1.0, "suppl
 _STRAT_W = {"D. 추세 반전": 2.5, "C. 대세 정배열 추세추종": 3.0,
             "B. 주도주 20일선 눌림목": 2.8, "A. 수렴 후 대세상승 시작": 1.5}
 
+# B 눌림목 모멘텀 페널티 면제 허용 낙폭(60일 고점 대비 %). 이보다 깊으면 추세 꺾임 의심 → 면제 안 함.
+# 25%: 삼성전기(~22%)는 면제, LG전자(~31%)는 면제 안 함(추천 과열 방지, 사용자 2026-06-05 검증).
+B_PULLBACK_MAX_DD = 25.0
+
 
 def _strat_weight(name: str) -> float:
     for k, v in _STRAT_W.items():
@@ -60,11 +64,18 @@ def select_top3(screen_picks: list[dict], foreign_buy: set[str] | None = None,
         supply = (1 if tk in fb else 0) + (1 if tk in ib else 0)  # 0~2
         # 과열 = 일봉 BB상단 종가돌파(overheat) OR 4시간봉 BB상단 음봉(overheat_4h). 강등(사용자 2026-06-05).
         is_overheat = bool(p.get("overheat") or p.get("overheat_4h"))
+        # B(눌림목) 모멘텀 페널티 완화(사용자 2026-06-05): 당일 하락(눌림)을 점수에서 안 깎음.
+        # 단 '얕은 눌림'(60일 고점 대비 낙폭 ≤ B_PULLBACK_MAX_DD%)만 — 깊은 낙폭(추세 꺾임 의심,
+        # LG전자 -30% 사례)은 페널티 유지해 추천 과열 방지(사용자 우려). drawdown = 1-close/hi60 = 3-_nh.
+        _mom_pct = p.get("change_pct", 0)
+        _drawdown = 3 - p.get("_nh", 0)
+        if "B" in p["_strats"] and _mom_pct < 0 and _drawdown <= B_PULLBACK_MAX_DD:
+            _mom_pct = 0.0  # 얕은 B 눌림목: 당일 하락 페널티 면제
         from src.market_report.theme_bridge import matched_us_sector, us_theme_match
         us_hit = us_theme_match(p.get("theme", ""), us_kw)  # 미국 강세테마 연동
         score = (
             w["strat"] * p["_sw"]
-            + w["mom"] * p.get("change_pct", 0)
+            + w["mom"] * _mom_pct
             + w["liq"] * p.get("_liq", 0)
             + w["align"] * min(p.get("gap20", 0), 30)
             + w["nh"] * max(p.get("_nh", 0), 0)  # 신고가 아래(눌림목)는 감점 안 함

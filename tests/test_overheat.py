@@ -57,6 +57,20 @@ def test_top3_demotes_daily_overheat() -> None:
     assert bbb["overheat"] is True and "과열" in bbb["reason"]
 
 
+def test_b_momentum_relief_shallow_not_deep() -> None:
+    """B 눌림목 당일하락 페널티 면제는 '얕은 눌림'(낙폭≤25%)만 — 깊은 낙폭(LG전자형)은 페널티 유지."""
+    base = {"price": 1000.0, "strategy": "B. 주도주 20일선 눌림목", "change_pct": -5.0,
+            "gap20": 3.0, "_liq": 5.0}
+    # 얕은: _nh=-18 → 낙폭 21% (면제) / 깊은: _nh=-28 → 낙폭 31% (페널티 유지)
+    picks = [{"ticker": "SHAL", "name": "얕은눌림", "_nh": -18.0, **base},
+             {"ticker": "DEEP", "name": "깊은낙폭", "_nh": -28.0, **base}]
+    out = select_top3(picks)
+    assert out[0]["ticker"] == "SHAL"  # 면제로 점수↑ → 위
+    shal = next(o for o in out if o["ticker"] == "SHAL")
+    deep = next(o for o in out if o["ticker"] == "DEEP")
+    assert shal["score"] > deep["score"]  # 차이 = 면제된 모멘텀 페널티(0.5*5=2.5)
+
+
 def test_top3_demotes_4h_overheat() -> None:
     """4시간봉 과열(overheat_4h)도 동일하게 강등 + overheat 플래그 반영."""
     picks = [_pick("AAA", "정상"), _pick("CCC", "4H과열", overheat_4h=True)]
