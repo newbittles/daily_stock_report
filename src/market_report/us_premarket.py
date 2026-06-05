@@ -9,7 +9,6 @@ design 결정(2026-06-04 사용자): 발송 저녁 7시, Q2=마감ABCD+프리장
 from __future__ import annotations
 
 import logging
-from datetime import datetime
 
 from src.market_report.models import MarketSnapshot
 
@@ -19,78 +18,17 @@ logger = logging.getLogger(__name__)
 async def run_us_premarket(
     *, do_telegram: bool = True, do_publish: bool = True, force: bool = False,
 ) -> MarketSnapshot | None:
-    """미국장 장전 리포트 생성·웹발행·발송. 주말이면 None(스킵)."""
-    if not force and datetime.now().weekday() >= 5:  # 토(5)·일(6)
-        logger.info("us_premarket_skip — 주말")
-        return None
+    """미국장 장전 리포트 생성·웹발행·발송. 주말이면 None(스킵).
 
-    from src.market_report.pipeline import (
-        _attach_kr_netbuy_to_picks,
-        _collect_sector_leaders,
-        _collect_us_screening,
-        _overlay_premarket,
-        _render_candles,
-        collect_us_snapshot,
+    공용 러너(run_us_report)에 장전 차별점만 주입: 프리장 오버레이 + 프리장 급등 TOP5.
+    """
+    from src.market_report.pipeline import _overlay_premarket
+    from src.market_report.us_report_runner import run_us_report
+
+    return await run_us_report(
+        "us_premarket", _overlay_premarket, extra_steps=_build_premarket_top,
+        do_telegram=do_telegram, do_publish=do_publish, force=force,
     )
-
-    snap = await collect_us_snapshot()       # 지수/섹터(직전 마감 — 맥락)
-    snap.mode = "us_premarket"               # type: ignore[assignment]
-    snap.generated_at = datetime.now()
-
-    try:
-        await _collect_us_screening(snap, per_group=3)  # 하이브리드 ABCD (마감 일봉), 3개씩
-    except Exception as exc:  # noqa: BLE001
-        logger.warning("us_premarket_screening_failed error=%s", exc)
-    try:
-        await _overlay_premarket(snap)       # 프리장 시세/등락률 오버레이
-    except Exception as exc:  # noqa: BLE001
-        logger.warning("us_premarket_overlay_failed error=%s", exc)
-    try:
-        await _collect_sector_leaders(snap)  # 주요종목 = 강세4+약세4 섹터 대장
-    except Exception as exc:  # noqa: BLE001
-        logger.warning("us_premarket_sector_leaders_failed error=%s", exc)
-    try:
-        await _attach_kr_netbuy_to_picks(snap)  # 픽별 서학개미 순매수금액(전일+5일)
-    except Exception as exc:  # noqa: BLE001
-        logger.warning("us_premarket_kr_netbuy_failed error=%s", exc)
-    try:
-        _build_premarket_top(snap)  # 프리장 급등 TOP5(필터통과 종목 중, 사용자 2026-06-05)
-    except Exception as exc:  # noqa: BLE001
-        logger.warning("us_premarket_top_failed error=%s", exc)
-
-    try:
-        from src.market_report.analyzer import analyze
-        snap = await analyze(snap)           # AI (미국 컨텍스트)
-    except Exception as exc:  # noqa: BLE001
-        logger.warning("us_premarket_analyze_failed error=%s", exc)
-
-    try:
-        await _render_candles(snap)          # 지수 차트 (us 캔들)
-    except Exception as exc:  # noqa: BLE001
-        logger.warning("us_premarket_candles_failed error=%s", exc)
-
-    logger.info("us_premarket_ready top3=%d groups=%d",
-                len(snap.us_top3 or []), len(snap.us_screen_groups or []))
-
-    try:
-        from src.market_report.render import render_report
-        render_report(snap)
-    except Exception as exc:  # noqa: BLE001
-        logger.error("us_premarket_render_failed error=%s", exc)
-    if do_publish:
-        try:
-            from src.market_report.publisher import publish
-            publish(snap)
-        except Exception as exc:  # noqa: BLE001
-            logger.error("us_premarket_publish_failed error=%s", exc)
-    if do_telegram:
-        try:
-            from src.market_report.telegram_notify import send_report
-            await send_report(snap)
-        except Exception as exc:  # noqa: BLE001
-            logger.error("us_premarket_telegram_failed error=%s", exc)
-
-    return snap
 
 
 def _build_premarket_top(snap: MarketSnapshot, n: int = 5) -> None:
