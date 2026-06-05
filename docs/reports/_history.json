@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-06-06",
+    "time": "08:38",
+    "mode": "us_premarket",
+    "url": "reports/2026-06-06-us-pre.html",
+    "summary": "프리장에서 미국 증시는 전반적으로 약세를 보이고 있으며, 특히 기술주와 반도체 섹터의 하락세가 두드러집니다.",
+    "kospi_pct": null,
+    "kosdaq_pct": null
+  },
+  {
+    "date": "2026-06-06",
     "time": "06:30",
     "mode": "us_morning",
     "url": "reports/2026-06-06-us.html",
