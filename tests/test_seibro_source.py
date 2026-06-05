@@ -122,9 +122,10 @@ def test_telegram_section_splits_stock_etf_with_ticker() -> None:
     # ETF 칸엔 ETF만, 개별종목 칸엔 개별만
     assert "Roundhill Memory ETF" in txt
 
-    assert "개별종목" in _format_pre_summary(snap)
+    # 서학개미 TOP5는 한국장 리포트(장전/장후)에서 제외됨(사용자 2026-06-05, 미국 데이터라 부적절).
+    assert "한국인 매수" not in _format_pre_summary(snap)
     snap.mode = "post_close"
-    assert "개별종목" in _format_post_summary(snap)
+    assert "한국인 매수" not in _format_post_summary(snap)
 
 
 def test_is_etf_name() -> None:

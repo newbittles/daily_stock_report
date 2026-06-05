@@ -1044,11 +1044,8 @@ async def run_full(
 
     _inject_marcap(snap)
 
-    # 🇰🇷 서학개미(한국인) 미국주식 순매수 TOP5 — pre/post 둘 다(SEIBro, 5거래일). best-effort.
-    try:
-        await _collect_kr_us_netbuy(snap)
-    except Exception as exc:
-        logger.warning("kr_us_netbuy_failed error=%s", exc)
+    # (서학개미 미국주식 순매수 TOP5는 한국장 리포트에서 제외 — 미국 데이터라 부적절, 사용자 2026-06-05.
+    #  미국 리포트 종목 카드에는 서학개미 순매수 배지가 그대로 표시됨.)
 
     try:
         render_report(snap)

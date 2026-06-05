@@ -558,7 +558,7 @@ ${{ "{:,.2f}".format(item.price) }} <span class="{{ 'up-text' if pct >= 0 else '
           <a href="https://search.naver.com/search.naver?query={{ (p.name ~ ' 주가') | urlencode }}" target="_blank" rel="noopener"><strong>{{ p.name }}</strong></a>
           <span class="pick-ticker">{{ p.symbol }}</span> · {{ us_px(p, snap.mode) }}
           {% if p.cross_signal == 'PULLBACK' %}<span class="up-text" style="font-size:0.8rem;">🟢단기눌림</span>{% elif p.cross_signal == 'CORRECTION' %}<span class="down-text" style="font-size:0.8rem;">⚠️조정시작</span>{% endif %}
-          {% if p.marcap_str or p.turnover_str or g.initial == 'B' %}<div class="pick-sub">{% if p.marcap_str %}시총 {{ p.marcap_str }}{% endif %}{% if p.turnover_str %} · 거래대금 {{ p.turnover_str }}{% endif %}{% if g.initial in ['B', 'C'] %} · 20MA괴리 <strong class="hl-bold">{{ '+' if p.gap20 >= 0 else '' }}{{ p.gap20 }}%</strong>{% endif %}</div>{% endif %}
+          {% if p.marcap_str or p.turnover_str or g.initial == 'B' %}<div class="pick-sub">{% if p.marcap_str %}시총 {{ p.marcap_str }}{% endif %}{% if p.turnover_str %} · 거래대금 {{ p.turnover_str }}{% endif %}{% if g.initial in ['B', 'C'] %} · 20MA괴리 <strong class="hl-bold"{% if g.initial == 'B' and p.gap20 >= -5 and p.gap20 <= 5 %} style="color:var(--red);"{% endif %}>{{ '+' if p.gap20 >= 0 else '' }}{{ p.gap20 }}%</strong>{% endif %}</div>{% endif %}
           {% if p.sector %}<div class="pick-sub">테마: {{ p.sector }}</div>{% endif %}
           {{ kr_nb(p) }}
           {% if p.reason %}<div class="theme-reason">{{ p.reason }}</div>{% endif %}
@@ -829,7 +829,7 @@ ${{ "{:,.2f}".format(item.price) }} <span class="{{ 'up-text' if pct >= 0 else '
               </div>
               {% endif %}
               <div class="theme-reason">{{ p.reason }}</div>
-              <div class="pick-meta" style="color:{{ 'var(--red)' if p.overheat else 'var(--text-dim)' }};">📊 20일선 이격 {{ '+' if p.gap20 >= 0 else '' }}{{ "{:.1f}".format(p.gap20) }}%{% if p.overheat %} 🔥과열(BB돌파·거래량{{ "{:.1f}".format(p.vol_x) }}x){% endif %}{% if p.cross_signal == 'PULLBACK' %} <span class="up-text">· 🟢5&lt;10 단기눌림(20선이격↑)</span>{% elif p.cross_signal == 'CORRECTION' %} <span class="down-text">· ⚠️5&lt;10 조정시작(20선근접)</span>{% endif %}</div>
+              <div class="pick-meta" style="color:{{ 'var(--red)' if p.overheat else 'var(--text-dim)' }};">📊 20일선 이격 {% if p.strategy and p.strategy[0] == 'B' and p.gap20 >= -5 and p.gap20 <= 5 %}<strong style="color:var(--red);">{{ '+' if p.gap20 >= 0 else '' }}{{ "{:.1f}".format(p.gap20) }}%</strong>{% else %}{{ '+' if p.gap20 >= 0 else '' }}{{ "{:.1f}".format(p.gap20) }}%{% endif %}{% if p.overheat %} 🔥과열(BB돌파·거래량{{ "{:.1f}".format(p.vol_x) }}x){% endif %}{% if p.cross_signal == 'PULLBACK' %} <span class="up-text">· 🟢5&lt;10 단기눌림(20선이격↑)</span>{% elif p.cross_signal == 'CORRECTION' %} <span class="down-text">· ⚠️5&lt;10 조정시작(20선근접)</span>{% endif %}</div>
               <div class="pick-meta">
                 {{ '업종' if p.theme_kind == 'sector' else '테마' }}:
                 {% if p.theme and p.theme_kind == 'theme' and p.theme_idx %}<a href="https://judal.co.kr/?view=stockList&themeIdx={{ p.theme_idx }}" target="_blank" rel="noopener">{{ p.theme }}</a>

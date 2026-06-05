@@ -233,7 +233,6 @@ def _format_pre_summary(snap: MarketSnapshot) -> str:
 
     lines.extend(_format_strategy_holdings(snap))
     lines.extend(_format_e_picks(snap))       # 🩹 E 과매도 반등 후보
-    lines.extend(_format_kr_us_netbuy(snap))  # 🇰🇷 한국인 매수 TOP5 (서학개미)
     lines.append(f"📄 [전체 리포트 보기]({url})")
     lines.append("")
     lines.append("_※ 참고용 정보. 투자 판단·책임은 본인._")
@@ -300,7 +299,6 @@ def _format_post_summary(snap: MarketSnapshot) -> str:
         lines.append("")
 
     lines.extend(_format_e_picks(snap))       # 🩹 E 과매도 반등 후보
-    lines.extend(_format_kr_us_netbuy(snap))  # 🇰🇷 한국인 매수 TOP5 (서학개미)
     lines.append(f"📄 [전체 리포트 보기]({url})")
     lines.append("")
     lines.append("_※ 참고용 정보. 투자 판단·책임은 본인._")
