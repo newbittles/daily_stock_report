@@ -37,6 +37,9 @@
 - 미국 리포트 스케줄: 장전 19:00+21:50(2차) / 장중 개장직후(섬머22:40/일반23:40 DST) / 마감 06:30(게이트)+07:00(안전망), 전부 ABCD 3개.
 - **E/급등초입 보조정보**(커밋 f44b95e, #305~307): 두 섹션에 시총·거래량(만주)·거래대금·테마·서학개미(US만) 추가. KR=collect_screen_picks(volume·trade_value)+_inject_marcap(marcap·turnover)+테마fill 확장. US=_collect_us_screening(_extra: marcap/turnover/volume/theme)+_attach_kr_netbuy 풀 확장. 표시=telegram _pick_detail_line + report.html sec_detail 매크로.
 - **미국 종목별 AI버튼**(커밋 2a25bda, #309): analyzer.summarize_us_stocks(symbol 배치 '왜 움직였나' 한국어) → us_report_runner+run_full us_morning에서 analyze 직후 호출. report.html us_top3·스크린·섹터/테마대장·E·급등초입에 🤖버튼. KR summarize_stocks도 E/급등초입 포함 확장. 245테스트.
+- **SOXL 대장서머리 추가**(커밋 073f810): fdr_source.US_BIGTECH에 SOXL(반도체 3X). FDR 조회 검증.
+- **숫자 콤마**(커밋 9cd3827, #315): 표시코드(template/telegram/messages)는 이미 천단위 콤마. AI 생성텍스트만 갭 → summarize_stocks/us_stocks 프롬프트에 '천단위 콤마' 지시 추가.
+- **한국장 AI 수급 요약**(커밋 2e2e9b8, #313/#316): 수급칸 아래 '🔎 수급 요약'. flows_history.load_flows_series(저장 30일중 10일)+compute_flow_stats(시장·투자자별 streak 부호포함·전일·전주(5일전)·5일합, 순수). analyzer.summarize_flows(결정론 팩트→AI narrate, 연속·전일/전주대비 필수, 실패시 폴백). pipeline KR pre/post. telegram _format_flows_summary+report.html summary-box. 247테스트. ⚠️연속/전주대비는 market_flows.json 누적분만큼(거래일 지날수록 풍부, 현재 로컬은 sparse·서버는 누적됨).
 
 ### 0f. 2026-06-06 세션 (리팩토링 — 리포트 출력 불변)
 사용자(/goal): 자는 동안 리포트 구조·내용·결과 **절대 불변** 전제로 한국/미국 중복코드 공통화. 백업+골든검증.
@@ -63,7 +66,7 @@
 
 ## 0. 지금 상태 (한눈에)
 
-- **origin/main 최신 커밋**: `2a25bda`(미국 종목별 AI버튼 #309) + 서버 자동리포트 커밋. 2026-06-05~06 세션 전부 배포 완료(리팩토링 포함 서버 라이브).
+- **origin/main 최신 커밋**: `2e2e9b8`(한국장 AI 수급 요약 #313/#316) + 서버 자동리포트 커밋. 2026-06-05~06 세션 전부 배포 완료(리팩토링 포함 서버 라이브).
 - **서버(`lotto-server` = 134.185.109.195) = origin/main과 동기화 + 서비스 재시작 완료.** (로컬수정 `config/screener.yaml` RAM축소판만 autostash 보존)
 - **테스트**: `.venv\Scripts\python.exe -m pytest tests/ -q` → **240 passed** (기준선).
 - **3개 스트림(자동매매·미국스크리닝·리포트) 전부 main 머지 완료.** 백업 브랜치 `backup/pre-merge-2026-06-03`.
