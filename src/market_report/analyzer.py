@@ -466,9 +466,9 @@ async def summarize_stocks(snap: MarketSnapshot) -> None:
     if not settings.gemini_api_key:
         return
 
-    # 대상 종목 수집 (top3 ∪ screen_picks, ticker 중복 1회)
+    # 대상 종목 수집 (top3 ∪ screen_picks ∪ e/급등초입, ticker 중복 1회)
     targets: dict[str, dict] = {}
-    for src_list in ((snap.top3 or []), snap.screen_picks or []):
+    for src_list in ((snap.top3 or []), snap.screen_picks or [], snap.e_picks or [], snap.surge_picks or []):
         for p in src_list:
             tk = str(p.get("ticker", "")).strip()
             if tk and tk not in targets:
@@ -527,11 +527,86 @@ async def summarize_stocks(snap: MarketSnapshot) -> None:
             s = json.dumps(s, ensure_ascii=False)
         p["ai_summary"] = str(s or "").strip()
 
-    for p in (snap.top3 or []):
-        _put(p)
-    for p in (snap.screen_picks or []):
-        _put(p)
+    for lst in ((snap.top3 or []), (snap.screen_picks or []), (snap.e_picks or []), (snap.surge_picks or [])):
+        for p in lst:
+            _put(p)
     logger.info("stock_summary_ok n=%d", len(targets))
+
+
+async def summarize_us_stocks(snap: MarketSnapshot) -> None:
+    """미국 리포트 종목별 AI 요약(ai_summary)을 1회 배치 호출로 사전 생성(사용자 2026-06-05 #309).
+
+    us_top3 ∪ 전략그룹 ∪ 섹터/테마 대장 ∪ E/급등초입 종목을 symbol 기준 중복제거해 한 프롬프트로
+    '왜 움직였나' 1~2문장(한국어) 요약 → 각 dict에 ai_summary. 실패/키없음/한도 시 빈 문자열(버튼 미표시).
+    """
+    import asyncio
+    import random
+
+    settings = get_settings()
+    if not settings.gemini_api_key:
+        return
+
+    pools: list[list[dict]] = [
+        snap.us_top3 or [], snap.us_theme_leaders or [], snap.us_sector_leaders or [],
+        snap.e_picks or [], snap.surge_picks or [],
+    ]
+    for g in (snap.us_screen_groups or []):
+        pools.append(g.get("picks", []))
+    targets: dict[str, dict] = {}
+    for lst in pools:
+        for p in lst:
+            sym = str(p.get("symbol", "")).strip()
+            if sym and sym not in targets:
+                targets[sym] = p
+    if not targets:
+        return
+
+    sec_blob = "\n".join(f"- {s.get('name', '')} {s.get('change_pct', 0):+.1f}%"
+                         for s in (snap.us_sectors or [])[:8])
+    news_blob = "\n".join(f"- {n.get('title', '')}" for n in (snap.us_news or [])[:12])
+    blob = "\n".join(
+        f"{sym}: {p.get('name', '')} | 섹터 {p.get('sector') or p.get('theme', '')} | "
+        f"등락 {p.get('change_pct', 0):+.1f}% | {p.get('reason', '')}"
+        for sym, p in targets.items())
+
+    prompt = (
+        "다음은 미국 증시에서 시그널이 포착된 종목들이다. 각 종목이 **직전 정규장에서 왜 그렇게 "
+        "움직였는지**를 한국어 1~2문장으로 요약하라.\n"
+        "- ▲상승: 강세 이유. ▼하락: 하락/조정 사유(차익실현·과열·실적·매크로 등).\n"
+        "근거는 ①주요 뉴스 ②소속 섹터/테마 중심. 진입가·손절·매수추천 언급 금지. "
+        "사실을 지어내지 말 것.\n\n"
+        f"[강세 섹터]\n{sec_blob}\n\n[미국 시장 뉴스]\n{news_blob}\n\n[대상 종목]\n{blob}\n\n"
+        '반드시 JSON으로만 답하라: {"심볼": "왜 올랐는지/하락했는지 1~2문장", ...}'
+    )
+
+    client = genai.Client(api_key=settings.gemini_api_key)
+    data: dict[str, Any] | None = None
+    for attempt in range(3):
+        try:
+            if attempt > 0:
+                await asyncio.sleep(random.uniform(2 * (2 ** (attempt - 1)), 5 * (2 ** (attempt - 1))))
+            response = client.models.generate_content(
+                model=MODEL_NAME, contents=prompt,
+                config=types.GenerateContentConfig(response_mime_type="application/json", temperature=0.3),
+            )
+            data = json.loads(response.text or "{}")
+            break
+        except Exception as exc:  # noqa: BLE001
+            logger.warning("us_stock_summary_attempt_failed attempt=%d error=%s", attempt, exc)
+
+    if not isinstance(data, dict):
+        logger.error("us_stock_summary_failed — 미국 종목 요약 생성 실패")
+        return
+
+    for lst in pools:
+        for p in lst:
+            sym = str(p.get("symbol", "")).strip()
+            s = data.get(sym, "")
+            if isinstance(s, (dict, list)):
+                s = json.dumps(s, ensure_ascii=False)
+            if s:
+                p["ai_summary"] = str(s).strip()
+    logger.info("us_stock_summary_ok n=%d", len(targets))
 
 
 async def summarize_themes(snap: MarketSnapshot) -> None:

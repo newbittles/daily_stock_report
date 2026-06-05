@@ -71,6 +71,11 @@ async def run_us_report(
         snap = await analyze(snap)           # AI (미국 컨텍스트)
     except Exception as exc:  # noqa: BLE001
         logger.warning("%s_analyze_failed error=%s", mode, exc)
+    try:
+        from src.market_report.analyzer import summarize_us_stocks
+        await summarize_us_stocks(snap)      # 종목별 AI 요약(🤖 버튼용, 사용자 #309)
+    except Exception as exc:  # noqa: BLE001
+        logger.warning("%s_us_summary_failed error=%s", mode, exc)
 
     await _step(_render_candles(snap), "candles")                       # 지수 차트 (us 캔들)
 

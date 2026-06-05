@@ -533,6 +533,7 @@ ${{ "{:,.2f}".format(item.price) }} <span class="{{ 'up-text' if pct >= 0 else '
           <span class="pick-ticker">{{ t.symbol }}</span> <span style="color:var(--text-dim);font-size:0.82rem;">({{ t.sector }})</span>
           · {{ us_px(t, snap.mode) }}
           {{ kr_nb(t) }}
+          {% if t.ai_summary %}<button type="button" class="ai-btn" onclick="showAI(this)" data-name="{{ t.name }}" data-summary="{{ t.ai_summary|e }}">🤖 AI요약</button>{% endif %}
         </li>
         {% endfor %}
       </ul>
@@ -548,6 +549,7 @@ ${{ "{:,.2f}".format(item.price) }} <span class="{{ 'up-text' if pct >= 0 else '
           · {{ us_px(t, snap.mode) }}
           {% if t.sector %}<div class="pick-sub">테마: {{ t.sector }}{% if t.marcap_str %} · 시총 {{ t.marcap_str }}{% endif %}{% if t.turnover_str %} · 거래대금 {{ t.turnover_str }}{% endif %}</div>{% endif %}
           {{ kr_nb(t) }}
+          {% if t.ai_summary %}<button type="button" class="ai-btn" onclick="showAI(this)" data-name="{{ t.name }}" data-summary="{{ t.ai_summary|e }}">🤖 AI요약</button>{% endif %}
         </li>
         {% endfor %}
       </ul>
@@ -575,6 +577,7 @@ ${{ "{:,.2f}".format(item.price) }} <span class="{{ 'up-text' if pct >= 0 else '
         {% if t.sector %}<div class="pick-sub">테마: {{ t.sector }}</div>{% endif %}
         {{ kr_nb(t) }}
         {% if t.reason %}<div class="top3-reason">{{ t.reason }}</div>{% endif %}
+        {% if t.ai_summary %}<button type="button" class="ai-btn" onclick="showAI(this)" data-name="{{ t.name }}" data-summary="{{ t.ai_summary|e }}">🤖 AI요약</button>{% endif %}
       </div>
       {% endfor %}
     </section>
@@ -596,6 +599,7 @@ ${{ "{:,.2f}".format(item.price) }} <span class="{{ 'up-text' if pct >= 0 else '
           {% if p.sector %}<div class="pick-sub">테마: {{ p.sector }}</div>{% endif %}
           {{ kr_nb(p) }}
           {% if p.reason %}<div class="theme-reason">{{ p.reason }}</div>{% endif %}
+          {% if p.ai_summary %}<button type="button" class="ai-btn" onclick="showAI(this)" data-name="{{ p.name }}" data-summary="{{ p.ai_summary|e }}">🤖 AI요약</button>{% endif %}
         </li>
         {% endfor %}
       </ul>
@@ -672,6 +676,7 @@ ${{ "{:,.2f}".format(item.price) }} <span class="{{ 'up-text' if pct >= 0 else '
           <span style="color:var(--text-dim);font-size:0.8rem;">RSI {{ "{:.0f}".format(p.rsi) }}</span>
           {% if p.reason %}<div class="theme-reason">{{ p.reason }}</div>{% endif %}
           {{ sec_detail(p) }}
+          {% if p.ai_summary %}<button type="button" class="ai-btn" onclick="showAI(this)" data-name="{{ p.name }}" data-summary="{{ p.ai_summary|e }}">🤖 AI요약</button>{% endif %}
         </li>
         {% endfor %}
       </ul>
@@ -696,6 +701,7 @@ ${{ "{:,.2f}".format(item.price) }} <span class="{{ 'up-text' if pct >= 0 else '
           <span class="{{ 'up-text' if p.change_pct >= 0 else 'down-text' }}">{{ '+' if p.change_pct >= 0 else '' }}{{ "{:.2f}".format(p.change_pct) }}%</span>
           {% if p.reason %}<div class="theme-reason">{{ p.reason }}</div>{% endif %}
           {{ sec_detail(p) }}
+          {% if p.ai_summary %}<button type="button" class="ai-btn" onclick="showAI(this)" data-name="{{ p.name }}" data-summary="{{ p.ai_summary|e }}">🤖 AI요약</button>{% endif %}
         </li>
         {% endfor %}
       </ul>

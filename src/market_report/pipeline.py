@@ -947,6 +947,11 @@ async def run_full(
             await _attach_kr_netbuy_to_picks(snap)  # 픽별 서학개미 순매수금액(전일+5일)
         except Exception as exc:
             logger.warning("us_morning_kr_netbuy_failed error=%s", exc)
+        try:
+            from src.market_report.analyzer import summarize_us_stocks
+            await summarize_us_stocks(snap)  # 종목별 AI 요약(🤖 버튼, 사용자 #309)
+        except Exception as exc:
+            logger.warning("us_morning_summary_failed error=%s", exc)
 
         try:
             render_report(snap)
