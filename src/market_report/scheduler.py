@@ -153,8 +153,8 @@ def build_scheduler() -> AsyncIOScheduler:
         args=["pre_close"], id="report_pre", replace_existing=True,
         misfire_grace_time=600,
     )
-    scheduler.add_job(
-        _job, CronTrigger(day_of_week="mon-fri", hour=16, minute=30, timezone=KST),
+    scheduler.add_job(  # 마감 후 리포트 16:00 (사용자 2026-06-05, 내일부터). 장마감 15:30 + 30분.
+        _job, CronTrigger(day_of_week="mon-fri", hour=16, minute=0, timezone=KST),
         args=["post_close"], id="report_post", replace_existing=True,
         misfire_grace_time=600,
     )
