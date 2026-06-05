@@ -55,7 +55,7 @@ def test_fetch_sorts_by_netbuy_desc_and_caches(monkeypatch, tmp_path) -> None:
     rows = ss.parse_netbuy_xml(_FIXTURE.read_bytes())
     calls = {"n": 0}
 
-    def fake_fetch(start_dt, end_dt, top):
+    def fake_fetch(start_dt, end_dt, top, d_type="4"):
         calls["n"] += 1
         return list(rows)
 
@@ -151,7 +151,7 @@ def test_fetch_explicit_range_key(monkeypatch, tmp_path) -> None:
     monkeypatch.setattr(ss, "_CACHE", tmp_path / "c.json")
     seen = {}
 
-    def fake_fetch(start_dt, end_dt, top):
+    def fake_fetch(start_dt, end_dt, top, d_type="4"):
         seen["range"] = (start_dt, end_dt)
         return ss.parse_netbuy_xml(_FIXTURE.read_bytes())
 
