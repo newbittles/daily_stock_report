@@ -14,7 +14,7 @@ import yaml
 
 from src.alerts.holdings_report import diagnose_holdings
 from src.indicators.core import average_true_range, moving_average, round_to_tick
-from src.patterns.core import ma_cross_signal
+from src.patterns.core import gave_back_recent_gain, ma_cross_signal
 from src.screener.config import load_screener_config
 from src.screener.engine import evaluate_strategy
 from src.screener.pipeline import _is_etf, _is_pref
@@ -173,6 +173,10 @@ async def collect_screen_picks(adapter, per_strategy: int = 8,
                 continue
             res = evaluate_strategy(s.name, s.opinion, s.conditions, c, change_pct)
             if res.matched:
+                # B 급반전 제외(사용자 2026-06-05, 삼성에스디에스): 최근 3일내 최근 10일 상승분의
+                # 대부분(≥50%)을 반납했으면 '눌림'이 아니라 급반전 → B 추천에서 제외.
+                if s.name.startswith("B") and gave_back_recent_gain(c):
+                    continue
                 picks.append({
                     "strategy": s.name,
                     "ticker": tk, "name": nm,

@@ -1080,3 +1080,25 @@ def oversold_leader(
                 True, f"과매도 반등후보 (RSI {rv:.0f} · {hi_lookback}일신고가 {peak_ago}봉전)",
                 {"rsi": rv, "peak_bars_ago": float(peak_ago)})
     return PatternResult(False, f"RSI {rv:.0f}이나 최근 주도주 아님")
+
+
+def gave_back_recent_gain(
+    candles: list[Candle], gain_window: int = 10, retrace_days: int = 3, frac: float = 0.5,
+) -> bool:
+    """최근 retrace_days일(당일 포함) 동안 최근 gain_window일 상승분의 frac 이상을 반납했는가.
+
+    B 눌림목 제외용(사용자 2026-06-05, 삼성에스디에스 사례): 급등 후 단기간에 상승의 대부분을
+    토해낸 종목은 '눌림'이 아니라 '급반전' → 추천 제외. 상승분 없으면(gain<=0) False.
+    """
+    cl = _closes(candles)
+    if len(cl) < gain_window + 1:
+        return False
+    c_start = cl[-(gain_window + 1)]          # gain_window일 전 종가
+    peak = max(cl[-gain_window:])             # 최근 gain_window일 고점(종가)
+    cur = cl[-1]
+    gain = peak - c_start
+    if gain <= 0:
+        return False
+    c_retrace = cl[-(retrace_days + 1)] if len(cl) > retrace_days else cl[0]
+    giveback = c_retrace - cur                # 최근 retrace_days일 하락폭
+    return giveback / gain >= frac
