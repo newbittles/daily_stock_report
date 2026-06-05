@@ -9,7 +9,15 @@
 - ⚠️ 애프터장은 7시 시점 yfinance 시간외 빈값 가능(괄호만 생략), 전일 서학개미는 결제지연/공휴일이면 '전일 —'. 배지는 SEIBro TOP50 권내만. 장중 리포트는 개장 직후라 값 흔들림('잠정' 라벨).
 - **E전략(과매도 반등) + Top3 B가중치**(커밋 ab9fe87, 배포완료): E = 최근 주도주(`patterns.oversold_leader`: 최근60봉내 120일신고가 경신) AND 일봉 RSI(14)≤30 AND 4시간봉 RSI≤30(`kr_4h.fetch_4h_rsi_oversold` KR/US). KR=collect_screen_picks(e_out=)+pipeline 4H게이트, US=_collect_us_screening 캐시OHLCV 전체평가+4H게이트 → snap.e_picks(KR ticker/US symbol). '🩹 E 과매도 반등후보' 섹션(텔레그램 KR pre/post, 웹 KR+US; US텔레그램은 overview-only라 웹만). Top3 비포함. top3 _STRAT_W B 2.0→2.8. 234테스트.
   - ⚠️ **미해결 제안(사용자 응답대기)**: 삼성전기 사례 분석 결과 B 눌림목이 Top3에 잘 안 드는 근본원인 = score의 모멘텀항(w_mom×당일등락률)이 '눌림목 조정일(−)'을 페널티함. B종목 모멘텀 페널티 완화 or '최근 조정폭' 보너스 추가 제안함(미적용).
-  - 보류: 사용자 "통신 확인" 의미 확인 요청중. 보유종목 KIS연동(0c)·NXT(0b) 16:30 라이브 의미검증 대기.
+  - 보류: 사용자 "통신 확인" 의미 확인 요청중.
+
+### 0d. 2026-06-05 세션 최후반 (서학개미 KR제외 + B강조 + 마감16:00 + 운영검증)
+- **서학개미 한국장 제외**(565426e): 한국장 리포트(장전/장후) 텔레그램에서 '한국인 매수 TOP5' 제거(미국 데이터라 부적절, 사용자). 미국 리포트 종목카드 서학개미 배지는 유지. `_format_kr_us_netbuy`·`_collect_kr_us_netbuy` 호출만 제거(함수는 보존).
+- **B 눌림목 이격 강조**(565426e): report.html에서 B종목 20일선 이격 ±5% 이내면 붉은 볼드(US 스크린 line~561, KR 스크린 line~832).
+- **마감후 리포트 16:30→16:00**(816c5ed, 내일부터): scheduler `report_post` cron minute 30→0. ⚠️오늘은 16:30 유지(16:00 이미 지나 오늘 발행 보호) 후 16:42 재시작으로 전환.
+- **✅ 라이브 검증**: 오늘 16:30 post 정상 발송(telegram_sent 양 chat). 서학개미 제거 확인(post.html grep=0). 🌙NXT 시간외 실데이터 3종목 검출(`nxt_overtime_gainers found=3`) — NXT 첫 라이브 성공. holdings(16:35) 정상.
+- ⚠️**운영 함정(겪음)**: 16:42 systemctl restart가 16:40 대시보드 잡을 중단시킴(대시보드 ~2-3분 소요) → `--once dashboard` 재실행으로 복구(16:47 published picks=46). **교훈: 16:40 대시보드 잡 실행 중(16:40~16:43) 재시작 금지**.
+- **미해결(사용자 응답대기)**: #250a KB금융 다중매칭(A·C·D 동시충족, 표시 우선순위 정할지/D기준 강화/그대로 — a/b/c 질문함). #245 B 모멘텀페널티 완화. #244 "통신 확인" 의미.
 - 미국 리포트 스케줄: 장전 19:00 / 장중 23:50 / 마감 06:30(게이트)+07:00(안전망), 전부 ABCD 3개.
 
 ### 0c. 2026-06-05 세션 후반 (과열 추천수정 + 보유 KIS연동 + NXT조사)
@@ -28,7 +36,7 @@
 
 ## 0. 지금 상태 (한눈에)
 
-- **origin/main 최신 커밋**: `ab9fe87` (E전략 + Top3 B가중치). 2026-06-05 세션 작업 전부 푸시·배포 완료.
+- **origin/main 최신 커밋**: `816c5ed`(마감 16:00 cron) + 서버 자동리포트 커밋. 2026-06-05 세션 전부 배포 완료.
 - **서버(`lotto-server` = 134.185.109.195) = origin/main과 동기화 + 서비스 재시작 완료.** (로컬수정 `config/screener.yaml` RAM축소판만 autostash 보존)
 - **테스트**: `.venv\Scripts\python.exe -m pytest tests/ -q` → **220 passed** (기준선).
 - **3개 스트림(자동매매·미국스크리닝·리포트) 전부 main 머지 완료.** 백업 브랜치 `backup/pre-merge-2026-06-03`.
