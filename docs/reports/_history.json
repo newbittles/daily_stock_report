@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-06-05",
+    "time": "19:00",
+    "mode": "us_premarket",
+    "url": "reports/2026-06-05-us-pre.html",
+    "summary": "프리장에서 혼조세를 보이며 관망세가 짙습니다. AI 관련주 약세와 주요 경제 지표 발표를 앞두고 투자자들이 신중한 태도를 보이고 있습니다.",
+    "kospi_pct": null,
+    "kosdaq_pct": null
+  },
+  {
+    "date": "2026-06-05",
     "time": "16:30",
     "mode": "post_close",
     "url": "reports/2026-06-05-post.html",
