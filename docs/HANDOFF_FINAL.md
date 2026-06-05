@@ -36,6 +36,15 @@
 - **버그수정 us_intraday 코스피요약**(커밋 9e4e342): 장중 모드가 analyzer else(KR post_close 프롬프트)+_market_context KR분기로 빠져 미국 장중 리포트에 코스피 요약 들어감 → 미국 컨텍스트+_us_morning_prompt 라우팅. 240테스트. 교훈: 새 mode 추가 시 analyzer 2곳(_market_context·analyze 프롬프트선택) 반드시 포함.
 - 미국 리포트 스케줄: 장전 19:00+21:50(2차) / 장중 개장직후(섬머22:40/일반23:40 DST) / 마감 06:30(게이트)+07:00(안전망), 전부 ABCD 3개.
 
+### 0f. 2026-06-06 세션 (리팩토링 — 리포트 출력 불변)
+사용자(/goal): 자는 동안 리포트 구조·내용·결과 **절대 불변** 전제로 한국/미국 중복코드 공통화. 백업+골든검증.
+- **백업**: 브랜치 backup/pre-refactor-2026-06-06 + 태그 backup-refactor-2026-06-06.
+- **통합1 US 러너**(커밋 6b1c0fe): us_premarket/us_intraday가 overlay·extra_steps만 다르고 동일 → 로 통합. 두 모듈은 얇은 래퍼(_build_premarket_top은 장전 특화 유지). 호출순서·예외·로그라벨 동일 재현. test_us_runner.py 와이어링 검증.
+- **통합2 오버레이**(커밋 f5945ee): _overlay_premarket/_overlay_intraday → (fetch·플래그키만 파라미터). _overlay_postmarket은 로직 달라 별도 유지. test_overlay_intraday_shares_logic 추가.
+- **검증**: 244테스트 + 전 모듈 import + 6개 모드 render 스모크 + 동작불변(by construction). 골든=기존 render/format 테스트(test_us_intraday·us_morning_report)가 출력 고정.
+- **안 건드린 것(의도적)**: analyzer 프롬프트(=AI출력 바뀜), scheduler 잡 래퍼·run_full(핫패스 고위험·저가치), KR/US 데이터수집(KIS vs FDR — 진짜 중복 아님). → '절대 불변' 우선, 과리팩토링 회피.
+- ⚠️ **서버 미배포**(약속대로): main에 push·검증만. 영향 경로(us_premarket 19:00·us_intraday 22:40)는 내일 저녁부터라 아침 확인 후 배포. 즉시 롤백=backup 브랜치.
+
 ### 0c. 2026-06-05 세션 후반 (과열 추천수정 + 보유 KIS연동 + NXT조사)
 - **과열 추천 수정**(커밋 652cd87, origin/main 최신): 삼성화재·신세계가 4H BB상단 돌파 과열인데 추천돼 손실 → 수정. (1) 일봉 과열=BB(20,2)상단 종가돌파 단독(기존 이격30%·거래량1.8배 AND게이트 제거→보조). (2) `src/datasource/kr_4h.py` 신규: yfinance 1h→4h 리샘플, 4H과열=(종가>BB상단 돌파)OR(상단 음봉거부). ※실측: 삼성화재·신세계 마지막4H가 'BB상단 돌파 양봉'이라 음봉만으론 못 걸러서 돌파도 OR포함. (3) top3 점수 강등(overheat weight 5.0, 제외 아님)+🔥표시. pipeline에서 Top3후보 거래대금상위12만 4H조회. 226테스트. 서버 배포·검증완료(삼성화재/신세계 과열 True).
 - **보유종목 KIS 연동**(사용자 요청): `config/holdings.yaml`(gitignore) 수동3종목(현대모비스·삼성에스디에스·현대무벡스) 제거→`holdings: []`. 로컬+서버 둘 다. 이제 보유=KIS 계좌잔고만(collect_holdings_status는 원래 KIS우선·빈경우만 yaml폴백→이제 폴백도 빔). 16:35 보유리포트는 원래 KIS-only.
@@ -52,7 +61,7 @@
 
 ## 0. 지금 상태 (한눈에)
 
-- **origin/main 최신 커밋**: `9e4e342`(장중 코스피요약 버그수정) + 서버 자동리포트 커밋. 2026-06-05 세션 전부 배포 완료.
+- **origin/main 최신 커밋**: `f5945ee`(US 리팩토링: 러너+오버레이 통합) + 서버 자동리포트 커밋. 2026-06-05 세션 전부 배포 완료.
 - **서버(`lotto-server` = 134.185.109.195) = origin/main과 동기화 + 서비스 재시작 완료.** (로컬수정 `config/screener.yaml` RAM축소판만 autostash 보존)
 - **테스트**: `.venv\Scripts\python.exe -m pytest tests/ -q` → **240 passed** (기준선).
 - **3개 스트림(자동매매·미국스크리닝·리포트) 전부 main 머지 완료.** 백업 브랜치 `backup/pre-merge-2026-06-03`.
