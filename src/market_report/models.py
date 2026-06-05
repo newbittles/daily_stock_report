@@ -134,6 +134,9 @@ class MarketSnapshot:
     # 시간외(NXT 넥스트레이드) 상위 상승률 — 정규장 마감 후, post_close만 (정규장 종가 대비)
     overtime_gainers: list[dict] = field(default_factory=list)  # [{ticker,name,nxt_price,reg_close,overtime_pct}]
 
+    # E전략: 과매도 반등 후보 — 최근 주도주(신고가 경신)였다가 일봉&4시간봉 RSI≤30. KR/US 공용(별도 섹션)
+    e_picks: list[dict] = field(default_factory=list)  # [{ticker/symbol, name, price, change_pct, rsi, reason}]
+
     # 핫종목 — 거래대금 상위 + 시총 하한 필터 (거래대금 전일대비·순매수 연속일·소속테마)
     hot_stocks: list[dict] = field(default_factory=list)
     # {ticker, name, price, change_pct, marcap, theme, tv_change(거래대금전일대비%), streak:{orgn,frgn,prsn}}

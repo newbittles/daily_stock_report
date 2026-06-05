@@ -90,6 +90,71 @@ def _fetch_sync(tickers: list[str]) -> dict[str, bool]:
     return out
 
 
+def judge_4h_rsi_oversold(closes: list[float], period: int = 14, rsi_max: float = 30.0) -> bool | None:
+    """순수 판정: 마지막 4H봉 RSI(period) ≤ rsi_max(과매도). 데이터 부족 시 None."""
+    from src.indicators.core import rsi
+    if len(closes) < period + 2:
+        return None
+    rv = rsi(closes, period)[-1]
+    if rv is None:
+        return None
+    return rv <= rsi_max
+
+
+def _fetch_4h_closes(yf_symbol: str) -> list[float] | None:
+    """yfinance 1h → 4h 리샘플 종가 리스트. 실패/빈 경우 None."""
+    import yfinance as yf
+
+    try:
+        df = yf.Ticker(yf_symbol).history(period="60d", interval="1h")
+    except Exception as exc:  # noqa: BLE001
+        logger.debug("4h_closes_fetch_failed sym=%s error=%s", yf_symbol, exc)
+        return None
+    if df is None or df.empty or "Close" not in df.columns:
+        return None
+    try:
+        c4 = df["Close"].resample("4h").last().dropna()
+    except Exception:  # noqa: BLE001
+        return None
+    return [float(x) for x in c4.values] if len(c4) else None
+
+
+def _yf_symbols_for(ticker: str, market: str) -> list[str]:
+    if market == "US":
+        from src.datasource.us.symbols import to_yf_symbol
+        return [to_yf_symbol(ticker)]
+    return [f"{ticker}.KS", f"{ticker}.KQ"]  # KR: KOSPI 우선, KOSDAQ 폴백
+
+
+def _fetch_4h_rsi_oversold_sync(tickers: list[str], market: str) -> set[str]:
+    import random
+    import time
+
+    out: set[str] = set()
+    for i, tk in enumerate(tickers):
+        for sym in _yf_symbols_for(tk, market):
+            closes = _fetch_4h_closes(sym)
+            if closes is None:
+                continue
+            res = judge_4h_rsi_oversold(closes)
+            if res is not None:
+                if res:
+                    out.add(tk)
+                break  # 데이터 확보됨 → 다음 종목
+        if i < len(tickers) - 1:
+            time.sleep(random.uniform(0.2, 0.5))  # §7
+    logger.info("4h_rsi_oversold market=%s checked=%d oversold=%d", market, len(tickers), len(out))
+    return out
+
+
+async def fetch_4h_rsi_oversold(tickers: list[str], market: str = "KR") -> set[str]:
+    """4시간봉 RSI(14) ≤ 30(과매도) 종목 집합 → E전략 4H 게이트(사용자 2026-06-05). market: KR|US."""
+    tickers = list(dict.fromkeys(t for t in tickers if t))
+    if not tickers:
+        return set()
+    return await asyncio.to_thread(_fetch_4h_rsi_oversold_sync, tickers, market)
+
+
 async def fetch_4h_overheat(tickers: list[str]) -> dict[str, bool]:
     """KR 종목들의 4시간봉 BB 상단 돌파(과열) 여부 → {ticker: bool}. 실패 종목은 키 없음."""
     tickers = list(dict.fromkeys(t for t in tickers if t))

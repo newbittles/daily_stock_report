@@ -172,6 +172,29 @@ def _format_kr_us_netbuy(snap: MarketSnapshot) -> list[str]:
     return lines
 
 
+def _format_e_picks(snap: MarketSnapshot) -> list[str]:
+    """🩹 E 과매도 반등 후보 — 최근 주도주(신고가)였다가 일봉&4시간봉 RSI≤30(사용자 2026-06-05).
+
+    별도 섹션(Top3 비포함). KR(6자리 ticker)·US(symbol) 공용. 데이터 없으면 생략.
+    """
+    e = getattr(snap, "e_picks", None) or []
+    if not e:
+        return []
+    lines = ["🩹 *E 과매도 반등 후보* (최근 주도주 · 일봉&4H RSI≤30)"]
+    for p in e[:7]:
+        nm = p.get("name", "")
+        tk = str(p.get("ticker") or p.get("symbol") or "")
+        chg = p.get("change_pct", 0) or 0
+        sign = "+" if chg >= 0 else ""
+        if tk.isdigit():  # KR
+            head = f"{_naver_link(nm, tk)} {p.get('price', 0):,.0f}원"
+        else:             # US
+            head = f"{nm}({tk}) ${p.get('price', 0):,.2f}"
+        lines.append(f"  · {head} ({sign}{chg:.1f}%) RSI{p.get('rsi', 0):.0f}")
+    lines.append("")
+    return lines
+
+
 def _format_pre_summary(snap: MarketSnapshot) -> str:
     """마감 전 텔레그램 요약 메시지 (Markdown)."""
     url = report_url(snap)
@@ -209,6 +232,7 @@ def _format_pre_summary(snap: MarketSnapshot) -> str:
         lines.append("")
 
     lines.extend(_format_strategy_holdings(snap))
+    lines.extend(_format_e_picks(snap))       # 🩹 E 과매도 반등 후보
     lines.extend(_format_kr_us_netbuy(snap))  # 🇰🇷 한국인 매수 TOP5 (서학개미)
     lines.append(f"📄 [전체 리포트 보기]({url})")
     lines.append("")
@@ -275,6 +299,7 @@ def _format_post_summary(snap: MarketSnapshot) -> str:
                          f"{g.get('nxt_price', 0):,.0f}원 (+{g.get('overtime_pct', 0):.1f}%)")
         lines.append("")
 
+    lines.extend(_format_e_picks(snap))       # 🩹 E 과매도 반등 후보
     lines.extend(_format_kr_us_netbuy(snap))  # 🇰🇷 한국인 매수 TOP5 (서학개미)
     lines.append(f"📄 [전체 리포트 보기]({url})")
     lines.append("")

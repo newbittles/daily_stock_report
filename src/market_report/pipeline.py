@@ -677,6 +677,36 @@ async def _collect_us_screening(snap: MarketSnapshot, *, per_group: int = 5) -> 
     logger.info("us_screening_collected picks=%d top3=%s theme_leaders=%d",
                 len(picks), [p["symbol"] for p in snap.us_top3], len(snap.us_theme_leaders))
 
+    # E전략(과매도 주도주) — 유니버스 전체 캐시 OHLCV로 일봉 판정 → 4H RSI 게이트(사용자 2026-06-05)
+    try:
+        from src.datasource.us.fdr_source import fetch_us_ohlcv_batch
+        from src.patterns.core import oversold_leader
+        uni_syms = [u.symbol for u in (universe or [])]
+        if uni_syms:
+            ohlcv = await fetch_us_ohlcv_batch(uni_syms, days=120)  # 캐시 히트(스크리닝과 동일)
+            meta2 = {u.symbol: u for u in (universe or [])}
+            e_cand: list[dict] = []
+            for sym, cs in ohlcv.items():
+                if len(cs) < 60 or cs[-1].close < _PRICE_FLOOR_USD:
+                    continue
+                er = oversold_leader(cs)
+                if not er.matched:
+                    continue
+                ch = ((cs[-1].close - cs[-2].close) / cs[-2].close * 100
+                      if len(cs) >= 2 and cs[-2].close else 0.0)
+                u = meta2.get(sym)
+                e_cand.append({"symbol": sym, "name": korean_name(sym, u.name if u else sym),
+                               "price": round(cs[-1].close, 2), "change_pct": round(ch, 2),
+                               "rsi": round(float(er.metrics.get("rsi", 0)), 0), "reason": er.reason})
+            e_cand.sort(key=lambda x: x["rsi"])  # 가장 과매도부터 4H 확인
+            e_cand = e_cand[:12]
+            from src.datasource.kr_4h import fetch_4h_rsi_oversold
+            _ok = await fetch_4h_rsi_oversold([p["symbol"] for p in e_cand], market="US")
+            snap.e_picks = [p for p in e_cand if p["symbol"] in _ok][:7]
+            logger.info("us_e_picks_ready daily=%d final=%d", len(e_cand), len(snap.e_picks))
+    except Exception as exc:  # noqa: BLE001
+        logger.warning("us_e_picks_failed error=%s", exc)
+
 
 async def _overlay_premarket(snap: MarketSnapshot) -> None:
     """장전 리포트 — 추천종목·스크린·주요종목·강세섹터의 등락률을 프리장 기준으로 오버레이.
@@ -898,8 +928,18 @@ async def run_full(
         )
         s = get_settings()
         adapter = KisAdapter(s.kis_app_key, s.kis_app_secret, s.kis_account_no, s.kis_env)
-        snap.screen_picks = await collect_screen_picks(adapter)
+        _e_cand: list[dict] = []
+        snap.screen_picks = await collect_screen_picks(adapter, e_out=_e_cand)
         snap.holdings_status = await collect_holdings_status(adapter)
+        # E전략 4시간봉 게이트 — 일봉 과매도 주도주 후보 중 4H RSI(14)≤30도 충족하는 종목만(사용자 2026-06-05)
+        if _e_cand:
+            try:
+                from src.datasource.kr_4h import fetch_4h_rsi_oversold
+                _ok = await fetch_4h_rsi_oversold([p["ticker"] for p in _e_cand], market="KR")
+                snap.e_picks = [p for p in _e_cand if p["ticker"] in _ok][:7]
+                logger.info("e_picks_ready daily=%d final=%d", len(_e_cand), len(snap.e_picks))
+            except Exception as exc:
+                logger.warning("e_picks_4h_failed error=%s", exc)
         # 테마 — judal(주달) 종목→테마 역인덱스 (네이버보다 트렌드 반영·정확). 일1회 캐시.
         jmap: dict[str, dict] = {}
         try:

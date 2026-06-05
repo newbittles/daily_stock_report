@@ -620,6 +620,30 @@ ${{ "{:,.2f}".format(item.price) }} <span class="{{ 'up-text' if pct >= 0 else '
     </section>
     {% endif %}
 
+    {# 🩹 E 과매도 반등 후보 — 최근 주도주(신고가)였다가 일봉&4시간봉 RSI≤30 (KR/US 공용 별도 섹션) #}
+    {% if snap.e_picks %}
+    <section>
+      <h2><span class="icon">🩹</span>E 과매도 반등 후보 <span style="color:var(--text-dim);font-size:0.8rem;">(최근 주도주 · 일봉&amp;4H RSI≤30)</span></h2>
+      <ul class="watch-list">
+        {% for p in snap.e_picks %}
+        <li>
+          {% if p.ticker %}
+          <a href="https://finance.naver.com/item/main.naver?code={{ p.ticker }}" target="_blank" rel="noopener"><strong>{{ p.name }}</strong></a>
+          <span class="pick-ticker">{{ p.ticker }}</span> · {{ "{:,.0f}".format(p.price) }}원
+          {% else %}
+          <a href="https://search.naver.com/search.naver?query={{ (p.name ~ ' 주가') | urlencode }}" target="_blank" rel="noopener"><strong>{{ p.name }}</strong></a>
+          <span class="pick-ticker">{{ p.symbol }}</span> · ${{ "{:,.2f}".format(p.price) }}
+          {% endif %}
+          <span class="{{ 'up-text' if p.change_pct >= 0 else 'down-text' }}">{{ '+' if p.change_pct >= 0 else '' }}{{ "{:.2f}".format(p.change_pct) }}%</span>
+          <span style="color:var(--text-dim);font-size:0.8rem;">RSI {{ "{:.0f}".format(p.rsi) }}</span>
+          {% if p.reason %}<div class="theme-reason">{{ p.reason }}</div>{% endif %}
+        </li>
+        {% endfor %}
+      </ul>
+      <p class="disclaimer" style="font-size:12px;">※ 과매도 반등 기대 참고용(최근 주도주가 일봉·4시간봉 RSI 30 이하). 추세 훼손 종목일 수 있어 매수 추천 아님, 판단·책임은 본인.</p>
+    </section>
+    {% endif %}
+
     {# 1. 지수 #}
     {% if snap.kospi or snap.kosdaq %}
     <section>

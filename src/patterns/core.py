@@ -1050,3 +1050,33 @@ def ma_cross_signal(closes: list[float]) -> str | None:
     if gap20 <= 7:
         return CROSS_CORRECTION
     return None
+
+
+def oversold_leader(
+    candles: list[Candle], rsi_period: int = 14, rsi_max: float = 30.0,
+    hi_window: int = 60, hi_lookback: int = 120,
+) -> PatternResult:
+    """E. 과매도 반등 후보(일봉 조건) — 최근 주도주였다가 과매도.
+
+    주도주 = 최근 hi_window봉 안에서 hi_lookback일 신고가를 경신한 적이 있음(강하게 이끌었음).
+    과매도 = 일봉 RSI(rsi_period) ≤ rsi_max.
+    ※ 4시간봉 RSI 조건은 외부(yfinance)라 호출측에서 별도 결합. 여기선 일봉만(순수, 사용자 2026-06-05).
+    """
+    closes = _closes(candles)
+    highs = _highs(candles)
+    n = len(closes)
+    if n < max(rsi_period + 2, 30):
+        return PatternResult(False)
+    rv = rsi(closes, rsi_period)[-1]
+    if rv is None or rv > rsi_max:
+        return PatternResult(False, f"RSI {rv:.0f}>{rsi_max:.0f}" if rv is not None else "RSI 없음")
+    lookback = min(hi_lookback, n)
+    start = max(1, n - hi_window)
+    for i in range(n - 1, start - 1, -1):  # 최근(신규)부터 — 가장 최근 신고가 경신 탐색
+        lo = max(0, i - lookback + 1)
+        if highs[i] >= max(highs[lo:i + 1]):
+            peak_ago = n - 1 - i
+            return PatternResult(
+                True, f"과매도 반등후보 (RSI {rv:.0f} · {hi_lookback}일신고가 {peak_ago}봉전)",
+                {"rsi": rv, "peak_bars_ago": float(peak_ago)})
+    return PatternResult(False, f"RSI {rv:.0f}이나 최근 주도주 아님")

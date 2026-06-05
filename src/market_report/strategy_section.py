@@ -59,11 +59,13 @@ def load_manual_holdings() -> list[dict]:
 
 
 async def collect_screen_picks(adapter, per_strategy: int = 8,
-                               drop_today: bool = False) -> list[dict]:
+                               drop_today: bool = False,
+                               e_out: list[dict] | None = None) -> list[dict]:
     """오늘 A/B/C 전략 포착 종목 (유니버스: 주도주 + 핫종목).
 
     drop_today: 마지막 봉이 '오늘'(장전 미완성 봉)이면 제외하고 전일 마감 기준 평가.
                 us_morning(07:30 장전) 시초 Top3용 — real ohlcv는 장전에 당일 복제봉을 줌.
+    e_out: 주어지면 E전략(과매도 주도주, 일봉 조건) 후보를 여기 누적(4H RSI는 pipeline에서 결합).
     """
     from datetime import datetime as _dt
     _today = _dt.now().strftime("%Y%m%d") if drop_today else None
@@ -189,6 +191,16 @@ async def collect_screen_picks(adapter, per_strategy: int = 8,
                     "is_theme_leader": False,
                 })
                 counts[s.name] = counts.get(s.name, 0) + 1
+        # E전략(과매도 주도주, 일봉 조건) — 전략매칭과 무관하게 별도 수집(4H RSI는 pipeline 결합)
+        if e_out is not None and len(e_out) < 40:
+            from src.patterns.core import oversold_leader
+            _er = oversold_leader(c)
+            if _er.matched:
+                e_out.append({
+                    "ticker": tk, "name": nm, "price": round(c[-1].close, 1),
+                    "change_pct": round(change_pct, 2), "gap20": round(_gap20, 1),
+                    "rsi": round(float(_er.metrics.get("rsi", 0)), 0), "reason": _er.reason,
+                })
     return picks
 
 
