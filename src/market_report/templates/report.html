@@ -106,8 +106,8 @@ ${{ "{:,.2f}".format(item.price) }} <span class="{{ 'up-text' if pct >= 0 else '
       flex-direction: column;
       gap: 0.5rem;
     }
-    .index-card.up { border-left-color: var(--green); }
-    .index-card.down { border-left-color: var(--red); }
+    .index-card.up { border-left-color: var(--red); }
+    .index-card.down { border-left-color: #60a5fa; }
     .index-info { min-width: 0; }
     .index-spark {
       width: 100%;
@@ -126,8 +126,9 @@ ${{ "{:,.2f}".format(item.price) }} <span class="{{ 'up-text' if pct >= 0 else '
     .index-name { font-size: 0.85rem; color: var(--text-dim); margin-bottom: 0.25rem; }
     .index-value { font-size: 1.5rem; font-weight: 700; }
     .index-change { font-size: 0.9rem; margin-top: 0.25rem; }
-    .up-text { color: var(--green); }
-    .down-text { color: var(--red); }
+    /* 한국식: 상승=빨강, 하락=파랑 (사용자 2026-06-05) */
+    .up-text { color: var(--red); }
+    .down-text { color: #60a5fa; }
 
     /* AI Summary */
     .summary-box {
@@ -470,10 +471,32 @@ ${{ "{:,.2f}".format(item.price) }} <span class="{{ 'up-text' if pct >= 0 else '
       {% if snap.mode in ['us_morning', 'us_premarket', 'us_intraday'] and snap.summary %}
       <div class="summary-box" style="margin-top:0.8rem;"><div class="label">🤖 AI 시장 요약</div><p>{{ snap.summary }}</p></div>
       {% endif %}
+      {% if snap.mode in ['us_morning', 'us_premarket', 'us_intraday'] and snap.why_moved %}
+      <div class="summary-box" style="margin-top:0.6rem;"><div class="label">💡 왜 올랐나 / 왜 떨어졌나</div><p>{{ snap.why_moved }}</p></div>
+      {% endif %}
       {% if snap.mode in ['us_morning', 'us_premarket', 'us_intraday'] and snap.theme_commentary %}
       <div class="summary-box" style="margin-top:0.6rem;"><div class="label">🌏 한국장 시사점</div><p>{{ snap.theme_commentary }}</p></div>
       {% endif %}
     </section>
+
+    {# 🚀 프리장 급등 TOP5 (us_premarket — ABCD 필터 통과 종목 중 프리장 상승률 상위) #}
+    {% if snap.mode == 'us_premarket' and snap.us_premarket_top %}
+    <section>
+      <h2><span class="icon">🚀</span>프리장 급등 TOP5 <span style="color:var(--text-dim);font-size:0.8rem;">(ABCD 필터 통과 종목 중)</span></h2>
+      <ul class="watch-list">
+        {% for t in snap.us_premarket_top %}
+        <li>
+          <a href="https://search.naver.com/search.naver?query={{ (t.name ~ ' 주가') | urlencode }}" target="_blank" rel="noopener"><strong>{{ t.name }}</strong></a>
+          <span class="pick-ticker">{{ t.symbol }}</span> · {{ us_px(t, snap.mode) }}
+          {% if t.sector %}<span style="color:var(--text-dim);font-size:0.82rem;"> · {{ t.sector }}</span>{% endif %}
+          {% if t.strategies %}<span class="strat-badge">{{ t.strategies|join('/') }} 시그널</span>{% endif %}
+          {% if t.reason %}<div class="theme-reason">{{ t.reason }}</div>{% endif %}
+        </li>
+        {% endfor %}
+      </ul>
+    </section>
+    {% endif %}
+
     {% if snap.us_sectors or snap.us_bigtech %}
     <section>
       {% if snap.us_sectors %}

@@ -680,7 +680,9 @@ async def _collect_us_screening(snap: MarketSnapshot, *, per_group: int = 5) -> 
     # 한국어 종목명 DB 채우기(미캐시 종목 네이버 best-effort) — _to_dict 전에 (사용자 154)
     try:
         from src.datasource.us.names_db import ensure_names
-        await ensure_names([p.symbol for p in picks] + [p.symbol for p in theme_cands])
+        _allp = list(picks) + list(theme_cands)
+        # name_map(티커→영문명) 전달 → 네이버 실패 종목은 AI 음역으로 캐시(사용자 2026-06-05)
+        await ensure_names([p.symbol for p in _allp], {p.symbol: p.name for p in _allp})
     except Exception as exc:  # noqa: BLE001
         logger.warning("us_names_ensure_failed error=%s", exc)
 

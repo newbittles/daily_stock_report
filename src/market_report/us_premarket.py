@@ -53,6 +53,10 @@ async def run_us_premarket(
         await _attach_kr_netbuy_to_picks(snap)  # 픽별 서학개미 순매수금액(전일+5일)
     except Exception as exc:  # noqa: BLE001
         logger.warning("us_premarket_kr_netbuy_failed error=%s", exc)
+    try:
+        _build_premarket_top(snap)  # 프리장 급등 TOP5(필터통과 종목 중, 사용자 2026-06-05)
+    except Exception as exc:  # noqa: BLE001
+        logger.warning("us_premarket_top_failed error=%s", exc)
 
     try:
         from src.market_report.analyzer import analyze
@@ -87,6 +91,29 @@ async def run_us_premarket(
             logger.error("us_premarket_telegram_failed error=%s", exc)
 
     return snap
+
+
+def _build_premarket_top(snap: MarketSnapshot, n: int = 5) -> None:
+    """필터 통과(ABCD 스크린) 종목 중 프리장 상승률 TOP n → snap.us_premarket_top.
+
+    각 픽의 change_pct는 _overlay_premarket으로 '프리장 등락률'로 덮인 상태. 프리장 체결된
+    종목(premkt=True)만 대상, 프리장 상승률 내림차순. 섹터·매칭전략은 픽에 이미 있음(표시단).
+    """
+    seen: set[str] = set()
+    pool: list[dict] = list(snap.us_top3 or []) + list(snap.us_theme_leaders or [])
+    for g in (snap.us_screen_groups or []):
+        pool.extend(g.get("picks", []))
+    cand: list[dict] = []
+    for p in pool:
+        sym = p.get("symbol", "")
+        if not sym or sym in seen or not p.get("premkt"):
+            continue
+        seen.add(sym)
+        cand.append(p)
+    cand.sort(key=lambda p: p.get("change_pct", 0), reverse=True)
+    snap.us_premarket_top = cand[:n]
+    logger.info("us_premarket_top n=%d top=%s", len(snap.us_premarket_top),
+                [(p.get("symbol"), p.get("change_pct")) for p in snap.us_premarket_top[:3]])
 
 
 if __name__ == "__main__":

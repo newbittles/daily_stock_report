@@ -64,10 +64,42 @@ def _fetch_naver_ko(ticker: str) -> str:
     return ""
 
 
-async def ensure_names(tickers: list[str]) -> None:
-    """미캐시 종목의 한국어명을 네이버에서 조회·캐시(best-effort). 거래대금 상위부터 소수만.
+def _ai_translate(name_map: dict[str, str]) -> dict[str, str]:
+    """영문 미국 종목명 → 한국어(음역/번역) AI 일괄. {ticker: 영문} → {ticker: 한국어}. 실패 시 {}."""
+    from src.config.settings import get_settings
 
-    캐시에 없는 종목만 조회. 분산 딜레이(§7). 실패는 캐시에 영문폴백 표식 안 남김(다음 기회 재시도).
+    s = get_settings()
+    if not getattr(s, "gemini_api_key", "") or not name_map:
+        return {}
+    try:
+        import json
+        import re
+
+        from google import genai
+
+        client = genai.Client(api_key=s.gemini_api_key)
+        items = "\n".join(f"{t}: {nm}" for t, nm in name_map.items())
+        prompt = (
+            "다음 미국 주식 종목의 영문명을 한국 투자자가 쓰는 한국어 표기로 음역/번역해줘.\n"
+            'JSON만 출력(설명 금지): {"티커":"한국어명"}. ETF는 "OOO ETF"처럼, 잘 알려진 회사는 통용 한글명, '
+            "모르면 자연스러운 음역.\n" + items
+        )
+        resp = client.models.generate_content(model="gemini-2.5-flash-lite", contents=prompt)
+        m = re.search(r"\{.*\}", resp.text or "", re.S)
+        if not m:
+            return {}
+        out = json.loads(m.group(0))
+        return {k: str(v).strip() for k, v in out.items() if v and isinstance(v, str)}
+    except Exception as exc:  # noqa: BLE001
+        logger.warning("us_names_ai_translate_failed error=%s", exc)
+        return {}
+
+
+async def ensure_names(tickers: list[str], name_map: dict[str, str] | None = None) -> None:
+    """미캐시 종목의 한국어명을 네이버 → (실패 시) AI 번역 순으로 조회·캐시(best-effort).
+
+    캐시에 없는 종목만. 네이버 우선(분산 딜레이 §7), 네이버가 못 찾은 영문명은 name_map(ticker→영문)이
+    주어지면 AI로 음역해 캐시 → '다음번엔 한국어로 호출'(사용자 2026-06-05). 실패는 캐시 안 남김.
     """
     import asyncio
     import random
@@ -91,4 +123,18 @@ async def ensure_names(tickers: list[str]) -> None:
         return n
 
     got = await asyncio.to_thread(_work)
-    logger.info("us_names_db_ensure missing=%d cached=%d", len(missing), got)
+
+    # 네이버가 못 찾아 아직 영문인 종목 → AI 음역 캐시(name_map에 영문명 있을 때만)
+    ai_n = 0
+    if name_map:
+        still = {t: name_map[t] for t in missing if t not in _CACHE and name_map.get(t)
+                 and any(ord(c) > 0x7F for c in name_map[t]) is False}  # 영문(ASCII)만 대상
+        if still:
+            trans = await asyncio.to_thread(_ai_translate, still)
+            for t, ko in trans.items():
+                if t in still and ko and any(ord(c) > 0x7F for c in ko):  # 한글 포함 결과만
+                    _CACHE[t] = ko
+                    ai_n += 1
+            if ai_n:
+                _save()
+    logger.info("us_names_db_ensure missing=%d naver=%d ai=%d", len(missing), got, ai_n)
