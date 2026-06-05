@@ -46,6 +46,15 @@ def _pick(ticker: str, name: str, **extra) -> dict:
             "change_pct": 1.0, "gap20": 5.0, "_liq": 5.0, "_nh": 0.0, **extra}
 
 
+def test_b_reason_shows_high_drawdown() -> None:
+    """B 시그널 설명란(Top3)에 고점대비 낙폭 표시(사용자 2026-06-05)."""
+    picks = [{"ticker": "X", "name": "비종목", "price": 1000.0, "strategy": "B. 주도주 20일선 눌림목",
+              "change_pct": 1.0, "_nh": -18.0, "high_dd": -21.7, "_liq": 5.0, "gap20": 3.0}]
+    out = select_top3(picks)
+    assert "고점대비 -21.7%" in out[0]["reason"]
+    assert out[0]["high_dd"] == -21.7
+
+
 def test_top3_demotes_daily_overheat() -> None:
     """일봉 과열(overheat) 종목은 동급 정상 종목보다 아래로 강등(완전 제외는 아님)."""
     picks = [_pick("AAA", "정상"), _pick("BBB", "과열", overheat=True)]

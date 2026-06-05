@@ -145,6 +145,7 @@ async def collect_screen_picks(adapter, per_strategy: int = 8,
         _gap20 = (c[-1].close - _ma20) / _ma20 * 100 if _ma20 else 0.0
         _hi60 = max(x.high for x in c[-60:])
         _nh = (c[-1].close / _hi60 - 0.97) * 100 if _hi60 else 0.0
+        _high_dd = (c[-1].close / _hi60 - 1) * 100 if _hi60 else 0.0  # 60일 고점 대비 낙폭(음수, B 표시용)
         # 5·10 단기 데드크로스 + 20일이격 → 단기눌림(🟢)/조정시작(⚠️) 신호 (domain SSOT)
         # CROSS_PULLBACK/CORRECTION/None — 보유 종목 홀드·익절 판단 + 리포트 표시용
         _cross = ma_cross_signal(_closes)
@@ -177,14 +178,18 @@ async def collect_screen_picks(adapter, per_strategy: int = 8,
                 # 대부분(≥50%)을 반납했으면 '눌림'이 아니라 급반전 → B 추천에서 제외.
                 if s.name.startswith("B") and gave_back_recent_gain(c):
                     continue
+                _reason = "; ".join(res.reasons)
+                if s.name.startswith("B"):  # B 설명란에 고점대비 낙폭 표시(사용자 2026-06-05)
+                    _reason += f" · 고점대비 {_high_dd:+.1f}%"
                 picks.append({
                     "strategy": s.name,
                     "ticker": tk, "name": nm,
                     "price": round(c[-1].close, 1),
                     "change_pct": round(change_pct, 2),
-                    "reason": "; ".join(res.reasons),
+                    "reason": _reason,
                     "endstage": bool(res.metrics.get("endstage")),
                     "_liq": round(_liq, 2), "gap20": round(_gap20, 1), "_nh": round(_nh, 2),
+                    "high_dd": round(_high_dd, 1),
                     "stop_price": round(_stop_price, 1) if _stop_price else 0,
                     "stop_pct": round(_stop_pct, 1),
                     "overheat": _overheat, "vol_x": round(_volx, 1),

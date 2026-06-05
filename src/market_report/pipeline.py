@@ -653,6 +653,11 @@ async def _collect_us_screening(snap: MarketSnapshot, *, per_group: int = 5) -> 
     def _to_dict(p, initial: str = "") -> dict:
         strats = _strategies(p)
         ctx = {initial} if initial else set(strats)  # 그룹이면 그 전략, top3면 전체
+        _hi60 = max((x.high for x in p.candles[-60:]), default=p.price) if p.candles else p.price
+        _hdd = round((p.price / _hi60 - 1) * 100, 1) if _hi60 else 0.0  # 60일 고점 대비 낙폭
+        _reason = _pick_reason(p, initial)
+        if "B" in ctx:  # B 설명란에 고점대비 낙폭 표시(사용자 2026-06-05)
+            _reason += f" · 고점대비 {_hdd:+.1f}%"
         return {
             "symbol": p.symbol,
             # 한국어(티커) 표기 — 아는 종목은 한국어, 모르는 건 영문명 폴백(사용자 합의).
@@ -663,12 +668,13 @@ async def _collect_us_screening(snap: MarketSnapshot, *, per_group: int = 5) -> 
             # 표시 테마 = GICS Industry 한국어 세분(반도체/반도체장비/클라우드 등). 섹터(IT)는 거침.
             "sector": us_theme(p.sector, p.industry),
             "industry": p.industry or "",
-            "reason": _pick_reason(p, initial),
+            "reason": _reason,
             "cross_signal": _eff_cross(p.cross_signal, ctx),
             "strategies": strats,                       # #4 A/B/C/D 표시
             "marcap_str": _won(marcaps.get(p.symbol, 0)),  # 시총(원화 조/억)
             "turnover_str": _won(_turnover(p)),         # 거래대금(원화 조/억)
             "gap20": round(_gap20(p), 1),               # #11 20MA 괴리(B 표시·정렬)
+            "high_dd": _hdd,
         }
 
     # 한국어 종목명 DB 채우기(미캐시 종목 네이버 best-effort) — _to_dict 전에 (사용자 154)

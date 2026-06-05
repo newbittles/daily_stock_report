@@ -88,6 +88,8 @@ def select_top3(screen_picks: list[dict], foreign_buy: set[str] | None = None,
         why = []
         strats = "·".join(sorted(p["_strats"]))
         why.append(f"{strats} 시그널")
+        if "B" in p["_strats"] and p.get("high_dd") is not None:  # B 설명에 고점대비 낙폭(사용자 2026-06-05)
+            why.append(f"고점대비 {p.get('high_dd', 0):+.1f}%")
         if us_hit:
             sec = matched_us_sector(p.get("theme", ""), us_sectors or [])
             why.append(f"미국 {sec} 강세 연동" if sec else "미국 강세테마 연동")
@@ -113,6 +115,7 @@ def select_top3(screen_picks: list[dict], foreign_buy: set[str] | None = None,
             "endstage": bool(p.get("endstage")),
             "stop_price": p.get("stop_price", 0), "stop_pct": p.get("stop_pct", 0),
             "gap20": round(p.get("gap20", 0), 1),  # 20일선 이격도(%)
+            "high_dd": round(p.get("high_dd", 0), 1),  # 60일 고점 대비 낙폭(%) — B 표시용
             "overheat": is_overheat,               # 🔥과열(일봉 BB상단돌파 ∪ 4H BB상단음봉) — 강등
             "overheat_4h": bool(p.get("overheat_4h")),
             "vol_x": p.get("vol_x", 0),
