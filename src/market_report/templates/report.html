@@ -106,8 +106,8 @@ ${{ "{:,.2f}".format(item.price) }} <span class="{{ 'up-text' if pct >= 0 else '
       flex-direction: column;
       gap: 0.5rem;
     }
-    .index-card.up { border-left-color: var(--red); }
-    .index-card.down { border-left-color: #60a5fa; }
+    .index-card.up { border-left-color: var(--green); }
+    .index-card.down { border-left-color: var(--red); }
     .index-info { min-width: 0; }
     .index-spark {
       width: 100%;
@@ -126,9 +126,9 @@ ${{ "{:,.2f}".format(item.price) }} <span class="{{ 'up-text' if pct >= 0 else '
     .index-name { font-size: 0.85rem; color: var(--text-dim); margin-bottom: 0.25rem; }
     .index-value { font-size: 1.5rem; font-weight: 700; }
     .index-change { font-size: 0.9rem; margin-top: 0.25rem; }
-    /* 한국식: 상승=빨강, 하락=파랑 (사용자 2026-06-05) */
-    .up-text { color: var(--red); }
-    .down-text { color: #60a5fa; }
+    /* 등락률 텍스트: 상승=초록, 하락=빨강 (사용자 2026-06-05 변경) */
+    .up-text { color: var(--green); }
+    .down-text { color: var(--red); }
 
     /* AI Summary */
     .summary-box {
