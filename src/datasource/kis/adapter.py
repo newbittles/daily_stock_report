@@ -288,6 +288,52 @@ class KisAdapter:
         )
         return self._parse_ranking(data.get("output", []), top)
 
+    async def get_nxt_overtime_gainers(self, top: int = 7, scan: int = 20) -> list[dict[str, Any]]:
+        """NXT(넥스트레이드) 시간외 상위 상승률 — '정규장 종가 대비' 시간외(NXT) 변동률 기준.
+
+        마감 후(NXT 애프터마켓 15:30~20:00)에 의미. KIS 등락률순위에 NX(넥스트레이드) 시장코드로
+        후보를 받고(기본 prdy_ctrt=전일대비라 정규장 포함), 각 종목의 '정규장 종가'(J 현재가) 대비
+        NXT 현재가 변동률을 직접 계산해 시간외 상승분만 추출·정렬한다(전역 §7: 종목간 분산 딜레이).
+        반환: [{ticker, name, nxt_price, reg_close, overtime_pct}] overtime_pct 내림차순, 양수만.
+        NXT 미지원/실패 시 빈 리스트(리포트 best-effort)."""
+        data = await self._request(
+            "/uapi/domestic-stock/v1/ranking/fluctuation", _TR["rank_fluctuation"],
+            {
+                "fid_cond_mrkt_div_code": "NX",  # 넥스트레이드(NXT) — 2026-06-05 실측 지원 확인
+                "fid_cond_scr_div_code": "20170", "fid_input_iscd": "0000",
+                "fid_rank_sort_cls_code": "0", "fid_input_cnt_1": "0", "fid_prc_cls_code": "0",
+                "fid_input_price_1": "", "fid_input_price_2": "", "fid_vol_cnt": "",
+                "fid_trgt_cls_code": "0", "fid_trgt_exls_cls_code": "0", "fid_div_cls_code": "0",
+                "fid_rsfl_rate1": "", "fid_rsfl_rate2": "",
+            },
+        )
+        rows = data.get("output", []) or []
+        out: list[dict[str, Any]] = []
+        for r in rows[:scan]:
+            ticker = str(r.get("stck_shrn_iscd") or r.get("mksc_shrn_iscd") or "").strip()
+            nxt = _f(r.get("stck_prpr"))
+            if not ticker or nxt <= 0:
+                continue
+            try:  # 정규장 종가 = J(KRX) 현재가(마감 후엔 종가 확정값)
+                q = await self._request(
+                    "/uapi/domestic-stock/v1/quotations/inquire-price", _TR["quote"],
+                    {"FID_COND_MRKT_DIV_CODE": "J", "FID_INPUT_ISCD": ticker},
+                )
+                reg = _f((q.get("output") or {}).get("stck_prpr"))
+            except Exception as exc:  # noqa: BLE001
+                logger.debug("nxt_regclose_failed ticker=%s error=%s", ticker, exc)
+                continue
+            if reg <= 0:
+                continue
+            overtime = (nxt - reg) / reg * 100
+            if overtime > 0:  # 시간외 상승분만
+                out.append({"ticker": ticker, "name": str(r.get("hts_kor_isnm", "")).strip(),
+                            "nxt_price": nxt, "reg_close": reg, "overtime_pct": round(overtime, 2)})
+            await asyncio.sleep(random.uniform(0.1, 0.25))
+        out.sort(key=lambda x: x["overtime_pct"], reverse=True)
+        logger.info("nxt_overtime_gainers scan=%d found=%d", min(scan, len(rows)), len(out))
+        return out[:top]
+
     @staticmethod
     def _parse_ranking(rows: list[dict], top: int) -> list[RankedStock]:
         result: list[RankedStock] = []

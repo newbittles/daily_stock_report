@@ -961,6 +961,14 @@ async def run_full(
         except Exception as exc:
             logger.warning("top3_failed error=%s", exc)
 
+        # 🌙 시간외(NXT) 상위 상승률 — 마감 후(post_close)만. 정규장 종가 대비 NXT 변동(사용자 2026-06-05).
+        if snap.mode == "post_close":
+            try:
+                snap.overtime_gainers = await adapter.get_nxt_overtime_gainers(top=7)
+                logger.info("overtime_gainers_ready n=%d", len(snap.overtime_gainers))
+            except Exception as exc:
+                logger.warning("overtime_gainers_failed error=%s", exc)
+
         # 자동매매 브리지: 보고서 Top3를 JSON으로 남겨 auto_trader가 동일 종목 매수
         if snap.mode == "pre_close" and snap.top3:
             try:

@@ -602,6 +602,24 @@ ${{ "{:,.2f}".format(item.price) }} <span class="{{ 'up-text' if pct >= 0 else '
     </section>
     {% endif %}
 
+    {# 🌙 시간외(NXT) 상위 상승률 — 정규장 마감 후(post_close, 정규장 종가 대비 NXT 변동) #}
+    {% if snap.overtime_gainers %}
+    <section>
+      <h2><span class="icon">🌙</span>시간외(NXT) 상위 상승률 <span style="color:var(--text-dim);font-size:0.8rem;">(정규장 종가 대비)</span></h2>
+      <ul class="watch-list">
+        {% for g in snap.overtime_gainers %}
+        <li>
+          <a href="https://finance.naver.com/item/main.naver?code={{ g.ticker }}" target="_blank" rel="noopener"><strong>{{ g.name }}</strong></a>
+          <span class="pick-ticker">{{ g.ticker }}</span> · {{ "{:,.0f}".format(g.nxt_price) }}원
+          <span class="up-text">+{{ "{:.2f}".format(g.overtime_pct) }}%</span>
+          <span style="color:var(--text-dim);font-size:0.8rem;">(종가 {{ "{:,.0f}".format(g.reg_close) }})</span>
+        </li>
+        {% endfor %}
+      </ul>
+      <p style="font-size:11px;color:var(--text-dim);margin-top:0.3rem;">넥스트레이드(NXT) 시간외 거래 기준. 정규장 종가 대비 상승분.</p>
+    </section>
+    {% endif %}
+
     {# 1. 지수 #}
     {% if snap.kospi or snap.kosdaq %}
     <section>

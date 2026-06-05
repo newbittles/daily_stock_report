@@ -266,6 +266,15 @@ def _format_post_summary(snap: MarketSnapshot) -> str:
             lines.append(f"  · {w}")
         lines.append("")
 
+    # 🌙 시간외(NXT) 상위 상승률 — 정규장 마감 후 넥스트레이드 변동(정규장 종가 대비)
+    ot = getattr(snap, "overtime_gainers", None) or []
+    if ot:
+        lines.append("🌙 *시간외(NXT) 상위 상승률* (정규장 종가 대비)")
+        for g in ot[:7]:
+            lines.append(f"  · {_naver_link(g['name'], g['ticker'])} "
+                         f"{g.get('nxt_price', 0):,.0f}원 (+{g.get('overtime_pct', 0):.1f}%)")
+        lines.append("")
+
     lines.extend(_format_kr_us_netbuy(snap))  # 🇰🇷 한국인 매수 TOP5 (서학개미)
     lines.append(f"📄 [전체 리포트 보기]({url})")
     lines.append("")
