@@ -1,21 +1,21 @@
 [
   {
     "date": "2026-06-07",
+    "time": "00:53",
+    "mode": "us_morning",
+    "url": "reports/2026-06-07-us.html",
+    "summary": "S&P500 7,384(-2.64%) · 나스닥 25,709(-4.18%). 강세 섹터: 헬스케어/바이오, 금융, 방산/우주항공.",
+    "kospi_pct": null,
+    "kosdaq_pct": null
+  },
+  {
+    "date": "2026-06-07",
     "time": "00:48",
     "mode": "post_close",
     "url": "reports/2026-06-07-post.html",
     "summary": "코스피 8,160.6(-5.54%) · 코스닥 1,002.4(-4.50%). 강세 테마: MLCC(적층세라믹콘덴서), 은행, 카지노.",
     "kospi_pct": -5.54,
     "kosdaq_pct": -4.5
-  },
-  {
-    "date": "2026-06-07",
-    "time": "00:47",
-    "mode": "us_morning",
-    "url": "reports/2026-06-07-us.html",
-    "summary": "S&P500 7,384(-2.64%) · 나스닥 25,709(-4.18%). 강세 섹터: 헬스케어/바이오, 금융, 방산/우주항공.",
-    "kospi_pct": null,
-    "kosdaq_pct": null
   },
   {
     "date": "2026-06-06",
