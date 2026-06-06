@@ -39,6 +39,10 @@ ${{ "{:,.2f}".format(item.price) }} <span class="{{ 'up-text' if pct >= 0 else '
 {%- set _oh = t.overheat|default(false) and ('C' in (t.strategies|default([]))) -%}
 <span class="gap-badge {{ 'overheat' if _oh else '' }}">20일선 {{ '+' if t.gap20|default(0) >= 0 else '' }}{{ "{:.1f}".format(t.gap20|default(0)) }}%{% if _oh %} 🔥단기과열주의(BB돌파·거래량{{ "{:.1f}".format(t.vol_x|default(0)) }}x){% endif %}</span>{% if t.cross_signal|default(none) == 'PULLBACK' %} <span class="up-text" style="font-size:0.8rem;">🟢5&lt;10 단기눌림</span>{% elif t.cross_signal|default(none) == 'CORRECTION' %} <span class="down-text" style="font-size:0.8rem;">⚠️5&lt;10 조정시작</span>{% endif %}
 {%- endmacro -%}
+{# 전략 시그널 배지(클릭 시 설명 팝업, 사용자 #456) #}
+{%- macro strat_badge(strats, suffix=' 시그널') -%}
+<span class="strat-badge" onclick="showStrat(this)" data-strats="{{ strats|join(',') }}" style="cursor:pointer;" title="전략 설명 보기">{{ strats|join('/') }}{{ suffix }} ⓘ</span>
+{%- endmacro -%}
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -525,7 +529,7 @@ ${{ "{:,.2f}".format(item.price) }} <span class="{{ 'up-text' if pct >= 0 else '
           <a href="https://search.naver.com/search.naver?query={{ (t.name ~ ' 주가') | urlencode }}" target="_blank" rel="noopener"><strong>{{ t.name }}</strong></a>
           <span class="pick-ticker">{{ t.symbol }}</span> · {{ us_px(t, snap.mode) }}
           {% if t.sector %}<span style="color:var(--text-dim);font-size:0.82rem;"> · {{ t.sector }}</span>{% endif %}
-          {% if t.strategies %}<span class="strat-badge">{{ t.strategies|join('/') }} 시그널</span>{% endif %}
+          {% if t.strategies %}{{ strat_badge(t.strategies) }}{% endif %}
           {% if t.reason %}<div class="theme-reason">{{ t.reason }}</div>{% endif %}
         </li>
         {% endfor %}
@@ -571,7 +575,7 @@ ${{ "{:,.2f}".format(item.price) }} <span class="{{ 'up-text' if pct >= 0 else '
         <li>
           <a href="https://search.naver.com/search.naver?query={{ (t.name ~ ' 주가') | urlencode }}" target="_blank" rel="noopener"><strong>{{ t.name }}</strong></a>
           <span class="pick-ticker">{{ t.symbol }}</span>
-          {% if t.strategies %}<span class="strat-badge">{{ t.strategies|join('/') }}</span>{% endif %}
+          {% if t.strategies %}{{ strat_badge(t.strategies, '') }}{% endif %}
           · {{ us_px(t, snap.mode) }}{% if t.week_pct is not none %} <span class="{{ 'up-text' if t.week_pct >= 0 else 'down-text' }}" style="font-size:0.82rem;">1주일 {{ '+' if t.week_pct >= 0 else '' }}{{ "{:.1f}".format(t.week_pct) }}%</span>{% endif %}
           {% if t.sector %}<div class="pick-sub">테마: {{ t.sector }}{% if t.marcap_str %} · 시총 {{ t.marcap_str }}{% endif %}{% if t.turnover_str %} · 거래대금 {{ t.turnover_str }}{% endif %}</div>{% endif %}
           {{ kr_nb(t) }}
@@ -595,7 +599,7 @@ ${{ "{:,.2f}".format(item.price) }} <span class="{{ 'up-text' if pct >= 0 else '
           <span class="top3-rank">{{ loop.index }}</span>
           <a href="https://search.naver.com/search.naver?query={{ (t.name ~ ' 주가') | urlencode }}" target="_blank" rel="noopener">{{ t.name }}</a>
           <span class="pick-ticker">{{ t.symbol }}</span>
-          {% if t.strategies %}<span class="strat-badge">{{ t.strategies | join('/') }}</span>{% endif %}
+          {% if t.strategies %}{{ strat_badge(t.strategies, '') }}{% endif %}
           <span class="px">{{ us_px(t, snap.mode) }}</span>
           {{ cond_badges(t) }}{% if t.endstage %} <span class="down-text" style="font-size:0.8rem;">⚠️끝물</span>{% endif %}
         </div>
@@ -952,7 +956,7 @@ ${{ "{:,.2f}".format(item.price) }} <span class="{{ 'up-text' if pct >= 0 else '
             <span class="pick-meta-group">
               <span class="pick-ticker">{{ p.ticker }}</span>
               <button type="button" class="code-copy" data-code="{{ p.ticker }}" onclick="copyCode(this)" title="종목코드 복사 (MTS 검색창에 붙여넣기)">📋</button>
-              {% if p.strategies is defined %}{% if p.strategies %}<span class="strat-badge">{{ p.strategies|join('/') }} 시그널</span>{% else %}<span class="strat-badge" style="background:var(--text-dim);">ABCD 미해당(AI선정)</span>{% endif %}{% endif %}
+              {% if p.strategies is defined %}{% if p.strategies %}{{ strat_badge(p.strategies) }}{% else %}<span class="strat-badge" style="background:var(--text-dim);">ABCD 미해당(AI선정)</span>{% endif %}{% endif %}
               {% if p.price %}
               <span class="px">{{ "{:,.0f}".format(p.price) }}원</span>
               <span class="{{ 'up-text' if p.change_pct >= 0 else 'down-text' }}">{{ '+' if p.change_pct >= 0 else '' }}{{ "{:.2f}".format(p.change_pct) }}%</span>
@@ -1001,7 +1005,7 @@ ${{ "{:,.2f}".format(item.price) }} <span class="{{ 'up-text' if pct >= 0 else '
         <li>
           <a href="https://finance.naver.com/item/main.naver?code={{ p.ticker }}" target="_blank" rel="noopener"><strong>{{ p.name }}</strong></a>
           <button type="button" class="code-copy" data-code="{{ p.ticker }}" onclick="copyCode(this)" title="종목코드 복사 (MTS 검색창에 붙여넣기)">📋</button>
-          <span class="strat-badge">{{ p.strategies|join('·') }} 시그널</span>
+          {{ strat_badge(p.strategies) }}
           <span class="px">{{ "{:,.0f}".format(p.price) }}원</span>
           <span class="{{ 'up-text' if p.change_pct >= 0 else 'down-text' }}">{{ '+' if p.change_pct >= 0 else '' }}{{ "{:.1f}".format(p.change_pct) }}%</span>
           {% if p.endstage %}<span class="down-text">⚠️끝물</span>{% endif %}
@@ -1242,6 +1246,26 @@ ${{ "{:,.2f}".format(item.price) }} <span class="{{ 'up-text' if pct >= 0 else '
     function showAI(btn) {
       document.getElementById('ai-modal-title').textContent = '🤖 ' + (btn.dataset.name || '') + ' · AI 요약';
       document.getElementById('ai-modal-body').textContent = btn.dataset.summary || '요약이 없습니다.';
+      document.getElementById('ai-modal').classList.add('active');
+    }
+
+    // 전략 시그널 설명 팝업 (배지 클릭, 사용자 #456)
+    const STRAT_INFO = {
+      'A': {name: '수렴 후 상승', cond: '변동성 수렴(볼린저밴드 폭 축소)으로 바닥을 다진 뒤, 거래량이 실리며 박스권 상단을 상향 돌파하는 초입.'},
+      'B': {name: '20일선 눌림목', cond: '상승추세 종목이 20일 이동평균선 부근까지 조정(눌림)받고 지지·반등을 확인하는 자리(과확장·급반전 제외).'},
+      'C': {name: '추세추종', cond: '정배열(단기>중기>장기 이평) 상승추세가 이어지며 신고가권에서 강세를 지속하는 흐름.'},
+      'D': {name: '추세 반전', cond: '하락추세가 바닥을 다진 뒤 주요 이평선을 상향 돌파하며 추세가 위로 꺾이는 반전 초기.'},
+      'E': {name: '투매 바닥 반등', cond: '최근 주도주가 투매(RSI≤30 + 50일선 이격 과대 + 거래량 급증)로 급락 후 반등 양봉이 나오는 자리.'},
+      '급등초입': {name: '급등 초입', cond: '20일 신고가 돌파 + 거래량 급증 + 당일 강세 — 추세 확인보다 빠른 진입(변동성 큼).'}
+    };
+    function showStrat(btn) {
+      const strats = (btn.dataset.strats || '').split(',').map(s => s.trim()).filter(Boolean);
+      const body = strats.map(s => {
+        const info = STRAT_INFO[s];
+        return info ? (s + ' 시그널: ' + info.name + '\n조건: ' + info.cond) : (s + ' 시그널');
+      }).join('\n\n');
+      document.getElementById('ai-modal-title').textContent = '🎯 전략 시그널 설명';
+      document.getElementById('ai-modal-body').textContent = body || '설명이 없습니다.';
       document.getElementById('ai-modal').classList.add('active');
     }
 
