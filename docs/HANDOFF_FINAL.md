@@ -41,6 +41,7 @@
 - **숫자 콤마**(커밋 9cd3827, #315): 표시코드(template/telegram/messages)는 이미 천단위 콤마. AI 생성텍스트만 갭 → summarize_stocks/us_stocks 프롬프트에 '천단위 콤마' 지시 추가.
 - **E 투매바닥(capitulation) 재설계 + 지수 2단계등급**(커밋 2b9a9e5, #328/#330/#334~339): 사용자가 찾던 '진짜 바닥' 신호. ▶oversold_leader 재설계: 최근 look(3)일내 RSI≤30 + 50일선이격≤-12% + 거래량≥2x(투매) + 당일 반등 양봉(칼날 회피). 기존 '주도주 신고가' 조건 폐기(4월 바닥 놓친 원인). ▶2단계 등급(하드게이트 X, 사용자 #334 보조도구 의견 반영): _market_rsi(US=나스닥IXIC·KR=코스피KS11, **절대 교차 안 함** #339) + _tag_market_bottom → 지수 RSI<35면 market_bottom=True '🔥시장 동반 바닥'(강), 아니면 '개별 바닥(시장 양호)'. ▶배지=telegram/report.html. ▶백테스트(2025): 4월 진짜바닥 7회 포착(시장동반 4회=+14~40%대박, 시장회복후 추격 3회=손실=개별등급으로 강등됨), 3월 가짜·INTC/PLTR/SMR 0회(노이즈 적음). 248테스트.
 - **대장주 섹션 + 전략/E바닥 배지**(커밋 76d9b50, #345 / #312 잠재버그 수정): us_bigtech가 그동안 렌더 안 돼 SOXL(#312) 안 보였음 → "🇺🇸 대장주(빅테크·주요ETF)" 섹션 신설. _tag_bigtech_strategies(캐시OHLCV로 A/B/C/D/E/급등초입 평가)+E바닥 시장동반등급. report.html 전략시그널·🔥시장동반/🩹투매바닥 배지. 249테스트.
+- **KR·US 전략 조건 표시 통일(#414, 24c84d9)**: 공용 Jinja 매크로 cond_badges(t)로 KR·US 둘 다 20일선 이격·🔥과열(BB돌파·거래량)·5<10 크로스·끝물 표시(한국 스타일로 통일). _to_dict(US픽)에 overheat/vol_x/endstage 추가(계산만, 픽/순위 불변). ⚠️KR 출력 byte-identical 검증(스냅샷 diff 0) — '결과 절대 안바뀜' 준수. 매크로 |default 방어. 마감전 14:50/마감후 16:00(#412). 253테스트.
 - **한국장 프리(08:05)·장초(09:15) 리포트(#404, 커밋 e9733cd)**: NXT 08:00 개장 활용. kr_morning.run_kr_morning(mode) 공용 러너. 프리=NXT 프리장 상승률+전일 종가베팅·Top3 시초등락+AI분위기, 장초=정규장 시초 상승률+동일. 종가베팅 영속화 top3_bridge.persist_candidates(pre_close 14:50)+top3_status.find_prev_candidates. ReportMode +kr_premarket/+kr_open, render/publisher suffix(kr-pre/kr-open)·title, telegram _format_kr_morning_summary, report.html 전일종가베팅·시초상승률 섹션. 스케줄 평일 08:05/09:15(13잡 확인). ⚠️Top3 시초는 월요일부터(기존 top3파일), 종가베팅은 화요일부터(월14:50 첫 저장). NXT 모닝 라이브 평일검증 예정. 253테스트.
 - **자금흐름/신호등 보강 묶음(#392/#394/#396/#397/#398/#393, 커밋 2b3db03·0be5668·505e547)**: 바닥권 아이콘 🔵(#397). 거래량 연속↑ 정보표식(#392). SEIBro엔 티커 없음→seibro_symbols ETF/종목 ISIN 14개 확정매핑+names_ko 한국어명(#394a/b). 자금흐름 행 네이버링크(#396). 뉴스 헤드라인 한국어 번역 translate_us_news(1배치 Gemini, #394c). 한국인 순매수 '일평균 중심(전주대비%)' 표시(#398). 🏦 기관·외인 연속 순매수/매도 Top — collect_supply_streaks(시총상위40 FDR+get_stock_investor_daily, post_close, #393). 250테스트.
 - **한국인 순매수 총액(#377, 4f1da4d)**: 미국리포트에 SEIBro TOP50 순매수 5일합 + 전주 일평균 대비%(코스피→나스닥 자금이동 추산). _collect_kr_us_netbuy에서 이번주/전주(lookback_range end-shift) 합산 → snap.kr_us_netbuy_total. 웹 자금흐름 헤더 + telegram US요약.
@@ -76,7 +77,7 @@
 
 ## 0. 지금 상태 (한눈에)
 
-- **origin/main 최신 커밋**: `e9733cd`(한국장 프리·장초 리포트 #404) + 서버 자동리포트 커밋. 2026-06-05~06 세션 전부 배포 완료(리팩토링 포함 서버 라이브).
+- **origin/main 최신 커밋**: `24c84d9`(KR·US 전략표시 통일 #414) + 서버 자동리포트 커밋. 2026-06-05~06 세션 전부 배포 완료(리팩토링 포함 서버 라이브).
 - **서버(`lotto-server` = 134.185.109.195) = origin/main과 동기화 + 서비스 재시작 완료.** (로컬수정 `config/screener.yaml` RAM축소판만 autostash 보존)
 - **테스트**: `.venv\Scripts\python.exe -m pytest tests/ -q` → **240 passed** (기준선).
 - **3개 스트림(자동매매·미국스크리닝·리포트) 전부 main 머지 완료.** 백업 브랜치 `backup/pre-merge-2026-06-03`.
