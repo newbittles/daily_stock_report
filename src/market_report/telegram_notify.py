@@ -98,13 +98,19 @@ def _format_strategy_holdings(snap: MarketSnapshot) -> list[str]:
     return lines
 
 
+def _phase_suffix(snap: MarketSnapshot, label: str) -> str:
+    """지수 줄에 병기할 신호등(이모지+국면명). 가시성 위해 이격 숫자는 빼고 여기만 표시(사용자 #426)."""
+    ph = (getattr(snap, "market_phase", None) or {}).get(label)
+    return f" {ph['emoji']} {ph['name']}" if ph else ""
+
+
 def _format_index_lines(snap: MarketSnapshot) -> list[str]:
-    """주요 지수 4개 — 모바일 줄바꿈 자연스럽게 각각 한 줄씩."""
+    """주요 지수 4개 — 모바일 줄바꿈 자연스럽게 각각 한 줄씩. 지수 옆 신호등 병기(#426)."""
     lines: list[str] = []
     for idx in (snap.kospi, snap.kosdaq):
         if idx:
             mk = "코스피" if idx.market == "KOSPI" else "코스닥"
-            lines.append(f"📊 {mk} {idx.value:,.1f} ({idx.change_pct:+.2f}%)")
+            lines.append(f"📊 {mk} {idx.value:,.1f} ({idx.change_pct:+.2f}%){_phase_suffix(snap, mk)}")
     if snap.fx:
         lines.append(f"💱 원/달러 {snap.fx['value']:,.1f} ({snap.fx['change_pct']:+.2f}%)")
     if snap.wti:
@@ -113,7 +119,6 @@ def _format_index_lines(snap: MarketSnapshot) -> list[str]:
     if fg and fg.get("score") is not None:
         flag = " 🔥극단공포=바닥권" if fg["score"] <= 25 else ""
         lines.append(f"😨 공포탐욕 {fg['score']} ({fg.get('rating_ko') or fg.get('rating')}){flag}")
-    lines.extend(_format_ma_gaps(snap))  # 📐 지수 이평선 이격도(고점 판단, #357)
     if lines:
         lines.append("")
     return lines
@@ -529,9 +534,9 @@ def _format_us_morning_summary(snap: MarketSnapshot) -> str:
         lines.append(f"😨 공포탐욕지수 {fg['score']} ({fg.get('rating_ko') or fg.get('rating')}){flag}")
         lines.append("")
 
-    _mg = _format_ma_gaps(snap)  # 📐 지수 이평선 이격도(#357)
-    if _mg:
-        lines.extend(_mg)
+    mp = getattr(snap, "market_phase", None) or {}  # 🚦 신호등 한 줄(이격 숫자는 웹만, #426)
+    if mp:
+        lines.append("🚦 " + " · ".join(f"{ph['emoji']} {lbl} {ph['name']}" for lbl, ph in mp.items()))
         lines.append("")
 
     t = getattr(snap, "kr_us_netbuy_total", None)  # 💸 한국인 순매수 일평균(#377/#398)

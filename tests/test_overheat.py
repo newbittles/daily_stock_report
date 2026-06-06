@@ -133,3 +133,14 @@ def test_market_phase_asymmetric() -> None:
     assert _market_phase("나스닥", {5: -2, 20: 1, 60: 3, 120: 5, "rsi": 55})[1] == "단기눌림"   # 5일만 음
     assert _market_phase("나스닥", {5: 1, 20: 2, 60: 3, 120: 5, "rsi": 55})[1] == "정상"
     assert _market_phase("나스닥", {5: 1, 20: 2, 60: 3, 120: 5, "rsi": 55, "g5_prev": -2})[1] == "상승전환"  # 5일선 음→양+20일위
+
+
+def test_market_phase_bottom_tiers() -> None:
+    """바닥 3단계 게이지 — 월봉/주봉 RSI·CCI (#419/#422/#424). 코스닥 주봉신호 제외."""
+    from src.market_report.pipeline import _market_phase
+    base = {5: 1, 20: 2, 60: 3, 120: 5, "rsi": 50}
+    assert _market_phase("나스닥", {**base, "rsi_m": 29})[1] == "역대급 대바닥"   # 월봉 RSI≤31
+    assert _market_phase("나스닥", {**base, "rsi_w": 30})[1] == "강한 바닥"        # 주봉 RSI≤31
+    assert _market_phase("S&P500", {**base, "cci_w": -210})[1] == "강한 바닥"     # 주봉 CCI≤-200
+    assert _market_phase("코스닥", {**base, "rsi_w": 28})[1] == "정상"            # 코스닥 주봉 제외
+    assert _market_phase("나스닥", {**base, "cci": -220})[1] == "바닥권"          # 일봉 CCI≤-200

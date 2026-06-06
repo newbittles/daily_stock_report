@@ -726,9 +726,19 @@ def _market_phase(label: str, gaps: dict) -> tuple[str, str]:
     rv = gaps.get("rsi")
     if g120 is None or g60 is None:
         return ("⚪", "판단불가")
-    # 🩹 바닥권(매수기회) — 검증된 실전신호 우선: 지수 RSI≤30 OR 60일선 이격≤-7%
-    # (백테스트 #371: 20일후 +5~10%·승률 60~100%. E 투매바닥·F&G와 일맥상통)
-    if (rv is not None and rv <= 30) or g60 <= -7:
+    # 바닥 3단계 게이지(백테스트 #371/#419/#422/#424). 코스닥 주봉신호는 노이즈라 제외.
+    rsi_w, rsi_m = gaps.get("rsi_w"), gaps.get("rsi_m")
+    cci_d, cci_w = gaps.get("cci"), gaps.get("cci_w")
+    is_kosdaq = label == "코스닥"
+    # 🔵🔵🔵 역대급 대바닥 — 월봉 RSI≤31 (희귀, 6개월후 +14~60%·승80%↑, 2008급)
+    if rsi_m is not None and rsi_m <= 31:
+        return ("🔵🔵🔵", "역대급 대바닥")
+    # 🔵🔵 강한 바닥(중기) — 주봉 RSI≤31 OR 주봉 CCI≤-200 (12주후 +6~10%·승60~88%, 코스닥 제외)
+    if not is_kosdaq and ((rsi_w is not None and rsi_w <= 31)
+                          or (cci_w is not None and cci_w <= -200)):
+        return ("🔵🔵", "강한 바닥")
+    # 🔵 바닥권(1차) — 일봉 RSI≤30 OR 60일이격≤-7% OR 일봉 CCI≤-200 (검증 #371/#424)
+    if (rv is not None and rv <= 30) or g60 <= -7 or (cci_d is not None and cci_d <= -200):
         return ("🔵", "바닥권")
     # 🔴 과열(고점권 경계·정보용) = 이격 임계 AND RSI≥70. ⚠️타이밍 신뢰 낮음(#363) — 매도 트리거 아님.
     if (g120 >= _OVERHEAT_120.get(label, 12.0) or g60 >= _OVERHEAT_60.get(label, 9.0)) \
@@ -765,8 +775,9 @@ async def _index_ma_gaps(symbol: str) -> dict:
 
         import FinanceDataReader as fdr
 
-        from src.indicators.core import moving_average, rsi
-        start = (_dt.date.today() - _dt.timedelta(days=420)).isoformat()
+        from src.indicators.core import cci, moving_average, rsi
+        # 800일 — 월봉 RSI(14, ~15개월 필요)·주봉 CCI까지 계산. 일봉 이격/RSI는 마지막값이라 불변.
+        start = (_dt.date.today() - _dt.timedelta(days=800)).isoformat()
         df = fdr.DataReader(symbol, start)
         c = [float(x) for x in df["Close"].dropna()]
         if len(c) < 120:
@@ -783,6 +794,33 @@ async def _index_ma_gaps(symbol: str) -> dict:
         rv = rsi(c, 14)[-1]
         if rv is not None:
             out["rsi"] = round(rv)
+        # 바닥 3단계용(#419/#422/#424): 일봉 CCI + 주봉 RSI/CCI + 월봉 RSI
+        try:
+            hi = [float(x) for x in df["High"].dropna()]
+            lo = [float(x) for x in df["Low"].dropna()]
+            if len(hi) == len(c) and len(lo) == len(c):
+                cd = cci(hi, lo, c, 20)[-1]
+                if cd is not None:
+                    out["cci"] = round(cd)
+            wc = df["Close"].resample("W-FRI").last().dropna()
+            wcl = [float(x) for x in wc]
+            if len(wcl) >= 15:
+                wr = rsi(wcl, 14)[-1]
+                if wr is not None:
+                    out["rsi_w"] = round(wr)
+            wh = [float(x) for x in df["High"].resample("W-FRI").max().dropna()]
+            wl = [float(x) for x in df["Low"].resample("W-FRI").min().dropna()]
+            if len(wcl) >= 20 and len(wh) == len(wcl) and len(wl) == len(wcl):
+                cw = cci(wh, wl, wcl, 20)[-1]
+                if cw is not None:
+                    out["cci_w"] = round(cw)
+            mc = [float(x) for x in df["Close"].resample("ME").last().dropna()]
+            if len(mc) >= 15:
+                mr = rsi(mc, 14)[-1]
+                if mr is not None:
+                    out["rsi_m"] = round(mr)
+        except Exception as exc:  # noqa: BLE001
+            logger.warning("index_bottom_metrics_failed symbol=%s error=%s", symbol, exc)
         # 거래량 연속 증가(최근 2일) — 반등에 거래량 실리는지 정보 표식(사용자 #388/#392)
         try:
             vol = [float(x) for x in df["Volume"].dropna()]
