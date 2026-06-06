@@ -109,6 +109,10 @@ def _format_index_lines(snap: MarketSnapshot) -> list[str]:
         lines.append(f"💱 원/달러 {snap.fx['value']:,.1f} ({snap.fx['change_pct']:+.2f}%)")
     if snap.wti:
         lines.append(f"🛢 WTI ${snap.wti['value']:,.1f} ({snap.wti['change_pct']:+.2f}%)")
+    fg = getattr(snap, "fear_greed", None)
+    if fg and fg.get("score") is not None:
+        flag = " 🔥극단공포=바닥권" if fg["score"] <= 25 else ""
+        lines.append(f"😨 공포탐욕 {fg['score']} ({fg.get('rating_ko') or fg.get('rating')}){flag}")
     if lines:
         lines.append("")
     return lines
@@ -221,11 +225,13 @@ def _format_e_picks(snap: MarketSnapshot) -> list[str]:
             head = f"{_naver_link(nm, tk)} {p.get('price', 0):,.0f}원"
         else:             # US
             head = f"{nm}({tk}) ${p.get('price', 0):,.2f}"
-        # 2단계 등급: 지수도 바닥(market_bottom)=🔥강 / 아니면 개별(시장 양호) (사용자 #330/#339)
+        # 2단계 등급: 지수RSI<35 OR 공포탐욕≤25 → 🔥강 / 아니면 개별(시장 양호) (사용자 #330/#331/#339)
+        _fg = p.get("fg_score")
+        _fgs = f"·공포탐욕{_fg}" if _fg is not None else ""
         if p.get("market_bottom"):
-            badge = " 🔥시장 동반 바닥"
+            badge = f" 🔥시장 동반 바닥(지수RSI{p.get('market_rsi','-')}{_fgs})"
         elif p.get("market_rsi") is not None:
-            badge = f" (개별·지수RSI{p['market_rsi']})"
+            badge = f" (개별·지수RSI{p['market_rsi']}{_fgs})"
         else:
             badge = ""
         lines.append(f"  · {head} ({sign}{chg:.1f}%) RSI{p.get('rsi', 0):.0f}{badge}")
@@ -498,6 +504,12 @@ def _format_us_morning_summary(snap: MarketSnapshot) -> str:
         if snap.wti:
             parts.append(f"WTI ${snap.wti['value']:,.1f}({snap.wti['change_pct']:+.1f}%)")
         lines.append("📊 " + "  ·  ".join(parts))
+        lines.append("")
+
+    fg = getattr(snap, "fear_greed", None)
+    if fg and fg.get("score") is not None:
+        flag = " 🔥극단공포=바닥권" if fg["score"] <= 25 else ""
+        lines.append(f"😨 공포탐욕지수 {fg['score']} ({fg.get('rating_ko') or fg.get('rating')}){flag}")
         lines.append("")
 
     if snap.summary:

@@ -124,8 +124,14 @@ async def collect_us_snapshot() -> MarketSnapshot:
         snap.wti = macro.get("wti")
     except Exception as exc:
         logger.warning("us_macro_failed error=%s", exc)
-    logger.info("us_snapshot_collected indices=%d bigtech=%d sectors=%d",
-                len(snap.us_indices), len(snap.us_bigtech), len(snap.us_sectors))
+    try:
+        from src.datasource.us.fear_greed import fetch_fear_greed
+        snap.fear_greed = await fetch_fear_greed()  # 공포탐욕지수(바닥 보조, 사용자 #331)
+    except Exception as exc:  # noqa: BLE001
+        logger.warning("us_fear_greed_failed error=%s", exc)
+    logger.info("us_snapshot_collected indices=%d bigtech=%d sectors=%d fg=%s",
+                len(snap.us_indices), len(snap.us_bigtech), len(snap.us_sectors),
+                snap.fear_greed.get("score") if snap.fear_greed else None)
     return snap
 
 
@@ -607,11 +613,16 @@ async def _market_rsi(market: str) -> float | None:
         return None
 
 
-def _tag_market_bottom(picks: list[dict], market_rsi: float | None, threshold: float = 35.0) -> None:
-    """E 픽에 시장 동반 바닥 등급 부착 — 지수 RSI<threshold면 '강'(market_bottom=True)."""
+def _tag_market_bottom(picks: list[dict], market_rsi: float | None, threshold: float = 35.0,
+                       fg_score: float | None = None, fg_max: float = 25.0) -> None:
+    """E 픽에 시장 동반 바닥 등급 부착 — 지수 RSI<threshold OR 공포탐욕≤fg_max면 '강'(사용자 #330/#331).
+
+    공포탐욕지수(F&G)≤25(extreme fear)도 시장 바닥 신호로 인정(백테스트: F&G≤25 매수 20일 +4~9%)."""
+    fg_bottom = fg_score is not None and fg_score <= fg_max
     for p in (picks or []):
         p["market_rsi"] = round(market_rsi) if market_rsi is not None else None
-        p["market_bottom"] = bool(market_rsi is not None and market_rsi < threshold)
+        p["fg_score"] = round(fg_score) if fg_score is not None else None
+        p["market_bottom"] = bool((market_rsi is not None and market_rsi < threshold) or fg_bottom)
 
 
 async def _collect_us_screening(snap: MarketSnapshot, *, per_group: int = 5) -> None:
@@ -826,7 +837,8 @@ async def _collect_us_screening(snap: MarketSnapshot, *, per_group: int = 5) -> 
             from src.datasource.kr_4h import fetch_4h_rsi_oversold
             _ok = await fetch_4h_rsi_oversold([p["symbol"] for p in e_cand], market="US")
             snap.e_picks = [p for p in e_cand if p["symbol"] in _ok][:7]
-            _tag_market_bottom(snap.e_picks, await _market_rsi("US"))  # 나스닥 동반 바닥 등급(#330/#339)
+            _fg_us = snap.fear_greed.get("score") if snap.fear_greed else None
+            _tag_market_bottom(snap.e_picks, await _market_rsi("US"), fg_score=_fg_us)  # 나스닥/F&G 동반바닥(#330/#331/#339)
             snap.surge_picks = sorted(surge, key=lambda x: x["change_pct"], reverse=True)[:7]
             logger.info("us_e_picks_ready daily=%d final=%d surge=%d",
                         len(e_cand), len(snap.e_picks), len(snap.surge_picks))
@@ -1053,7 +1065,13 @@ async def run_full(
                 from src.datasource.kr_4h import fetch_4h_rsi_oversold
                 _ok = await fetch_4h_rsi_oversold([p["ticker"] for p in _e_cand], market="KR")
                 snap.e_picks = [p for p in _e_cand if p["ticker"] in _ok][:7]
-                _tag_market_bottom(snap.e_picks, await _market_rsi("KR"))  # 코스피 동반 바닥 등급(#330/#339)
+                try:
+                    from src.datasource.us.fear_greed import fetch_fear_greed
+                    snap.fear_greed = await fetch_fear_greed()  # 글로벌 공포탐욕(KR 바닥 보조, #331)
+                except Exception as exc:  # noqa: BLE001
+                    logger.warning("kr_fear_greed_failed error=%s", exc)
+                _fg_kr = snap.fear_greed.get("score") if snap.fear_greed else None
+                _tag_market_bottom(snap.e_picks, await _market_rsi("KR"), fg_score=_fg_kr)  # 코스피/F&G 동반바닥(#330/#331/#339)
                 logger.info("e_picks_ready daily=%d final=%d", len(_e_cand), len(snap.e_picks))
             except Exception as exc:
                 logger.warning("e_picks_4h_failed error=%s", exc)

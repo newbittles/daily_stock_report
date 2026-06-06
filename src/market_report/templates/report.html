@@ -437,6 +437,13 @@ ${{ "{:,.2f}".format(item.price) }} <span class="{{ 'up-text' if pct >= 0 else '
         </span>
         <span>{{ snap.generated_at.strftime('%Y년 %m월 %d일 %H:%M') }}</span>
       </div>
+      {% if snap.fear_greed %}
+      {% set _fg = snap.fear_greed.score %}
+      <div class="summary-box" style="margin-top:0.5rem;border-left:4px solid {{ '#f85149' if _fg <= 25 else ('#d29922' if _fg < 45 else ('#3fb950' if _fg > 55 else '#8b949e')) }};">
+        <div class="label">😨 공포탐욕지수 (CNN Fear &amp; Greed)</div>
+        <p style="margin:0;"><strong style="font-size:1.1rem;">{{ _fg }}</strong> / 100 — {{ snap.fear_greed.rating_ko or snap.fear_greed.rating }}{% if _fg <= 25 %} · 🔥 극단 공포 = 바닥 매수권(백테스트 F&amp;G≤25 매수 20일 +4~9%){% endif %}</p>
+      </div>
+      {% endif %}
     </header>
 
     {# 🌎 미국 증시 마감 (us_morning) #}
@@ -708,7 +715,7 @@ ${{ "{:,.2f}".format(item.price) }} <span class="{{ 'up-text' if pct >= 0 else '
           {% endif %}
           <span class="{{ 'up-text' if p.change_pct >= 0 else 'down-text' }}">{{ '+' if p.change_pct >= 0 else '' }}{{ "{:.2f}".format(p.change_pct) }}%</span>
           <span style="color:var(--text-dim);font-size:0.8rem;">RSI {{ "{:.0f}".format(p.rsi) }}</span>
-          {% if p.market_bottom %}<span class="strat-badge" style="background:var(--red);color:#fff;">🔥 시장 동반 바닥{% if p.market_rsi is not none %}(지수RSI {{ p.market_rsi }}){% endif %}</span>{% elif p.market_rsi is not none %}<span style="color:var(--text-dim);font-size:0.78rem;">· 개별 바닥(지수RSI {{ p.market_rsi }}, 시장 양호)</span>{% endif %}
+          {% if p.market_bottom %}<span class="strat-badge" style="background:var(--red);color:#fff;">🔥 시장 동반 바닥({% if p.market_rsi is not none %}지수RSI {{ p.market_rsi }}{% endif %}{% if p.fg_score is not none %}·공포탐욕 {{ p.fg_score }}{% endif %})</span>{% elif p.market_rsi is not none %}<span style="color:var(--text-dim);font-size:0.78rem;">· 개별 바닥(지수RSI {{ p.market_rsi }}{% if p.fg_score is not none %}·공포탐욕 {{ p.fg_score }}{% endif %}, 시장 양호)</span>{% endif %}
           {% if p.reason %}<div class="theme-reason">{{ p.reason }}</div>{% endif %}
           {{ sec_detail(p) }}
           {% if p.ai_summary %}<button type="button" class="ai-btn" onclick="showAI(this)" data-name="{{ p.name }}" data-summary="{{ p.ai_summary|e }}">🤖 AI요약</button>{% endif %}

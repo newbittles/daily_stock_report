@@ -95,6 +95,7 @@ class MarketSnapshot:
     market_flows: list[dict] = field(default_factory=list)  # 당일 수급: [{market,personal,foreign,institution,date}] 억
     market_flows_history: list[dict] = field(default_factory=list)  # 최근 3일 일자별: [{date,kospi,kosdaq}] 최신순
     flows_summary: str = ""  # AI 수급 요약(최근 일주일 개인/기관/외인 흐름·연속·전일/전주대비, 사용자 #313)
+    fear_greed: dict | None = None  # CNN 공포탐욕지수 {score, rating, rating_ko} (사용자 #331, 바닥 보조)
 
     # 테마
     top_themes: list[ThemeRank] = field(default_factory=list)

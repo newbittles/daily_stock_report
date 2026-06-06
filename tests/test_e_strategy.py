@@ -113,3 +113,17 @@ def test_pick_detail_line() -> None:
     assert "한국인" not in kr  # KR은 서학개미 없음
     us = _pick_detail_line({"marcap_str": "3000조", "theme": "반도체", "kr_netbuy_prev_eok": 120})
     assert "🇰🇷한국인 전일 +120억" in us
+
+
+def test_tag_market_bottom_with_fear_greed() -> None:
+    """F&G≤25(극단공포)면 지수 RSI가 높아도 시장 동반 바닥(강)으로 인정(사용자 #331)."""
+    from src.market_report.pipeline import _tag_market_bottom
+    p1 = [{"symbol": "X"}]
+    _tag_market_bottom(p1, market_rsi=50.0, fg_score=20.0)  # RSI 정상이나 F&G 극단공포
+    assert p1[0]["market_bottom"] is True and p1[0]["fg_score"] == 20
+    p2 = [{"symbol": "Y"}]
+    _tag_market_bottom(p2, market_rsi=50.0, fg_score=40.0)  # 둘 다 정상
+    assert p2[0]["market_bottom"] is False
+    p3 = [{"symbol": "Z"}]
+    _tag_market_bottom(p3, market_rsi=30.0, fg_score=40.0)  # 지수 RSI만 바닥
+    assert p3[0]["market_bottom"] is True
