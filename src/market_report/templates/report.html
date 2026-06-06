@@ -37,7 +37,7 @@ ${{ "{:,.2f}".format(item.price) }} <span class="{{ 'up-text' if pct >= 0 else '
 {# 전략 조건 배지(KR·US 통일, #414): 20일선 이격 + 🔥과열(BB돌파·거래량) + 5<10 크로스. KR 기존 출력과 동일 재현. #}
 {%- macro cond_badges(t) -%}
 {%- set _oh = t.overheat|default(false) and ('C' in (t.strategies|default([]))) -%}
-<span class="gap-badge {{ 'overheat' if _oh else '' }}">20일선 {{ '+' if t.gap20|default(0) >= 0 else '' }}{{ "{:.1f}".format(t.gap20|default(0)) }}%{% if _oh %} 🔥단기과열주의(BB돌파·거래량{{ "{:.1f}".format(t.vol_x|default(0)) }}x){% endif %}</span>{% if t.cross_signal|default(none) == 'PULLBACK' %} <span class="up-text" style="font-size:0.8rem;">🟢5&lt;10 단기눌림</span>{% elif t.cross_signal|default(none) == 'CORRECTION' %} <span class="down-text" style="font-size:0.8rem;">⚠️5&lt;10 조정시작</span>{% endif %}
+<span class="gap-badge {{ 'overheat' if _oh else '' }}">20일선 {{ '+' if t.gap20|default(0) >= 0 else '' }}{{ "{:.1f}".format(t.gap20|default(0)) }}%{% if _oh %} <span onclick="showFlag(this)" data-flag="overheat" style="cursor:pointer;">🔥단기과열주의(BB돌파·거래량{{ "{:.1f}".format(t.vol_x|default(0)) }}x)ⓘ</span>{% endif %}</span>{% if t.cross_signal|default(none) == 'PULLBACK' %} <span class="up-text" style="font-size:0.8rem;cursor:pointer;" onclick="showFlag(this)" data-flag="pullback">🟢5&lt;10 단기눌림ⓘ</span>{% elif t.cross_signal|default(none) == 'CORRECTION' %} <span class="down-text" style="font-size:0.8rem;cursor:pointer;" onclick="showFlag(this)" data-flag="correction">⚠️5&lt;10 조정시작ⓘ</span>{% endif %}
 {%- endmacro -%}
 {# 전략 시그널 배지(클릭 시 설명 팝업, 사용자 #456) #}
 {%- macro strat_badge(strats, suffix=' 시그널') -%}
@@ -461,7 +461,7 @@ ${{ "{:,.2f}".format(item.price) }} <span class="{{ 'up-text' if pct >= 0 else '
         <div class="label" style="font-size:0.78rem;color:var(--text-dim);">🚦 지수 상태 신호등</div>
         <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:3px;">
           {% for label, ph in snap.market_phase.items() %}
-          <span class="strat-badge">{{ ph.emoji }} {{ label }} {{ ph.name }}{% if snap.ma_gaps.get(label, {}).get('vol_up') %} 📊연속↑{% endif %}</span>
+          <span class="strat-badge" onclick="showFlag(this)" data-flag="phase:{{ ph.name }}" style="cursor:pointer;" title="신호등 설명">{{ ph.emoji }} {{ label }} {{ ph.name }}{% if snap.ma_gaps.get(label, {}).get('vol_up') %} 📊연속↑{% endif %} ⓘ</span>
           {% endfor %}
         </div>
       </div>
@@ -601,7 +601,7 @@ ${{ "{:,.2f}".format(item.price) }} <span class="{{ 'up-text' if pct >= 0 else '
           <span class="pick-ticker">{{ t.symbol }}</span>
           {% if t.strategies %}{{ strat_badge(t.strategies, '') }}{% endif %}
           <span class="px">{{ us_px(t, snap.mode) }}</span>
-          {{ cond_badges(t) }}{% if t.endstage %} <span class="down-text" style="font-size:0.8rem;">⚠️끝물</span>{% endif %}
+          {{ cond_badges(t) }}{% if t.endstage %} <span class="down-text" style="font-size:0.8rem;cursor:pointer;" onclick="showFlag(this)" data-flag="endstage">⚠️끝물ⓘ</span>{% endif %}
         </div>
         {% if t.marcap_str or t.turnover_str %}<div class="pick-sub">{% if t.marcap_str %}시총 {{ t.marcap_str }}{% endif %}{% if t.turnover_str %} · 거래대금 {{ t.turnover_str }}{% endif %}</div>{% endif %}
         {% if t.sector %}<div class="pick-sub">테마: {{ t.sector }}</div>{% endif %}
@@ -624,7 +624,7 @@ ${{ "{:,.2f}".format(item.price) }} <span class="{{ 'up-text' if pct >= 0 else '
         <li>
           <a href="https://search.naver.com/search.naver?query={{ (p.name ~ ' 주가') | urlencode }}" target="_blank" rel="noopener"><strong>{{ p.name }}</strong></a>
           <span class="pick-ticker">{{ p.symbol }}</span> · {{ us_px(p, snap.mode) }}
-          {{ cond_badges(p) }}{% if p.endstage %} <span class="down-text" style="font-size:0.8rem;">⚠️끝물</span>{% endif %}
+          {{ cond_badges(p) }}{% if p.endstage %} <span class="down-text" style="font-size:0.8rem;cursor:pointer;" onclick="showFlag(this)" data-flag="endstage">⚠️끝물ⓘ</span>{% endif %}
           {% if p.marcap_str or p.turnover_str or g.initial == 'B' %}<div class="pick-sub">{% if p.marcap_str %}시총 {{ p.marcap_str }}{% endif %}{% if p.turnover_str %} · 거래대금 {{ p.turnover_str }}{% endif %}{% if g.initial in ['B', 'C'] %} · 20MA괴리 <strong class="hl-bold"{% if g.initial == 'B' and p.gap20 >= -5 and p.gap20 <= 5 %} style="color:var(--red);"{% endif %}>{{ '+' if p.gap20 >= 0 else '' }}{{ p.gap20 }}%</strong>{% endif %}</div>{% endif %}
           {% if p.sector %}<div class="pick-sub">테마: {{ p.sector }}</div>{% endif %}
           {{ kr_nb(p) }}
@@ -827,7 +827,7 @@ ${{ "{:,.2f}".format(item.price) }} <span class="{{ 'up-text' if pct >= 0 else '
           <button type="button" class="code-copy" data-code="{{ t.ticker }}" onclick="copyCode(this)" title="종목코드 복사 (MTS 검색창에 붙여넣기)">📋</button>
           <span class="px">{{ "{:,.0f}".format(t.price) }}원</span>
           <span class="{{ 'up-text' if t.change_pct >= 0 else 'down-text' }}">{{ '+' if t.change_pct >= 0 else '' }}{{ "{:.1f}".format(t.change_pct) }}%</span>
-          {% if t.endstage %}<span class="down-text">⚠️끝물</span>{% endif %}
+          {% if t.endstage %}<span class="down-text" style="cursor:pointer;" onclick="showFlag(this)" data-flag="endstage">⚠️끝물ⓘ</span>{% endif %}
         </div>
         <div class="top3-meta">
           {% if t.ai_summary %}<button type="button" class="ai-btn" onclick="showAI(this)" data-name="{{ t.name }}" data-summary="{{ t.ai_summary|e }}">🤖 AI요약</button>{% endif %}
@@ -1008,7 +1008,7 @@ ${{ "{:,.2f}".format(item.price) }} <span class="{{ 'up-text' if pct >= 0 else '
           {{ strat_badge(p.strategies) }}
           <span class="px">{{ "{:,.0f}".format(p.price) }}원</span>
           <span class="{{ 'up-text' if p.change_pct >= 0 else 'down-text' }}">{{ '+' if p.change_pct >= 0 else '' }}{{ "{:.1f}".format(p.change_pct) }}%</span>
-          {% if p.endstage %}<span class="down-text">⚠️끝물</span>{% endif %}
+          {% if p.endstage %}<span class="down-text" style="cursor:pointer;" onclick="showFlag(this)" data-flag="endstage">⚠️끝물ⓘ</span>{% endif %}
           {% if p.ai_summary or p.marcap_str %}
           <div class="pick-line">
             {% if p.ai_summary %}<button type="button" class="ai-btn" onclick="showAI(this)" data-name="{{ p.name }}" data-summary="{{ p.ai_summary|e }}">🤖 AI요약</button>{% endif %}
@@ -1017,7 +1017,7 @@ ${{ "{:,.2f}".format(item.price) }} <span class="{{ 'up-text' if pct >= 0 else '
           {% endif %}
           <div class="theme-reason">{{ p.reason }}</div>
           {% set _phoh = p.overheat and 'C' in p.strategies %}
-          <div class="pick-meta" style="color:{{ 'var(--red)' if _phoh else 'var(--text-dim)' }};">📊 20일선 이격 {% if 'B' in p.strategies and p.gap20 >= -5 and p.gap20 <= 5 %}<strong style="color:var(--red);">{{ '+' if p.gap20 >= 0 else '' }}{{ "{:.1f}".format(p.gap20) }}%</strong>{% else %}{{ '+' if p.gap20 >= 0 else '' }}{{ "{:.1f}".format(p.gap20) }}%{% endif %}{% if _phoh %} 🔥단기과열주의(BB돌파·거래량{{ "{:.1f}".format(p.vol_x) }}x){% endif %}{% if p.cross_signal == 'PULLBACK' %} <span class="up-text">· 🟢5&lt;10 단기눌림</span>{% elif p.cross_signal == 'CORRECTION' %} <span class="down-text">· ⚠️5&lt;10 조정시작</span>{% endif %}</div>
+          <div class="pick-meta" style="color:{{ 'var(--red)' if _phoh else 'var(--text-dim)' }};">📊 20일선 이격 {% if 'B' in p.strategies and p.gap20 >= -5 and p.gap20 <= 5 %}<strong style="color:var(--red);">{{ '+' if p.gap20 >= 0 else '' }}{{ "{:.1f}".format(p.gap20) }}%</strong>{% else %}{{ '+' if p.gap20 >= 0 else '' }}{{ "{:.1f}".format(p.gap20) }}%{% endif %}{% if _phoh %} <span onclick="showFlag(this)" data-flag="overheat" style="cursor:pointer;">🔥단기과열주의(BB돌파·거래량{{ "{:.1f}".format(p.vol_x) }}x)ⓘ</span>{% endif %}{% if p.cross_signal == 'PULLBACK' %} <span class="up-text" style="cursor:pointer;" onclick="showFlag(this)" data-flag="pullback">· 🟢5&lt;10 단기눌림ⓘ</span>{% elif p.cross_signal == 'CORRECTION' %} <span class="down-text" style="cursor:pointer;" onclick="showFlag(this)" data-flag="correction">· ⚠️5&lt;10 조정시작ⓘ</span>{% endif %}</div>
           <div class="pick-meta">
             {{ '업종' if p.theme_kind == 'sector' else '테마' }}:
             {% if p.theme and p.theme_kind == 'theme' and p.theme_idx %}<a href="https://judal.co.kr/?view=stockList&themeIdx={{ p.theme_idx }}" target="_blank" rel="noopener">{{ p.theme }}</a>
@@ -1045,7 +1045,7 @@ ${{ "{:,.2f}".format(item.price) }} <span class="{{ 'up-text' if pct >= 0 else '
           <span class="{{ 'up-text' if h.profit_rate >= 0 else 'down-text' }}">
             ({{ '+' if h.profit_rate >= 0 else '' }}{{ "{:.1f}".format(h.profit_rate) }}%)
           </span>
-          {% if h.endstage %}<span class="down-text">⚠️끝물</span>{% endif %}
+          {% if h.endstage %}<span class="down-text" style="cursor:pointer;" onclick="showFlag(this)" data-flag="endstage">⚠️끝물ⓘ</span>{% endif %}
           {% if h.cross_signal == 'PULLBACK' %}<span class="up-text" style="font-size:0.85rem;">🟢5&lt;10 단기눌림(홀드)</span>{% elif h.cross_signal == 'CORRECTION' %}<span class="down-text" style="font-size:0.85rem;">⚠️5&lt;10 조정시작(익절검토)</span>{% endif %}
           <div class="theme-reason">{{ h.reason }}</div>
         </li>
@@ -1266,6 +1266,29 @@ ${{ "{:,.2f}".format(item.price) }} <span class="{{ 'up-text' if pct >= 0 else '
       }).join('\n\n');
       document.getElementById('ai-modal-title').textContent = '🎯 전략 시그널 설명';
       document.getElementById('ai-modal-body').textContent = body || '설명이 없습니다.';
+      document.getElementById('ai-modal').classList.add('active');
+    }
+
+    // 조건 플래그(과열·끝물·눌림·조정·신호등) 설명 팝업 (사용자 #459)
+    const FLAG_INFO = {
+      'overheat': '🔥 단기과열주의 — 일봉 볼린저밴드(20일·2σ) 상단을 종가가 돌파 = 단기 과열. C(추세추종) 종목에만 표시하며, 단기 조정 가능성 참고용(즉시 하락 보장 아님).',
+      'pullback': '🟢 5<10 단기눌림 — 5일선이 10일선 아래로 내려간 단기 데드크로스이나 아직 20일선 위 = 상승추세 중 단기 조정(눌림). 홀드/저가매수 참고.',
+      'correction': '⚠️ 5<10 조정시작 — 5<10 데드크로스 + 20일선 이탈 조짐 = 조정 시작 가능. 추세추종(C)에서 익절·리스크관리 검토 신호.',
+      'endstage': '⚠️ 끝물 — 단기 급등이 과도해 추세 막바지(상투) 위험 구간. 신규 진입 주의.',
+      'phase:바닥권': '🔵 바닥권(1차) — 일봉 RSI≤30 / 60일선 이격≤-7% / 일봉 CCI≤-200 중 하나. 과매도 1차 바닥(백테스트 20일후 +5~10%).',
+      'phase:강한 바닥': '🔵🔵 강한 바닥(중기) — 주봉 RSI≤31 또는 주봉 CCI≤-200. 코스닥 제외(노이즈). 백테스트 12주후 +6~10%·승률 60~88%.',
+      'phase:역대급 대바닥': '🔵🔵🔵 역대급 대바닥 — 월봉 RSI≤31. 2008 금융위기급 세대 바닥(매우 희귀, 6개월후 +14~60%).',
+      'phase:과열': '🔴 과열 — 지수 이격 임계 초과 + RSI≥70 = 고점권 경계(정보용). 단일지표 고점 적중률 낮아 매도 트리거 아님.',
+      'phase:상승전환': '🔼 상승전환 — 5일선 음→양 회복 + 20일선 위 = 진짜 반등 초입(백테스트 미국 69% vs 가짜 46%).',
+      'phase:하락전환': '🔻 하락전환 — 60일선 이탈 = 중기 추세 하락 전환 경계.',
+      'phase:조정': '🟠 조정 — 20일선 이탈 = 단기 조정 국면.',
+      'phase:단기눌림': '🟡 단기눌림 — 5일선만 이탈(20일선은 위) = 일시적 단기 조정.',
+      'phase:정상': '🟢 정상 — 과열·바닥·전환 신호 없는 일반 상승/중립 구간.'
+    };
+    function showFlag(btn) {
+      if (window.event) window.event.stopPropagation();
+      document.getElementById('ai-modal-title').textContent = 'ℹ️ 시그널 설명';
+      document.getElementById('ai-modal-body').textContent = FLAG_INFO[btn.dataset.flag] || '설명이 없습니다.';
       document.getElementById('ai-modal').classList.add('active');
     }
 
