@@ -1026,17 +1026,12 @@ ${{ "{:,.2f}".format(item.price) }} <span class="{{ 'up-text' if pct >= 0 else '
     {# 4. 강세 테마 #}
     {% if snap.top_themes %}
     <section>
-      {% if snap.leading_themes %}
-      <div class="lead-themes">🚀 <strong>주도 테마</strong> <span style="color:var(--text-dim);font-size:0.85rem;">(오늘 상위종목이 속한 테마)</span><br>
-        {% for th in snap.leading_themes %}<span class="lead-theme-chip">{{ th }}</span>{% endfor %}
-      </div>
-      {% endif %}
-      <h2><span class="icon">🔥</span>강세/약세 테마 Top {{ snap.top_themes|length }}</h2>
+      <h2><span class="icon">🔥</span>강세/약세 테마 Top {{ snap.top_themes|length }} <span style="color:var(--text-dim);font-size:0.8rem;">(🚀주도 = 오늘 상위종목이 속한 테마)</span></h2>
       {% for t in snap.top_themes %}
       <div class="theme">
         <div class="theme-rank">{{ t.rank }}</div>
         <div class="theme-info">
-          <div class="name">{{ t.name }}</div>
+          <div class="name">{{ t.name }}{% if t.name in snap.leading_themes %} <span class="strat-badge" style="background:var(--green);">🚀주도</span>{% endif %}</div>
           {% if t.leading_stocks %}
           <div class="leads">▸ {{ t.leading_stocks[:3]|join(', ') }}</div>
           {% endif %}
