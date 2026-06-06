@@ -719,6 +719,29 @@ ${{ "{:,.2f}".format(item.price) }} <span class="{{ 'up-text' if pct >= 0 else '
     </section>
     {% endif %}
 
+    {# 2. AI 요약 (us_morning/us_premarket은 지수 아래에서 이미 표시 → 여기선 KR만) #}
+    {% if snap.summary and snap.mode not in ['us_morning', 'us_premarket', 'us_intraday'] %}
+    <section>
+      <h2><span class="icon">🤖</span>AI 시장 요약</h2>
+      <div class="summary-box">
+        <div class="label">한 줄 요약</div>
+        <p>{{ snap.summary }}</p>
+      </div>
+      {% if snap.why_moved %}
+      <div class="summary-box">
+        <div class="label">왜 움직였나</div>
+        <p>{{ snap.why_moved }}</p>
+      </div>
+      {% endif %}
+      {% if snap.theme_commentary %}
+      <div class="summary-box">
+        <div class="label">테마 해설</div>
+        <p>{{ snap.theme_commentary }}</p>
+      </div>
+      {% endif %}
+    </section>
+    {% endif %}
+
     {# 1b. 투자자 수급 현황표 (지수 아래) — 최근 3일 일자별 #}
     {% if snap.market_flows_history %}
     <section>
@@ -749,26 +772,15 @@ ${{ "{:,.2f}".format(item.price) }} <span class="{{ 'up-text' if pct >= 0 else '
     </section>
     {% endif %}
 
-    {# 2. AI 요약 (us_morning/us_premarket은 지수 아래에서 이미 표시 → 여기선 KR만) #}
-    {% if snap.summary and snap.mode not in ['us_morning', 'us_premarket', 'us_intraday'] %}
+    {# 3b. 내일 관전 포인트 (마감 후) #}
+    {% if snap.mode == 'post_close' and snap.candidate_picks %}
     <section>
-      <h2><span class="icon">🤖</span>AI 시장 요약</h2>
-      <div class="summary-box">
-        <div class="label">한 줄 요약</div>
-        <p>{{ snap.summary }}</p>
-      </div>
-      {% if snap.why_moved %}
-      <div class="summary-box">
-        <div class="label">왜 움직였나</div>
-        <p>{{ snap.why_moved }}</p>
-      </div>
-      {% endif %}
-      {% if snap.theme_commentary %}
-      <div class="summary-box">
-        <div class="label">테마 해설</div>
-        <p>{{ snap.theme_commentary }}</p>
-      </div>
-      {% endif %}
+      <h2><span class="icon">🔭</span>내일 관전 포인트</h2>
+      <ul class="watch-list">
+        {% for w in snap.candidate_picks %}
+        <li>{{ w.watchpoint }}</li>
+        {% endfor %}
+      </ul>
     </section>
     {% endif %}
 
@@ -974,18 +986,6 @@ ${{ "{:,.2f}".format(item.price) }} <span class="{{ 'up-text' if pct >= 0 else '
         {% endif %}
       </div>
       {% endfor %}
-    </section>
-    {% endif %}
-
-    {# 3b. 내일 관전 포인트 (마감 후) #}
-    {% if snap.mode == 'post_close' and snap.candidate_picks %}
-    <section>
-      <h2><span class="icon">🔭</span>내일 관전 포인트</h2>
-      <ul class="watch-list">
-        {% for w in snap.candidate_picks %}
-        <li>{{ w.watchpoint }}</li>
-        {% endfor %}
-      </ul>
     </section>
     {% endif %}
 

@@ -290,43 +290,37 @@ def _format_surge_picks(snap: MarketSnapshot) -> list[str]:
     return lines
 
 
+def _format_themes_merged(snap: MarketSnapshot) -> list[str]:
+    """강세/약세 테마 + 주도테마 통합 한 블록(🚀=주도, 사용자 #448). 웹과 동일 기준."""
+    if not snap.top_themes:
+        return []
+    lead = set(snap.leading_themes or [])
+    lines = ["🔥 *강세/약세 테마* (🚀=주도)"]
+    for t in snap.top_themes[:5]:
+        sign = "+" if t.change_pct >= 0 else ""
+        star = " 🚀주도" if t.name in lead else ""
+        lines.append(f"  · {t.name}{star} {sign}{t.change_pct:.2f}%")
+        if getattr(t, "description", ""):
+            lines.append(f"    💡 {t.description}")
+    lines.append("")
+    return lines
+
+
 def _format_pre_summary(snap: MarketSnapshot) -> str:
-    """마감 전 텔레그램 요약 메시지 (Markdown)."""
+    """마감 전 텔레그램 요약 — 웹과 동일 순서: 지수→AI요약→수급→테마→종목(#447/#449)."""
     url = report_url(snap)
     date = snap.generated_at.strftime("%Y-%m-%d %H:%M")
 
     lines: list[str] = []
     lines.append(f"🟡 *마감 전 리포트* — {date}")
     lines.append("")
-
-    # 지수 (각 줄 1개 — 모바일 줄바꿈 자연스럽게)
-    lines.extend(_format_index_lines(snap))
-
-    # 투자자 수급 (당일 + 전일 병기, 억)
-    lines.extend(_format_market_flows(snap))
-    lines.extend(_format_flows_summary(snap))   # 🔎 AI 수급 요약(수급칸 바로 아래)
-
-    # AI 한줄 요약
-    if snap.summary:
+    lines.extend(_format_index_lines(snap))      # 📊 지수 + 신호등 병기
+    if snap.summary:                              # 🤖 AI 시장요약 (지수 바로 아래)
         lines.append(snap.summary)
         lines.append("")
-
-    # 주도 테마 (오늘 상위종목 — 라벨 아래 줄바꿈)
-    if snap.leading_themes:
-        lines.append("🚀 *주도 테마* (오늘 상위종목):")
-        lines.append(" · ".join(snap.leading_themes[:5]))
-        lines.append("")
-
-    # 강세 테마 Top 3 (테마 평균 등락률)
-    if snap.top_themes:
-        lines.append("🔥 *강세 테마*")
-        for t in snap.top_themes[:3]:
-            sign = "+" if t.change_pct >= 0 else ""
-            lines.append(f"  · {t.name} {sign}{t.change_pct:.2f}%")
-            if getattr(t, "description", ""):
-                lines.append(f"    💡 {t.description}")
-        lines.append("")
-
+    lines.extend(_format_market_flows(snap))      # 💰 수급
+    lines.extend(_format_flows_summary(snap))     # 🔎 AI 수급 요약
+    lines.extend(_format_themes_merged(snap))     # 🔥 강세/주도 테마 통합
     lines.extend(_format_strategy_holdings(snap))
     lines.extend(_format_e_picks(snap))       # 🩹 E 과매도 반등 후보
     lines.extend(_format_surge_picks(snap))   # 🚀 급등 초입
@@ -345,47 +339,26 @@ def _format_post_summary(snap: MarketSnapshot) -> str:
     lines.append(f"🔵 *마감 후 리포트* — {date}")
     lines.append("")
 
-    # 지수 (각 줄 1개 — 모바일 줄바꿈 자연스럽게)
-    lines.extend(_format_index_lines(snap))
-
-    # 투자자 수급 (당일 + 전일 병기)
-    lines.extend(_format_market_flows(snap))
-    lines.extend(_format_flows_summary(snap))   # 🔎 AI 수급 요약(수급칸 바로 아래)
-
-    if snap.summary:
+    # 웹과 동일 순서(#447/#449): 지수→AI요약→수급→관전포인트→테마→종목
+    lines.extend(_format_index_lines(snap))      # 📊 지수 + 신호등 병기
+    if snap.summary:                              # 🤖 AI 시장요약 (지수 바로 아래)
         lines.append(snap.summary)
         lines.append("")
-
-    # 왜 움직였나 (마감 후 핵심 AI 산출물 — 기존 텔레그램에 누락되어 있던 항목)
     if snap.why_moved:
         lines.append(f"💡 {snap.why_moved}")
         lines.append("")
-
-    # 주도 테마 (오늘 상위종목 — 라벨 아래 줄바꿈)
-    if snap.leading_themes:
-        lines.append("🚀 *주도 테마* (오늘 상위종목):")
-        lines.append(" · ".join(snap.leading_themes[:5]))
-        lines.append("")
-
-    # 강세 테마 Top 3
-    if snap.top_themes:
-        lines.append("🔥 *강세 테마*")
-        for t in snap.top_themes[:3]:
-            sign = "+" if t.change_pct >= 0 else ""
-            lines.append(f"  · {t.name} {sign}{t.change_pct:.2f}%")
-            if getattr(t, "description", ""):
-                lines.append(f"    💡 {t.description}")
-        lines.append("")
-
-    lines.extend(_format_strategy_holdings(snap))
-
-    # 내일 관전 포인트 (post_close: candidate_picks에 watchpoint로 보관됨 — 텔레그램에 누락됐던 항목)
+    lines.extend(_format_market_flows(snap))      # 💰 수급
+    lines.extend(_format_flows_summary(snap))     # 🔎 AI 수급 요약
+    # 🔭 내일 관전 포인트 (지수·수급 아래, #447/#449)
     watchpoints = [w.get("watchpoint") for w in (snap.candidate_picks or []) if w.get("watchpoint")]
     if watchpoints:
         lines.append("🔭 *내일 관전 포인트*")
         for w in watchpoints:
             lines.append(f"  · {w}")
         lines.append("")
+    lines.extend(_format_themes_merged(snap))     # 🔥 강세/주도 테마 통합
+
+    lines.extend(_format_strategy_holdings(snap))
 
     # 🌙 시간외(NXT) 상위 상승률 — 정규장 마감 후 넥스트레이드 변동(정규장 종가 대비)
     ot = getattr(snap, "overtime_gainers", None) or []
@@ -517,26 +490,22 @@ def _format_us_morning_summary(snap: MarketSnapshot) -> str:
         lines = [f"🌎 *미국 증시 마감 요약* — {date}", ""]
 
     if snap.us_indices:
-        parts = []
-        for q in snap.us_indices[:2]:  # S&P500·나스닥
+        mp = getattr(snap, "market_phase", None) or {}  # 지수 옆 신호등 병기(한국과 동일, #450)
+        for q in snap.us_indices[:2]:  # 나스닥·S&P500 각 한 줄(가시성)
             sign = "+" if q.get("change_pct", 0) >= 0 else ""
-            parts.append(f"{q['name']} {q['price']:,.0f}({sign}{q.get('change_pct', 0):.2f}%)")
+            ph = next((p for lbl, p in mp.items() if lbl in q["name"] or q["name"] in lbl), None)
+            suf = f" {ph['emoji']} {ph['name']}" if ph else ""
+            lines.append(f"📊 {q['name']} {q['price']:,.0f} ({sign}{q.get('change_pct', 0):.2f}%){suf}")
         if snap.gold:
-            parts.append(f"금 ${snap.gold['value']:,.0f}({snap.gold['change_pct']:+.1f}%)")
+            lines.append(f"🪙 금 ${snap.gold['value']:,.0f} ({snap.gold['change_pct']:+.1f}%)")
         if snap.wti:
-            parts.append(f"WTI ${snap.wti['value']:,.1f}({snap.wti['change_pct']:+.1f}%)")
-        lines.append("📊 " + "  ·  ".join(parts))
+            lines.append(f"🛢 WTI ${snap.wti['value']:,.1f} ({snap.wti['change_pct']:+.1f}%)")
         lines.append("")
 
     fg = getattr(snap, "fear_greed", None)
     if fg and fg.get("score") is not None:
         flag = " 🔥극단공포=바닥권" if fg["score"] <= 25 else ""
         lines.append(f"😨 공포탐욕지수 {fg['score']} ({fg.get('rating_ko') or fg.get('rating')}){flag}")
-        lines.append("")
-
-    mp = getattr(snap, "market_phase", None) or {}  # 🚦 신호등 한 줄(이격 숫자는 웹만, #426)
-    if mp:
-        lines.append("🚦 " + " · ".join(f"{ph['emoji']} {lbl} {ph['name']}" for lbl, ph in mp.items()))
         lines.append("")
 
     t = getattr(snap, "kr_us_netbuy_total", None)  # 💸 한국인 순매수 일평균(#377/#398)
