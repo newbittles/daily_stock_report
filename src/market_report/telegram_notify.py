@@ -552,6 +552,9 @@ def _format_us_morning_summary(snap: MarketSnapshot) -> str:
     if snap.why_moved:
         lines.append(f"💡 {snap.why_moved}")
         lines.append("")
+    if getattr(snap, "theme_commentary", ""):  # 🌏 업종·테마 종합 + 한국 시사점(#435)
+        lines.append(f"🌏 {snap.theme_commentary}")
+        lines.append("")
 
     # 뉴스: 모든 미국 리포트(장전·장중·마감) 텔레그램에선 제외 → 웹 리포트 최하단으로만(사용자 2026-06-05).
 
