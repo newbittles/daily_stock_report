@@ -129,6 +129,10 @@ async def collect_us_snapshot() -> MarketSnapshot:
         snap.fear_greed = await fetch_fear_greed()  # 공포탐욕지수(바닥 보조, 사용자 #331)
     except Exception as exc:  # noqa: BLE001
         logger.warning("us_fear_greed_failed error=%s", exc)
+    try:  # 지수 이평선 이격도(고점 판단, 사용자 #357)
+        snap.ma_gaps = {"나스닥": await _index_ma_gaps("IXIC"), "S&P500": await _index_ma_gaps("US500")}
+    except Exception as exc:  # noqa: BLE001
+        logger.warning("us_ma_gaps_failed error=%s", exc)
     logger.info("us_snapshot_collected indices=%d bigtech=%d sectors=%d fg=%s",
                 len(snap.us_indices), len(snap.us_bigtech), len(snap.us_sectors),
                 snap.fear_greed.get("score") if snap.fear_greed else None)
@@ -623,6 +627,33 @@ def _tag_market_bottom(picks: list[dict], market_rsi: float | None, threshold: f
         p["market_rsi"] = round(market_rsi) if market_rsi is not None else None
         p["fg_score"] = round(fg_score) if fg_score is not None else None
         p["market_bottom"] = bool((market_rsi is not None and market_rsi < threshold) or fg_bottom)
+
+
+async def _index_ma_gaps(symbol: str) -> dict:
+    """지수 이평선 이격도 — 5/10/20/60/120일선 대비 현재가 괴리%(사용자 #357, 고점 판단). 실패 시 {}."""
+    def _work() -> dict:
+        import datetime as _dt
+
+        import FinanceDataReader as fdr
+
+        from src.indicators.core import moving_average
+        start = (_dt.date.today() - _dt.timedelta(days=420)).isoformat()
+        df = fdr.DataReader(symbol, start)
+        c = [float(x) for x in df["Close"].dropna()]
+        if len(c) < 120:
+            return {}
+        out: dict[int, float] = {}
+        for k in (5, 10, 20, 60, 120):
+            ma = moving_average(c, k)[-1]
+            if ma:
+                out[k] = round((c[-1] - ma) / ma * 100, 1)
+        return out
+
+    try:
+        return await asyncio.to_thread(_work)
+    except Exception as exc:  # noqa: BLE001
+        logger.warning("index_ma_gaps_failed symbol=%s error=%s", symbol, exc)
+        return {}
 
 
 def _tag_bigtech_strategies(snap: MarketSnapshot, ohlcv: dict) -> None:
@@ -1241,6 +1272,12 @@ async def run_full(
         logger.error("pipeline_strategy_failed error=%s", exc)
 
     _inject_marcap(snap)
+
+    if mode in ("pre_close", "post_close"):  # 코스피/코스닥 이평선 이격도(고점 판단, 사용자 #357)
+        try:
+            snap.ma_gaps = {"코스피": await _index_ma_gaps("KS11"), "코스닥": await _index_ma_gaps("KQ11")}
+        except Exception as exc:  # noqa: BLE001
+            logger.warning("kr_ma_gaps_failed error=%s", exc)
 
     # 전략 스크린 표시용 — 종목당 1개로 중복제거 + 종합점수순 + 매칭전략 다 표기(사용자 2026-06-05).
     # marcap/ai 주입 후 빌드(screen_picks가 enrich된 상태). select_top3 재사용(return_all).

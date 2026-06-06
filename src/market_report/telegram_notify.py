@@ -113,8 +113,21 @@ def _format_index_lines(snap: MarketSnapshot) -> list[str]:
     if fg and fg.get("score") is not None:
         flag = " 🔥극단공포=바닥권" if fg["score"] <= 25 else ""
         lines.append(f"😨 공포탐욕 {fg['score']} ({fg.get('rating_ko') or fg.get('rating')}){flag}")
+    lines.extend(_format_ma_gaps(snap))  # 📐 지수 이평선 이격도(고점 판단, #357)
     if lines:
         lines.append("")
+    return lines
+
+
+def _format_ma_gaps(snap: MarketSnapshot) -> list[str]:
+    """📐 지수 이평선 이격도 — 5/10/20/60/120일선 대비 괴리%(고점 판단, 사용자 #357). 없으면 [] ."""
+    g = getattr(snap, "ma_gaps", None) or {}
+    lines: list[str] = []
+    for label, gaps in g.items():
+        if not gaps:
+            continue
+        parts = " ".join(f"{k}일{gaps[k]:+.1f}%" for k in (5, 10, 20, 60, 120) if k in gaps)
+        lines.append(f"📐 {label} 이격: {parts}")
     return lines
 
 
@@ -510,6 +523,11 @@ def _format_us_morning_summary(snap: MarketSnapshot) -> str:
     if fg and fg.get("score") is not None:
         flag = " 🔥극단공포=바닥권" if fg["score"] <= 25 else ""
         lines.append(f"😨 공포탐욕지수 {fg['score']} ({fg.get('rating_ko') or fg.get('rating')}){flag}")
+        lines.append("")
+
+    _mg = _format_ma_gaps(snap)  # 📐 지수 이평선 이격도(#357)
+    if _mg:
+        lines.extend(_mg)
         lines.append("")
 
     if snap.summary:
