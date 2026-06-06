@@ -1,0 +1,1413 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>마감 후 시장 리포트 — 2026-06-06</title>
+  <meta name="description" content="오늘 코스피와 코스닥 지수가 각각 5.54%, 4.50% 급락하며 시장 전반에 큰 하락세를 보였습니다. 반도체 업종의 약세와 일부 대형주의 부진이 시장 하락을 주도했습니다.">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #0f172a;
+      --surface: #1e293b;
+      --surface2: #273449;
+      --border: #334155;
+      --text: #e2e8f0;
+      --text-dim: #94a3b8;
+      --text-mute: #64748b;
+      --accent: #60a5fa;
+      --green: #34d399;
+      --red: #f87171;
+      --yellow: #fbbf24;
+      --purple: #a78bfa;
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      padding: 1rem;
+    }
+    .container { max-width: 980px; margin: 0 auto; }
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    /* Header */
+    .header {
+      padding: 1.5rem 0;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 1.5rem;
+    }
+    .header h1 { font-size: 1.5rem; color: var(--accent); margin-bottom: 0.25rem; }
+    .header .meta {
+      color: var(--text-dim);
+      font-size: 0.85rem;
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+    .badge {
+      display: inline-block;
+      padding: 0.25rem 0.6rem;
+      border-radius: 999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+    .badge.pre { background: #fbbf2422; color: var(--yellow); border: 1px solid #fbbf2455; }
+    .badge.post { background: #60a5fa22; color: var(--accent); border: 1px solid #60a5fa55; }
+
+    /* Section */
+    section {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.25rem 1.5rem;
+      margin-bottom: 1rem;
+    }
+    section h2 {
+      font-size: 1.05rem;
+      color: var(--text-dim);
+      margin-bottom: 0.75rem;
+      font-weight: 600;
+      letter-spacing: -0.01em;
+    }
+    section h2 .icon { margin-right: 0.4rem; }
+
+    /* Indexes */
+    .indexes { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
+    .index-card {
+      background: var(--surface2);
+      border-radius: 8px;
+      padding: 1rem;
+      border-left: 3px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+    .index-card.up { border-left-color: var(--green); }
+    .index-card.down { border-left-color: var(--red); }
+    .index-info { min-width: 0; }
+    .index-spark {
+      width: 100%;
+    }
+    .index-spark img { width: 100%; height: auto; object-fit: contain; border-radius: 4px; cursor: zoom-in; display: block; }
+    .supply-table { width: 100%; border-collapse: collapse; font-size: 0.95rem; }
+    .supply-table th, .supply-table td { padding: 0.5rem 0.4rem; text-align: right; border-bottom: 1px solid var(--border); }
+    .supply-table th { color: var(--text-dim); font-weight: 600; font-size: 0.85rem; }
+    .supply-table th:first-child, .supply-table td.sup-mk { text-align: left; color: var(--text); font-weight: 700; }
+    .supply-table td { font-variant-numeric: tabular-nums; }
+    .supply-table td.sup-date { text-align: left; color: var(--text-dim); font-size: 0.85rem; }
+    .supply-table tr.sup-daysep td { border-top: 2px solid var(--border); }
+    .lead-themes { margin-bottom: 0.75rem; line-height: 1.9; }
+    .lead-theme-chip { display: inline-block; background: #f59e0b22; color: #fbbf24; border: 1px solid #f59e0b55;
+      border-radius: 999px; padding: 0.15rem 0.6rem; margin: 0.15rem 0.3rem 0.15rem 0; font-size: 0.85rem; font-weight: 600; }
+    .index-name { font-size: 0.85rem; color: var(--text-dim); margin-bottom: 0.25rem; }
+    .index-value { font-size: 1.5rem; font-weight: 700; }
+    .index-change { font-size: 0.9rem; margin-top: 0.25rem; }
+    /* 등락률 텍스트: 상승=초록, 하락=빨강 (사용자 2026-06-05 변경) */
+    .up-text { color: var(--green); }
+    .down-text { color: var(--red); }
+
+    /* AI Summary */
+    .summary-box {
+      background: linear-gradient(135deg, #60a5fa15, #a78bfa15);
+      border: 1px solid #60a5fa44;
+      border-radius: 8px;
+      padding: 1rem 1.25rem;
+      margin-bottom: 0.75rem;
+    }
+    .summary-box .label {
+      color: var(--accent);
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      margin-bottom: 0.4rem;
+    }
+    .summary-box p { white-space: pre-wrap; }
+
+    /* Candidate picks */
+    .pick {
+      background: var(--surface2);
+      border-radius: 8px;
+      padding: 1rem 1.25rem;
+      margin-bottom: 0.75rem;
+      border-left: 3px solid var(--yellow);
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 1rem;
+    }
+    .pick.has-chart { grid-template-columns: 1fr 360px; }
+    .pick-body { min-width: 0; }
+    .pick-chart {
+      align-self: start;
+      background: #0f172a;
+      border-radius: 6px;
+      overflow: hidden;
+    }
+    .pick-chart img {
+      width: 100%;
+      height: auto;
+      display: block;
+      cursor: zoom-in;
+    }
+    .pick-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: 0.5rem;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+    .pick-name { font-size: 1.1rem; font-weight: 700; }
+    .pick-meta-group { display: inline-flex; align-items: baseline; gap: 0.4rem; flex-wrap: wrap; }
+    .pick-ticker { color: var(--text-mute); font-size: 0.85rem; font-family: monospace; }
+    .pick-rationale { color: var(--text); margin-bottom: 0.5rem; }
+    .pick-risk {
+      color: var(--text-dim);
+      font-size: 0.85rem;
+      padding-top: 0.4rem;
+      border-top: 1px dashed var(--border);
+    }
+    .pick-risk::before { content: "⚠ "; color: var(--yellow); }
+
+    /* Theme peers */
+    .pick-theme {
+      background: #60a5fa15;
+      border: 1px solid #60a5fa33;
+      border-radius: 6px;
+      padding: 0.5rem 0.75rem;
+      margin-bottom: 0.5rem;
+      font-size: 0.83rem;
+    }
+    .pick-theme-name {
+      color: var(--accent);
+      font-weight: 600;
+      margin-bottom: 0.3rem;
+    }
+    .pick-theme-name::before { content: "🏷 "; }
+    .peer-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+    }
+    .peer-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      padding: 0.2rem 0.6rem;
+      font-size: 0.78rem;
+    }
+    .peer-chip .pct { font-family: monospace; font-weight: 700; }
+
+    /* Theme reason */
+    .theme-reason {
+      grid-column: 1 / -1;
+      font-size: 0.83rem;
+      color: var(--text-dim);
+      margin-top: 0.4rem;
+      padding-top: 0.4rem;
+      border-top: 1px dashed var(--border);
+      line-height: 1.5;
+    }
+    .theme-reason::before { content: "💡 "; }
+    .theme {
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      grid-template-areas: "rank info pct" "reason reason reason";
+      gap: 0.5rem 0.75rem;
+      align-items: center;
+      padding: 0.7rem 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .theme-rank { grid-area: rank; }
+    .theme-info { grid-area: info; }
+    .theme-pct { grid-area: pct; }
+    .theme-reason { grid-area: reason; }
+
+    /* Lightbox overlay for chart click */
+    .lightbox {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.92);
+      z-index: 100;
+      cursor: zoom-out;
+      padding: 1rem;
+      overflow: auto;
+    }
+    .lightbox.active { display: flex; align-items: flex-start; justify-content: center; }
+    .lightbox img { max-width: 100%; height: auto; }
+    /* AI 요약 버튼 + 모달 */
+    .ai-btn { background: rgba(96,165,250,0.15); color: var(--accent); border: 1px solid rgba(96,165,250,0.4);
+      border-radius: 6px; padding: 1px 7px; font-size: 0.72rem; cursor: pointer; margin-left: 5px; white-space: nowrap; }
+    .ai-btn:hover { background: rgba(96,165,250,0.32); }
+    .ai-modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.65); z-index: 100;
+      align-items: center; justify-content: center; padding: 1rem; }
+    .ai-modal.active { display: flex; }
+    .ai-modal-content { background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+      max-width: 460px; width: 100%; padding: 1.3rem 1.4rem; position: relative; }
+    .ai-modal-content h3 { margin-bottom: 0.7rem; font-size: 1.05rem; color: var(--text); }
+    .ai-modal-content .ai-body { line-height: 1.65; white-space: pre-line; color: var(--text); font-size: 0.92rem; }
+    .ai-modal-close { position: absolute; top: 0.7rem; right: 0.9rem; background: none; border: none;
+      color: var(--text-mute); font-size: 1.2rem; cursor: pointer; line-height: 1; }
+
+    /* Watchpoint */
+    .watch-list { list-style: none; padding: 0; }
+    .watch-list li {
+      padding: 0.6rem 0;
+      padding-left: 1.5rem;
+      position: relative;
+      border-bottom: 1px solid var(--border);
+    }
+    .watch-list li:last-child { border-bottom: none; }
+    .watch-list li::before {
+      content: "▸";
+      position: absolute;
+      left: 0;
+      color: var(--accent);
+      font-weight: 700;
+    }
+
+    /* Themes (base styles — grid-template-areas redefined above) */
+    .theme:last-child { border-bottom: none; }
+    .theme-rank {
+      width: 1.8rem;
+      height: 1.8rem;
+      border-radius: 50%;
+      background: var(--surface2);
+      display: grid;
+      place-items: center;
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: var(--text-dim);
+    }
+    .theme-info .name { font-weight: 600; }
+    .theme-info .leads { font-size: 0.8rem; color: var(--text-dim); margin-top: 0.15rem; }
+    .theme-info .theme-why { font-size: 0.82rem; color: var(--text); margin-top: 0.3rem; line-height: 1.4; }
+    .strat-badge { font-size: 0.72rem; font-weight: 700; background: var(--accent); color: #fff; padding: 1px 6px; border-radius: 4px; }
+    .pick-sub { font-size: 0.82rem; color: var(--text-dim); margin-top: 0.2rem; }
+    .hl-bold { font-weight: 800; color: #e23b3b; }  /* 붉은색 볼드 (가시성) */
+    .theme-pct { font-weight: 700; font-size: 0.95rem; }
+
+    /* Stock tables */
+    .stock-list { display: flex; flex-direction: column; gap: 0.4rem; }
+    .stock-row {
+      display: grid;
+      grid-template-columns: 2rem 1fr auto auto;
+      gap: 0.6rem;
+      padding: 0.5rem 0;
+      align-items: center;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.9rem;
+    }
+    .stock-row:last-child { border-bottom: none; }
+    .stock-rank { color: var(--text-mute); font-family: monospace; }
+    .stock-name { font-weight: 500; }
+    .stock-name .ticker { color: var(--text-mute); font-size: 0.75rem; margin-left: 0.3rem; }
+    .stock-price { font-family: monospace; color: var(--text-dim); }
+    .stock-pct { font-family: monospace; font-weight: 700; min-width: 60px; text-align: right; }
+
+    /* Tabs for stock lists */
+    .tabs {
+      display: flex;
+      gap: 0.5rem;
+      margin-bottom: 0.75rem;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 0.5rem;
+    }
+    .tab {
+      padding: 0.4rem 0.85rem;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      cursor: pointer;
+      color: var(--text-dim);
+      font-size: 0.85rem;
+    }
+    .tab.active { background: var(--accent); color: var(--bg); border-color: var(--accent); }
+    .tab-pane { display: none; }
+    .tab-pane.active { display: block; }
+
+    /* News */
+    .news-item {
+      padding: 0.6rem 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .news-item:last-child { border-bottom: none; }
+    .news-title { color: var(--text); }
+    .news-meta { font-size: 0.75rem; color: var(--text-mute); margin-top: 0.2rem; }
+    .news-source { color: var(--accent); }
+
+    /* Disclaimer */
+    .disclaimer {
+      text-align: center;
+      padding: 1.5rem 1rem;
+      color: var(--text-mute);
+      font-size: 0.8rem;
+      margin-top: 1rem;
+      border-top: 1px solid var(--border);
+    }
+
+    /* 전략 스크린 칸 분리 */
+    .strat-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.8rem; }
+    .strat-col { border: 1px solid var(--border); border-radius: 10px; padding: 0.6rem 0.8rem; background: rgba(255,255,255,0.02); }
+    .strat-head { display: flex; align-items: center; justify-content: space-between; gap: 0.4rem; margin-bottom: 0.3rem; flex-wrap: wrap; }
+    .strat-name { font-weight: 700; font-size: 0.95rem; }
+    .copy-btn { font-size: 0.78rem; padding: 0.35rem 0.6rem; border: 1px solid var(--border); border-radius: 6px;
+      background: var(--green); color: #fff; cursor: pointer; white-space: nowrap; }
+    .copy-btn:active { opacity: 0.7; }
+    .code { color: var(--muted); font-size: 0.82rem; }
+    .code-copy { display: inline-block; font-size: 0.8rem; padding: 0.05rem 0.4rem; margin-left: 0.3rem;
+      border: 1px solid var(--border); border-radius: 5px; background: var(--bg); color: var(--text-dim);
+      cursor: pointer; vertical-align: middle; }
+    .code-copy:active { opacity: 0.6; }
+    .pick-meta { color: var(--muted); font-size: 0.8rem; margin-top: 0.2rem; }
+    .pick-line { display: flex; flex-wrap: wrap; align-items: center; gap: 0.4rem; margin-top: 0.35rem; }
+    .strat-col .watch-list li { padding-left: 0; }
+    .strat-col .watch-list li::before { content: ""; }
+
+    /* Responsive */
+    @media (max-width: 880px) {
+      .pick.has-chart { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 640px) {
+      .indexes { grid-template-columns: 1fr 1fr; }  /* 모바일도 2x2 유지 */
+      .header h1 { font-size: 1.25rem; }
+      .pick-name { font-size: 1rem; }
+      .strat-grid { grid-template-columns: 1fr; }  /* 모바일 1열 */
+    }
+    /* Top3 헤드라인 */
+    .top3-sec { border: 2px solid var(--green); border-radius: 12px; padding: 0.8rem 1rem; background: rgba(63,185,80,0.06); margin-bottom: 1rem; }
+    .top3-card { padding: 0.6rem 0; border-bottom: 1px dashed var(--border); }
+    .top3-card:last-of-type { border-bottom: none; }
+    .top3-head { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
+    .top3-rank { display: inline-flex; width: 1.6rem; height: 1.6rem; align-items: center; justify-content: center;
+      background: var(--green); color: #fff; border-radius: 50%; font-weight: 700; font-size: 0.9rem; }
+    .top3-head a { color: var(--txt); text-decoration: none; border-bottom: 1px dashed var(--accent); font-size: 1.05rem; }
+    .top3-reason { color: var(--sub, var(--muted)); font-size: 0.86rem; margin-top: 0.3rem; padding-left: 2.1rem; line-height: 1.4; }
+    .top3-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 0.45rem; padding-left: 2.1rem; margin: 0.3rem 0; }
+    .gap-badge { font-size: 0.8rem; color: var(--text-dim); }
+    .gap-badge.overheat { color: var(--red); font-weight: 700; }
+  </style>
+</head>
+<body>
+  <div class="container">
+
+    <header class="header">
+      <h1>📊 마감 후 시장 리포트</h1>
+      <div class="meta">
+        <span class="badge post">
+          🔵 마감 후
+        </span>
+        <span>2026년 06월 06일 11:43</span>
+      </div>
+    </header>
+
+
+
+    <section class="top3-sec">
+      <h2><span class="icon">🏆</span>오늘의 추천 Top 3</h2>
+      <div class="top3-card">
+        <div class="top3-head">
+          <span class="top3-rank">1</span>
+          <a href="https://finance.naver.com/item/main.naver?code=009150" target="_blank" rel="noopener"><strong>삼성전기</strong></a>
+          <button type="button" class="code-copy" data-code="009150" onclick="copyCode(this)" title="종목코드 복사 (MTS 검색창에 붙여넣기)">📋</button>
+          <span class="px">1,757,000원</span>
+          <span class="up-text">+2.4%</span>
+        </div>
+        <div class="top3-meta">
+<button type="button" class="ai-btn" onclick="showAI(this)" data-name="삼성전기" data-summary="삼성전기는 사물인터넷 테마 내에서 MLCC 관련주로 분류되어 상승한 것으로 보입니다.">🤖 AI요약</button><span class="code">시총 131조 2,368억</span>          <span class="gap-badge ">20일선 +30.9%</span>        </div>
+        <div class="top3-reason">B 시그널 · 고점대비 -19.8%</div>
+<div class="top3-reason" style="color:var(--green);">💰 기관 순매수(2일)</div>        <div class="top3-reason">테마: 사물인터넷 · 주도테마여부: <strong style="color:var(--text-mute);">X</strong></div>
+      </div>
+      <div class="top3-card">
+        <div class="top3-head">
+          <span class="top3-rank">2</span>
+          <a href="https://finance.naver.com/item/main.naver?code=011070" target="_blank" rel="noopener"><strong>LG이노텍</strong></a>
+          <button type="button" class="code-copy" data-code="011070" onclick="copyCode(this)" title="종목코드 복사 (MTS 검색창에 붙여넣기)">📋</button>
+          <span class="px">1,160,000원</span>
+          <span class="down-text">-1.1%</span>
+        </div>
+        <div class="top3-meta">
+<button type="button" class="ai-btn" onclick="showAI(this)" data-name="LG이노텍" data-summary="LG이노텍은 메타버스 테마 내에서 특별한 호재 없이 차익실현 매물이 나오며 하락한 것으로 추정됩니다.">🤖 AI요약</button><span class="code">시총 27조 4,538억</span>          <span class="gap-badge ">20일선 +23.9%</span>        </div>
+        <div class="top3-reason">B 시그널 · 고점대비 -35.1%</div>
+<div class="top3-reason" style="color:var(--green);">💰 기관 순매수(2일)</div>        <div class="top3-reason">테마: 메타버스 · 주도테마여부: <strong style="color:var(--text-mute);">X</strong></div>
+      </div>
+      <div class="top3-card">
+        <div class="top3-head">
+          <span class="top3-rank">3</span>
+          <a href="https://finance.naver.com/item/main.naver?code=055550" target="_blank" rel="noopener"><strong>신한지주</strong></a>
+          <button type="button" class="code-copy" data-code="055550" onclick="copyCode(this)" title="종목코드 복사 (MTS 검색창에 붙여넣기)">📋</button>
+          <span class="px">107,500원</span>
+          <span class="up-text">+7.4%</span>
+        </div>
+        <div class="top3-meta">
+<button type="button" class="ai-btn" onclick="showAI(this)" data-name="신한지주" data-summary="신한지주는 은행 테마의 주도주로서 금리 인상 기대감 및 실적 개선 전망에 따라 강세를 보였습니다.">🤖 AI요약</button><span class="code">시총 51조 253억</span>          <span class="gap-badge overheat">20일선 +11.6% 🔥과열(BB돌파·거래량2.4x)</span>        </div>
+        <div class="top3-reason">A·C·D 시그널 · 당일 +7.4% 강세 · 🔥과열(일봉 볼밴상단)—강등</div>
+<div class="top3-reason" style="color:var(--green);">💰 기관 순매수(3일) · 외국인 순매수(7일)</div>        <div class="top3-reason">업종: 은행 · 주도테마여부: <strong style="color:var(--text-mute);">X</strong></div>
+      </div>
+      <p style="font-size:12px;color:var(--text-dim);margin-top:0.5rem;">📊 20일선 이격도 = 현재가가 20일 이동평균선보다 얼마나 높은지. <span style="color:var(--red);">+25% 이상이면 과열</span>(단기 조정 위험)으로 표시합니다.</p>
+      <p class="disclaimer" style="font-size:12px;">※ A/B/C/D 시그널 + 주도주·거래량·수급(외국인/기관) 종합 점수 상위 3종목(기준 P4). 참고용이며 매수 추천 아님, 판단·책임은 본인.</p>
+    </section>
+
+    <section>
+      <h2><span class="icon">🌙</span>시간외(NXT) 상위 상승률 <span style="color:var(--text-dim);font-size:0.8rem;">(정규장 종가 대비)</span></h2>
+      <ul class="watch-list">
+        <li>
+          <a href="https://finance.naver.com/item/main.naver?code=319660" target="_blank" rel="noopener"><strong>피에스케이</strong></a>
+          <span class="pick-ticker">319660</span> · 131,700원
+          <span class="up-text">+4.11%</span>
+          <span style="color:var(--text-dim);font-size:0.8rem;">(종가 126,500)</span>
+        </li>
+        <li>
+          <a href="https://finance.naver.com/item/main.naver?code=454910" target="_blank" rel="noopener"><strong>두산로보틱스</strong></a>
+          <span class="pick-ticker">454910</span> · 144,800원
+          <span class="up-text">+3.21%</span>
+          <span style="color:var(--text-dim);font-size:0.8rem;">(종가 140,300)</span>
+        </li>
+        <li>
+          <a href="https://finance.naver.com/item/main.naver?code=055550" target="_blank" rel="noopener"><strong>신한지주</strong></a>
+          <span class="pick-ticker">055550</span> · 109,500원
+          <span class="up-text">+1.86%</span>
+          <span style="color:var(--text-dim);font-size:0.8rem;">(종가 107,500)</span>
+        </li>
+        <li>
+          <a href="https://finance.naver.com/item/main.naver?code=032830" target="_blank" rel="noopener"><strong>삼성생명</strong></a>
+          <span class="pick-ticker">032830</span> · 419,000원
+          <span class="up-text">+1.58%</span>
+          <span style="color:var(--text-dim);font-size:0.8rem;">(종가 412,500)</span>
+        </li>
+        <li>
+          <a href="https://finance.naver.com/item/main.naver?code=089970" target="_blank" rel="noopener"><strong>브이엠</strong></a>
+          <span class="pick-ticker">089970</span> · 68,900원
+          <span class="up-text">+1.32%</span>
+          <span style="color:var(--text-dim);font-size:0.8rem;">(종가 68,000)</span>
+        </li>
+        <li>
+          <a href="https://finance.naver.com/item/main.naver?code=051360" target="_blank" rel="noopener"><strong>토비스</strong></a>
+          <span class="pick-ticker">051360</span> · 17,360원
+          <span class="up-text">+0.99%</span>
+          <span style="color:var(--text-dim);font-size:0.8rem;">(종가 17,190)</span>
+        </li>
+        <li>
+          <a href="https://finance.naver.com/item/main.naver?code=009150" target="_blank" rel="noopener"><strong>삼성전기</strong></a>
+          <span class="pick-ticker">009150</span> · 1,774,000원
+          <span class="up-text">+0.97%</span>
+          <span style="color:var(--text-dim);font-size:0.8rem;">(종가 1,757,000)</span>
+        </li>
+      </ul>
+      <p style="font-size:11px;color:var(--text-dim);margin-top:0.3rem;">넥스트레이드(NXT) 시간외 거래 기준. 정규장 종가 대비 상승분.</p>
+    </section>
+
+
+    <section>
+      <h2><span class="icon">🚀</span>급등 초입 <span style="color:var(--text-dim);font-size:0.8rem;">(20일 신고가 돌파·거래량 급증)</span></h2>
+      <ul class="watch-list">
+        <li>
+          <a href="https://finance.naver.com/item/main.naver?code=055550" target="_blank" rel="noopener"><strong>신한지주</strong></a>
+          <span class="pick-ticker">055550</span> · 107,500원
+          <span class="up-text">+7.39%</span>
+<div class="theme-reason">급등초입 (20일돌파·거래량2.5배·당일+7.4%·20선+12%)</div>          <div class="pick-meta">시총 51조 253억 · 거래량 361만주 · 거래대금 3,883억 · 테마: 은행</div>
+<button type="button" class="ai-btn" onclick="showAI(this)" data-name="신한지주" data-summary="신한지주는 은행 테마의 주도주로서 금리 인상 기대감 및 실적 개선 전망에 따라 강세를 보였습니다.">🤖 AI요약</button>        </li>
+        <li>
+          <a href="https://finance.naver.com/item/main.naver?code=105560" target="_blank" rel="noopener"><strong>KB금융</strong></a>
+          <span class="pick-ticker">105560</span> · 171,600원
+          <span class="up-text">+4.51%</span>
+<div class="theme-reason">급등초입 (20일돌파·거래량2.1배·당일+4.5%·20선+10%)</div>          <div class="pick-meta">시총 63조 9,811억 · 거래량 296만주 · 거래대금 5,072억 · 테마: 은행</div>
+<button type="button" class="ai-btn" onclick="showAI(this)" data-name="KB금융" data-summary="KB금융은 은행 테마의 주도주로서 금리 인상 기대감 및 실적 개선 전망에 따라 강세를 보였습니다.">🤖 AI요약</button>        </li>
+      </ul>
+      <p class="disclaimer" style="font-size:12px;">※ 급등 초입(추세확인보다 빠른 돌파 진입) 참고용. 백테스트 표본 적고 상승장 기준 — 가짜 신호·되돌림 위험, 매수 추천 아님.</p>
+    </section>
+
+    <section>
+      <h2><span class="icon">📈</span>주요 지수</h2>
+      <div class="indexes">
+          <div class="index-card down">
+            <div class="index-info">
+              <div class="index-name">KOSPI</div>
+              <div class="index-value">8,160.59</div>
+              <div class="index-change down-text">
+                478.82
+                (-5.54%)
+              </div>
+            </div>
+            <div class="index-spark"><img src="charts/2026-06-06-KOSPI-candle.png" alt="KOSPI 캔들" loading="lazy"></div>
+          </div>
+          <div class="index-card down">
+            <div class="index-info">
+              <div class="index-name">KOSDAQ</div>
+              <div class="index-value">1,002.44</div>
+              <div class="index-change down-text">
+                47.29
+                (-4.50%)
+              </div>
+            </div>
+            <div class="index-spark"><img src="charts/2026-06-06-KOSDAQ-candle.png" alt="KOSDAQ 캔들" loading="lazy"></div>
+          </div>
+        <div class="index-card up">
+          <div class="index-info">
+            <div class="index-name">원/달러</div>
+            <div class="index-value">1,558.84</div>
+            <div class="index-change up-text">+1.68%</div>
+          </div>
+<div class="index-spark"><img src="charts/2026-06-06-fx-candle.png" alt="환율 캔들" loading="lazy"></div>        </div>
+        <div class="index-card down">
+          <div class="index-info">
+            <div class="index-name">WTI 유가</div>
+            <div class="index-value">$90.25</div>
+            <div class="index-change down-text">-3.00%</div>
+          </div>
+<div class="index-spark"><img src="charts/2026-06-06-wti-candle.png" alt="유가 캔들" loading="lazy"></div>        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2><span class="icon">💰</span>투자자 수급 <span style="color:var(--text-dim);font-size:0.8rem;">(최근 2일 · 순매수 억원)</span></h2>
+      <table class="supply-table">
+        <thead><tr><th>날짜</th><th>시장</th><th>개인</th><th>외국인</th><th>기관</th></tr></thead>
+        <tbody>
+          <tr >
+            <td class="sup-date">06/05</td>
+            <td class="sup-mk">코스피</td>
+            <td class="up-text">+42,240</td>
+            <td class="down-text">-27,638</td>
+            <td class="down-text">-13,809</td>
+          </tr>
+          <tr >
+            <td class="sup-date"></td>
+            <td class="sup-mk">코스닥</td>
+            <td class="up-text">+337</td>
+            <td class="down-text">-1,878</td>
+            <td class="up-text">+1,508</td>
+          </tr>
+          <tr >
+            <td class="sup-date">06/04</td>
+            <td class="sup-mk">코스피</td>
+            <td class="up-text">+50,135</td>
+            <td class="down-text">-66,663</td>
+            <td class="up-text">+15,255</td>
+          </tr>
+          <tr >
+            <td class="sup-date"></td>
+            <td class="sup-mk">코스닥</td>
+            <td class="down-text">-1,633</td>
+            <td class="down-text">-424</td>
+            <td class="up-text">+2,066</td>
+          </tr>
+        </tbody>
+      </table>
+      <p style="font-size:11px;color:var(--text-dim);margin-top:0.3rem;">+순매수 / −순매도(억원). 외국인·기관 동반 매수가 수급상 유리. · 3일치는 거래일마다 누적됩니다.</p>
+      <div class="summary-box" style="margin-top:0.6rem;"><div class="label">🔎 수급 요약 (최근 일주일 · 연속·전일/전주대비)</div><p>최근 일주일간 코스피 시장에서 외국인은 2일 연속 순매도를 이어가며 전날보다 순매도 규모가 줄었으나, 기관은 전날의 순매수에서 순매도로 전환하며 매도세를 보였습니다. 반면 개인은 2일 연속 순매수를 지속하며 매수세를 확대했습니다. 코스닥 시장에서는 외국인이 2일 연속 순매도를 이어가며 전날보다 순매도 규모가 늘어났으나, 기관은 2일 연속 순매수를 유지하며 매수세를 이어갔습니다. 개인은 전날의 순매도에서 순매수로 전환하며 매수세를 보였습니다.</p></div>
+    </section>
+
+    <section>
+      <h2><span class="icon">🤖</span>AI 시장 요약</h2>
+      <div class="summary-box">
+        <div class="label">한 줄 요약</div>
+        <p>오늘 코스피와 코스닥 지수가 각각 5.54%, 4.50% 급락하며 시장 전반에 큰 하락세를 보였습니다. 반도체 업종의 약세와 일부 대형주의 부진이 시장 하락을 주도했습니다.</p>
+      </div>
+      <div class="summary-box">
+        <div class="label">왜 움직였나</div>
+        <p>미국 증시의 하락 마감과 더불어 국내 반도체 관련 ETF에서 자금이 유출되고, 일부 대형 반도체주의 큰 폭 하락이 투자 심리를 위축시켰습니다. 또한, 환율 불안정 가능성도 시장 하락에 영향을 미친 것으로 보입니다. 개인 투자자들은 반도체 ETF에서 자금을 빼내 레버리지 상품으로 이동하는 움직임을 보였습니다.</p>
+      </div>
+      <div class="summary-box">
+        <div class="label">테마 해설</div>
+        <p>전반적으로 시장은 약세를 보였으나, 일부 섹터에서는 개별 이슈나 수급에 따라 강세를 나타내기도 했습니다. 특히 금융 섹터와 일부 소비재 관련 테마가 상대적으로 선방하는 모습을 보였습니다.</p>
+      </div>
+    </section>
+
+
+    <section>
+      <h2><span class="icon">🔭</span>내일 관전 포인트</h2>
+      <ul class="watch-list">
+        <li>미국 증시의 움직임과 국내 반도체 업종의 수급 동향을 주목해야 합니다.</li>
+        <li>환율 변동 추이와 이에 따른 금융 시장의 반응을 예의주시할 필요가 있습니다.</li>
+        <li>개별 기업의 실적 발표 및 신규 사업 관련 뉴스가 시장의 관심 테마를 형성할 수 있습니다.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2><span class="icon">🎯</span>전략 스크린 <span style="color:var(--text-dim);font-size:0.8rem;">(종합점수순 · 매칭전략 표기)</span>
+        <button class="copy-btn" data-codes="009150 011070 055550 105560 402340 005930 240810 000660 028260 005380 066570 035420" onclick="copyWatch(this)">📋 관심등록 복사</button>
+      </h2>
+      <ul class="watch-list">
+        <li>
+          <a href="https://finance.naver.com/item/main.naver?code=009150" target="_blank" rel="noopener"><strong>삼성전기</strong></a>
+          <button type="button" class="code-copy" data-code="009150" onclick="copyCode(this)" title="종목코드 복사 (MTS 검색창에 붙여넣기)">📋</button>
+          <span class="strat-badge">B 시그널</span>
+          <span class="px">1,757,000원</span>
+          <span class="up-text">+2.4%</span>
+          <div class="pick-line">
+<button type="button" class="ai-btn" onclick="showAI(this)" data-name="삼성전기" data-summary="삼성전기는 사물인터넷 테마 내에서 MLCC 관련주로 분류되어 상승한 것으로 보입니다.">🤖 AI요약</button><span class="code">시총 131조 2,368억</span>          </div>
+          <div class="theme-reason">B 시그널 · 고점대비 -19.8%</div>
+          <div class="pick-meta" style="color:var(--text-dim);">📊 20일선 이격 +30.9%</div>
+          <div class="pick-meta">
+            테마:
+<a href="https://judal.co.kr/?view=stockList&themeIdx=101" target="_blank" rel="noopener">사물인터넷</a>
+            · 주도테마: X
+          </div>
+        </li>
+        <li>
+          <a href="https://finance.naver.com/item/main.naver?code=011070" target="_blank" rel="noopener"><strong>LG이노텍</strong></a>
+          <button type="button" class="code-copy" data-code="011070" onclick="copyCode(this)" title="종목코드 복사 (MTS 검색창에 붙여넣기)">📋</button>
+          <span class="strat-badge">B 시그널</span>
+          <span class="px">1,160,000원</span>
+          <span class="down-text">-1.1%</span>
+          <div class="pick-line">
+<button type="button" class="ai-btn" onclick="showAI(this)" data-name="LG이노텍" data-summary="LG이노텍은 메타버스 테마 내에서 특별한 호재 없이 차익실현 매물이 나오며 하락한 것으로 추정됩니다.">🤖 AI요약</button><span class="code">시총 27조 4,538억</span>          </div>
+          <div class="theme-reason">B 시그널 · 고점대비 -35.1%</div>
+          <div class="pick-meta" style="color:var(--text-dim);">📊 20일선 이격 +23.9%</div>
+          <div class="pick-meta">
+            테마:
+<a href="https://judal.co.kr/?view=stockList&themeIdx=563" target="_blank" rel="noopener">메타버스</a>
+            · 주도테마: X
+          </div>
+        </li>
+        <li>
+          <a href="https://finance.naver.com/item/main.naver?code=055550" target="_blank" rel="noopener"><strong>신한지주</strong></a>
+          <button type="button" class="code-copy" data-code="055550" onclick="copyCode(this)" title="종목코드 복사 (MTS 검색창에 붙여넣기)">📋</button>
+          <span class="strat-badge">A·C·D 시그널</span>
+          <span class="px">107,500원</span>
+          <span class="up-text">+7.4%</span>
+          <div class="pick-line">
+<button type="button" class="ai-btn" onclick="showAI(this)" data-name="신한지주" data-summary="신한지주는 은행 테마의 주도주로서 금리 인상 기대감 및 실적 개선 전망에 따라 강세를 보였습니다.">🤖 AI요약</button><span class="code">시총 51조 253억</span>          </div>
+          <div class="theme-reason">A·C·D 시그널 · 당일 +7.4% 강세 · 🔥과열(일봉 볼밴상단)—강등</div>
+          <div class="pick-meta" style="color:var(--red);">📊 20일선 이격 +11.6% 🔥과열(BB돌파·거래량2.4x)</div>
+          <div class="pick-meta">
+            업종:
+<a href="https://search.naver.com/search.naver?query=%EC%9D%80%ED%96%89+관련주" target="_blank" rel="noopener">은행</a>            · 주도테마: X
+          </div>
+        </li>
+        <li>
+          <a href="https://finance.naver.com/item/main.naver?code=105560" target="_blank" rel="noopener"><strong>KB금융</strong></a>
+          <button type="button" class="code-copy" data-code="105560" onclick="copyCode(this)" title="종목코드 복사 (MTS 검색창에 붙여넣기)">📋</button>
+          <span class="strat-badge">A·C·D 시그널</span>
+          <span class="px">171,600원</span>
+          <span class="up-text">+4.5%</span>
+          <div class="pick-line">
+<button type="button" class="ai-btn" onclick="showAI(this)" data-name="KB금융" data-summary="KB금융은 은행 테마의 주도주로서 금리 인상 기대감 및 실적 개선 전망에 따라 강세를 보였습니다.">🤖 AI요약</button><span class="code">시총 63조 9,811억</span>          </div>
+          <div class="theme-reason">A·C·D 시그널 · 당일 +4.5% 강세 · 🔥과열(일봉·4시간봉 볼밴상단)—강등</div>
+          <div class="pick-meta" style="color:var(--red);">📊 20일선 이격 +9.7% 🔥과열(BB돌파·거래량2.0x)</div>
+          <div class="pick-meta">
+            업종:
+<a href="https://search.naver.com/search.naver?query=%EC%9D%80%ED%96%89+관련주" target="_blank" rel="noopener">은행</a>            · 주도테마: X
+          </div>
+        </li>
+        <li>
+          <a href="https://finance.naver.com/item/main.naver?code=402340" target="_blank" rel="noopener"><strong>SK스퀘어</strong></a>
+          <button type="button" class="code-copy" data-code="402340" onclick="copyCode(this)" title="종목코드 복사 (MTS 검색창에 붙여넣기)">📋</button>
+          <span class="strat-badge">B 시그널</span>
+          <span class="px">1,258,000원</span>
+          <span class="down-text">-7.6%</span>
+          <div class="pick-line">
+<button type="button" class="ai-btn" onclick="showAI(this)" data-name="SK스퀘어" data-summary="SK스퀘어는 복합기업 테마 내에서 특별한 부각 없이 전반적인 시장 하락세에 영향을 받아 하락한 것으로 보입니다.">🤖 AI요약</button><span class="code">시총 166조 36억</span>          </div>
+          <div class="theme-reason">B 시그널 · 고점대비 -9.6%</div>
+          <div class="pick-meta" style="color:var(--text-dim);">📊 20일선 이격 +6.5%</div>
+          <div class="pick-meta">
+            업종:
+<a href="https://search.naver.com/search.naver?query=%EB%B3%B5%ED%95%A9%EA%B8%B0%EC%97%85+관련주" target="_blank" rel="noopener">복합기업</a>            · 주도테마: X
+          </div>
+        </li>
+        <li>
+          <a href="https://finance.naver.com/item/main.naver?code=005930" target="_blank" rel="noopener"><strong>삼성전자</strong></a>
+          <button type="button" class="code-copy" data-code="005930" onclick="copyCode(this)" title="종목코드 복사 (MTS 검색창에 붙여넣기)">📋</button>
+          <span class="strat-badge">B 시그널</span>
+          <span class="px">329,000원</span>
+          <span class="down-text">-6.4%</span>
+          <div class="pick-line">
+<button type="button" class="ai-btn" onclick="showAI(this)" data-name="삼성전자" data-summary="삼성전자는 반도체 업황 둔화 및 차익실현 매물 출회로 인해 하락세를 보였습니다.">🤖 AI요약</button><span class="code">시총 1,923조 4,257억</span>          </div>
+          <div class="theme-reason">B 시그널 · 고점대비 -11.1%</div>
+          <div class="pick-meta" style="color:var(--text-dim);">📊 20일선 이격 +9.8%</div>
+          <div class="pick-meta">
+            테마:
+<a href="https://judal.co.kr/?view=stockList&themeIdx=46" target="_blank" rel="noopener">반도체</a>
+            · 주도테마: X
+          </div>
+        </li>
+        <li>
+          <a href="https://finance.naver.com/item/main.naver?code=240810" target="_blank" rel="noopener"><strong>원익IPS</strong></a>
+          <button type="button" class="code-copy" data-code="240810" onclick="copyCode(this)" title="종목코드 복사 (MTS 검색창에 붙여넣기)">📋</button>
+          <span class="strat-badge">A 시그널</span>
+          <span class="px">132,700원</span>
+          <span class="up-text">+4.3%</span>
+          <div class="pick-line">
+<button type="button" class="ai-btn" onclick="showAI(this)" data-name="원익IPS" data-summary="원익IPS는 LCD 장비 테마 내에서 실적 개선 기대감으로 인해 상승한 것으로 분석됩니다.">🤖 AI요약</button><span class="code">시총 6조 5,134억</span>          </div>
+          <div class="theme-reason">A 시그널 · 당일 +4.3% 강세</div>
+          <div class="pick-meta" style="color:var(--text-dim);">📊 20일선 이격 +10.5%</div>
+          <div class="pick-meta">
+            테마:
+<a href="https://judal.co.kr/?view=stockList&themeIdx=590" target="_blank" rel="noopener">LCD 장비</a>
+            · 주도테마: X
+          </div>
+        </li>
+        <li>
+          <a href="https://finance.naver.com/item/main.naver?code=000660" target="_blank" rel="noopener"><strong>SK하이닉스</strong></a>
+          <button type="button" class="code-copy" data-code="000660" onclick="copyCode(this)" title="종목코드 복사 (MTS 검색창에 붙여넣기)">📋</button>
+          <span class="strat-badge">B 시그널</span>
+          <span class="px">2,070,000원</span>
+          <span class="down-text">-9.9%</span>
+          <div class="pick-line">
+<button type="button" class="ai-btn" onclick="showAI(this)" data-name="SK하이닉스" data-summary="SK하이닉스는 반도체 업황 둔화 우려와 차익실현 매물이 겹치며 큰 폭으로 하락했습니다.">🤖 AI요약</button><span class="code">시총 1,475조 2,939억</span>          </div>
+          <div class="theme-reason">B 시그널 · 고점대비 -14.0%</div>
+          <div class="pick-meta" style="color:var(--text-dim);">📊 20일선 이격 <strong style="color:var(--red);">+3.4%</strong></div>
+          <div class="pick-meta">
+            테마:
+<a href="https://judal.co.kr/?view=stockList&themeIdx=46" target="_blank" rel="noopener">반도체</a>
+            · 주도테마: X
+          </div>
+        </li>
+        <li>
+          <a href="https://finance.naver.com/item/main.naver?code=028260" target="_blank" rel="noopener"><strong>삼성물산</strong></a>
+          <button type="button" class="code-copy" data-code="028260" onclick="copyCode(this)" title="종목코드 복사 (MTS 검색창에 붙여넣기)">📋</button>
+          <span class="strat-badge">B 시그널</span>
+          <span class="px">460,500원</span>
+          <span class="down-text">-13.9%</span>
+          <div class="pick-line">
+<button type="button" class="ai-btn" onclick="showAI(this)" data-name="삼성물산" data-summary="삼성물산은 건설 테마 내에서 특별한 호재 없이 차익실현 매물과 전반적인 시장 하락세의 영향을 받아 큰 폭으로 하락했습니다.">🤖 AI요약</button><span class="code">시총 74조 6,782억</span>          </div>
+          <div class="theme-reason">B 시그널 · 고점대비 -18.5%</div>
+          <div class="pick-meta" style="color:var(--text-dim);">📊 20일선 이격 +7.6%</div>
+          <div class="pick-meta">
+            테마:
+<a href="https://judal.co.kr/?view=stockList&themeIdx=105" target="_blank" rel="noopener">건설</a>
+            · 주도테마: X
+          </div>
+        </li>
+        <li>
+          <a href="https://finance.naver.com/item/main.naver?code=005380" target="_blank" rel="noopener"><strong>현대차</strong></a>
+          <button type="button" class="code-copy" data-code="005380" onclick="copyCode(this)" title="종목코드 복사 (MTS 검색창에 붙여넣기)">📋</button>
+          <span class="strat-badge">B 시그널</span>
+          <span class="px">700,000원</span>
+          <span class="up-text">+0.0%</span>
+          <div class="pick-line">
+<button type="button" class="ai-btn" onclick="showAI(this)" data-name="현대차" data-summary="현대차는 수소차 테마 내에서 특별한 뉴스 없이 보합세를 유지하며 관망세를 보였습니다.">🤖 AI요약</button><span class="code">시총 143조 3,304억</span>          </div>
+          <div class="theme-reason">B 시그널 · 고점대비 -10.6%</div>
+          <div class="pick-meta" style="color:var(--text-dim);">📊 20일선 이격 <strong style="color:var(--red);">+4.3%</strong></div>
+          <div class="pick-meta">
+            테마:
+<a href="https://judal.co.kr/?view=stockList&themeIdx=22" target="_blank" rel="noopener">수소차</a>
+            · 주도테마: X
+          </div>
+        </li>
+        <li>
+          <a href="https://finance.naver.com/item/main.naver?code=066570" target="_blank" rel="noopener"><strong>LG전자</strong></a>
+          <button type="button" class="code-copy" data-code="066570" onclick="copyCode(this)" title="종목코드 복사 (MTS 검색창에 붙여넣기)">📋</button>
+          <span class="strat-badge">B 시그널</span>
+          <span class="px">303,000원</span>
+          <span class="down-text">-7.6%</span>
+          <div class="pick-line">
+<button type="button" class="ai-btn" onclick="showAI(this)" data-name="LG전자" data-summary="LG전자는 스마트홈 테마 내에서 특별한 부각 없이 전반적인 시장 하락세에 영향을 받아 조정받은 것으로 보입니다.">🤖 AI요약</button><span class="code">시총 49조 3,540억</span>          </div>
+          <div class="theme-reason">B 시그널 · 고점대비 -30.8%</div>
+          <div class="pick-meta" style="color:var(--text-dim);">📊 20일선 이격 +27.5%</div>
+          <div class="pick-meta">
+            테마:
+<a href="https://judal.co.kr/?view=stockList&themeIdx=130" target="_blank" rel="noopener">스마트홈</a>
+            · 주도테마: X
+          </div>
+        </li>
+        <li>
+          <a href="https://finance.naver.com/item/main.naver?code=035420" target="_blank" rel="noopener"><strong>NAVER</strong></a>
+          <button type="button" class="code-copy" data-code="035420" onclick="copyCode(this)" title="종목코드 복사 (MTS 검색창에 붙여넣기)">📋</button>
+          <span class="strat-badge">D 시그널</span>
+          <span class="px">255,500원</span>
+          <span class="down-text">-4.5%</span>
+          <div class="pick-line">
+<button type="button" class="ai-btn" onclick="showAI(this)" data-name="NAVER" data-summary="NAVER는 비대면(언택트) 테마 내에서 특별한 뉴스 없이 전반적인 시장 하락세와 차익실현 매물의 영향을 받아 하락했습니다.">🤖 AI요약</button><span class="code">시총 40조 812억</span>          </div>
+          <div class="theme-reason">D 시그널</div>
+          <div class="pick-meta" style="color:var(--text-dim);">📊 20일선 이격 +17.2%</div>
+          <div class="pick-meta">
+            테마:
+<a href="https://judal.co.kr/?view=stockList&themeIdx=180" target="_blank" rel="noopener">비대면(언택트)</a>
+            · 주도테마: X
+          </div>
+        </li>
+      </ul>
+      <p class="disclaimer" style="font-size:12px;">※ 종목당 1줄·종합점수순. 같은 종목이 여러 전략에 잡히면 'A·C·D 시그널'처럼 묶어 표기. 참고용이며 매수 추천 아님. · 📋 일괄 관심등록.</p>
+    </section>
+
+
+    <section>
+      <div class="lead-themes">🚀 <strong>주도 테마</strong> <span style="color:var(--text-dim);font-size:0.85rem;">(오늘 상위종목이 속한 테마)</span><br>
+<span class="lead-theme-chip">영화</span><span class="lead-theme-chip">엔터테인먼트</span><span class="lead-theme-chip">반도체 부품</span><span class="lead-theme-chip">안철수</span>      </div>
+      <h2><span class="icon">🔥</span>강세/약세 테마 Top 10</h2>
+      <div class="theme">
+        <div class="theme-rank">1</div>
+        <div class="theme-info">
+          <div class="name">MLCC(적층세라믹콘덴서)</div>
+          <div class="leads">▸ 한켐, 아바텍</div>
+          <div class="theme-why">💡 AI 관련주들의 강세와 함께 반도체 섹터 전반에 대한 투자 심리가 개선되면서 MLCC 관련주들도 동반 강세를 보이고 있습니다. 특히 주도주인 한화테크윈의 움직임이 시장의 관심을 받고 있습니다.</div>
+        </div>
+        <div class="theme-pct up-text">
+          +2.54%
+        </div>
+        <div class="theme-reason">MLCC 관련주는 특별한 뉴스 없이 전반적인 시장 하락 속에서 상대적으로 견조한 흐름을 보이며 강세를 나타냈습니다.</div>
+      </div>
+      <div class="theme">
+        <div class="theme-rank">2</div>
+        <div class="theme-info">
+          <div class="name">은행</div>
+          <div class="leads">▸ 신한지주, 제주은행</div>
+          <div class="theme-why">💡 최근 금리 인하 기대감이 후퇴하고 시장 금리가 상승하면서 은행주의 수익성 개선 기대감이 부각되고 있습니다. 또한, 주도주인 신한지주와 제주은행의 상승세가 전체 섹터의 강세를 이끌고 있습니다.</div>
+        </div>
+        <div class="theme-pct up-text">
+          +2.39%
+        </div>
+        <div class="theme-reason">신한지주, 제주은행 등 은행주가 상승률 상위권에 이름을 올리며 금융 섹터의 강세를 이끌었습니다. 이는 금리 인상 기대감 또는 안정적인 실적 전망에 따른 것으로 해석됩니다.</div>
+      </div>
+      <div class="theme">
+        <div class="theme-rank">3</div>
+        <div class="theme-info">
+          <div class="name">카지노</div>
+          <div class="leads">▸ 파라다이스, GKL</div>
+          <div class="theme-why">💡 중국인 관광객의 입국이 점진적으로 회복되면서 카지노 업황 개선에 대한 기대감이 높아지고 있습니다. 주도주인 파라다이스와 GKL의 상승세가 이러한 기대감을 반영하고 있습니다.</div>
+        </div>
+        <div class="theme-pct up-text">
+          +1.65%
+        </div>
+        <div class="theme-reason">카지노 관련주는 외국인 관광객 증가 기대감 등 긍정적인 전망 속에 소폭의 상승세를 보였습니다.</div>
+      </div>
+      <div class="theme">
+        <div class="theme-rank">4</div>
+        <div class="theme-info">
+          <div class="name">시멘트/레미콘</div>
+          <div class="leads">▸ 모헨즈, HC보광산..</div>
+          <div class="theme-why">💡 최근 건설 경기 회복에 대한 기대감과 함께 정부의 SOC 투자 확대 가능성이 시멘트 및 레미콘 관련주의 강세를 견인하고 있습니다. 주도주인 모헨즈와 HC보광산업의 움직임이 긍정적입니다.</div>
+        </div>
+        <div class="theme-pct up-text">
+          +1.31%
+        </div>
+        <div class="theme-reason">건설 경기 회복 기대감 또는 일부 종목의 개별적인 수급에 힘입어 소폭의 강세를 나타냈습니다.</div>
+      </div>
+      <div class="theme">
+        <div class="theme-rank">5</div>
+        <div class="theme-info">
+          <div class="name">영화</div>
+          <div class="leads">▸ 아센디오, 졸스</div>
+          <div class="theme-why">💡 최근 개봉하는 대작 영화들에 대한 기대감과 함께 극장가 관객 수 회복에 대한 긍정적인 전망이 영화 관련주들의 상승세를 이끌고 있습니다. 주도주인 아센디오와 졸스의 움직임이 주목받고 있습니다.</div>
+        </div>
+        <div class="theme-pct up-text">
+          +0.88%
+        </div>
+        <div class="theme-reason">영화 관련주는 개별 종목의 상승세에 힘입어 시장 전반의 약세 속에서도 긍정적인 흐름을 보였습니다.</div>
+      </div>
+      <div class="theme">
+        <div class="theme-rank">6</div>
+        <div class="theme-info">
+          <div class="name">사료</div>
+          <div class="leads">▸ 오에스피, 팜스코</div>
+          <div class="theme-why">💡 이상기후로 인한 곡물 가격 상승 우려와 함께 사료 가격 인상 가능성이 사료 관련주들의 강세를 부추기고 있습니다. 주도주인 오에스피와 팜스코의 움직임이 시장의 관심을 받고 있습니다.</div>
+        </div>
+        <div class="theme-pct up-text">
+          +0.63%
+        </div>
+      </div>
+      <div class="theme">
+        <div class="theme-rank">7</div>
+        <div class="theme-info">
+          <div class="name">토스(toss)</div>
+          <div class="leads">▸ 엔비티, 하나금융지..</div>
+        </div>
+        <div class="theme-pct up-text">
+          +0.42%
+        </div>
+      </div>
+      <div class="theme">
+        <div class="theme-rank">8</div>
+        <div class="theme-info">
+          <div class="name">면세점</div>
+          <div class="leads">▸ 현대백화점, 글로벌텍스..</div>
+        </div>
+        <div class="theme-pct up-text">
+          +0.34%
+        </div>
+      </div>
+      <div class="theme">
+        <div class="theme-rank">9</div>
+        <div class="theme-info">
+          <div class="name">리츠(REITs)</div>
+          <div class="leads">▸ KB스타리.., 미래에셋글..</div>
+        </div>
+        <div class="theme-pct up-text">
+          +0.28%
+        </div>
+      </div>
+      <div class="theme">
+        <div class="theme-rank">10</div>
+        <div class="theme-info">
+          <div class="name">카카오뱅크(kakao BANK)</div>
+          <div class="leads">▸ KB금융, 인포뱅크</div>
+        </div>
+        <div class="theme-pct up-text">
+          +0.20%
+        </div>
+      </div>
+    </section>
+
+
+
+    <section>
+      <h2><span class="icon">💹</span>종목 순위</h2>
+      <div class="tabs">
+        <div class="tab active" data-tab="volume">거래량 상위</div>
+        <div class="tab" data-tab="gainers">상승률 상위</div>
+        <div class="tab" data-tab="losers">하락률 상위</div>
+      </div>
+
+      <div class="tab-pane active" data-pane="volume">
+        <div class="stock-list">
+          <div class="stock-row">
+            <div class="stock-rank">12</div>
+            <div class="stock-name">
+              SK증권<span class="ticker">001510</span>
+            </div>
+            <div class="stock-price">3,205원</div>
+            <div class="stock-pct up-text">
+              +0.16%
+            </div>
+          </div>
+          <div class="stock-row">
+            <div class="stock-rank">14</div>
+            <div class="stock-name">
+              삼성전자<span class="ticker">005930</span>
+            </div>
+            <div class="stock-price">329,000원</div>
+            <div class="stock-pct down-text">
+              -6.40%
+            </div>
+          </div>
+          <div class="stock-row">
+            <div class="stock-rank">19</div>
+            <div class="stock-name">
+              티웨이홀딩스<span class="ticker">004870</span>
+            </div>
+            <div class="stock-price">277원</div>
+            <div class="stock-pct down-text">
+              -12.62%
+            </div>
+          </div>
+          <div class="stock-row">
+            <div class="stock-rank">26</div>
+            <div class="stock-name">
+              진원생명과학<span class="ticker">011000</span>
+            </div>
+            <div class="stock-price">1,085원</div>
+            <div class="stock-pct down-text">
+              -11.07%
+            </div>
+          </div>
+          <div class="stock-row">
+            <div class="stock-rank">30</div>
+            <div class="stock-name">
+              한온시스템<span class="ticker">018880</span>
+            </div>
+            <div class="stock-price">4,695원</div>
+            <div class="stock-pct down-text">
+              -2.59%
+            </div>
+          </div>
+          <div class="stock-row">
+            <div class="stock-rank">31</div>
+            <div class="stock-name">
+              진양화학<span class="ticker">051630</span>
+            </div>
+            <div class="stock-price">1,853원</div>
+            <div class="stock-pct down-text">
+              -9.39%
+            </div>
+          </div>
+          <div class="stock-row">
+            <div class="stock-rank">33</div>
+            <div class="stock-name">
+              LG디스플레이<span class="ticker">034220</span>
+            </div>
+            <div class="stock-price">15,210원</div>
+            <div class="stock-pct down-text">
+              -5.65%
+            </div>
+          </div>
+          <div class="stock-row">
+            <div class="stock-rank">35</div>
+            <div class="stock-name">
+              SK네트웍스<span class="ticker">001740</span>
+            </div>
+            <div class="stock-price">10,900원</div>
+            <div class="stock-pct down-text">
+              -16.22%
+            </div>
+          </div>
+          <div class="stock-row">
+            <div class="stock-rank">36</div>
+            <div class="stock-name">
+              한화생명<span class="ticker">088350</span>
+            </div>
+            <div class="stock-price">4,785원</div>
+            <div class="stock-pct down-text">
+              -1.64%
+            </div>
+          </div>
+          <div class="stock-row">
+            <div class="stock-rank">41</div>
+            <div class="stock-name">
+              미래에셋생명<span class="ticker">085620</span>
+            </div>
+            <div class="stock-price">18,590원</div>
+            <div class="stock-pct down-text">
+              -4.22%
+            </div>
+          </div>
+          <div class="stock-row">
+            <div class="stock-rank">42</div>
+            <div class="stock-name">
+              KEC<span class="ticker">092220</span>
+            </div>
+            <div class="stock-price">5,350원</div>
+            <div class="stock-pct up-text">
+              +4.09%
+            </div>
+          </div>
+          <div class="stock-row">
+            <div class="stock-rank">46</div>
+            <div class="stock-name">
+              제주은행<span class="ticker">006220</span>
+            </div>
+            <div class="stock-price">10,680원</div>
+            <div class="stock-pct up-text">
+              +6.80%
+            </div>
+          </div>
+          <div class="stock-row">
+            <div class="stock-rank">48</div>
+            <div class="stock-name">
+              LG전자<span class="ticker">066570</span>
+            </div>
+            <div class="stock-price">303,000원</div>
+            <div class="stock-pct down-text">
+              -7.62%
+            </div>
+          </div>
+          <div class="stock-row">
+            <div class="stock-rank">50</div>
+            <div class="stock-name">
+              삼성중공업<span class="ticker">010140</span>
+            </div>
+            <div class="stock-price">27,750원</div>
+            <div class="stock-pct down-text">
+              -2.29%
+            </div>
+          </div>
+          <div class="stock-row">
+            <div class="stock-rank">51</div>
+            <div class="stock-name">
+              SK하이닉스<span class="ticker">000660</span>
+            </div>
+            <div class="stock-price">2,070,000원</div>
+            <div class="stock-pct down-text">
+              -9.92%
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="tab-pane " data-pane="gainers">
+        <div class="stock-list">
+          <div class="stock-row">
+            <div class="stock-rank">1</div>
+            <div class="stock-name">
+              대원제약<span class="ticker">003220</span>
+            </div>
+            <div class="stock-price">11,240원</div>
+            <div class="stock-pct up-text">
+              +29.94%
+            </div>
+          </div>
+          <div class="stock-row">
+            <div class="stock-rank">6</div>
+            <div class="stock-name">
+              에이엔피<span class="ticker">015260</span>
+            </div>
+            <div class="stock-price">610원</div>
+            <div class="stock-pct up-text">
+              +14.02%
+            </div>
+          </div>
+          <div class="stock-row">
+            <div class="stock-rank">7</div>
+            <div class="stock-name">
+              일정실업<span class="ticker">008500</span>
+            </div>
+            <div class="stock-price">1,994원</div>
+            <div class="stock-pct up-text">
+              +13.68%
+            </div>
+          </div>
+          <div class="stock-row">
+            <div class="stock-rank">10</div>
+            <div class="stock-name">
+              인바이오젠<span class="ticker">101140</span>
+            </div>
+            <div class="stock-price">7,590원</div>
+            <div class="stock-pct up-text">
+              +12.28%
+            </div>
+          </div>
+          <div class="stock-row">
+            <div class="stock-rank">25</div>
+            <div class="stock-name">
+              GS피앤엘<span class="ticker">499790</span>
+            </div>
+            <div class="stock-price">48,950원</div>
+            <div class="stock-pct up-text">
+              +9.14%
+            </div>
+          </div>
+          <div class="stock-row">
+            <div class="stock-rank">35</div>
+            <div class="stock-name">
+              세기상사<span class="ticker">002420</span>
+            </div>
+            <div class="stock-price">5,890원</div>
+            <div class="stock-pct up-text">
+              +7.48%
+            </div>
+          </div>
+          <div class="stock-row">
+            <div class="stock-rank">36</div>
+            <div class="stock-name">
+              신한지주<span class="ticker">055550</span>
+            </div>
+            <div class="stock-price">107,500원</div>
+            <div class="stock-pct up-text">
+              +7.39%
+            </div>
+          </div>
+          <div class="stock-row">
+            <div class="stock-rank">38</div>
+            <div class="stock-name">
+              아센디오<span class="ticker">012170</span>
+            </div>
+            <div class="stock-price">1,250원</div>
+            <div class="stock-pct up-text">
+              +7.02%
+            </div>
+          </div>
+          <div class="stock-row">
+            <div class="stock-rank">40</div>
+            <div class="stock-name">
+              제주은행<span class="ticker">006220</span>
+            </div>
+            <div class="stock-price">10,680원</div>
+            <div class="stock-pct up-text">
+              +6.80%
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="tab-pane " data-pane="losers">
+        <div class="stock-list">
+          <div class="stock-row">
+            <div class="stock-rank">9</div>
+            <div class="stock-name">
+              SK네트웍스<span class="ticker">001740</span>
+            </div>
+            <div class="stock-price">10,900원</div>
+            <div class="stock-pct down-text">
+              -16.22%
+            </div>
+          </div>
+          <div class="stock-row">
+            <div class="stock-rank">15</div>
+            <div class="stock-name">
+              삼성물산<span class="ticker">028260</span>
+            </div>
+            <div class="stock-price">460,500원</div>
+            <div class="stock-pct down-text">
+              -13.93%
+            </div>
+          </div>
+          <div class="stock-row">
+            <div class="stock-rank">25</div>
+            <div class="stock-name">
+              티웨이홀딩스<span class="ticker">004870</span>
+            </div>
+            <div class="stock-price">277원</div>
+            <div class="stock-pct down-text">
+              -12.62%
+            </div>
+          </div>
+          <div class="stock-row">
+            <div class="stock-rank">30</div>
+            <div class="stock-name">
+              삼아알미늄<span class="ticker">006110</span>
+            </div>
+            <div class="stock-price">71,900원</div>
+            <div class="stock-pct down-text">
+              -11.89%
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2><span class="icon">📰</span>주요 시장 뉴스</h2>
+      <div class="news-item">
+        <a href="https://n.news.naver.com/article/215/0001254490" target="_blank" rel="noopener" class="news-title">수익률 -16%에도 &#39;사자&#39;…8,600억 뭉칫돈 몰려간 곳</a>
+        <div class="news-meta">
+<span class="news-source">한국경제TV</span> · 2026-06-06 10:20:02        </div>
+      </div>
+      <div class="news-item">
+        <a href="https://n.news.naver.com/article/009/0005690082" target="_blank" rel="noopener" class="news-title">“젠슨황 새 찐친 소개합니다”…1주일새 50% 뛴 두산로보틱스 [이주의 Bull기둥]</a>
+        <div class="news-meta">
+<span class="news-source">매일경제</span> · 2026-06-06 10:05:13        </div>
+      </div>
+      <div class="news-item">
+        <a href="https://n.news.naver.com/article/008/0005367954" target="_blank" rel="noopener" class="news-title">AI發 훈풍에 뭉칫돈 몰린 반도체·전력 ETF… 차기 투자처는?</a>
+        <div class="news-meta">
+<span class="news-source">머니투데이</span> · 2026-06-06 10:00:00        </div>
+      </div>
+      <div class="news-item">
+        <a href="https://n.news.naver.com/article/277/0005772614" target="_blank" rel="noopener" class="news-title">&#34;삼전닉스 2배 벌자&#34; 개미들, 반도체ETF 팔고 &#39;삼전닉스 레버리지&#39;로 대이동</a>
+        <div class="news-meta">
+<span class="news-source">아시아경제</span> · 2026-06-06 09:49:00        </div>
+      </div>
+      <div class="news-item">
+        <a href="https://n.news.naver.com/article/018/0006299066" target="_blank" rel="noopener" class="news-title">멈춰선 SK실트론 매각…M&amp;A 시장에 ‘새드 엔딩’은 없다</a>
+        <div class="news-meta">
+<span class="news-source">이데일리</span> · 2026-06-06 09:31:11        </div>
+      </div>
+      <div class="news-item">
+        <a href="https://n.news.naver.com/article/243/0000098773" target="_blank" rel="noopener" class="news-title">하루 만에 20% 급락…삼전닉스 레버리지 ‘직격탄’</a>
+        <div class="news-meta">
+<span class="news-source">이코노미스트</span> · 2026-06-06 09:31:11        </div>
+      </div>
+      <div class="news-item">
+        <a href="https://n.news.naver.com/article/277/0005772613" target="_blank" rel="noopener" class="news-title">세계최대 비트코인 보유기업 스트래티지는 왜 4년만에 비트코인을 팔았을까 [주末머니]</a>
+        <div class="news-meta">
+<span class="news-source">아시아경제</span> · 2026-06-06 09:23:00        </div>
+      </div>
+      <div class="news-item">
+        <a href="https://n.news.naver.com/article/008/0005367946" target="_blank" rel="noopener" class="news-title">&#39;브로드컴 쇼크&#39;…삼전닉스 비명 터질때 이 주식은 환호성 터졌다[김근희의 증시 랩업]</a>
+        <div class="news-meta">
+<span class="news-source">머니투데이</span> · 2026-06-06 09:16:35        </div>
+      </div>
+      <div class="news-item">
+        <a href="https://n.news.naver.com/article/015/0005295620" target="_blank" rel="noopener" class="news-title">머스크 또 &#39;돈벼락&#39; 맞나…&#39;5000조&#39; 파격 전망에 관심 폭발</a>
+        <div class="news-meta">
+<span class="news-source">한국경제</span> · 2026-06-06 09:02:15        </div>
+      </div>
+      <div class="news-item">
+        <a href="https://n.news.naver.com/article/014/0005531268" target="_blank" rel="noopener" class="news-title">&#34;주식 5년 했다며? 돈좀 벌었어?&#34;, &#39;이 습관&#39; 때문에 웃지 못하는 김대리[인치범의 주식투자 부트캠프]</a>
+        <div class="news-meta">
+<span class="news-source">파이낸셜뉴스</span> · 2026-06-06 09:01:12        </div>
+      </div>
+      <div class="news-item">
+        <a href="https://n.news.naver.com/article/648/0000047758" target="_blank" rel="noopener" class="news-title">증시 변동성에도 ETF 유입자금 더 늘어[ETF워치]</a>
+        <div class="news-meta">
+<span class="news-source">비즈워치</span> · 2026-06-06 09:00:11        </div>
+      </div>
+      <div class="news-item">
+        <a href="https://n.news.naver.com/article/003/0013990326" target="_blank" rel="noopener" class="news-title">&#39;스페이스X&#39; 상장 임박…우주항공 ETF에 兆단위 뭉칫돈 유입</a>
+        <div class="news-meta">
+<span class="news-source">뉴시스</span> · 2026-06-06 09:00:00        </div>
+      </div>
+    </section>
+
+
+    <div class="disclaimer">
+      ※ 본 리포트는 공개 데이터 기반 참고용 정보입니다.<br>
+      투자 판단·매매 결정·결과 책임은 전적으로 본인에게 있습니다.<br><br>
+      <a href="../index.html">← 메인으로</a>
+    </div>
+
+  </div>
+
+  <div id="lightbox" class="lightbox" onclick="this.classList.remove('active')">
+    <img id="lightbox-img" src="" alt="차트 확대">
+  </div>
+
+  <div id="ai-modal" class="ai-modal" onclick="if(event.target===this)this.classList.remove('active')">
+    <div class="ai-modal-content">
+      <button type="button" class="ai-modal-close" onclick="document.getElementById('ai-modal').classList.remove('active')">✕</button>
+      <h3 id="ai-modal-title">🤖 AI 요약</h3>
+      <div id="ai-modal-body" class="ai-body"></div>
+      <p class="disclaimer" style="font-size:11px;margin-top:0.9rem;">※ AI 생성 참고용 요약입니다. 매수 추천이 아니며 판단·책임은 본인에게 있습니다.</p>
+    </div>
+  </div>
+
+  <script>
+    // Simple tab switcher
+    document.querySelectorAll('.tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        const id = tab.dataset.tab;
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+        tab.classList.add('active');
+        document.querySelector(`[data-pane="${id}"]`).classList.add('active');
+      });
+    });
+
+    // 개별 종목코드 복사 — 6자리 코드만 클립보드에 복사 (MTS 검색창 붙여넣기용)
+    function copyCode(btn) {
+      const code = (btn.dataset.code || '').trim();
+      if (!code) return;
+      const done = () => {
+        const orig = btn.textContent;
+        btn.textContent = '✅';
+        setTimeout(() => { btn.textContent = orig; }, 1200);
+      };
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(code).then(done).catch(() => fallbackCopy(code, done));
+      } else {
+        fallbackCopy(code, done);
+      }
+    }
+
+    // 종목 AI 요약 모달 표시 (사전 생성된 data-summary)
+    function showAI(btn) {
+      document.getElementById('ai-modal-title').textContent = '🤖 ' + (btn.dataset.name || '') + ' · AI 요약';
+      document.getElementById('ai-modal-body').textContent = btn.dataset.summary || '요약이 없습니다.';
+      document.getElementById('ai-modal').classList.add('active');
+    }
+
+    // 관심종목 일괄등록 복사 (모바일 호환) — "/watch 005930 000660 ..." 클립보드 복사
+    function copyWatch(btn) {
+      const codes = (btn.dataset.codes || '').trim();
+      if (!codes) return;
+      const text = '/watch ' + codes;
+      const done = () => {
+        const orig = btn.textContent;
+        btn.textContent = '✅ 복사됨';
+        setTimeout(() => { btn.textContent = orig; }, 1500);
+      };
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(done).catch(() => fallbackCopy(text, done));
+      } else {
+        fallbackCopy(text, done);
+      }
+    }
+    function fallbackCopy(text, done) {
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      ta.style.position = 'fixed';
+      ta.style.top = '0';
+      ta.style.opacity = '0';
+      document.body.appendChild(ta);
+      ta.focus();
+      ta.setSelectionRange(0, text.length);  // iOS 호환
+      ta.select();
+      try { document.execCommand('copy'); } catch (e) {}
+      document.body.removeChild(ta);
+      if (done) done();
+    }
+
+    // 지수 차트 클릭 → 라이트박스 확대 (작은 카드 가시성 보완)
+    document.querySelectorAll('.index-spark img').forEach(function (im) {
+      im.addEventListener('click', function () {
+        document.getElementById('lightbox-img').src = this.src;
+        document.getElementById('lightbox').classList.add('active');
+      });
+    });
+  </script>
+</body>
+</html>
