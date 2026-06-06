@@ -8,7 +8,8 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from typing import Literal
 
-ReportMode = Literal["pre_close", "post_close", "us_morning", "midday", "us_premarket", "us_intraday"]
+ReportMode = Literal["pre_close", "post_close", "us_morning", "midday", "us_premarket", "us_intraday",
+                     "kr_premarket", "kr_open"]
 MarketCode = Literal["KOSPI", "KOSDAQ"]
 
 
@@ -159,6 +160,9 @@ class MarketSnapshot:
     # 장중 리포트(midday) — 전날 추천 Top3의 현재 상태 (top3_status가 채움)
     prev_top3_date: str = ""    # 전날 top3 추천일(YYYY-MM-DD)
     prev_top3_status: list[dict] = field(default_factory=list)
+    # 한국장 프리(08:05)/장초(09:15) — 전일 종가베팅 후보 시초 현황 (사용자 #404)
+    prev_candidates_date: str = ""
+    prev_candidates_status: list[dict] = field(default_factory=list)
     # {ticker, name, rec_price, cur_price, return_pct(추천가대비), today_pct(오늘등락)}
 
     # 차트 URL (renderer가 채움, 상대 경로 — docs/reports/ 기준)

@@ -33,6 +33,22 @@ def persist_top3(
     return path
 
 
+def persist_candidates(
+    picks: list[dict], date: str, base_dir: Path | str = DEFAULT_DIR
+) -> Path:
+    """종가베팅 후보(candidate_picks)를 JSON 기록 — 다음날 프리/장초 리포트 시초 등락 표시용(#404)."""
+    base = Path(base_dir)
+    base.mkdir(parents=True, exist_ok=True)
+    slim = [
+        {"ticker": p.get("ticker", ""), "name": p.get("name", ""), "theme": p.get("theme", ""),
+         "rationale": p.get("rationale", ""), "risk": p.get("risk", "")}
+        for p in picks if p.get("ticker")
+    ]
+    path = base / f"candidates_{date}.json"
+    path.write_text(json.dumps({"date": date, "picks": slim}, ensure_ascii=False), encoding="utf-8")
+    return path
+
+
 def load_top3(date: str, base_dir: Path | str = DEFAULT_DIR) -> list[dict] | None:
     """오늘자 top3 picks 로드. 파일 없거나 날짜 불일치면 None(구픽 매매 방지)."""
     path = _path(date, Path(base_dir))

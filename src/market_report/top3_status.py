@@ -46,6 +46,30 @@ def find_prev_top3(
     return (date, picks) if picks else None
 
 
+def find_prev_candidates(
+    today: str, base_dir: Path | str = _DATA_DIR
+) -> tuple[str, list[dict]] | None:
+    """today 이전 거래일의 종가베팅 후보(candidates_<date>.json) 중 가장 최근 것 로드(#404)."""
+    base = Path(base_dir)
+    if not base.exists():
+        return None
+    rx = re.compile(r"candidates_(\d{4}-\d{2}-\d{2})\.json$")
+    cands: list[tuple[str, Path]] = []
+    for p in base.glob("candidates_*.json"):
+        m = rx.search(p.name)
+        if m and m.group(1) < today:
+            cands.append((m.group(1), p))
+    if not cands:
+        return None
+    date, path = max(cands, key=lambda x: x[0])
+    try:
+        picks = (json.loads(path.read_text(encoding="utf-8")) or {}).get("picks", [])
+    except Exception as exc:  # noqa: BLE001
+        logger.warning("prev_candidates_load_failed path=%s error=%s", path, exc)
+        return None
+    return (date, picks) if picks else None
+
+
 def compute_status(pick: dict, cur_price: float, today_pct: float) -> dict:
     """추천 pick + 현재가 → 상태 dict.
 

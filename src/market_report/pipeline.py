@@ -1384,8 +1384,11 @@ async def run_full(
         if snap.mode == "pre_close" and snap.top3:
             try:
                 from datetime import datetime as _dt
-                from src.trading.top3_bridge import persist_top3
-                persist_top3(snap.top3, snap.mode, _dt.now().strftime("%Y-%m-%d"))
+                from src.trading.top3_bridge import persist_candidates, persist_top3
+                _d = _dt.now().strftime("%Y-%m-%d")
+                persist_top3(snap.top3, snap.mode, _d)
+                if snap.candidate_picks:  # 종가베팅 후보 영속화(다음날 프리/장초 시초등락용, #404)
+                    persist_candidates(snap.candidate_picks, _d)
             except Exception as exc:  # 리포트를 깨지 않도록 best-effort
                 logger.warning("top3_persist_failed error=%s", exc)
 

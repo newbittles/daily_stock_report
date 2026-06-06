@@ -146,6 +146,17 @@ async def _midday_job() -> None:
         logger.exception("midday_job_failed error=%s", exc)
 
 
+async def _kr_morning_job(mode: str) -> None:
+    """한국장 프리(08:05)/장초(09:15) 리포트 (사용자 #404)."""
+    logger.info("%s_job_start now=%s", mode, datetime.now().isoformat())
+    try:
+        from src.market_report.kr_morning import run_kr_morning
+        snap = await run_kr_morning(mode)
+        logger.info("%s_job_done sent=%s", mode, snap is not None)
+    except Exception as exc:
+        logger.exception("%s_job_failed error=%s", mode, exc)
+
+
 async def _dashboard_job() -> None:
     """마감 후 전략 스크린 대시보드 갱신 + GitHub Pages 게시."""
     logger.info("dashboard_job_start now=%s", datetime.now().isoformat())
@@ -199,6 +210,15 @@ def build_scheduler() -> AsyncIOScheduler:
     scheduler.add_job(
         _midday_job, CronTrigger(day_of_week="mon-fri", hour=11, minute=40, timezone=KST),
         id="report_midday", replace_existing=True, misfire_grace_time=600,
+    )
+    # 한국장 프리(08:05, NXT 시초) + 장초(09:15, 정규장 시초) 리포트 (사용자 #404)
+    scheduler.add_job(
+        _kr_morning_job, CronTrigger(day_of_week="mon-fri", hour=8, minute=5, timezone=KST),
+        args=["kr_premarket"], id="report_kr_premarket", replace_existing=True, misfire_grace_time=600,
+    )
+    scheduler.add_job(
+        _kr_morning_job, CronTrigger(day_of_week="mon-fri", hour=9, minute=15, timezone=KST),
+        args=["kr_open"], id="report_kr_open", replace_existing=True, misfire_grace_time=600,
     )
     # 미국장 장전(프리장) 리포트 (평일 19:00 — 이른 프리장)
     scheduler.add_job(

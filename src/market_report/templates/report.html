@@ -717,7 +717,7 @@ ${{ "{:,.2f}".format(item.price) }} <span class="{{ 'up-text' if pct >= 0 else '
     {# 🌙 시간외(NXT) 상위 상승률 — 정규장 마감 후(post_close, 정규장 종가 대비 NXT 변동) #}
     {% if snap.overtime_gainers %}
     <section>
-      <h2><span class="icon">🌙</span>시간외(NXT) 상위 상승률 <span style="color:var(--text-dim);font-size:0.8rem;">(정규장 종가 대비)</span></h2>
+      <h2><span class="icon">{{ '🌅' if snap.mode == 'kr_premarket' else '🌙' }}</span>{{ 'NXT 프리장 상승률 상위' if snap.mode == 'kr_premarket' else '시간외(NXT) 상위 상승률' }} <span style="color:var(--text-dim);font-size:0.8rem;">({{ '08:00~ 프리장, 전일 종가 대비' if snap.mode == 'kr_premarket' else '정규장 종가 대비' }})</span></h2>
       <ul class="watch-list">
         {% for g in snap.overtime_gainers %}
         <li>
@@ -1105,8 +1105,40 @@ ${{ "{:,.2f}".format(item.price) }} <span class="{{ 'up-text' if pct >= 0 else '
     </section>
     {% endif %}
 
+    {# 🎯 전일 종가베팅 후보 시초 현황 (kr_premarket/kr_open, 사용자 #404) #}
+    {% if snap.prev_candidates_status %}
+    <section>
+      <h2><span class="icon">🎯</span>전일 종가베팅 시초 현황{% if snap.prev_candidates_date %} ({{ snap.prev_candidates_date[5:] }}){% endif %}</h2>
+      <ul class="watch-list">
+        {% for t in snap.prev_candidates_status %}
+        <li>
+          <a href="https://finance.naver.com/item/main.naver?code={{ t.ticker }}" target="_blank" rel="noopener"><strong>{{ t.name }}</strong></a>
+          <span class="{{ 'up-text' if t.today_pct >= 0 else 'down-text' }}">시초 {{ '+' if t.today_pct >= 0 else '' }}{{ "{:.1f}".format(t.today_pct) }}%</span>
+        </li>
+        {% endfor %}
+      </ul>
+      <p class="disclaimer" style="font-size:12px;">※ 전일 마감전 리포트의 종가베팅 후보가 오늘 시초에 어떻게 출발했는지(참고).</p>
+    </section>
+    {% endif %}
+
+    {# 🚀 시초 상승률 상위 (kr_open — 정규장 시초) #}
+    {% if snap.mode == 'kr_open' and snap.top_gainers %}
+    <section>
+      <h2><span class="icon">🚀</span>시초 상승률 상위</h2>
+      <ul class="watch-list">
+        {% for g in snap.top_gainers[:7] %}
+        <li>
+          <a href="https://finance.naver.com/item/main.naver?code={{ g.ticker }}" target="_blank" rel="noopener"><strong>{{ g.name }}</strong></a>
+          <span class="pick-ticker">{{ "{:,.0f}".format(g.price) }}원</span>
+          <span class="up-text">+{{ "{:.1f}".format(g.change_pct) }}%</span>
+        </li>
+        {% endfor %}
+      </ul>
+    </section>
+    {% endif %}
+
     {# 5. 거래량/상승/하락 상위 - 탭 (midday는 핫종목과 중복이라 숨김 — 메시지 구조 우선) #}
-    {% if (snap.top_volume or snap.top_gainers or snap.top_losers) and snap.mode != 'midday' %}
+    {% if (snap.top_volume or snap.top_gainers or snap.top_losers) and snap.mode not in ['midday', 'kr_premarket', 'kr_open'] %}
     <section>
       <h2><span class="icon">💹</span>종목 순위</h2>
       <div class="tabs">

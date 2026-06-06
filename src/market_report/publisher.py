@@ -23,7 +23,7 @@ def report_url(snap: MarketSnapshot) -> str:
     date = snap.generated_at.strftime("%Y-%m-%d")
     suffix = {"pre_close": "pre", "post_close": "post", "us_morning": "us",
               "midday": "midday", "us_premarket": "us-pre",
-              "us_intraday": "us-mid"}.get(snap.mode, "post")
+              "us_intraday": "us-mid", "kr_premarket": "kr-pre", "kr_open": "kr-open"}.get(snap.mode, "post")
     return f"{GITHUB_PAGES_BASE}/reports/{date}-{suffix}.html"
 
 
@@ -61,7 +61,7 @@ def publish(snap: MarketSnapshot) -> bool:
     time = snap.generated_at.strftime("%H:%M")
     mode_label = {"pre_close": "마감 전", "post_close": "마감 후",
                   "us_morning": "미국 아침", "us_premarket": "미국 장전",
-                  "us_intraday": "미국 장중", "midday": "장중"}.get(snap.mode, "마감 후")
+                  "us_intraday": "미국 장중", "midday": "장중", "kr_premarket": "한국 프리", "kr_open": "한국 장초"}.get(snap.mode, "마감 후")
 
     # 1. add
     ok, msg = _run_git("add", "-A", "docs/")  # -A: 삭제(오래된 차트)도 스테이징

@@ -572,6 +572,40 @@ def _format_us_morning_summary(snap: MarketSnapshot) -> str:
     return "\n".join(lines)
 
 
+def _format_kr_morning_summary(snap: MarketSnapshot) -> str:
+    """한국장 프리(08:05)/장초(09:15) 요약 — 지수·신호등 + 시초 상승률 + 전일 Top3·종가베팅 시초 + AI(#404)."""
+    title = "🌅 *한국장 프리 리포트* (NXT 시초)" if snap.mode == "kr_premarket" else "🏁 *한국장 장초 리포트*"
+    lines: list[str] = [f"{title} — {snap.generated_at.strftime('%m-%d %H:%M')}", ""]
+    lines.extend(_format_index_lines(snap))  # 지수·공포탐욕·신호등/이격
+    if snap.mode == "kr_premarket" and snap.overtime_gainers:
+        lines.append("🚀 *NXT 프리장 상승률 상위*")
+        for g in snap.overtime_gainers[:5]:
+            lines.append(f"  · {_naver_link(g.get('name', ''), g.get('ticker', ''))} "
+                         f"+{g.get('overtime_pct', 0):.1f}%")
+        lines.append("")
+    elif snap.top_gainers:
+        lines.append("🚀 *시초 상승률 상위*")
+        for g in snap.top_gainers[:5]:
+            lines.append(f"  · {_naver_link(g.name, g.ticker)} {g.price:,.0f}원 (+{g.change_pct:.1f}%)")
+        lines.append("")
+    if snap.prev_top3_status:
+        lines.append(f"🏆 *전일 추천 Top3 시초* ({snap.prev_top3_date[5:]})")
+        for t in snap.prev_top3_status:
+            lines.append(f"  · {_naver_link(t['name'], t['ticker'])} 시초 {t.get('today_pct', 0):+.1f}% "
+                         f"(추천가대비 {t.get('return_pct', 0):+.1f}%)")
+        lines.append("")
+    if snap.prev_candidates_status:
+        lines.append(f"🎯 *전일 종가베팅 시초* ({snap.prev_candidates_date[5:]})")
+        for t in snap.prev_candidates_status:
+            lines.append(f"  · {_naver_link(t['name'], t['ticker'])} 시초 {t.get('today_pct', 0):+.1f}%")
+        lines.append("")
+    if snap.summary:
+        lines.append(f"🤖 {snap.summary}")
+        lines.append("")
+    lines.append(f"📄 [전체 리포트 보기]({report_url(snap)})")
+    return "\n".join(lines)
+
+
 async def send_report(snap: MarketSnapshot) -> bool:
     """리포트 요약을 텔레그램으로 발송. 성공 여부 반환."""
     settings = get_settings()
@@ -582,8 +616,9 @@ async def send_report(snap: MarketSnapshot) -> bool:
 
     if snap.mode in ("us_morning", "us_premarket", "us_intraday"):
         text = _format_us_morning_summary(snap)
-    elif snap.mode == "midday":
-        text = _format_midday_summary(snap)
+    elif snap.mode in ("midday", "kr_premarket", "kr_open"):
+        text = _format_kr_morning_summary(snap) if snap.mode in ("kr_premarket", "kr_open") \
+            else _format_midday_summary(snap)
     elif snap.mode == "pre_close":
         text = _format_pre_summary(snap)
     else:
