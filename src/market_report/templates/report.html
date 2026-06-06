@@ -444,6 +444,16 @@ ${{ "{:,.2f}".format(item.price) }} <span class="{{ 'up-text' if pct >= 0 else '
         <p style="margin:0;"><strong style="font-size:1.1rem;">{{ _fg }}</strong> / 100 — {{ snap.fear_greed.rating_ko or snap.fear_greed.rating }}{% if _fg <= 25 %} · 🔥 극단 공포 = 바닥 매수권(백테스트 F&amp;G≤25 매수 20일 +4~9%){% endif %}</p>
       </div>
       {% endif %}
+      {% if snap.market_phase %}
+      <div style="margin-top:0.5rem;">
+        <div class="label" style="font-size:0.78rem;color:var(--text-dim);">🚦 지수 상태 신호등</div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:3px;">
+          {% for label, ph in snap.market_phase.items() %}
+          <span class="strat-badge">{{ ph.emoji }} {{ label }} {{ ph.name }}</span>
+          {% endfor %}
+        </div>
+      </div>
+      {% endif %}
     </header>
 
     {# 🌎 미국 증시 마감 (us_morning) #}

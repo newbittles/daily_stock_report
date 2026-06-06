@@ -121,3 +121,14 @@ def test_select_top3_return_all_dedups_with_strategies() -> None:
     assert len(out) == 2  # KB금융 3건 → 1건으로 중복제거 + X
     kb = next(o for o in out if o["ticker"] == "KB")
     assert set(kb["strategies"]) == {"A", "C", "D"}
+
+
+def test_market_phase_asymmetric() -> None:
+    """시장 국면 신호등 — 바닥권(검증) 우선, 과열(정보) 등 비대칭 (#360~372)."""
+    from src.market_report.pipeline import _market_phase
+    assert _market_phase("나스닥", {5: -3, 20: -5, 60: -3, 120: 5, "rsi": 28})[1] == "바닥권"   # RSI≤30
+    assert _market_phase("코스피", {5: -5, 20: -8, 60: -9, 120: -5, "rsi": 40})[1] == "바닥권"  # 60일≤-7
+    assert _market_phase("코스피", {5: 3, 20: 8, 60: 26, 120: 42, "rsi": 75})[1] == "과열"      # 이격+RSI≥70
+    assert _market_phase("나스닥", {5: -3, 20: -3, 60: -3, 120: 2, "rsi": 45})[1] == "하락전환"  # 60일<0
+    assert _market_phase("나스닥", {5: -2, 20: 1, 60: 3, 120: 5, "rsi": 55})[1] == "단기눌림"   # 5일만 음
+    assert _market_phase("나스닥", {5: 1, 20: 2, 60: 3, 120: 5, "rsi": 55})[1] == "정상"
