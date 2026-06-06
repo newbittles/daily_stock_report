@@ -39,7 +39,8 @@
 - **미국 종목별 AI버튼**(커밋 2a25bda, #309): analyzer.summarize_us_stocks(symbol 배치 '왜 움직였나' 한국어) → us_report_runner+run_full us_morning에서 analyze 직후 호출. report.html us_top3·스크린·섹터/테마대장·E·급등초입에 🤖버튼. KR summarize_stocks도 E/급등초입 포함 확장. 245테스트.
 - **SOXL 대장서머리 추가**(커밋 073f810): fdr_source.US_BIGTECH에 SOXL(반도체 3X). FDR 조회 검증.
 - **숫자 콤마**(커밋 9cd3827, #315): 표시코드(template/telegram/messages)는 이미 천단위 콤마. AI 생성텍스트만 갭 → summarize_stocks/us_stocks 프롬프트에 '천단위 콤마' 지시 추가.
-- **E 투매바닥(capitulation) 재설계 + 지수 2단계등급**(커밋 2b9a9e5, #328/#330/#334~339): 사용자가 찾던 '진짜 바닥' 신호. ▶oversold_leader 재설계: 최근 look(3)일내 RSI≤30 + 50일선이격≤-12% + 거래량≥2x(투매) + 당일 반등 양봉(칼날 회피). 기존 '주도주 신고가' 조건 폐기(4월 바닥 놓친 원인). ▶2단계 등급(하드게이트 X, 사용자 #334 보조도구 의견 반영): _market_rsi(US=나스닥IXIC·KR=코스피KS11, **절대 교차 안 함** #339) + _tag_market_bottom → 지수 RSI<35면 market_bottom=True '🔥시장 동반 바닥'(강), 아니면 '개별 바닥(시장 양호)'. ▶배지=telegram/report.html. ▶백테스트(2025): 4월 진짜바닥 7회 포착(시장동반 4회=+14~40%대박, 시장회복후 추격 3회=손실=개별등급으로 강등됨), 3월 가짜·INTC/PLTR/SMR 0회(노이즈 적음). 248테스트. ⚠️**미완 Phase2: 공포탐욕지수(F&G #331)** — E에 extreme fear 결합 + 'F&G 최저부터 매수' 백테스트(데이터소스 확보 필요).
+- **E 투매바닥(capitulation) 재설계 + 지수 2단계등급**(커밋 2b9a9e5, #328/#330/#334~339): 사용자가 찾던 '진짜 바닥' 신호. ▶oversold_leader 재설계: 최근 look(3)일내 RSI≤30 + 50일선이격≤-12% + 거래량≥2x(투매) + 당일 반등 양봉(칼날 회피). 기존 '주도주 신고가' 조건 폐기(4월 바닥 놓친 원인). ▶2단계 등급(하드게이트 X, 사용자 #334 보조도구 의견 반영): _market_rsi(US=나스닥IXIC·KR=코스피KS11, **절대 교차 안 함** #339) + _tag_market_bottom → 지수 RSI<35면 market_bottom=True '🔥시장 동반 바닥'(강), 아니면 '개별 바닥(시장 양호)'. ▶배지=telegram/report.html. ▶백테스트(2025): 4월 진짜바닥 7회 포착(시장동반 4회=+14~40%대박, 시장회복후 추격 3회=손실=개별등급으로 강등됨), 3월 가짜·INTC/PLTR/SMR 0회(노이즈 적음). 248테스트.
+- **공포탐욕지수(F&G) 결합**(커밋 81cd7cd, #331 Phase2 완료): `src/datasource/us/fear_greed.py`(CNN production.dataviz.cnn.io/index/fearandgreed/graphdata, User-Agent 필요·일1회캐시·§7). 백테스트(2025): F&G≤25 매수 나스닥 20일+4%, ≤15 +9%(승률87%), 최저(4/8 score3)→20일+16%/60일+34% — extreme fear=바닥권 확인. E market_bottom = 지수RSI<35 **OR** F&G≤25. snap.fear_greed(US collect_us_snapshot+KR 파이프라인). 표시: report.html 헤더 공포탐욕 배지+E배지+telegram F&G라인. 249테스트. 라이브검증 F&G=42(fear).
 - **한국인 자금흐름(US)**(커밋 94e67f9+f3d0898, #318): 미국 리포트에 '🇰🇷 한국인 자금흐름' = 순매수 TOP5(개별/ETF) + 순매도 TOP3(자금유출). ⚠️핵심 실측발견: SEIBro D_TYPE=4(순매수)는 상위 매수자만(전부 양수)이라 net-sell 없음 → **D_TYPE=2(매도결제금액 상위)에 net_buy 음수(순매도) 종목 포함** 확인 → fetch_us_net_sell(매도상위 중 net<0, 가장 음수순 top3). seibro _BODY_TMPL d_type 파라미터화. **_collect_kr_us_netbuy 기존 미배선**이던 것 us_report_runner+us_morning에 배선(매수TOP5도 이제 US 표시). report.html US전용 섹션. ⚠️교훈: 백그라운드 체인 명령이 테스트 실패에도 무조건 배포함(2 fail 후 배포됨) — 테스트 게이트 필요. fake_fetch 목 d_type 인자 누락이 원인(런타임은 정상), f3d0898로 수정 247통과.
 - **한국장 AI 수급 요약**(커밋 2e2e9b8, #313/#316): 수급칸 아래 '🔎 수급 요약'. flows_history.load_flows_series(저장 30일중 10일)+compute_flow_stats(시장·투자자별 streak 부호포함·전일·전주(5일전)·5일합, 순수). analyzer.summarize_flows(결정론 팩트→AI narrate, 연속·전일/전주대비 필수, 실패시 폴백). pipeline KR pre/post. telegram _format_flows_summary+report.html summary-box. 247테스트. ⚠️연속/전주대비는 market_flows.json 누적분만큼(거래일 지날수록 풍부, 현재 로컬은 sparse·서버는 누적됨).
 
@@ -68,7 +69,7 @@
 
 ## 0. 지금 상태 (한눈에)
 
-- **origin/main 최신 커밋**: `2b9a9e5`(E 투매바닥 재설계 + 지수 2단계등급) + 서버 자동리포트 커밋. 2026-06-05~06 세션 전부 배포 완료(리팩토링 포함 서버 라이브).
+- **origin/main 최신 커밋**: `81cd7cd`(E에 공포탐욕지수 F&G 결합 #331) + 서버 자동리포트 커밋. 2026-06-05~06 세션 전부 배포 완료(리팩토링 포함 서버 라이브).
 - **서버(`lotto-server` = 134.185.109.195) = origin/main과 동기화 + 서비스 재시작 완료.** (로컬수정 `config/screener.yaml` RAM축소판만 autostash 보존)
 - **테스트**: `.venv\Scripts\python.exe -m pytest tests/ -q` → **240 passed** (기준선).
 - **3개 스트림(자동매매·미국스크리닝·리포트) 전부 main 머지 완료.** 백업 브랜치 `backup/pre-merge-2026-06-03`.
