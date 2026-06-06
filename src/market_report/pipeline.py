@@ -548,6 +548,29 @@ async def _collect_kr_us_netbuy(snap: MarketSnapshot) -> None:
     except Exception as exc:  # noqa: BLE001
         logger.warning("kr_us_netsell_failed error=%s", exc)
 
+    # 한국인 자금흐름 총액(TOP50 순매수 합) — 이번주 일평균 vs 전주 일평균(사용자 #377)
+    # 올해 초 코스피→나스닥(SOXL 등) 자금이동 추세를 총액으로 추산.
+    try:
+        import datetime as _dt
+        from src.datasource.us.seibro_source import lookback_range
+        this_total = sum(r.net_buy_amt for r in rows)  # 이번주 5거래일 TOP50 순매수 합(USD)
+        ps, pe = lookback_range(5, end=_dt.date.today() - _dt.timedelta(days=8))  # 전주 구간
+        prev_rows = await fetch_us_net_buy(top=50, start_dt=ps, end_dt=pe)
+        prev_total = sum(r.net_buy_amt for r in prev_rows)
+
+        def _eok(usd: float) -> int:
+            return round(usd * rate / 1e8) if rate else 0
+
+        tt, pt = _eok(this_total), _eok(prev_total)
+        snap.kr_us_netbuy_total = {
+            "total_eok": tt, "daily_avg_eok": round(tt / 5),
+            "prev_daily_avg_eok": round(pt / 5),
+            "change_pct": round((tt - pt) / pt * 100, 1) if pt else None,
+        }
+        logger.info("kr_us_netbuy_total this=%d억 prev=%d억", tt, pt)
+    except Exception as exc:  # noqa: BLE001
+        logger.warning("kr_us_netbuy_total_failed error=%s", exc)
+
 
 async def _attach_kr_netbuy_to_picks(snap: MarketSnapshot) -> None:
     """미국 추천 Top3/ABCD/섹터·테마 대장 픽에 서학개미 순매수금액 부착(전일 + 최근5거래일).
