@@ -122,12 +122,15 @@ def _format_index_lines(snap: MarketSnapshot) -> list[str]:
 def _format_ma_gaps(snap: MarketSnapshot) -> list[str]:
     """📐 지수 이평선 이격도 — 5/10/20/60/120일선 대비 괴리%(고점 판단, 사용자 #357). 없으면 [] ."""
     g = getattr(snap, "ma_gaps", None) or {}
+    mp = getattr(snap, "market_phase", None) or {}
     lines: list[str] = []
     for label, gaps in g.items():
         if not gaps:
             continue
         parts = " ".join(f"{k}일{gaps[k]:+.1f}%" for k in (5, 10, 20, 60, 120) if k in gaps)
-        lines.append(f"📐 {label} 이격: {parts}")
+        ph = mp.get(label)
+        head = f"{ph['emoji']} {label} [{ph['name']}]" if ph else f"📐 {label}"
+        lines.append(f"{head} 이격: {parts}")
     return lines
 
 

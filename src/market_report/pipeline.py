@@ -129,8 +129,9 @@ async def collect_us_snapshot() -> MarketSnapshot:
         snap.fear_greed = await fetch_fear_greed()  # 공포탐욕지수(바닥 보조, 사용자 #331)
     except Exception as exc:  # noqa: BLE001
         logger.warning("us_fear_greed_failed error=%s", exc)
-    try:  # 지수 이평선 이격도(고점 판단, 사용자 #357)
+    try:  # 지수 이평선 이격도(고점 판단, 사용자 #357) + 시장 국면 신호등(#362)
         snap.ma_gaps = {"나스닥": await _index_ma_gaps("IXIC"), "S&P500": await _index_ma_gaps("US500")}
+        _fill_market_phase(snap)
     except Exception as exc:  # noqa: BLE001
         logger.warning("us_ma_gaps_failed error=%s", exc)
     logger.info("us_snapshot_collected indices=%d bigtech=%d sectors=%d fg=%s",
@@ -629,6 +630,42 @@ def _tag_market_bottom(picks: list[dict], market_rsi: float | None, threshold: f
         p["market_bottom"] = bool((market_rsi is not None and market_rsi < threshold) or fg_bottom)
 
 
+_OVERHEAT_120 = {"나스닥": 12.0, "S&P500": 8.0, "코스피": 40.0, "코스닥": 40.0}
+_OVERHEAT_60 = {"나스닥": 9.0, "S&P500": 7.0, "코스피": 25.0, "코스닥": 25.0}
+
+
+def _market_phase(label: str, gaps: dict) -> tuple[str, str]:
+    """지수 이격도 → 시장 국면 신호등(사용자 #360/#362). (이모지, 국면명).
+
+    우선순위: 과열(120/60일 이격 임계초과) > 하락전환(60일선 이탈) > 조정(20일선 이탈)
+    > 단기눌림(5일선만 음) > 정상. 지수별 과열 임계 다름(코스피 변동성 큼)."""
+    g5, g20, g60, g120 = (gaps.get(k) for k in (5, 20, 60, 120))
+    rv = gaps.get("rsi")
+    if g120 is None or g60 is None:
+        return ("⚪", "판단불가")
+    # 과열 = 이격 임계 초과 AND RSI 과매수(≥70). RSI 결합으로 미국 거짓과열 필터(백테스트 #363).
+    if (g120 >= _OVERHEAT_120.get(label, 12.0) or g60 >= _OVERHEAT_60.get(label, 9.0)) \
+            and (rv is None or rv >= 70):
+        return ("🔴", "과열")
+    if g60 < 0:
+        return ("🔻", "하락전환")
+    if g20 is not None and g20 < 0:
+        return ("🟠", "조정")
+    if g5 is not None and g5 < 0:
+        return ("🟡", "단기눌림")
+    return ("🟢", "정상")
+
+
+def _fill_market_phase(snap: MarketSnapshot) -> None:
+    """snap.ma_gaps 기반으로 지수별 시장 국면 신호등 채움 → snap.market_phase {라벨:{emoji,name}}."""
+    out: dict[str, dict] = {}
+    for label, gaps in (snap.ma_gaps or {}).items():
+        if gaps:
+            em, nm = _market_phase(label, gaps)
+            out[label] = {"emoji": em, "name": nm}
+    snap.market_phase = out
+
+
 async def _index_ma_gaps(symbol: str) -> dict:
     """지수 이평선 이격도 — 5/10/20/60/120일선 대비 현재가 괴리%(사용자 #357, 고점 판단). 실패 시 {}."""
     def _work() -> dict:
@@ -636,17 +673,20 @@ async def _index_ma_gaps(symbol: str) -> dict:
 
         import FinanceDataReader as fdr
 
-        from src.indicators.core import moving_average
+        from src.indicators.core import moving_average, rsi
         start = (_dt.date.today() - _dt.timedelta(days=420)).isoformat()
         df = fdr.DataReader(symbol, start)
         c = [float(x) for x in df["Close"].dropna()]
         if len(c) < 120:
             return {}
-        out: dict[int, float] = {}
+        out: dict = {}
         for k in (5, 10, 20, 60, 120):
             ma = moving_average(c, k)[-1]
             if ma:
                 out[k] = round((c[-1] - ma) / ma * 100, 1)
+        rv = rsi(c, 14)[-1]
+        if rv is not None:
+            out["rsi"] = round(rv)
         return out
 
     try:
@@ -1273,9 +1313,10 @@ async def run_full(
 
     _inject_marcap(snap)
 
-    if mode in ("pre_close", "post_close"):  # 코스피/코스닥 이평선 이격도(고점 판단, 사용자 #357)
+    if mode in ("pre_close", "post_close"):  # 코스피/코스닥 이평선 이격도(고점 판단, #357) + 신호등(#362)
         try:
             snap.ma_gaps = {"코스피": await _index_ma_gaps("KS11"), "코스닥": await _index_ma_gaps("KQ11")}
+            _fill_market_phase(snap)
         except Exception as exc:  # noqa: BLE001
             logger.warning("kr_ma_gaps_failed error=%s", exc)
 
