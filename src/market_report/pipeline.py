@@ -565,48 +565,68 @@ async def _collect_kr_us_netbuy(snap: MarketSnapshot) -> None:
     if not rows:
         return
     rate = await fetch_usd_krw()  # USD→KRW. 0이면 억 환산 불가 → USD만 보관
+
+    def _clean_en(name_en: str) -> str:
+        nm = name_en.title()
+        for acro in ("Etf", "Adr", "Ads"):
+            nm = nm.replace(f" {acro}", f" {acro.upper()}")
+        return nm
+
     out: list[dict] = []
     for r in rows:
         ticker = ticker_for(r.isin)
-        name = korean_name(ticker, "") if ticker else ""
-        if not name:
-            # ETF·미매핑 종목은 영문명(가독성 위해 title-case, 약어는 대문자 복원)
-            name = r.name_en.title()
-            for acro in ("Etf", "Adr", "Ads"):
-                name = name.replace(f" {acro}", f" {acro.upper()}")
         out.append({
             "ticker": ticker,
-            "name": name,
+            "name": korean_name(ticker, "") if ticker else "",
             "net_buy_usd": r.net_buy_amt,
             "net_buy_eok": round(r.net_buy_amt * rate / 1e8) if rate else 0,
             "is_etf": _is_etf_name(r.name_en),
+            "isin": r.isin, "_en": r.name_en,
         })
     snap.kr_us_netbuy = out
     n_stock = sum(1 for o in out if not o["is_etf"])
     logger.info("kr_us_netbuy_ready n=%d stocks=%d etfs=%d", len(out), n_stock, len(out) - n_stock)
 
+    sell_out: list[dict] = []
     # 순매도(자금 유출) TOP3 — 매도결제금액 상위 중 순매수 음수(사용자 #318: 자금이 어디로 빠지는지)
     try:
         from src.datasource.us.seibro_source import fetch_us_net_sell
         srows = await fetch_us_net_sell(trading_days=5, top=3)
-        sell_out: list[dict] = []
         for r in srows:
             ticker = ticker_for(r.isin)
-            name = korean_name(ticker, "") if ticker else ""
-            if not name:
-                name = r.name_en.title()
-                for acro in ("Etf", "Adr", "Ads"):
-                    name = name.replace(f" {acro}", f" {acro.upper()}")
             sell_out.append({
-                "ticker": ticker, "name": name,
+                "ticker": ticker, "name": korean_name(ticker, "") if ticker else "",
                 "net_sell_usd": -r.net_buy_amt,  # 양수(유출 규모)
                 "net_sell_eok": round(-r.net_buy_amt * rate / 1e8) if rate else 0,
                 "is_etf": _is_etf_name(r.name_en),
+                "isin": r.isin, "_en": r.name_en,
             })
         snap.kr_us_netsell = sell_out
         logger.info("kr_us_netsell_ready n=%d", len(sell_out))
     except Exception as exc:  # noqa: BLE001
         logger.warning("kr_us_netsell_failed error=%s", exc)
+
+    # 미매핑 종목/ETF: AI로 티커·한국어명 보강(ISIN 캐시) → 빈 티커·영문명 최소화(사용자 #441/#442)
+    try:
+        from src.datasource.us.seibro_enrich import enrich as _seibro_enrich
+        unmapped = [(d["isin"], d["_en"]) for d in (out + sell_out) if not d["ticker"]]
+        if unmapped:
+            emap = await _seibro_enrich(unmapped)
+            for d in (out + sell_out):
+                if not d["ticker"]:
+                    e = emap.get(d["isin"]) or {}
+                    if e.get("ticker"):
+                        d["ticker"] = e["ticker"]
+                    if e.get("ko"):
+                        d["name"] = e["ko"]
+    except Exception as exc:  # noqa: BLE001
+        logger.warning("seibro_enrich_apply_failed error=%s", exc)
+    # 보강 후에도 빈 이름은 영문 정리본으로 폴백 + 내부 키 정리
+    for d in (out + sell_out):
+        if not d["name"]:
+            d["name"] = _clean_en(d["_en"])
+        d.pop("_en", None)
+        d.pop("isin", None)
 
     # 한국인 자금흐름 총액(TOP50 순매수 합) — 이번주 일평균 vs 전주 일평균(사용자 #377)
     # 올해 초 코스피→나스닥(SOXL 등) 자금이동 추세를 총액으로 추산.
