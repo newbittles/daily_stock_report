@@ -81,8 +81,9 @@ def _format_strategy_holdings(snap: MarketSnapshot) -> list[str]:
             if t.get("supply_str"):
                 lines.append(f"   💰 {t['supply_str']}")
             g = t.get("gap20", 0)
+            _oh = t.get("overheat") and "C" in (t.get("strategies") or [])  # 과열은 C전략만(#452)
             lines.append(f"   📊 20일선 {'+' if g >= 0 else ''}{g:.1f}%"
-                         + (" 🔥과열" if t.get("overheat") else ""))
+                         + (" 🔥단기과열주의" if _oh else ""))
         lines.append("")
     if snap.holdings_status:
         lines.append("📋 *보유종목 상태*")
@@ -315,11 +316,11 @@ def _format_pre_summary(snap: MarketSnapshot) -> str:
     lines.append(f"🟡 *마감 전 리포트* — {date}")
     lines.append("")
     lines.extend(_format_index_lines(snap))      # 📊 지수 + 신호등 병기
-    if snap.summary:                              # 🤖 AI 시장요약 (지수 바로 아래)
-        lines.append(snap.summary)
-        lines.append("")
     lines.extend(_format_market_flows(snap))      # 💰 수급
     lines.extend(_format_flows_summary(snap))     # 🔎 AI 수급 요약
+    if snap.summary:                              # 🤖 AI 시장요약 (수급 아래로, #453)
+        lines.append(snap.summary)
+        lines.append("")
     lines.extend(_format_themes_merged(snap))     # 🔥 강세/주도 테마 통합
     lines.extend(_format_strategy_holdings(snap))
     lines.extend(_format_e_picks(snap))       # 🩹 E 과매도 반등 후보
@@ -341,14 +342,14 @@ def _format_post_summary(snap: MarketSnapshot) -> str:
 
     # 웹과 동일 순서(#447/#449): 지수→AI요약→수급→관전포인트→테마→종목
     lines.extend(_format_index_lines(snap))      # 📊 지수 + 신호등 병기
-    if snap.summary:                              # 🤖 AI 시장요약 (지수 바로 아래)
+    lines.extend(_format_market_flows(snap))      # 💰 수급
+    lines.extend(_format_flows_summary(snap))     # 🔎 AI 수급 요약
+    if snap.summary:                              # 🤖 AI 시장요약 (수급 아래로, #453)
         lines.append(snap.summary)
         lines.append("")
     if snap.why_moved:
         lines.append(f"💡 {snap.why_moved}")
         lines.append("")
-    lines.extend(_format_market_flows(snap))      # 💰 수급
-    lines.extend(_format_flows_summary(snap))     # 🔎 AI 수급 요약
     # 🔭 내일 관전 포인트 (지수·수급 아래, #447/#449)
     watchpoints = [w.get("watchpoint") for w in (snap.candidate_picks or []) if w.get("watchpoint")]
     if watchpoints:

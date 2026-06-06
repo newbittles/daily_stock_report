@@ -36,7 +36,8 @@ ${{ "{:,.2f}".format(item.price) }} <span class="{{ 'up-text' if pct >= 0 else '
 {%- endmacro -%}
 {# 전략 조건 배지(KR·US 통일, #414): 20일선 이격 + 🔥과열(BB돌파·거래량) + 5<10 크로스. KR 기존 출력과 동일 재현. #}
 {%- macro cond_badges(t) -%}
-<span class="gap-badge {{ 'overheat' if t.overheat|default(false) else '' }}">20일선 {{ '+' if t.gap20|default(0) >= 0 else '' }}{{ "{:.1f}".format(t.gap20|default(0)) }}%{% if t.overheat|default(false) %} 🔥과열(BB돌파·거래량{{ "{:.1f}".format(t.vol_x|default(0)) }}x){% endif %}</span>{% if t.cross_signal|default(none) == 'PULLBACK' %} <span class="up-text" style="font-size:0.8rem;">🟢5&lt;10 단기눌림</span>{% elif t.cross_signal|default(none) == 'CORRECTION' %} <span class="down-text" style="font-size:0.8rem;">⚠️5&lt;10 조정시작</span>{% endif %}
+{%- set _oh = t.overheat|default(false) and ('C' in (t.strategies|default([]))) -%}
+<span class="gap-badge {{ 'overheat' if _oh else '' }}">20일선 {{ '+' if t.gap20|default(0) >= 0 else '' }}{{ "{:.1f}".format(t.gap20|default(0)) }}%{% if _oh %} 🔥단기과열주의(BB돌파·거래량{{ "{:.1f}".format(t.vol_x|default(0)) }}x){% endif %}</span>{% if t.cross_signal|default(none) == 'PULLBACK' %} <span class="up-text" style="font-size:0.8rem;">🟢5&lt;10 단기눌림</span>{% elif t.cross_signal|default(none) == 'CORRECTION' %} <span class="down-text" style="font-size:0.8rem;">⚠️5&lt;10 조정시작</span>{% endif %}
 {%- endmacro -%}
 <!DOCTYPE html>
 <html lang="ko">
@@ -719,29 +720,6 @@ ${{ "{:,.2f}".format(item.price) }} <span class="{{ 'up-text' if pct >= 0 else '
     </section>
     {% endif %}
 
-    {# 2. AI 요약 (us_morning/us_premarket은 지수 아래에서 이미 표시 → 여기선 KR만) #}
-    {% if snap.summary and snap.mode not in ['us_morning', 'us_premarket', 'us_intraday'] %}
-    <section>
-      <h2><span class="icon">🤖</span>AI 시장 요약</h2>
-      <div class="summary-box">
-        <div class="label">한 줄 요약</div>
-        <p>{{ snap.summary }}</p>
-      </div>
-      {% if snap.why_moved %}
-      <div class="summary-box">
-        <div class="label">왜 움직였나</div>
-        <p>{{ snap.why_moved }}</p>
-      </div>
-      {% endif %}
-      {% if snap.theme_commentary %}
-      <div class="summary-box">
-        <div class="label">테마 해설</div>
-        <p>{{ snap.theme_commentary }}</p>
-      </div>
-      {% endif %}
-    </section>
-    {% endif %}
-
     {# 1b. 투자자 수급 현황표 (지수 아래) — 최근 3일 일자별 #}
     {% if snap.market_flows_history %}
     <section>
@@ -768,6 +746,29 @@ ${{ "{:,.2f}".format(item.price) }} <span class="{{ 'up-text' if pct >= 0 else '
       <p style="font-size:11px;color:var(--text-dim);margin-top:0.3rem;">+순매수 / −순매도(억원). 외국인·기관 동반 매수가 수급상 유리. {% if snap.market_flows_history|length < 3 %}· 3일치는 거래일마다 누적됩니다.{% endif %}</p>
       {% if snap.flows_summary %}
       <div class="summary-box" style="margin-top:0.6rem;"><div class="label">🔎 수급 요약 (최근 일주일 · 연속·전일/전주대비)</div><p>{{ snap.flows_summary }}</p></div>
+      {% endif %}
+    </section>
+    {% endif %}
+
+    {# 2. AI 요약 (us_morning/us_premarket은 지수 아래에서 이미 표시 → 여기선 KR만) #}
+    {% if snap.summary and snap.mode not in ['us_morning', 'us_premarket', 'us_intraday'] %}
+    <section>
+      <h2><span class="icon">🤖</span>AI 시장 요약</h2>
+      <div class="summary-box">
+        <div class="label">한 줄 요약</div>
+        <p>{{ snap.summary }}</p>
+      </div>
+      {% if snap.why_moved %}
+      <div class="summary-box">
+        <div class="label">왜 움직였나</div>
+        <p>{{ snap.why_moved }}</p>
+      </div>
+      {% endif %}
+      {% if snap.theme_commentary %}
+      <div class="summary-box">
+        <div class="label">테마 해설</div>
+        <p>{{ snap.theme_commentary }}</p>
+      </div>
       {% endif %}
     </section>
     {% endif %}
@@ -1011,7 +1012,8 @@ ${{ "{:,.2f}".format(item.price) }} <span class="{{ 'up-text' if pct >= 0 else '
           </div>
           {% endif %}
           <div class="theme-reason">{{ p.reason }}</div>
-          <div class="pick-meta" style="color:{{ 'var(--red)' if p.overheat else 'var(--text-dim)' }};">📊 20일선 이격 {% if 'B' in p.strategies and p.gap20 >= -5 and p.gap20 <= 5 %}<strong style="color:var(--red);">{{ '+' if p.gap20 >= 0 else '' }}{{ "{:.1f}".format(p.gap20) }}%</strong>{% else %}{{ '+' if p.gap20 >= 0 else '' }}{{ "{:.1f}".format(p.gap20) }}%{% endif %}{% if p.overheat %} 🔥과열(BB돌파·거래량{{ "{:.1f}".format(p.vol_x) }}x){% endif %}{% if p.cross_signal == 'PULLBACK' %} <span class="up-text">· 🟢5&lt;10 단기눌림</span>{% elif p.cross_signal == 'CORRECTION' %} <span class="down-text">· ⚠️5&lt;10 조정시작</span>{% endif %}</div>
+          {% set _phoh = p.overheat and 'C' in p.strategies %}
+          <div class="pick-meta" style="color:{{ 'var(--red)' if _phoh else 'var(--text-dim)' }};">📊 20일선 이격 {% if 'B' in p.strategies and p.gap20 >= -5 and p.gap20 <= 5 %}<strong style="color:var(--red);">{{ '+' if p.gap20 >= 0 else '' }}{{ "{:.1f}".format(p.gap20) }}%</strong>{% else %}{{ '+' if p.gap20 >= 0 else '' }}{{ "{:.1f}".format(p.gap20) }}%{% endif %}{% if _phoh %} 🔥단기과열주의(BB돌파·거래량{{ "{:.1f}".format(p.vol_x) }}x){% endif %}{% if p.cross_signal == 'PULLBACK' %} <span class="up-text">· 🟢5&lt;10 단기눌림</span>{% elif p.cross_signal == 'CORRECTION' %} <span class="down-text">· ⚠️5&lt;10 조정시작</span>{% endif %}</div>
           <div class="pick-meta">
             {{ '업종' if p.theme_kind == 'sector' else '테마' }}:
             {% if p.theme and p.theme_kind == 'theme' and p.theme_idx %}<a href="https://judal.co.kr/?view=stockList&themeIdx={{ p.theme_idx }}" target="_blank" rel="noopener">{{ p.theme }}</a>
