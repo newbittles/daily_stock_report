@@ -50,6 +50,7 @@ US_NAME_KO: dict[str, str] = {
     "QLD": "나스닥100 2X(QLD)", "VOO": "S&P500 ETF(VOO)", "SCHD": "미국배당 ETF(SCHD)",
     "JEPQ": "나스닥 커버드콜(JEPQ)", "TQQQ": "나스닥100 3X(TQQQ)",
     "MDB": "몽고DB", "HPE": "HPE", "WOLF": "울프스피드", "NXT": "넥스트래커",
+    "NASA": "우주항공 ETF(NASA)", "DRAM": "메모리/DRAM ETF(DRAM)",
 }
 
 

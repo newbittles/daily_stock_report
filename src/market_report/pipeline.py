@@ -979,6 +979,12 @@ async def _collect_us_screening(snap: MarketSnapshot, *, per_group: int = 5) -> 
     def _endstage(p) -> bool:
         return any((getattr(m, "metrics", {}) or {}).get("endstage") for m in p.matches)
 
+    def _week_pct(p) -> float | None:
+        """최근 1주일(5거래일) 상승률 — 섹터/테마 대장 표시용(#433)."""
+        if len(p.candles) >= 6 and p.candles[-6].close:
+            return round((p.price / p.candles[-6].close - 1) * 100, 1)
+        return None
+
     def _strategies(p) -> list[str]:
         return sorted({m.strategy_name[:1] for m in p.matches})
 
@@ -1016,6 +1022,7 @@ async def _collect_us_screening(snap: MarketSnapshot, *, per_group: int = 5) -> 
             "high_dd": _hdd,
             # KR과 표시 통일(#414): 과열(BB돌파)·거래량배수·끝물 — 픽/순위 불변, 표시용만
             "overheat": _ov, "vol_x": _vx, "endstage": _endstage(p),
+            "week_pct": _week_pct(p),  # 최근 1주일 상승률(#433)
         }
 
     # 한국어 종목명 DB 채우기(미캐시 종목 네이버 best-effort) — _to_dict 전에 (사용자 154)

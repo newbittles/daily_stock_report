@@ -38,7 +38,9 @@ def test_ticker_for_observed_and_unknown() -> None:
     assert ticker_for("US5951121038") == "MU"      # MICRON
     assert ticker_for("US0420682058") == "ARM"     # ARM
     assert ticker_for("US88160R1014") == "TSLA"    # 메가캡 선등록
-    assert ticker_for("US77926X3200") == ""        # ETF — 미매핑
+    assert ticker_for("US77926X3200") == "DRAM"    # Roundhill Memory ETF (#436 확인)
+    assert ticker_for("US87975E7765") == "NASA"    # Tema Space ETF (#436 확인)
+    assert ticker_for("US25461A5285") == ""        # 미매핑 레버리지 ETF
 
 
 def test_lookback_range_window() -> None:

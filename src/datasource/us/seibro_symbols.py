@@ -65,6 +65,8 @@ ISIN_TO_TICKER: dict[str, str] = {
     "US42824C1099": "HPE",   # HEWLETT PACKARD ENTERPRISE
     "US97785W1062": "WOLF",  # WOLFSPEED INC
     "US65290E1010": "NXT",   # NEXTRACKER INC
+    "US87975E7765": "NASA",   # Tema Space Innovators ETF (티커=NASA, 사용자 #436 확인)
+    "US77926X3200": "DRAM",   # Roundhill Memory ETF (티커=DRAM, 사용자 #436 확인)
     # (그 외 레버리지/소형 ETF·신규상장은 티커 불확실 → 미매핑, 영문명+검색링크로 표시)
 }
 

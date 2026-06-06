@@ -111,12 +111,31 @@ async def fetch_sector_leaders(sector_names: list[str]) -> list[dict]:
         return []
     quotes = await asyncio.to_thread(_fetch_quotes_sync, {tk: tk for _, tk in pairs})
     qmap = {q.symbol: q for q in quotes}
+    wk = await asyncio.to_thread(_week_pct_sync, [tk for _, tk in pairs])  # 1주일 상승률(#433)
     out: list[dict] = []
     for sec, tk in pairs:
         q = qmap.get(tk)
         if q:
             out.append({"sector": sec, "symbol": tk, "name": korean_name(tk, tk),
-                        "price": round(q.price, 2), "change_pct": round(q.change_pct, 2)})
+                        "price": round(q.price, 2), "change_pct": round(q.change_pct, 2),
+                        "week_pct": wk.get(tk)})
+    return out
+
+
+def _week_pct_sync(symbols: list[str]) -> dict[str, float]:
+    """심볼별 최근 1주일(5거래일) 상승률% — FDR 14일 조회(#433). 실패 종목은 생략."""
+    import datetime as _dt
+
+    import FinanceDataReader as fdr
+    start = (_dt.date.today() - _dt.timedelta(days=14)).isoformat()
+    out: dict[str, float] = {}
+    for s in symbols:
+        try:
+            c = [float(x) for x in fdr.DataReader(s, start)["Close"].dropna()]
+            if len(c) >= 6 and c[-6]:
+                out[s] = round((c[-1] / c[-6] - 1) * 100, 1)
+        except Exception:  # noqa: BLE001
+            pass
     return out
 
 
