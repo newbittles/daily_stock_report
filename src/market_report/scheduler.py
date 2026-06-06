@@ -177,7 +177,7 @@ def build_scheduler() -> AsyncIOScheduler:
     scheduler = AsyncIOScheduler(timezone=KST)
 
     scheduler.add_job(
-        _job, CronTrigger(day_of_week="mon-fri", hour=14, minute=40, timezone=KST),
+        _job, CronTrigger(day_of_week="mon-fri", hour=14, minute=50, timezone=KST),
         args=["pre_close"], id="report_pre", replace_existing=True,
         misfire_grace_time=600,
     )
