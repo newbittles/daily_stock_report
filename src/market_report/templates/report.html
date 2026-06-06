@@ -659,7 +659,7 @@ ${{ "{:,.2f}".format(item.price) }} <span class="{{ 'up-text' if pct >= 0 else '
       <h3 style="margin-top:0.6rem;color:var(--green);">💰 순매수 TOP5 — 개별종목</h3>
       <ul class="watch-list">
         {% for r in _stocks[:5] %}
-        <li><strong>{{ r.name }}</strong>{% if r.ticker %} <span class="pick-ticker">{{ r.ticker }}</span>{% endif %} <span style="color:var(--green);">+{{ "{:,}".format(r.net_buy_eok) }}억</span></li>
+        <li><a href="https://search.naver.com/search.naver?query={{ (r.name ~ ' 주가') | urlencode }}" target="_blank" rel="noopener"><strong>{{ r.name }}</strong></a>{% if r.ticker %} <span class="pick-ticker">{{ r.ticker }}</span>{% endif %} <span style="color:var(--green);">+{{ "{:,}".format(r.net_buy_eok) }}억</span></li>
         {% endfor %}
       </ul>
       {% endif %}
@@ -667,7 +667,7 @@ ${{ "{:,.2f}".format(item.price) }} <span class="{{ 'up-text' if pct >= 0 else '
       <h3 style="margin-top:0.6rem;color:var(--green);">📦 순매수 TOP5 — ETF</h3>
       <ul class="watch-list">
         {% for r in _etfs[:5] %}
-        <li><strong>{{ r.name }}</strong>{% if r.ticker %} <span class="pick-ticker">{{ r.ticker }}</span>{% endif %} <span style="color:var(--green);">+{{ "{:,}".format(r.net_buy_eok) }}억</span></li>
+        <li><a href="https://search.naver.com/search.naver?query={{ (r.name ~ ' 주가') | urlencode }}" target="_blank" rel="noopener"><strong>{{ r.name }}</strong></a>{% if r.ticker %} <span class="pick-ticker">{{ r.ticker }}</span>{% endif %} <span style="color:var(--green);">+{{ "{:,}".format(r.net_buy_eok) }}억</span></li>
         {% endfor %}
       </ul>
       {% endif %}
@@ -675,7 +675,7 @@ ${{ "{:,.2f}".format(item.price) }} <span class="{{ 'up-text' if pct >= 0 else '
       <h3 style="margin-top:0.6rem;color:var(--red);">🔻 순매도 TOP3 — 자금 유출</h3>
       <ul class="watch-list">
         {% for r in snap.kr_us_netsell[:3] %}
-        <li><strong>{{ r.name }}</strong>{% if r.ticker %} <span class="pick-ticker">{{ r.ticker }}</span>{% endif %} <span style="color:var(--red);">−{{ "{:,}".format(r.net_sell_eok) }}억</span></li>
+        <li><a href="https://search.naver.com/search.naver?query={{ (r.name ~ ' 주가') | urlencode }}" target="_blank" rel="noopener"><strong>{{ r.name }}</strong></a>{% if r.ticker %} <span class="pick-ticker">{{ r.ticker }}</span>{% endif %} <span style="color:var(--red);">−{{ "{:,}".format(r.net_sell_eok) }}억</span></li>
         {% endfor %}
       </ul>
       {% endif %}

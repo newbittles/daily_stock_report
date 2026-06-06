@@ -44,6 +44,12 @@ US_NAME_KO: dict[str, str] = {
     "F": "포드", "GM": "제너럴모터스", "BA": "보잉", "CAT": "캐터필러",
     "GE": "GE에어로스페이스", "XOM": "엑슨모빌", "CVX": "셰브론",
     "RIVN": "리비안", "LCID": "루시드", "GLW": "코닝",
+    # 주요 ETF·종목 한국어명 (서학개미 자금흐름 표시용, 사용자 #394)
+    "SOXX": "반도체 ETF(SOXX)", "SMH": "반도체 ETF(SMH)", "SOXL": "반도체 3X(SOXL)",
+    "SOXS": "반도체 인버스 3X(SOXS)", "QQQ": "나스닥100 ETF(QQQ)", "QQQM": "나스닥100 ETF(QQQM)",
+    "QLD": "나스닥100 2X(QLD)", "VOO": "S&P500 ETF(VOO)", "SCHD": "미국배당 ETF(SCHD)",
+    "JEPQ": "나스닥 커버드콜(JEPQ)", "TQQQ": "나스닥100 3X(TQQQ)",
+    "MDB": "몽고DB", "HPE": "HPE", "WOLF": "울프스피드", "NXT": "넥스트래커",
 }
 
 
