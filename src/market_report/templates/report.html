@@ -695,7 +695,7 @@ ${{ "{:,.2f}".format(item.price) }} <span class="{{ 'up-text' if pct >= 0 else '
     {# 🩹 E 과매도 반등 후보 — 최근 주도주(신고가)였다가 일봉&4시간봉 RSI≤30 (KR/US 공용 별도 섹션) #}
     {% if snap.e_picks %}
     <section>
-      <h2><span class="icon">🩹</span>E 과매도 반등 후보 <span style="color:var(--text-dim);font-size:0.8rem;">(최근 주도주 · 일봉&amp;4H RSI≤30)</span></h2>
+      <h2><span class="icon">🩹</span>E 투매 바닥 반등 <span style="color:var(--text-dim);font-size:0.8rem;">(투매 capitulation + 반등 · 🔥=지수 동반 바닥)</span></h2>
       <ul class="watch-list">
         {% for p in snap.e_picks %}
         <li>
@@ -708,13 +708,14 @@ ${{ "{:,.2f}".format(item.price) }} <span class="{{ 'up-text' if pct >= 0 else '
           {% endif %}
           <span class="{{ 'up-text' if p.change_pct >= 0 else 'down-text' }}">{{ '+' if p.change_pct >= 0 else '' }}{{ "{:.2f}".format(p.change_pct) }}%</span>
           <span style="color:var(--text-dim);font-size:0.8rem;">RSI {{ "{:.0f}".format(p.rsi) }}</span>
+          {% if p.market_bottom %}<span class="strat-badge" style="background:var(--red);color:#fff;">🔥 시장 동반 바닥{% if p.market_rsi is not none %}(지수RSI {{ p.market_rsi }}){% endif %}</span>{% elif p.market_rsi is not none %}<span style="color:var(--text-dim);font-size:0.78rem;">· 개별 바닥(지수RSI {{ p.market_rsi }}, 시장 양호)</span>{% endif %}
           {% if p.reason %}<div class="theme-reason">{{ p.reason }}</div>{% endif %}
           {{ sec_detail(p) }}
           {% if p.ai_summary %}<button type="button" class="ai-btn" onclick="showAI(this)" data-name="{{ p.name }}" data-summary="{{ p.ai_summary|e }}">🤖 AI요약</button>{% endif %}
         </li>
         {% endfor %}
       </ul>
-      <p class="disclaimer" style="font-size:12px;">※ 과매도 반등 기대 참고용(최근 주도주가 일봉·4시간봉 RSI 30 이하). 추세 훼손 종목일 수 있어 매수 추천 아님, 판단·책임은 본인.</p>
+      <p class="disclaimer" style="font-size:12px;">※ 투매 바닥(RSI≤30+50선이격+거래량폭증)에서 반등 시작 포착, 4시간봉 RSI도 과매도. 🔥는 지수(나스닥/S&P·코스피)도 RSI<35 동반 바닥(강신호). 떨어지는 칼날 위험 — 매수 추천 아님, 판단·책임 본인.</p>
     </section>
     {% endif %}
 

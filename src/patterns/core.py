@@ -1054,32 +1054,42 @@ def ma_cross_signal(closes: list[float]) -> str | None:
 
 def oversold_leader(
     candles: list[Candle], rsi_period: int = 14, rsi_max: float = 30.0,
-    hi_window: int = 60, hi_lookback: int = 120,
+    ma50_gap_max: float = -12.0, vol_mult: float = 2.0, look: int = 3,
+    **_legacy,
 ) -> PatternResult:
-    """E. 과매도 반등 후보(일봉 조건) — 최근 주도주였다가 과매도.
+    """E. 투매 바닥(capitulation) 반등 후보 — 진짜 바닥 시그니처(사용자 2026-06-06, 2025-04 분석 기반).
 
-    주도주 = 최근 hi_window봉 안에서 hi_lookback일 신고가를 경신한 적이 있음(강하게 이끌었음).
-    과매도 = 일봉 RSI(rsi_period) ≤ rsi_max.
-    ※ 4시간봉 RSI 조건은 외부(yfinance)라 호출측에서 별도 결합. 여기선 일봉만(순수, 사용자 2026-06-05).
+    최근 look일 윈도우 안에서 ①일봉 RSI≤rsi_max(깊은 과매도) ②50일선 이격≤ma50_gap_max(극단 하락)
+    ③거래량≥vol_mult×20일평균(투매 climax) 가 발생했고, ④당일 반등 양봉(close>open & close>전일종가)
+    으로 '턴'이 시작됐을 때. 떨어지는 칼날(가짜 반등) 회피 위해 ④를 요구.
+    ※ 지수(나스닥/S&P·코스피) RSI 바닥 게이트 + 4H RSI는 호출측(pipeline)에서 AND 결합(순수 유지).
+    2025-03 가짜(RSI31~35·거래량1x)는 ①③에서 탈락, 2025-04 진짜(RSI23~28·거래량2x+)는 포착.
     """
     closes = _closes(candles)
-    highs = _highs(candles)
+    opens = [c.open for c in candles]
+    vols = _volumes(candles)
     n = len(closes)
-    if n < max(rsi_period + 2, 30):
-        return PatternResult(False)
-    rv = rsi(closes, rsi_period)[-1]
-    if rv is None or rv > rsi_max:
-        return PatternResult(False, f"RSI {rv:.0f}>{rsi_max:.0f}" if rv is not None else "RSI 없음")
-    lookback = min(hi_lookback, n)
-    start = max(1, n - hi_window)
-    for i in range(n - 1, start - 1, -1):  # 최근(신규)부터 — 가장 최근 신고가 경신 탐색
-        lo = max(0, i - lookback + 1)
-        if highs[i] >= max(highs[lo:i + 1]):
-            peak_ago = n - 1 - i
-            return PatternResult(
-                True, f"과매도 반등후보 (RSI {rv:.0f} · {hi_lookback}일신고가 {peak_ago}봉전)",
-                {"rsi": rv, "peak_bars_ago": float(peak_ago)})
-    return PatternResult(False, f"RSI {rv:.0f}이나 최근 주도주 아님")
+    if n < 55:
+        return PatternResult(False, "데이터 부족(55봉)")
+    rseries = rsi(closes, rsi_period)
+    ma50series = moving_average(closes, 50)
+    recent_rsi = min((x for x in rseries[-look:] if x is not None), default=None)
+    if recent_rsi is None or recent_rsi > rsi_max:
+        return PatternResult(False, f"RSI {recent_rsi:.0f}>{rsi_max:.0f}" if recent_rsi else "RSI 없음")
+    gaps = [(closes[i] - ma50series[i]) / ma50series[i] * 100
+            for i in range(n - look, n) if ma50series[i]]
+    min_gap = min(gaps) if gaps else 0.0
+    if min_gap > ma50_gap_max:
+        return PatternResult(False, f"50선이격 {min_gap:.0f}%>{ma50_gap_max:.0f}% (충분히 안 빠짐)")
+    avg20 = sum(vols[-21:-1]) / 20 if n > 21 else (sum(vols) / len(vols) if vols else 0)
+    max_volx = (max(vols[-look:]) / avg20) if avg20 else 0.0
+    if max_volx < vol_mult:
+        return PatternResult(False, f"투매 거래량 부족 {max_volx:.1f}x<{vol_mult:.1f}x")
+    if not (closes[-1] > opens[-1] and closes[-1] > closes[-2]):
+        return PatternResult(False, "반등 양봉 아님(턴 미확인)")
+    return PatternResult(
+        True, f"투매바닥 반등 (RSI {recent_rsi:.0f}·50선{min_gap:.0f}%·거래량{max_volx:.1f}x)",
+        {"rsi": recent_rsi, "ma50_gap": min_gap, "vol_x": max_volx})
 
 
 def gave_back_recent_gain(

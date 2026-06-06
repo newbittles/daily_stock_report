@@ -13,32 +13,48 @@ from src.market_report.telegram_notify import _format_e_picks
 from src.patterns.core import oversold_leader
 
 
-def _c(close: float, high: float | None = None) -> Candle:
-    h = high if high is not None else close
-    return Candle(date="20260101", open=close, high=h, low=close, close=close, volume=1000)
+def _c(close: float, high: float | None = None, open_: float | None = None, vol: int = 1000) -> Candle:
+    o = open_ if open_ is not None else close
+    h = high if high is not None else max(close, o)
+    return Candle(date="20260101", open=o, high=h, low=min(close, o), close=close, volume=vol)
 
 
-def test_oversold_leader_true_after_rally_then_drop() -> None:
-    """신고가까지 랠리(주도주) → 이후 하락으로 RSI≤30 → E 매칭."""
-    rally = [_c(100 + i) for i in range(100)]          # 100→199 신고가 행진(주도주)
-    drop = [_c(199 - i * 2) for i in range(1, 31)]     # 이후 급락 → RSI 바닥
-    candles = rally + drop
-    res = oversold_leader(candles)
-    assert res.matched is True
-    assert res.metrics["rsi"] <= 30
+def _capitulation(cap_vol: int = 5000, reb_vol: int = 4500, rebound: bool = True) -> list[Candle]:
+    """투매 바닥 시나리오: 40일 상승 → 14일 급락(음봉) → 투매 음봉(대량) → 반등 양봉(대량)."""
+    c = [_c(90 + i * 0.3, vol=1000) for i in range(40)]
+    px = 102.0
+    for _ in range(14):
+        px *= 0.96
+        c.append(_c(px, open_=px / 0.96, vol=1500))      # 음봉 급락
+    cap = px * 0.93
+    c.append(_c(cap, open_=px, vol=cap_vol))             # 투매(깊은 음봉·대량)
+    if rebound:
+        c.append(_c(cap * 1.12, open_=cap, vol=reb_vol))  # 반등 양봉(대량)
+    else:
+        c.append(_c(cap * 0.97, open_=cap, vol=reb_vol))  # 추가 음봉(반등 미확인)
+    return c
 
 
-def test_oversold_leader_false_when_rsi_high() -> None:
+def test_oversold_capitulation_true() -> None:
+    """투매 바닥(RSI≤30 + 50선이격≤-12% + 거래량≥2x + 반등 양봉) → E 매칭."""
+    r = oversold_leader(_capitulation())
+    assert r.matched is True
+    assert r.metrics["rsi"] <= 30 and r.metrics["ma50_gap"] <= -12 and r.metrics["vol_x"] >= 2
+
+
+def test_oversold_false_no_capitulation_volume() -> None:
+    """거래량 폭증(투매) 없으면 미매칭 — 가짜 바닥 회피."""
+    assert oversold_leader(_capitulation(cap_vol=1200, reb_vol=1200)).matched is False
+
+
+def test_oversold_false_no_rebound_candle() -> None:
+    """반등 양봉(턴) 없으면 미매칭 — 떨어지는 칼날 회피."""
+    assert oversold_leader(_capitulation(rebound=False)).matched is False
+
+
+def test_oversold_false_when_rsi_high() -> None:
     """계속 상승(RSI 높음)이면 과매도 아님 → E 미매칭."""
-    candles = [_c(100 + i) for i in range(140)]
-    assert oversold_leader(candles).matched is False
-
-
-def test_oversold_leader_false_when_not_leader() -> None:
-    """신고가 경신 없이 장기 하락만(주도주 아님)이면 RSI 낮아도 미매칭."""
-    candles = [_c(200 - i * 0.5) for i in range(140)]  # 처음부터 계속 하락(고점이 맨앞=주도 아님)
-    res = oversold_leader(candles)
-    assert res.matched is False
+    assert oversold_leader([_c(100 + i, vol=1000) for i in range(140)]).matched is False
 
 
 def test_judge_4h_rsi_oversold() -> None:
@@ -54,7 +70,7 @@ def test_format_e_picks_kr_and_us() -> None:
     snap.e_picks = [{"ticker": "009150", "name": "삼성전기", "price": 120000,
                      "change_pct": 1.2, "rsi": 28, "reason": "과매도 반등후보"}]
     out = "\n".join(_format_e_picks(snap))
-    assert "E 과매도 반등 후보" in out and "삼성전기" in out and "RSI28" in out
+    assert "E 투매 바닥 반등" in out and "삼성전기" in out and "RSI28" in out
 
     snap.e_picks = [{"symbol": "MU", "name": "마이크론", "price": 95.5,
                      "change_pct": -0.5, "rsi": 25, "reason": "x"}]

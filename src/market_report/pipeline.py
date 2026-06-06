@@ -580,6 +580,40 @@ async def _attach_kr_netbuy_to_picks(snap: MarketSnapshot) -> None:
     logger.info("kr_netbuy_pick_attach hit=%d (m5=%d m1=%d)", hit, len(m5), len(m1))
 
 
+async def _market_rsi(market: str) -> float | None:
+    """시장 지수 일봉 RSI(14) — US=나스닥(IXIC), KR=코스피(KS11). E 2단계 등급용(사용자 #330/#339).
+
+    미국 종목엔 나스닥, 한국 종목엔 코스피만 사용(절대 교차 안 함). 실패 시 None."""
+    sym = "IXIC" if market == "US" else "KS11"
+
+    def _work() -> float | None:
+        import datetime as _dt
+
+        import FinanceDataReader as fdr
+
+        from src.indicators.core import rsi as _rsi
+        start = (_dt.date.today() - _dt.timedelta(days=160)).isoformat()
+        df = fdr.DataReader(sym, start)
+        closes = [float(x) for x in df["Close"].dropna()]
+        if len(closes) < 20:
+            return None
+        r = _rsi(closes, 14)
+        return r[-1] if r and r[-1] is not None else None
+
+    try:
+        return await asyncio.to_thread(_work)
+    except Exception as exc:  # noqa: BLE001
+        logger.warning("market_rsi_failed market=%s error=%s", market, exc)
+        return None
+
+
+def _tag_market_bottom(picks: list[dict], market_rsi: float | None, threshold: float = 35.0) -> None:
+    """E 픽에 시장 동반 바닥 등급 부착 — 지수 RSI<threshold면 '강'(market_bottom=True)."""
+    for p in (picks or []):
+        p["market_rsi"] = round(market_rsi) if market_rsi is not None else None
+        p["market_bottom"] = bool(market_rsi is not None and market_rsi < threshold)
+
+
 async def _collect_us_screening(snap: MarketSnapshot, *, per_group: int = 5) -> None:
     """미국 종목 A/B/C/D 스크리닝 → snap.us_top3 / snap.us_screen_groups.
 
@@ -792,6 +826,7 @@ async def _collect_us_screening(snap: MarketSnapshot, *, per_group: int = 5) -> 
             from src.datasource.kr_4h import fetch_4h_rsi_oversold
             _ok = await fetch_4h_rsi_oversold([p["symbol"] for p in e_cand], market="US")
             snap.e_picks = [p for p in e_cand if p["symbol"] in _ok][:7]
+            _tag_market_bottom(snap.e_picks, await _market_rsi("US"))  # 나스닥 동반 바닥 등급(#330/#339)
             snap.surge_picks = sorted(surge, key=lambda x: x["change_pct"], reverse=True)[:7]
             logger.info("us_e_picks_ready daily=%d final=%d surge=%d",
                         len(e_cand), len(snap.e_picks), len(snap.surge_picks))
@@ -1018,6 +1053,7 @@ async def run_full(
                 from src.datasource.kr_4h import fetch_4h_rsi_oversold
                 _ok = await fetch_4h_rsi_oversold([p["ticker"] for p in _e_cand], market="KR")
                 snap.e_picks = [p for p in _e_cand if p["ticker"] in _ok][:7]
+                _tag_market_bottom(snap.e_picks, await _market_rsi("KR"))  # 코스피 동반 바닥 등급(#330/#339)
                 logger.info("e_picks_ready daily=%d final=%d", len(_e_cand), len(snap.e_picks))
             except Exception as exc:
                 logger.warning("e_picks_4h_failed error=%s", exc)

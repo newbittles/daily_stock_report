@@ -211,7 +211,7 @@ def _format_e_picks(snap: MarketSnapshot) -> list[str]:
     e = getattr(snap, "e_picks", None) or []
     if not e:
         return []
-    lines = ["🩹 *E 과매도 반등 후보* (최근 주도주 · 일봉&4H RSI≤30)"]
+    lines = ["🩹 *E 투매 바닥 반등* (RSI·50선이격·거래량 투매 + 반등 양봉)"]
     for p in e[:7]:
         nm = p.get("name", "")
         tk = str(p.get("ticker") or p.get("symbol") or "")
@@ -221,7 +221,14 @@ def _format_e_picks(snap: MarketSnapshot) -> list[str]:
             head = f"{_naver_link(nm, tk)} {p.get('price', 0):,.0f}원"
         else:             # US
             head = f"{nm}({tk}) ${p.get('price', 0):,.2f}"
-        lines.append(f"  · {head} ({sign}{chg:.1f}%) RSI{p.get('rsi', 0):.0f}")
+        # 2단계 등급: 지수도 바닥(market_bottom)=🔥강 / 아니면 개별(시장 양호) (사용자 #330/#339)
+        if p.get("market_bottom"):
+            badge = " 🔥시장 동반 바닥"
+        elif p.get("market_rsi") is not None:
+            badge = f" (개별·지수RSI{p['market_rsi']})"
+        else:
+            badge = ""
+        lines.append(f"  · {head} ({sign}{chg:.1f}%) RSI{p.get('rsi', 0):.0f}{badge}")
         det = _pick_detail_line(p)
         if det:
             lines.append(det)
