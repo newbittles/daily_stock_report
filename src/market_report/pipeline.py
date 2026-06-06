@@ -674,6 +674,11 @@ def _market_phase(label: str, gaps: dict) -> tuple[str, str]:
     if (g120 >= _OVERHEAT_120.get(label, 12.0) or g60 >= _OVERHEAT_60.get(label, 9.0)) \
             and (rv is None or rv >= 70):
         return ("🔴", "과열")
+    # 🔼 상승전환 — 5일선 음→양 회복 + 20일선 위(진짜 반등, 백테스트 #379: 미국 69% vs 가짜 46%)
+    g5_prev = gaps.get("g5_prev")
+    if g5_prev is not None and g5_prev < 0 and g5 is not None and g5 >= 0 \
+            and g20 is not None and g20 >= 0:
+        return ("🔼", "상승전환")
     if g60 < 0:
         return ("🔻", "하락전환")
     if g20 is not None and g20 < 0:
@@ -707,10 +712,14 @@ async def _index_ma_gaps(symbol: str) -> dict:
         if len(c) < 120:
             return {}
         out: dict = {}
+        ma5_series = moving_average(c, 5)
         for k in (5, 10, 20, 60, 120):
             ma = moving_average(c, k)[-1]
             if ma:
                 out[k] = round((c[-1] - ma) / ma * 100, 1)
+        # 전일 5일선 이격(상승전환 전환 감지용, #379)
+        if len(c) >= 2 and ma5_series[-2]:
+            out["g5_prev"] = round((c[-2] - ma5_series[-2]) / ma5_series[-2] * 100, 1)
         rv = rsi(c, 14)[-1]
         if rv is not None:
             out["rsi"] = round(rv)

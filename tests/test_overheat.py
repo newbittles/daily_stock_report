@@ -132,3 +132,4 @@ def test_market_phase_asymmetric() -> None:
     assert _market_phase("나스닥", {5: -3, 20: -3, 60: -3, 120: 2, "rsi": 45})[1] == "하락전환"  # 60일<0
     assert _market_phase("나스닥", {5: -2, 20: 1, 60: 3, 120: 5, "rsi": 55})[1] == "단기눌림"   # 5일만 음
     assert _market_phase("나스닥", {5: 1, 20: 2, 60: 3, 120: 5, "rsi": 55})[1] == "정상"
+    assert _market_phase("나스닥", {5: 1, 20: 2, 60: 3, 120: 5, "rsi": 55, "g5_prev": -2})[1] == "상승전환"  # 5일선 음→양+20일위
