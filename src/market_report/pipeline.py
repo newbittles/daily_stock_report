@@ -920,6 +920,22 @@ async def _collect_us_screening(snap: MarketSnapshot, *, per_group: int = 5) -> 
         ma = sum(cs) / len(cs)
         return (p.price - ma) / ma * 100 if ma else 0.0
 
+    def _overheat_volx(p) -> tuple[bool, float]:
+        """🔥 과열(일봉 BB 상단 종가돌파) + 거래량 배수 — KR strategy_section과 동일 공식(#414 통일)."""
+        from statistics import pstdev
+        cs = [c.close for c in p.candles]
+        if len(cs) < 20:
+            return False, 0.0
+        ma = sum(cs[-20:]) / 20
+        bbup = ma + 2 * pstdev(cs[-20:]) if ma else 0.0
+        vols = [c.volume for c in p.candles]
+        va = sum(vols[-20:]) / 20 if len(vols) >= 20 else 0.0
+        volx = p.candles[-1].volume / va if va else 0.0
+        return bool(bbup and p.candles[-1].close > bbup), round(volx, 1)
+
+    def _endstage(p) -> bool:
+        return any((getattr(m, "metrics", {}) or {}).get("endstage") for m in p.matches)
+
     def _strategies(p) -> list[str]:
         return sorted({m.strategy_name[:1] for m in p.matches})
 
@@ -937,6 +953,7 @@ async def _collect_us_screening(snap: MarketSnapshot, *, per_group: int = 5) -> 
         _reason = _pick_reason(p, initial)
         if "B" in ctx:  # B 설명란에 고점대비 낙폭 표시(사용자 2026-06-05)
             _reason += f" · 고점대비 {_hdd:+.1f}%"
+        _ov, _vx = _overheat_volx(p)
         return {
             "symbol": p.symbol,
             # 한국어(티커) 표기 — 아는 종목은 한국어, 모르는 건 영문명 폴백(사용자 합의).
@@ -954,6 +971,8 @@ async def _collect_us_screening(snap: MarketSnapshot, *, per_group: int = 5) -> 
             "turnover_str": _won(_turnover(p)),         # 거래대금(원화 조/억)
             "gap20": round(_gap20(p), 1),               # #11 20MA 괴리(B 표시·정렬)
             "high_dd": _hdd,
+            # KR과 표시 통일(#414): 과열(BB돌파)·거래량배수·끝물 — 픽/순위 불변, 표시용만
+            "overheat": _ov, "vol_x": _vx, "endstage": _endstage(p),
         }
 
     # 한국어 종목명 DB 채우기(미캐시 종목 네이버 best-effort) — _to_dict 전에 (사용자 154)
