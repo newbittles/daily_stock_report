@@ -534,10 +534,11 @@ def _format_us_morning_summary(snap: MarketSnapshot) -> str:
         lines.extend(_mg)
         lines.append("")
 
-    t = getattr(snap, "kr_us_netbuy_total", None)  # 💸 한국인 순매수 총액(#377)
+    t = getattr(snap, "kr_us_netbuy_total", None)  # 💸 한국인 순매수 일평균(#377/#398)
     if t:
-        chg = f" (전주 일평균 대비 {t['change_pct']:+.1f}%)" if t.get("change_pct") is not None else ""
-        lines.append(f"💸 한국인 순매수 총액(TOP50·5일) {t['total_eok']:+,}억 · 일평균 {t['daily_avg_eok']:+,}억{chg}")
+        chg = (f" (전주 {t['prev_daily_avg_eok']:+,}억 대비 {t['change_pct']:+.1f}%)"
+               if t.get("change_pct") is not None else "")
+        lines.append(f"💸 한국인 순매수 일평균 {t['daily_avg_eok']:+,}억{chg} · 5일총액 {t['total_eok']:+,}억")
         lines.append("")
 
     if snap.summary:

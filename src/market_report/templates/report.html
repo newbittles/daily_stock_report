@@ -652,7 +652,7 @@ ${{ "{:,.2f}".format(item.price) }} <span class="{{ 'up-text' if pct >= 0 else '
       <h2><span class="icon">🇰🇷</span>한국인 자금흐름 <span style="color:var(--text-dim);font-size:0.8rem;">(서학개미 · 최근 5거래일 순매수/순매도, 억원)</span></h2>
       {% if snap.kr_us_netbuy_total %}{% set t = snap.kr_us_netbuy_total %}
       <div class="summary-box" style="margin:0.3rem 0;border-left:4px solid var(--green);">
-        <p style="margin:0;">💸 <strong>한국인 순매수 총액(TOP50·5일): {{ '{:+,}'.format(t.total_eok) }}억</strong> · 일평균 {{ '{:+,}'.format(t.daily_avg_eok) }}억{% if t.change_pct is not none %} (전주 일평균 {{ '{:+,}'.format(t.prev_daily_avg_eok) }}억 대비 <strong class="{{ 'up-text' if t.change_pct >= 0 else 'down-text' }}">{{ '+' if t.change_pct >= 0 else '' }}{{ t.change_pct }}%</strong>){% endif %}</p>
+        <p style="margin:0;">💸 <strong>한국인 순매수 일평균: {{ '{:+,}'.format(t.daily_avg_eok) }}억</strong>{% if t.change_pct is not none %} (전주 {{ '{:+,}'.format(t.prev_daily_avg_eok) }}억 대비 <strong class="{{ 'up-text' if t.change_pct >= 0 else 'down-text' }}">{{ '+' if t.change_pct >= 0 else '' }}{{ t.change_pct }}%</strong>){% endif %} <span style="color:var(--text-dim);font-size:0.8rem;">· 5일 총액 {{ '{:+,}'.format(t.total_eok) }}억</span></p>
       </div>
       {% endif %}
       {% if _stocks %}
@@ -861,6 +861,30 @@ ${{ "{:,.2f}".format(item.price) }} <span class="{{ 'up-text' if pct >= 0 else '
       {% if snap.flows_summary %}
       <div class="summary-box" style="margin-top:0.6rem;"><div class="label">🔎 수급 요약 (최근 일주일 · 연속·전일/전주대비)</div><p>{{ snap.flows_summary }}</p></div>
       {% endif %}
+    </section>
+    {% endif %}
+
+    {# 🏦 기관·외인 연속 순매수/매도 (시총 상위, 스마트머니 선행, 사용자 #393) #}
+    {% if snap.supply_buy_streaks or snap.supply_sell_streaks %}
+    <section>
+      <h2><span class="icon">🏦</span>기관·외인 연속 순매수/매도 <span style="color:var(--text-dim);font-size:0.8rem;">(시총 상위 · 둘 다 연속)</span></h2>
+      {% if snap.supply_buy_streaks %}
+      <h3 style="margin-top:0.5rem;color:var(--green);">🟢 연속 순매수 Top</h3>
+      <ul class="watch-list">
+        {% for r in snap.supply_buy_streaks %}
+        <li><a href="https://finance.naver.com/item/main.naver?code={{ r.ticker }}" target="_blank" rel="noopener"><strong>{{ r.name }}</strong></a> <span class="pick-ticker">{{ r.ticker }}</span> <span style="color:var(--green);">기관 {{ r.orgn }}일 · 외인 {{ r.frgn }}일 연속</span></li>
+        {% endfor %}
+      </ul>
+      {% endif %}
+      {% if snap.supply_sell_streaks %}
+      <h3 style="margin-top:0.5rem;color:var(--red);">🔴 연속 순매도 Top</h3>
+      <ul class="watch-list">
+        {% for r in snap.supply_sell_streaks %}
+        <li><a href="https://finance.naver.com/item/main.naver?code={{ r.ticker }}" target="_blank" rel="noopener"><strong>{{ r.name }}</strong></a> <span class="pick-ticker">{{ r.ticker }}</span> <span style="color:var(--red);">기관 {{ r.orgn }}일 · 외인 {{ r.frgn }}일 연속</span></li>
+        {% endfor %}
+      </ul>
+      {% endif %}
+      <p class="disclaimer" style="font-size:12px;">※ 기관+외국인이 며칠째 연속 순매수/매도 중인 시총상위 종목(개인보다 선행 경향 참고). 매수 추천 아님.</p>
     </section>
     {% endif %}
 

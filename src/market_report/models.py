@@ -140,6 +140,10 @@ class MarketSnapshot:
     holdings_status: list[dict] = field(default_factory=list)  # {name, ticker, state, reason, profit_rate, ...}
     holdings_summary: str = ""  # 보유종목 전체에 대한 AI 종합 코멘트 (analyzer.summarize_holdings)
 
+    # 기관+외인 연속 순매수/순매도 Top — 시총 상위 중(사용자 #393, post_close)
+    supply_buy_streaks: list[dict] = field(default_factory=list)   # [{ticker,name,orgn,frgn,score}]
+    supply_sell_streaks: list[dict] = field(default_factory=list)
+
     # 시간외(NXT 넥스트레이드) 상위 상승률 — 정규장 마감 후, post_close만 (정규장 종가 대비)
     overtime_gainers: list[dict] = field(default_factory=list)  # [{ticker,name,nxt_price,reg_close,overtime_pct}]
 

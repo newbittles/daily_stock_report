@@ -361,6 +361,66 @@ async def _inject_supply_streak(snap: MarketSnapshot, adapter) -> None:
             t["supply_str"] = ""
 
 
+def _supply_sell_streak(rows: list[dict], key: str) -> int:
+    """최신순 일별에서 연속 순매도일 수 (음수 연속)."""
+    n = 0
+    for r in rows:
+        if (r.get(key) or 0) < 0:
+            n += 1
+        else:
+            break
+    return n
+
+
+async def collect_supply_streaks(adapter, top: int = 40, min_marcap_won: float = 1e12,
+                                 min_streak: int = 2) -> tuple[list[dict], list[dict]]:
+    """기관+외인 연속 순매수/순매도 Top — 시총 상위 종목(사용자 #393, 스마트머니 선행).
+
+    시총 상위 top개(시총 하한) 각 일별 투자자 → 기관·외인 둘 다 min_streak일↑ 연속 순매수=매수후보,
+    둘 다 연속 순매도=매도후보. (기관+외인이 개인보다 빠르다는 취지). 반환 (buy, sell) 각 점수순.
+    """
+    import asyncio
+    import random
+
+    def _univ() -> list[tuple]:
+        import FinanceDataReader as fdr
+        out: list[tuple] = []
+        for mkt in ("KOSPI", "KOSDAQ"):
+            df = fdr.StockListing(mkt).dropna(subset=["Marcap"]).sort_values(
+                "Marcap", ascending=False).head(top)
+            for _, r in df.iterrows():
+                out.append((str(r["Code"]).zfill(6), str(r["Name"]), float(r["Marcap"])))
+        out.sort(key=lambda x: -x[2])
+        return out[:top]
+
+    try:
+        universe = await asyncio.to_thread(_univ)
+    except Exception as exc:  # noqa: BLE001
+        logger.warning("supply_universe_failed error=%s", exc)
+        return [], []
+
+    buys: list[dict] = []
+    sells: list[dict] = []
+    for tk, name, mc in universe:
+        if mc < min_marcap_won:
+            continue
+        try:
+            rows = await adapter.get_stock_investor_daily(tk, days=7)
+        except Exception:  # noqa: BLE001
+            continue
+        ob, fb = _supply_streak(rows, "orgn"), _supply_streak(rows, "frgn")
+        os_, fs = _supply_sell_streak(rows, "orgn"), _supply_sell_streak(rows, "frgn")
+        if ob >= min_streak and fb >= min_streak:
+            buys.append({"ticker": tk, "name": name, "orgn": ob, "frgn": fb, "score": ob + fb})
+        elif os_ >= min_streak and fs >= min_streak:
+            sells.append({"ticker": tk, "name": name, "orgn": os_, "frgn": fs, "score": os_ + fs})
+        await asyncio.sleep(random.uniform(0.1, 0.25))  # §7 분산
+    buys.sort(key=lambda x: -x["score"])
+    sells.sort(key=lambda x: -x["score"])
+    logger.info("supply_streaks buy=%d sell=%d (universe=%d)", len(buys), len(sells), len(universe))
+    return buys[:7], sells[:7]
+
+
 def _inject_marcap(snap: MarketSnapshot) -> None:
     """모든 종목(top3·screen_picks·candidate_picks·e_picks·surge_picks)에 시가총액(원) 주입 — 표기용.
 
@@ -1367,6 +1427,12 @@ async def run_full(
             _fill_market_phase(snap)
         except Exception as exc:  # noqa: BLE001
             logger.warning("kr_ma_gaps_failed error=%s", exc)
+
+    if mode == "post_close":  # 기관+외인 연속 순매수/매도 Top (시총상위, 마감후 확정데이터, #393)
+        try:
+            snap.supply_buy_streaks, snap.supply_sell_streaks = await collect_supply_streaks(adapter)
+        except Exception as exc:  # noqa: BLE001
+            logger.warning("supply_streaks_failed error=%s", exc)
 
     # 전략 스크린 표시용 — 종목당 1개로 중복제거 + 종합점수순 + 매칭전략 다 표기(사용자 2026-06-05).
     # marcap/ai 주입 후 빌드(screen_picks가 enrich된 상태). select_top3 재사용(return_all).
