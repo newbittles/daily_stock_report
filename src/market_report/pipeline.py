@@ -625,6 +625,37 @@ def _tag_market_bottom(picks: list[dict], market_rsi: float | None, threshold: f
         p["market_bottom"] = bool((market_rsi is not None and market_rsi < threshold) or fg_bottom)
 
 
+def _tag_bigtech_strategies(snap: MarketSnapshot, ohlcv: dict) -> None:
+    """대장주(빅테크/주요ETF) 리스트에 전략(A/B/C/D/E/급등초입) + E바닥 태깅(사용자 #345).
+
+    스크리닝 캐시 OHLCV로 일봉 패턴 평가(없으면 전략 빈칸). E 매칭이면 e_bottom=True(시장바닥 등급은 호출측).
+    """
+    from src.patterns.core import (
+        gave_back_recent_gain, is_convergence_breakout, is_downtrend_reversal,
+        is_ma20_pullback, is_surge_start, is_trend_follow, oversold_leader,
+    )
+    for b in (snap.us_bigtech or []):
+        cs = ohlcv.get(b.get("symbol", ""))
+        if not cs or len(cs) < 60:
+            b["strategies"] = []
+            continue
+        st: list[str] = []
+        if is_trend_follow(cs).matched:
+            st.append("C")
+        if is_ma20_pullback(cs).matched and not gave_back_recent_gain(cs):
+            st.append("B")
+        if is_convergence_breakout(cs).matched:
+            st.append("A")
+        if is_downtrend_reversal(cs).matched:
+            st.append("D")
+        if is_surge_start(cs).matched:
+            st.append("급등초입")
+        if oversold_leader(cs).matched:
+            st.append("E")
+            b["e_bottom"] = True
+        b["strategies"] = st
+
+
 async def _collect_us_screening(snap: MarketSnapshot, *, per_group: int = 5) -> None:
     """미국 종목 A/B/C/D 스크리닝 → snap.us_top3 / snap.us_screen_groups.
 
@@ -838,7 +869,11 @@ async def _collect_us_screening(snap: MarketSnapshot, *, per_group: int = 5) -> 
             _ok = await fetch_4h_rsi_oversold([p["symbol"] for p in e_cand], market="US")
             snap.e_picks = [p for p in e_cand if p["symbol"] in _ok][:7]
             _fg_us = snap.fear_greed.get("score") if snap.fear_greed else None
-            _tag_market_bottom(snap.e_picks, await _market_rsi("US"), fg_score=_fg_us)  # 나스닥/F&G 동반바닥(#330/#331/#339)
+            _us_mr = await _market_rsi("US")
+            _tag_market_bottom(snap.e_picks, _us_mr, fg_score=_fg_us)  # 나스닥/F&G 동반바닥(#330/#331/#339)
+            _tag_bigtech_strategies(snap, ohlcv)  # 대장주 전략·E바닥 태깅(#345)
+            _tag_market_bottom([b for b in (snap.us_bigtech or []) if b.get("e_bottom")],
+                               _us_mr, fg_score=_fg_us)
             snap.surge_picks = sorted(surge, key=lambda x: x["change_pct"], reverse=True)[:7]
             logger.info("us_e_picks_ready daily=%d final=%d surge=%d",
                         len(e_cand), len(snap.e_picks), len(snap.surge_picks))

@@ -515,6 +515,24 @@ ${{ "{:,.2f}".format(item.price) }} <span class="{{ 'up-text' if pct >= 0 else '
     </section>
     {% endif %}
 
+    {# 🇺🇸 대장주 (빅테크·주요 ETF) — 전략(A/B/C/D/E/급등초입) + E바닥 배지 (사용자 #345) #}
+    {% if snap.mode in ['us_morning', 'us_premarket', 'us_intraday'] and snap.us_bigtech %}
+    <section>
+      <h2><span class="icon">🇺🇸</span>대장주 (빅테크·주요 ETF)</h2>
+      <ul class="watch-list">
+        {% for b in snap.us_bigtech %}
+        <li>
+          <a href="https://search.naver.com/search.naver?query={{ (b.name ~ ' 주가') | urlencode }}" target="_blank" rel="noopener"><strong>{{ b.name }}</strong></a>
+          <span class="pick-ticker">{{ b.symbol }}</span> · {{ us_px(b, snap.mode) }}
+          {% if b.strategies %}<span class="strat-badge">{{ b.strategies | join('/') }} 시그널</span>{% endif %}
+          {% if b.e_bottom %}<span class="strat-badge" style="background:var(--red);color:#fff;">{% if b.market_bottom %}🔥 시장 동반 바닥{% else %}🩹 투매 바닥{% endif %}</span>{% endif %}
+        </li>
+        {% endfor %}
+      </ul>
+      <p class="disclaimer" style="font-size:12px;">※ 대장주 등락 + 해당 전략 시그널(참고용). 🔥/🩹는 E 투매 바닥 포착(매수 추천 아님).</p>
+    </section>
+    {% endif %}
+
     {% if snap.us_sectors or snap.us_bigtech %}
     <section>
       {% if snap.us_sectors %}
