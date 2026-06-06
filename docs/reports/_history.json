@@ -1,5 +1,14 @@
 [
   {
+    "date": "2026-06-07",
+    "time": "00:34",
+    "mode": "post_close",
+    "url": "reports/2026-06-07-post.html",
+    "summary": "코스피 8,160.6(-5.54%) · 코스닥 1,002.4(-4.50%). 강세 테마: MLCC(적층세라믹콘덴서), 은행, 카지노.",
+    "kospi_pct": -5.54,
+    "kosdaq_pct": -4.5
+  },
+  {
     "date": "2026-06-06",
     "time": "23:46",
     "mode": "us_morning",
