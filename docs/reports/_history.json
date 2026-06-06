@@ -9,6 +9,15 @@
     "kosdaq_pct": -4.5
   },
   {
+    "date": "2026-06-07",
+    "time": "00:47",
+    "mode": "us_morning",
+    "url": "reports/2026-06-07-us.html",
+    "summary": "S&P500 7,384(-2.64%) · 나스닥 25,709(-4.18%). 강세 섹터: 헬스케어/바이오, 금융, 방산/우주항공.",
+    "kospi_pct": null,
+    "kosdaq_pct": null
+  },
+  {
     "date": "2026-06-06",
     "time": "23:46",
     "mode": "us_morning",
