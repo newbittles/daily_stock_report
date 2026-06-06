@@ -120,6 +120,7 @@ class MarketSnapshot:
     us_theme_leaders: list[dict] = field(default_factory=list)  # 관심 테마(양자·우주·AI 등) 대장 — 별도
     us_premarket_top: list[dict] = field(default_factory=list)  # 프리장 급등 TOP5(필터통과 종목 중, us_premarket)
     us_screen_groups: list[dict] = field(default_factory=list)  # [{label, initial, picks:[...]}] 전략별(C/B/A/D)
+    us_screen_ranked: list[dict] = field(default_factory=list)  # 종합점수순(종목당1·매칭전략 다표기, #454)
     # 서학개미(한국인) 미국주식 종목별 순매수 — SEIBro, 최근 5거래일 누적 (pre/post 둘 다 표시)
     kr_us_netbuy: list[dict] = field(default_factory=list)  # [{rank, ticker, name, net_buy_eok, net_buy_usd}]
     kr_us_netsell: list[dict] = field(default_factory=list)  # 한국인 순매도(자금유출) TOP3 [{ticker,name,net_sell_eok}] (#318)

@@ -613,19 +613,18 @@ ${{ "{:,.2f}".format(item.price) }} <span class="{{ 'up-text' if pct >= 0 else '
     </section>
     {% endif %}
 
-    {# 🇺🇸 미국 종목 스크리닝 A/B/C/D #}
-    {% if snap.us_screen_groups %}
+    {# 🇺🇸 미국 종목 스크리닝 — 종합점수순(종목당 1개, 매칭전략 다 표기), KR과 동일 형식(#454) #}
+    {% if snap.us_screen_ranked %}
     <section>
-      <h2><span class="icon">🇺🇸</span>미국 종목 스크리닝 (A/B/C/D)</h2>
-      {% for g in snap.us_screen_groups %}
-      <h3 style="margin-top:0.8rem;">{{ g.label }}</h3>
+      <h2><span class="icon">🇺🇸</span>미국 종목 스크리닝 <span style="color:var(--text-dim);font-size:0.8rem;">(종합점수순 · 매칭전략 표기)</span></h2>
       <ul class="watch-list">
-        {% for p in g.picks %}
+        {% for p in snap.us_screen_ranked %}
         <li>
           <a href="https://search.naver.com/search.naver?query={{ (p.name ~ ' 주가') | urlencode }}" target="_blank" rel="noopener"><strong>{{ p.name }}</strong></a>
           <span class="pick-ticker">{{ p.symbol }}</span> · {{ us_px(p, snap.mode) }}
+          {% if p.strategies %}{{ strat_badge(p.strategies) }}{% endif %}
           {{ cond_badges(p) }}{% if p.endstage %} <span class="down-text" style="font-size:0.8rem;cursor:pointer;" onclick="showFlag(this)" data-flag="endstage">⚠️끝물ⓘ</span>{% endif %}
-          {% if p.marcap_str or p.turnover_str or g.initial == 'B' %}<div class="pick-sub">{% if p.marcap_str %}시총 {{ p.marcap_str }}{% endif %}{% if p.turnover_str %} · 거래대금 {{ p.turnover_str }}{% endif %}{% if g.initial in ['B', 'C'] %} · 20MA괴리 <strong class="hl-bold"{% if g.initial == 'B' and p.gap20 >= -5 and p.gap20 <= 5 %} style="color:var(--red);"{% endif %}>{{ '+' if p.gap20 >= 0 else '' }}{{ p.gap20 }}%</strong>{% endif %}</div>{% endif %}
+          {% if p.marcap_str or p.turnover_str %}<div class="pick-sub">{% if p.marcap_str %}시총 {{ p.marcap_str }}{% endif %}{% if p.turnover_str %} · 거래대금 {{ p.turnover_str }}{% endif %}</div>{% endif %}
           {% if p.sector %}<div class="pick-sub">테마: {{ p.sector }}</div>{% endif %}
           {{ kr_nb(p) }}
           {% if p.reason %}<div class="theme-reason">{{ p.reason }}</div>{% endif %}
@@ -633,8 +632,7 @@ ${{ "{:,.2f}".format(item.price) }} <span class="{{ 'up-text' if pct >= 0 else '
         </li>
         {% endfor %}
       </ul>
-      {% endfor %}
-      <p class="disclaimer" style="font-size:12px;">※ S&amp;P500 대상 A/B/C/D 참고용 시그널. 백테스트상 기계적 엣지는 약하며 매수 추천이 아닙니다. 판단·책임은 본인.</p>
+      <p class="disclaimer" style="font-size:12px;">※ S&amp;P500 대상 A/B/C/D 종합 시그널(거래대금순). 백테스트상 기계적 엣지는 약하며 매수 추천이 아닙니다. 판단·책임은 본인.</p>
     </section>
     {% endif %}
     {% endif %}

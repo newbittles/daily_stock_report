@@ -683,7 +683,8 @@ async def _attach_kr_netbuy_to_picks(snap: MarketSnapshot) -> None:
     if not (m5 or m1 or ms):
         return
     dicts: list[dict] = list(snap.us_top3 or []) + list(snap.us_theme_leaders or []) \
-        + list(snap.us_sector_leaders or []) + list(snap.e_picks or []) + list(snap.surge_picks or [])
+        + list(snap.us_sector_leaders or []) + list(snap.e_picks or []) + list(snap.surge_picks or []) \
+        + list(snap.us_screen_ranked or [])  # 종합점수순 픽도 서학개미 부착(#454)
     for g in (snap.us_screen_groups or []):
         dicts.extend(g.get("picks", []))
     hit = 0
@@ -1068,6 +1069,16 @@ async def _collect_us_screening(snap: MarketSnapshot, *, per_group: int = 5) -> 
         groups.append({"label": label, "initial": initial,
                        "picks": [_to_dict(p, initial) for p in grp[:per_group]]})
     snap.us_screen_groups = groups
+
+    # 종합 랭킹(종목당 1개·거래대금순·매칭전략 다 표기) — KR screen_ranked과 동일 컨셉(사용자 #454)
+    seen: set[str] = set()
+    ranked: list[dict] = []
+    for p in sorted(picks, key=_turnover, reverse=True):
+        if p.symbol in seen:
+            continue
+        seen.add(p.symbol)
+        ranked.append(_to_dict(p))  # initial 없음 → 매칭 전략 전체 표기
+    snap.us_screen_ranked = ranked[:12]
 
     # 미국 Top3 — 전체 매칭 종목 중 거래대금 상위 3 (심볼 중복 제거)
     seen: set[str] = set()
