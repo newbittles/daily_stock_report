@@ -1175,6 +1175,11 @@ async def run_full(
             await summarize_us_stocks(snap)  # 종목별 AI 요약(🤖 버튼, 사용자 #309)
         except Exception as exc:
             logger.warning("us_morning_summary_failed error=%s", exc)
+        try:
+            from src.market_report.analyzer import translate_us_news
+            await translate_us_news(snap)  # 뉴스 헤드라인 한국어 번역(사용자 #394)
+        except Exception as exc:
+            logger.warning("us_morning_news_translate_failed error=%s", exc)
 
         try:
             render_report(snap)

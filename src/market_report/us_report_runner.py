@@ -78,6 +78,11 @@ async def run_us_report(
         await summarize_us_stocks(snap)      # 종목별 AI 요약(🤖 버튼용, 사용자 #309)
     except Exception as exc:  # noqa: BLE001
         logger.warning("%s_us_summary_failed error=%s", mode, exc)
+    try:
+        from src.market_report.analyzer import translate_us_news
+        await translate_us_news(snap)        # 뉴스 헤드라인 한국어 번역(사용자 #394)
+    except Exception as exc:  # noqa: BLE001
+        logger.warning("%s_news_translate_failed error=%s", mode, exc)
 
     await _step(_render_candles(snap), "candles")                       # 지수 차트 (us 캔들)
 

@@ -1138,7 +1138,8 @@ ${{ "{:,.2f}".format(item.price) }} <span class="{{ 'up-text' if pct >= 0 else '
       <h2><span class="icon">📰</span>미국 시장 뉴스</h2>
       {% for n in snap.us_news[:8] %}
       <div class="news-item">
-        <span class="news-title">{{ n.title }}</span>
+        <span class="news-title">{{ n.title_ko or n.title }}</span>
+        {% if n.title_ko %}<div class="news-meta" style="color:var(--text-dim);font-size:0.78rem;">{{ n.title }}</div>{% endif %}
         {% if n.source %}<div class="news-meta"><span class="news-source">{{ n.source }}</span></div>{% endif %}
       </div>
       {% endfor %}

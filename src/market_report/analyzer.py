@@ -610,6 +610,35 @@ async def summarize_us_stocks(snap: MarketSnapshot) -> None:
     logger.info("us_stock_summary_ok n=%d", len(targets))
 
 
+async def translate_us_news(snap: MarketSnapshot) -> None:
+    """미국 시장 뉴스 헤드라인 한국어 번역(1회 배치, 사용자 #394). 각 dict에 title_ko. 실패 시 원문 유지.
+
+    비용 최소화: 헤드라인 일괄 1회 호출(flash-lite). 키없음/한도/실패 시 생략(원문 영어 표시)."""
+    settings = get_settings()
+    news = snap.us_news or []
+    if not settings.gemini_api_key or not news:
+        return
+    items = "\n".join(f"{i}: {n.get('title', '')}" for i, n in enumerate(news[:15]) if n.get("title"))
+    if not items:
+        return
+    prompt = ("다음 미국 증시 뉴스 헤드라인을 자연스러운 한국어로 번역하라(고유명사·티커는 유지). "
+              'JSON으로만: {"0":"번역",...}.\n\n' + items)
+    try:
+        client = genai.Client(api_key=settings.gemini_api_key)
+        resp = client.models.generate_content(
+            model=MODEL_NAME, contents=prompt,
+            config=types.GenerateContentConfig(response_mime_type="application/json", temperature=0.2))
+        data = json.loads(resp.text or "{}")
+        if isinstance(data, dict):
+            for i, n in enumerate(news):
+                t = data.get(str(i))
+                if t and isinstance(t, str):
+                    n["title_ko"] = t.strip()
+            logger.info("us_news_translate_ok n=%d", len(data))
+    except Exception as exc:  # noqa: BLE001
+        logger.warning("us_news_translate_failed error=%s", exc)
+
+
 async def summarize_flows(snap: MarketSnapshot) -> None:
     """최근 일주일 시장 수급(개인/기관/외국인) 흐름 AI 요약 → snap.flows_summary (사용자 #313/#316).
 
