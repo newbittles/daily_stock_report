@@ -673,6 +673,131 @@ ${{ "{:,.2f}".format(item.price) }} <span class="{{ 'up-text' if pct >= 0 else '
     </section>
     {% endif %}
 
+    {# 1. 지수 #}
+    {% if snap.kospi or snap.kosdaq %}
+    <section>
+      <h2><span class="icon">📈</span>주요 지수</h2>
+      <div class="indexes">
+        {% for idx, ck in [(snap.kospi, 'KOSPI'), (snap.kosdaq, 'KOSDAQ')] %}
+          {% if idx %}
+          <div class="index-card {{ 'up' if idx.change_pct >= 0 else 'down' }}">
+            <div class="index-info">
+              <div class="index-name">{{ idx.market }}</div>
+              <div class="index-value">{{ "{:,.2f}".format(idx.value) }}</div>
+              <div class="index-change {{ 'up-text' if idx.change_pct >= 0 else 'down-text' }}">
+                {{ '+' if idx.change_pct >= 0 else '' }}{{ "{:.2f}".format(idx.change) }}
+                ({{ '+' if idx.change_pct >= 0 else '' }}{{ "{:.2f}".format(idx.change_pct) }}%)
+              </div>
+            </div>
+            {% if snap.candle_urls.get(ck) %}
+            <div class="index-spark"><img src="{{ snap.candle_urls[ck] }}" alt="{{ idx.market }} 캔들" loading="lazy"></div>
+            {% endif %}
+          </div>
+          {% endif %}
+        {% endfor %}
+        {% if snap.fx %}
+        <div class="index-card {{ 'up' if snap.fx.change_pct >= 0 else 'down' }}">
+          <div class="index-info">
+            <div class="index-name">{{ snap.fx.name }}</div>
+            <div class="index-value">{{ "{:,.2f}".format(snap.fx.value) }}</div>
+            <div class="index-change {{ 'up-text' if snap.fx.change_pct >= 0 else 'down-text' }}">{{ '+' if snap.fx.change_pct >= 0 else '' }}{{ "{:.2f}".format(snap.fx.change_pct) }}%</div>
+          </div>
+          {% if snap.candle_urls.get('fx') %}<div class="index-spark"><img src="{{ snap.candle_urls['fx'] }}" alt="환율 캔들" loading="lazy"></div>{% endif %}
+        </div>
+        {% endif %}
+        {% if snap.wti %}
+        <div class="index-card {{ 'up' if snap.wti.change_pct >= 0 else 'down' }}">
+          <div class="index-info">
+            <div class="index-name">{{ snap.wti.name }}</div>
+            <div class="index-value">${{ "{:,.2f}".format(snap.wti.value) }}</div>
+            <div class="index-change {{ 'up-text' if snap.wti.change_pct >= 0 else 'down-text' }}">{{ '+' if snap.wti.change_pct >= 0 else '' }}{{ "{:.2f}".format(snap.wti.change_pct) }}%</div>
+          </div>
+          {% if snap.candle_urls.get('wti') %}<div class="index-spark"><img src="{{ snap.candle_urls['wti'] }}" alt="유가 캔들" loading="lazy"></div>{% endif %}
+        </div>
+        {% endif %}
+      </div>
+    </section>
+    {% endif %}
+
+    {# 1b. 투자자 수급 현황표 (지수 아래) — 최근 3일 일자별 #}
+    {% if snap.market_flows_history %}
+    <section>
+      <h2><span class="icon">💰</span>투자자 수급 <span style="color:var(--text-dim);font-size:0.8rem;">(최근 {{ snap.market_flows_history|length }}일 · 순매수 억원)</span></h2>
+      <table class="supply-table">
+        <thead><tr><th>날짜</th><th>시장</th><th>개인</th><th>외국인</th><th>기관</th></tr></thead>
+        <tbody>
+        {% for d in snap.market_flows_history %}
+          {% for mk, label in [('kospi','코스피'), ('kosdaq','코스닥')] %}
+          {% set f = d[mk] %}
+          {% if f %}
+          <tr {% if mk == 'kospi' and not loop.first %}class="sup-daysep"{% endif %}>
+            <td class="sup-date">{% if mk == 'kospi' %}{{ d.date[4:6] }}/{{ d.date[6:8] }}{% endif %}</td>
+            <td class="sup-mk">{{ label }}</td>
+            <td class="{{ 'up-text' if f.personal >= 0 else 'down-text' }}">{{ '+' if f.personal >= 0 else '' }}{{ "{:,}".format(f.personal) }}</td>
+            <td class="{{ 'up-text' if f.foreign >= 0 else 'down-text' }}">{{ '+' if f.foreign >= 0 else '' }}{{ "{:,}".format(f.foreign) }}</td>
+            <td class="{{ 'up-text' if f.institution >= 0 else 'down-text' }}">{{ '+' if f.institution >= 0 else '' }}{{ "{:,}".format(f.institution) }}</td>
+          </tr>
+          {% endif %}
+          {% endfor %}
+        {% endfor %}
+        </tbody>
+      </table>
+      <p style="font-size:11px;color:var(--text-dim);margin-top:0.3rem;">+순매수 / −순매도(억원). 외국인·기관 동반 매수가 수급상 유리. {% if snap.market_flows_history|length < 3 %}· 3일치는 거래일마다 누적됩니다.{% endif %}</p>
+      {% if snap.flows_summary %}
+      <div class="summary-box" style="margin-top:0.6rem;"><div class="label">🔎 수급 요약 (최근 일주일 · 연속·전일/전주대비)</div><p>{{ snap.flows_summary }}</p></div>
+      {% endif %}
+    </section>
+    {% endif %}
+
+    {# 2. AI 요약 (us_morning/us_premarket은 지수 아래에서 이미 표시 → 여기선 KR만) #}
+    {% if snap.summary and snap.mode not in ['us_morning', 'us_premarket', 'us_intraday'] %}
+    <section>
+      <h2><span class="icon">🤖</span>AI 시장 요약</h2>
+      <div class="summary-box">
+        <div class="label">한 줄 요약</div>
+        <p>{{ snap.summary }}</p>
+      </div>
+      {% if snap.why_moved %}
+      <div class="summary-box">
+        <div class="label">왜 움직였나</div>
+        <p>{{ snap.why_moved }}</p>
+      </div>
+      {% endif %}
+      {% if snap.theme_commentary %}
+      <div class="summary-box">
+        <div class="label">테마 해설</div>
+        <p>{{ snap.theme_commentary }}</p>
+      </div>
+      {% endif %}
+    </section>
+    {% endif %}
+
+    {% if snap.top_themes %}
+    <section>
+      <h2><span class="icon">🔥</span>강세/약세 테마 Top {{ snap.top_themes|length }} <span style="color:var(--text-dim);font-size:0.8rem;">(🚀주도 = 오늘 상위종목이 속한 테마)</span></h2>
+      {% for t in snap.top_themes %}
+      <div class="theme">
+        <div class="theme-rank">{{ t.rank }}</div>
+        <div class="theme-info">
+          <div class="name">{{ t.name }}{% if t.name in snap.leading_themes %} <span class="strat-badge" style="background:var(--green);">🚀주도</span>{% endif %}</div>
+          {% if t.leading_stocks %}
+          <div class="leads">▸ {{ t.leading_stocks[:3]|join(', ') }}</div>
+          {% endif %}
+          {% if t.description %}
+          <div class="theme-why">💡 {{ t.description }}</div>
+          {% endif %}
+        </div>
+        <div class="theme-pct {{ 'up-text' if t.change_pct >= 0 else 'down-text' }}">
+          {{ '+' if t.change_pct >= 0 else '' }}{{ "{:.2f}".format(t.change_pct) }}%
+        </div>
+        {% if t.reason %}
+        <div class="theme-reason">{{ t.reason }}</div>
+        {% endif %}
+      </div>
+      {% endfor %}
+    </section>
+    {% endif %}
+
     {# ★ 오늘의 추천 Top3 (A/B/C/D + 주도주·거래량·수급 종합) #}
     {% if snap.top3 %}
     <section class="top3-sec">
@@ -778,82 +903,6 @@ ${{ "{:,.2f}".format(item.price) }} <span class="{{ 'up-text' if pct >= 0 else '
     </section>
     {% endif %}
 
-    {# 1. 지수 #}
-    {% if snap.kospi or snap.kosdaq %}
-    <section>
-      <h2><span class="icon">📈</span>주요 지수</h2>
-      <div class="indexes">
-        {% for idx, ck in [(snap.kospi, 'KOSPI'), (snap.kosdaq, 'KOSDAQ')] %}
-          {% if idx %}
-          <div class="index-card {{ 'up' if idx.change_pct >= 0 else 'down' }}">
-            <div class="index-info">
-              <div class="index-name">{{ idx.market }}</div>
-              <div class="index-value">{{ "{:,.2f}".format(idx.value) }}</div>
-              <div class="index-change {{ 'up-text' if idx.change_pct >= 0 else 'down-text' }}">
-                {{ '+' if idx.change_pct >= 0 else '' }}{{ "{:.2f}".format(idx.change) }}
-                ({{ '+' if idx.change_pct >= 0 else '' }}{{ "{:.2f}".format(idx.change_pct) }}%)
-              </div>
-            </div>
-            {% if snap.candle_urls.get(ck) %}
-            <div class="index-spark"><img src="{{ snap.candle_urls[ck] }}" alt="{{ idx.market }} 캔들" loading="lazy"></div>
-            {% endif %}
-          </div>
-          {% endif %}
-        {% endfor %}
-        {% if snap.fx %}
-        <div class="index-card {{ 'up' if snap.fx.change_pct >= 0 else 'down' }}">
-          <div class="index-info">
-            <div class="index-name">{{ snap.fx.name }}</div>
-            <div class="index-value">{{ "{:,.2f}".format(snap.fx.value) }}</div>
-            <div class="index-change {{ 'up-text' if snap.fx.change_pct >= 0 else 'down-text' }}">{{ '+' if snap.fx.change_pct >= 0 else '' }}{{ "{:.2f}".format(snap.fx.change_pct) }}%</div>
-          </div>
-          {% if snap.candle_urls.get('fx') %}<div class="index-spark"><img src="{{ snap.candle_urls['fx'] }}" alt="환율 캔들" loading="lazy"></div>{% endif %}
-        </div>
-        {% endif %}
-        {% if snap.wti %}
-        <div class="index-card {{ 'up' if snap.wti.change_pct >= 0 else 'down' }}">
-          <div class="index-info">
-            <div class="index-name">{{ snap.wti.name }}</div>
-            <div class="index-value">${{ "{:,.2f}".format(snap.wti.value) }}</div>
-            <div class="index-change {{ 'up-text' if snap.wti.change_pct >= 0 else 'down-text' }}">{{ '+' if snap.wti.change_pct >= 0 else '' }}{{ "{:.2f}".format(snap.wti.change_pct) }}%</div>
-          </div>
-          {% if snap.candle_urls.get('wti') %}<div class="index-spark"><img src="{{ snap.candle_urls['wti'] }}" alt="유가 캔들" loading="lazy"></div>{% endif %}
-        </div>
-        {% endif %}
-      </div>
-    </section>
-    {% endif %}
-
-    {# 1b. 투자자 수급 현황표 (지수 아래) — 최근 3일 일자별 #}
-    {% if snap.market_flows_history %}
-    <section>
-      <h2><span class="icon">💰</span>투자자 수급 <span style="color:var(--text-dim);font-size:0.8rem;">(최근 {{ snap.market_flows_history|length }}일 · 순매수 억원)</span></h2>
-      <table class="supply-table">
-        <thead><tr><th>날짜</th><th>시장</th><th>개인</th><th>외국인</th><th>기관</th></tr></thead>
-        <tbody>
-        {% for d in snap.market_flows_history %}
-          {% for mk, label in [('kospi','코스피'), ('kosdaq','코스닥')] %}
-          {% set f = d[mk] %}
-          {% if f %}
-          <tr {% if mk == 'kospi' and not loop.first %}class="sup-daysep"{% endif %}>
-            <td class="sup-date">{% if mk == 'kospi' %}{{ d.date[4:6] }}/{{ d.date[6:8] }}{% endif %}</td>
-            <td class="sup-mk">{{ label }}</td>
-            <td class="{{ 'up-text' if f.personal >= 0 else 'down-text' }}">{{ '+' if f.personal >= 0 else '' }}{{ "{:,}".format(f.personal) }}</td>
-            <td class="{{ 'up-text' if f.foreign >= 0 else 'down-text' }}">{{ '+' if f.foreign >= 0 else '' }}{{ "{:,}".format(f.foreign) }}</td>
-            <td class="{{ 'up-text' if f.institution >= 0 else 'down-text' }}">{{ '+' if f.institution >= 0 else '' }}{{ "{:,}".format(f.institution) }}</td>
-          </tr>
-          {% endif %}
-          {% endfor %}
-        {% endfor %}
-        </tbody>
-      </table>
-      <p style="font-size:11px;color:var(--text-dim);margin-top:0.3rem;">+순매수 / −순매도(억원). 외국인·기관 동반 매수가 수급상 유리. {% if snap.market_flows_history|length < 3 %}· 3일치는 거래일마다 누적됩니다.{% endif %}</p>
-      {% if snap.flows_summary %}
-      <div class="summary-box" style="margin-top:0.6rem;"><div class="label">🔎 수급 요약 (최근 일주일 · 연속·전일/전주대비)</div><p>{{ snap.flows_summary }}</p></div>
-      {% endif %}
-    </section>
-    {% endif %}
-
     {# 🏦 기관·외인 연속 순매수/매도 (시총 상위, 스마트머니 선행, 사용자 #393) #}
     {% if snap.supply_buy_streaks or snap.supply_sell_streaks %}
     <section>
@@ -875,29 +924,6 @@ ${{ "{:,.2f}".format(item.price) }} <span class="{{ 'up-text' if pct >= 0 else '
       </ul>
       {% endif %}
       <p class="disclaimer" style="font-size:12px;">※ 기관+외국인이 며칠째 연속 순매수/매도 중인 시총상위 종목(개인보다 선행 경향 참고). 매수 추천 아님.</p>
-    </section>
-    {% endif %}
-
-    {# 2. AI 요약 (us_morning/us_premarket은 지수 아래에서 이미 표시 → 여기선 KR만) #}
-    {% if snap.summary and snap.mode not in ['us_morning', 'us_premarket', 'us_intraday'] %}
-    <section>
-      <h2><span class="icon">🤖</span>AI 시장 요약</h2>
-      <div class="summary-box">
-        <div class="label">한 줄 요약</div>
-        <p>{{ snap.summary }}</p>
-      </div>
-      {% if snap.why_moved %}
-      <div class="summary-box">
-        <div class="label">왜 움직였나</div>
-        <p>{{ snap.why_moved }}</p>
-      </div>
-      {% endif %}
-      {% if snap.theme_commentary %}
-      <div class="summary-box">
-        <div class="label">테마 해설</div>
-        <p>{{ snap.theme_commentary }}</p>
-      </div>
-      {% endif %}
     </section>
     {% endif %}
 
@@ -1024,32 +1050,6 @@ ${{ "{:,.2f}".format(item.price) }} <span class="{{ 'up-text' if pct >= 0 else '
     {% endif %}
 
     {# 4. 강세 테마 #}
-    {% if snap.top_themes %}
-    <section>
-      <h2><span class="icon">🔥</span>강세/약세 테마 Top {{ snap.top_themes|length }} <span style="color:var(--text-dim);font-size:0.8rem;">(🚀주도 = 오늘 상위종목이 속한 테마)</span></h2>
-      {% for t in snap.top_themes %}
-      <div class="theme">
-        <div class="theme-rank">{{ t.rank }}</div>
-        <div class="theme-info">
-          <div class="name">{{ t.name }}{% if t.name in snap.leading_themes %} <span class="strat-badge" style="background:var(--green);">🚀주도</span>{% endif %}</div>
-          {% if t.leading_stocks %}
-          <div class="leads">▸ {{ t.leading_stocks[:3]|join(', ') }}</div>
-          {% endif %}
-          {% if t.description %}
-          <div class="theme-why">💡 {{ t.description }}</div>
-          {% endif %}
-        </div>
-        <div class="theme-pct {{ 'up-text' if t.change_pct >= 0 else 'down-text' }}">
-          {{ '+' if t.change_pct >= 0 else '' }}{{ "{:.2f}".format(t.change_pct) }}%
-        </div>
-        {% if t.reason %}
-        <div class="theme-reason">{{ t.reason }}</div>
-        {% endif %}
-      </div>
-      {% endfor %}
-    </section>
-    {% endif %}
-
     {# 🔥 핫 종목 (거래대금 상위 + 시총필터 — midday) #}
     {% if snap.hot_stocks %}
     <section>
