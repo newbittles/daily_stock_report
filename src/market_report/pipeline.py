@@ -639,7 +639,7 @@ async def _attach_kr_netbuy_to_picks(snap: MarketSnapshot) -> None:
     교차되면 kr_netbuy_prev_eok / kr_netbuy_5d_eok(억원) 부착. 장전·장후 둘 다(사용자 2026-06-05).
     TOP50 권외 종목은 부착 안 함(배지 생략). SEIBro/환율 실패 시 조용히 건너뜀(best-effort)."""
     from src.datasource.us.fdr_source import fetch_usd_krw
-    from src.datasource.us.seibro_source import fetch_us_net_buy, prev_trading_day
+    from src.datasource.us.seibro_source import fetch_us_net_buy, fetch_us_net_sell, prev_trading_day
     from src.datasource.us.seibro_symbols import ticker_for
 
     rate = await fetch_usd_krw()
@@ -648,17 +648,19 @@ async def _attach_kr_netbuy_to_picks(snap: MarketSnapshot) -> None:
     five = await fetch_us_net_buy(trading_days=5, top=50)
     pday = prev_trading_day()
     prev = await fetch_us_net_buy(top=50, start_dt=pday, end_dt=pday)
+    sells = await fetch_us_net_sell(trading_days=5, top=50)  # 순매도 TOP50(픽이 매도상위면 표시, #431)
 
-    def _ticker_eok(rows: list) -> dict[str, int]:
+    def _ticker_eok(rows: list, sign: int = 1) -> dict[str, int]:
         m: dict[str, int] = {}
         for r in rows:
             tk = ticker_for(r.isin)
             if tk:
-                m[tk] = round(r.net_buy_amt * rate / 1e8)
+                m[tk] = round(sign * r.net_buy_amt * rate / 1e8)
         return m
 
     m5, m1 = _ticker_eok(five), _ticker_eok(prev)
-    if not (m5 or m1):
+    ms = _ticker_eok(sells, sign=-1)  # 양수 = 유출(순매도) 규모
+    if not (m5 or m1 or ms):
         return
     dicts: list[dict] = list(snap.us_top3 or []) + list(snap.us_theme_leaders or []) \
         + list(snap.us_sector_leaders or []) + list(snap.e_picks or []) + list(snap.surge_picks or [])
@@ -671,7 +673,10 @@ async def _attach_kr_netbuy_to_picks(snap: MarketSnapshot) -> None:
             d["kr_netbuy_5d_eok"] = m5.get(sym)
             d["kr_netbuy_prev_eok"] = m1.get(sym)
             hit += 1
-    logger.info("kr_netbuy_pick_attach hit=%d (m5=%d m1=%d)", hit, len(m5), len(m1))
+        elif sym in ms and ms[sym] > 0:  # 매수TOP50엔 없지만 매도TOP50에 있으면(마이크론 케이스 #431)
+            d["kr_netsell_5d_eok"] = ms[sym]
+            hit += 1
+    logger.info("kr_netbuy_pick_attach hit=%d (m5=%d m1=%d sell=%d)", hit, len(m5), len(m1), len(ms))
 
 
 async def _market_rsi(market: str) -> float | None:

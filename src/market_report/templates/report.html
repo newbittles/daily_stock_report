@@ -18,6 +18,8 @@ ${{ "{:,.2f}".format(item.price) }} <span class="{{ 'up-text' if pct >= 0 else '
 {%- macro kr_nb(item) -%}
 {%- if item.kr_netbuy_5d_eok is defined and item.kr_netbuy_5d_eok is not none -%}
 <div class="pick-sub" style="color:var(--green);">🇰🇷 한국인 순매수 {% if item.kr_netbuy_prev_eok is not none %}전일 {{ '{:+,}'.format(item.kr_netbuy_prev_eok) }}억 · {% endif %}최근5일 {{ '{:+,}'.format(item.kr_netbuy_5d_eok) }}억</div>
+{%- elif item.kr_netsell_5d_eok is defined and item.kr_netsell_5d_eok is not none -%}
+<div class="pick-sub" style="color:var(--red);">🔻 한국인 순매도 최근5일 {{ '{:,}'.format(item.kr_netsell_5d_eok) }}억(자금유출)</div>
 {%- endif -%}
 {%- endmacro -%}
 {# E/급등초입 픽 보조정보 — 시총·거래량·거래대금·테마·서학개미(US) (사용자 2026-06-05) #}
@@ -29,6 +31,7 @@ ${{ "{:,.2f}".format(item.price) }} <span class="{{ 'up-text' if pct >= 0 else '
 {%- if item.turnover_str %} · 거래대금 {{ item.turnover_str }}{% endif -%}
 {%- if item.theme %} · 테마: {% if item.theme_kind == 'theme' and item.theme_idx %}<a href="https://judal.co.kr/?view=stockList&themeIdx={{ item.theme_idx }}" target="_blank" rel="noopener">{{ item.theme }}</a>{% else %}{{ item.theme }}{% endif %}{% endif -%}
 {%- if item.kr_netbuy_prev_eok is defined and item.kr_netbuy_prev_eok is not none %} · <span style="color:var(--green);">🇰🇷한국인 전일 {{ '{:+,}'.format(item.kr_netbuy_prev_eok) }}억(5일 {{ '{:+,}'.format(item.kr_netbuy_5d_eok or 0) }}억)</span>{% endif -%}
+{%- if item.kr_netsell_5d_eok is defined and item.kr_netsell_5d_eok is not none %} · <span style="color:var(--red);">🔻한국인 순매도(5일 {{ '{:,}'.format(item.kr_netsell_5d_eok) }}억)</span>{% endif -%}
 </div>
 {%- endmacro -%}
 {# 전략 조건 배지(KR·US 통일, #414): 20일선 이격 + 🔥과열(BB돌파·거래량) + 5<10 크로스. KR 기존 출력과 동일 재현. #}
