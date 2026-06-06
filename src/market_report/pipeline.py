@@ -669,7 +669,7 @@ def _market_phase(label: str, gaps: dict) -> tuple[str, str]:
     # 🩹 바닥권(매수기회) — 검증된 실전신호 우선: 지수 RSI≤30 OR 60일선 이격≤-7%
     # (백테스트 #371: 20일후 +5~10%·승률 60~100%. E 투매바닥·F&G와 일맥상통)
     if (rv is not None and rv <= 30) or g60 <= -7:
-        return ("🩹", "바닥권")
+        return ("🛒", "바닥권")
     # 🔴 과열(고점권 경계·정보용) = 이격 임계 AND RSI≥70. ⚠️타이밍 신뢰 낮음(#363) — 매도 트리거 아님.
     if (g120 >= _OVERHEAT_120.get(label, 12.0) or g60 >= _OVERHEAT_60.get(label, 9.0)) \
             and (rv is None or rv >= 70):
@@ -723,6 +723,13 @@ async def _index_ma_gaps(symbol: str) -> dict:
         rv = rsi(c, 14)[-1]
         if rv is not None:
             out["rsi"] = round(rv)
+        # 거래량 연속 증가(최근 2일) — 반등에 거래량 실리는지 정보 표식(사용자 #388/#392)
+        try:
+            vol = [float(x) for x in df["Volume"].dropna()]
+            if len(vol) >= 3:
+                out["vol_up"] = bool(vol[-1] > vol[-2] > vol[-3])
+        except Exception:  # noqa: BLE001
+            pass
         return out
 
     try:

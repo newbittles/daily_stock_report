@@ -130,7 +130,8 @@ def _format_ma_gaps(snap: MarketSnapshot) -> list[str]:
         parts = " ".join(f"{k}일{gaps[k]:+.1f}%" for k in (5, 10, 20, 60, 120) if k in gaps)
         ph = mp.get(label)
         head = f"{ph['emoji']} {label} [{ph['name']}]" if ph else f"📐 {label}"
-        lines.append(f"{head} 이격: {parts}")
+        vol = " 📊거래량 연속↑" if gaps.get("vol_up") else ""  # 정보용(매매 기준 아님, #388/#392)
+        lines.append(f"{head} 이격: {parts}{vol}")
     return lines
 
 

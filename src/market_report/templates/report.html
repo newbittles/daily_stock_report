@@ -449,7 +449,7 @@ ${{ "{:,.2f}".format(item.price) }} <span class="{{ 'up-text' if pct >= 0 else '
         <div class="label" style="font-size:0.78rem;color:var(--text-dim);">🚦 지수 상태 신호등</div>
         <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:3px;">
           {% for label, ph in snap.market_phase.items() %}
-          <span class="strat-badge">{{ ph.emoji }} {{ label }} {{ ph.name }}</span>
+          <span class="strat-badge">{{ ph.emoji }} {{ label }} {{ ph.name }}{% if snap.ma_gaps.get(label, {}).get('vol_up') %} 📊연속↑{% endif %}</span>
           {% endfor %}
         </div>
       </div>
