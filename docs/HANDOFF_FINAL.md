@@ -6,7 +6,8 @@
   - 배선: top3_bridge가 picks `strategies`(["A","C"]) 보존 → positions DB `strategy` 컬럼(CSV, 구스키마 ALTER 마이그레이션) → auto_trader 매수 시 저장·매도 시 적용.
   - **D 손절 모순 해소**: yaml 주석(구름하단/20일선, 05-31)은 구버전 — opinion(60일선 2일이탈, 06-01 b1a1d3c)이 최신. 주석 정정함. E·급등초입은 Top3 비포함이라 자동매매 무관.
   - 259 테스트(254+5). **새 기준선 259**.
-- **P1 남은 절차**: ①사용자 서버 `.env` `KIS_PAPER_*` 3키 입력(06-07 현재 미입력) → ②월요일(06-09) 장중 dry-run `venv/bin/python -m src.trading.auto_trader buy` → ③정상 시 cron 등록(평일 15:20 buy --send / 15:50 sell --send) → ④첫 체결 KIS 모의계좌 확인.
+- **P1 진행(06-07 심야 갱신)**: ①모의 키 3개 입력·검증 ✅(⚠️사용자가 넣은 불필요 키 KIS_PAPER_ENV가 pydantic extra_forbidden 크래시 유발 → 제거로 해소. KIS_*=실전(데이터)·KIS_PAPER_*=모의(주문) 이중구조 — KIS_ENV 스위치로 못 바꿈, 모의도메인 OHLCV 500). ②주말 스모크 ✅(sell dry-run 클라이언트 조립 정상, buy는 top3 없음 가드 정상). ③**dry-run 자동 예약 완료**: 서버 crontab 1회성 `10 15 8 6 *`(월 06-08 15:10, pre 14:50 파이프라인 완료 후) → buy dry-run 출력이 `scripts/notify_log.py`로 텔레그램 자동 발송. 사용자 액션 불필요. 확인 후 **크론 줄 삭제할 것**.
+- **다음(06-08 dry-run 정상 시)**: 실 cron 등록 — 15:20 buy --send. ⚠️**sell 시각 재검토 필요**: 계획상 15:50인데 ①정규장 15:30 마감 후라 시장가(ord_dvsn=01) 거부 가능성(시간외 종가 매매 ord_dvsn 또는 차일 매도로 조정 검토) ②기존 crontab 15:50에 스캘핑 forward_eod 잡과 동시각. 등록 전 결정.
 
 ### ✅ 코인 시세 리포팅 — 구현·배포 완료(06-07 심야, 커밋 aefe79d+9db9668)
 - **매일 17:00 KST 주말 포함**(scheduler `report_coin`, day_of_week 미지정='*'). `--once coin`. 라이브 발송 2회 검증(텔레그램 2챗+웹 발행).
