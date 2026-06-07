@@ -106,6 +106,19 @@ def test_build_coin_rows():
     assert eth["krw"] is None and eth["kimchi"] is None and eth["usd"] == 3400.0
 
 
+def test_format_telegram_usdt_in_header():
+    """테더는 번호 목록이 아니라 헤더(환율) 바로 아래 분리 표시(사용자 2026-06-08)."""
+    rows = [{"sym": "USDT", "name_ko": "테더", "krw": 1517.0, "krw_change": -0.2,
+             "value_24h": 1e11, "usd": 0.9996, "usd_change": 0.0,
+             "mcap": 1e11, "rank": 3, "kimchi": -2.6}] + _sample_rows()
+    text = format_coin_telegram(rows, fng=None, glob=None, fx=1450.0,
+                                now=datetime(2026, 6, 8, 17, 0))
+    assert "₮ 테더(USDT) 1,517원 (-0.2%) · 김프 -2.6%" in text
+    assert "1. 비트코인" in text and "2. 이더리움" in text   # 번호는 BTC부터
+    assert "테더(USDT)" not in text[text.index("1. 비트코인"):]  # 목록엔 테더 없음
+    assert text.index("테더") < text.index("1. 비트코인")        # 헤더 쪽에 위치
+
+
 def test_format_coin_telegram():
     rows = _sample_rows()
     fng = {"score": 25, "rating_ko": "극단적 공포"}
@@ -138,6 +151,14 @@ def test_render_coin_html():
     assert "<table" not in html
     assert 'class="card"' in html
     assert "viewport" in html
+    # 테더는 카드 목록이 아니라 헤더 아래 분리 바(사용자 2026-06-08)
+    rows_t = [{"sym": "USDT", "name_ko": "테더", "krw": 1517.0, "krw_change": -0.2,
+               "value_24h": 1e11, "usd": 0.9996, "usd_change": 0.0,
+               "mcap": 1e11, "rank": 3, "kimchi": -2.6}] + rows
+    html_t = render_coin_html(rows_t, fng=fng, glob=glob, fx=1450.0,
+                              now=datetime(2026, 6, 7, 17, 0))
+    assert 'class="tether"' in html_t
+    assert html_t.count('class="card"') == 2   # 카드 2개(BTC·ETH)만 — 테더 카드 없음
     # 일봉/4시간봉 각각 신호등·이격·RSI·MACD·전략 표기
     assert "일봉: 🟢정상" in html and "RSI 58" in html and "MACD 양·골든" in html
     assert "4시간봉: 🟡단기눌림" in html and "MACD 음·데드" in html

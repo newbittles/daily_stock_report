@@ -238,8 +238,18 @@ def format_coin_telegram(
         lines.append("🧭 " + " | ".join(senti))
     if fx:
         lines.append(f"💱 환율 {fx:,.0f}원/$")
+    # 테더는 번호 목록이 아니라 헤더 바로 아래 분리(달러 프리미엄 지표, 사용자 2026-06-08)
+    coins = []
+    for r in rows:
+        if r["sym"] == "USDT":
+            t = f"₮ 테더(USDT) {_fmt_krw(r['krw'])}원 ({_fmt_pct(r['krw_change'])})"
+            if r["kimchi"] is not None:
+                t += f" · 김프 {r['kimchi']:+.1f}%"
+            lines.append(t)
+        else:
+            coins.append(r)
     lines.append("")
-    for i, r in enumerate(rows, start=1):
+    for i, r in enumerate(coins, start=1):
         seg = [f"{i}. {r['name_ko']}({r['sym']})"]
         if r["krw"] is not None:
             seg.append(f"{_fmt_krw(r['krw'])}원 ({_fmt_pct(r['krw_change'])})")
@@ -288,8 +298,22 @@ def render_coin_html(
             return ""
         return "up" if v >= 0 else "down"
 
-    cards = []
+    # 테더는 카드 목록이 아니라 헤더 아래 분리 바(달러 프리미엄 지표, 사용자 2026-06-08)
+    tether_html = ""
+    coin_rows = []
     for r in rows:
+        if r["sym"] == "USDT":
+            t = (f"₮ 테더(USDT) <b>{_fmt_krw(r['krw'])}원</b> "
+                 f"<span class='{chg_cls(r['krw_change'])}'>{_fmt_pct(r['krw_change'])}</span>")
+            if r["kimchi"] is not None:
+                t += (f" · 김프(달러 프리미엄) <span class='{chg_cls(r['kimchi'])}'>"
+                      f"{r['kimchi']:+.2f}%</span>")
+            tether_html = f"<div class=\"tether\">{t}</div>"
+        else:
+            coin_rows.append(r)
+
+    cards = []
+    for r in coin_rows:
         a = r.get("analysis") or {}
         daily = a.get("daily") or {}
         phase = (f"<span class='phase'>{daily['phase_emoji']}{daily['phase_name']}</span>"
@@ -349,6 +373,9 @@ def render_coin_html(
   .senti {{ display:flex; flex-wrap:wrap; gap:6px; margin:10px 0 14px; }}
   .chip {{ background:var(--card); border:1px solid var(--line); border-radius:8px;
            padding:6px 10px; font-size:.85rem; line-height:1.5; }}
+  .tether {{ background:var(--card); border:1px solid var(--line); border-radius:10px;
+             padding:10px 14px; margin:0 0 14px; font-size:.92rem;
+             font-variant-numeric:tabular-nums; }}
   .cards {{ display:grid; grid-template-columns:1fr; gap:10px; }}
   @media (min-width:640px) {{ .cards {{ grid-template-columns:1fr 1fr; }} }}
   .card {{ background:var(--card); border:1px solid var(--line); border-radius:12px;
@@ -375,6 +402,7 @@ def render_coin_html(
 <div class="wrap">
 <h1>🪙 코인 시세 리포트 <span class="sym">{date_str} {now.strftime('%H:%M')} KST</span></h1>
 <div class="senti">{senti_html}</div>
+{tether_html}
 <div class="cards">
 {''.join(cards)}
 </div>
