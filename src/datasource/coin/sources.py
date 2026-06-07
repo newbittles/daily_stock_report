@@ -24,8 +24,8 @@ _FNG_URL = "https://api.alternative.me/fng/"
 _HEADERS = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"}
 _FNG_CACHE = Path(__file__).resolve().parents[3] / "data" / "coin_fng_cache.json"
 
-# 유니버스 — USDT(달러 프리미엄 지표, 최상단·사용자 2026-06-07) + BTC·ETH + 시총 상위
-# 업비트 KRW 마켓 존재 코인(BNB 제외) 고정 11개.
+# 유니버스 — 6개 고정(사용자 2026-06-07 정보과다 축소): USDT(달러 프리미엄, 최상단)
+# + BTC·ETH·XRP·SOL·DOGE. 업비트 KRW 마켓 기준.
 COIN_UNIVERSE: list[dict] = [
     # USDT: 시세·김프(달러 프리미엄)만 — 스테이블 평탄차트가 A/C/D를 오탐하므로 분석 제외
     {"sym": "USDT", "name_ko": "테더", "upbit": "KRW-USDT", "gecko": "tether", "analyze": False},
@@ -34,11 +34,6 @@ COIN_UNIVERSE: list[dict] = [
     {"sym": "XRP", "name_ko": "리플", "upbit": "KRW-XRP", "gecko": "ripple"},
     {"sym": "SOL", "name_ko": "솔라나", "upbit": "KRW-SOL", "gecko": "solana"},
     {"sym": "DOGE", "name_ko": "도지코인", "upbit": "KRW-DOGE", "gecko": "dogecoin"},
-    {"sym": "ADA", "name_ko": "에이다", "upbit": "KRW-ADA", "gecko": "cardano"},
-    {"sym": "TRX", "name_ko": "트론", "upbit": "KRW-TRX", "gecko": "tron"},
-    {"sym": "AVAX", "name_ko": "아발란체", "upbit": "KRW-AVAX", "gecko": "avalanche-2"},
-    {"sym": "LINK", "name_ko": "체인링크", "upbit": "KRW-LINK", "gecko": "chainlink"},
-    {"sym": "DOT", "name_ko": "폴카닷", "upbit": "KRW-DOT", "gecko": "polkadot"},
 ]
 
 FNG_RATING_KO = {

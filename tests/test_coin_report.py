@@ -19,11 +19,9 @@ from src.market_report.coin_report import (
 
 
 def test_coin_universe_shape():
-    """유니버스 ~11개, 각 항목에 sym/name_ko/upbit/gecko 키. USDT가 맨 위(사용자 2026-06-07)."""
-    assert 8 <= len(COIN_UNIVERSE) <= 12
+    """유니버스 6개 고정(사용자 2026-06-07 축소): USDT 최상단 + BTC·ETH·XRP·SOL·DOGE."""
     syms = [c["sym"] for c in COIN_UNIVERSE]
-    assert "BTC" in syms and "ETH" in syms
-    assert COIN_UNIVERSE[0]["sym"] == "USDT"   # 테더 최상단 (달러 프리미엄 지표)
+    assert syms == ["USDT", "BTC", "ETH", "XRP", "SOL", "DOGE"]
     assert COIN_UNIVERSE[0].get("analyze") is False   # 스테이블 — 전략/국면 분석 제외(오탐)
     for c in COIN_UNIVERSE:
         assert c["upbit"].startswith("KRW-")
@@ -144,6 +142,17 @@ def test_render_coin_html():
     assert "일봉: 🟢정상" in html and "RSI 58" in html and "MACD 양·골든" in html
     assert "4시간봉: 🟡단기눌림" in html and "MACD 음·데드" in html
     assert "B·E" in html and "시장동반" in html
+    # 전략 미매칭 코인(ETH)은 '전략 없음' 명시(사용자 2026-06-07)
+    rows[1]["analysis"] = {
+        "daily": {"phase_emoji": "🟠", "phase_name": "조정", "g20": -2.0, "g60": 1.0,
+                  "rsi": 45.0, "macd": "음·데드", "strats": []},
+        "h4": {"phase_emoji": "🟢", "phase_name": "정상", "g20": 0.5, "g60": 1.0,
+               "rsi": 50.0, "macd": "양·골든", "strats": []},
+        "e_bottom": False,
+    }
+    html2 = render_coin_html(rows, fng=fng, glob=glob, fx=1450.0,
+                             now=datetime(2026, 6, 7, 17, 0))
+    assert "전략 없음" in html2
 
 
 def test_parse_upbit_candles():
@@ -232,17 +241,33 @@ def _sample_analysis():
 
 
 def test_format_telegram_with_analysis():
-    """코인별 구조(사용자 2026-06-07): 번호 + ㄴ일봉/ㄴ4시간봉 각각 신호등·이격·RSI·MACD·전략."""
+    """텔레그램은 신호등만(사용자 2026-06-07 정보과다 축소) — 상세(이격·RSI·MACD·전략)는 웹 전용."""
     rows = _sample_rows()
     rows[0]["analysis"] = _sample_analysis()
     text = format_coin_telegram(rows, fng=None, glob=None, fx=1450.0,
                                 now=datetime(2026, 6, 7, 17, 0))
     assert "1. 비트코인" in text and "2. 이더리움" in text   # 번호 매김
-    assert "ㄴ일봉: 🟢정상 · 20일 +3.1% · 60일 +8.0% · RSI 58 · MACD 양·골든 · 전략 B·E 🔥시장동반바닥" in text
-    assert "ㄴ4시간봉: 🟡단기눌림 · 20MA -0.8% · 60MA +1.5% · RSI 41 · MACD 음·데드 · 전략 C" in text
+    # 신호등 + 전략 여부(없으면 '없음' 명시, 사용자 2026-06-07)만 한 줄
+    assert "ㄴ일봉 🟢정상 · 4시간봉 🟡단기눌림 · 전략 B·E 🔥시장동반바닥" in text
+    # 상세 지표는 텔레그램에서 제외(웹 전용)
+    assert "MACD" not in text
+    assert "20일 +3.1%" not in text
+    assert "RSI" not in text
     # 분석 없는 코인(ETH)은 시세 줄만 있고 ㄴ줄 없음 — 죽지 않아야 함
     eth_idx = text.index("2. 이더리움")
     assert "ㄴ일봉" not in text[eth_idx:]
+
+
+def test_format_telegram_no_strategy_shows_none():
+    """전략 미매칭이어도 '전략 없음' 명시(누락으로 오인 방지, 사용자 2026-06-07)."""
+    rows = _sample_rows()
+    a = _sample_analysis()
+    a["daily"]["strats"] = []
+    a["e_bottom"] = False
+    rows[0]["analysis"] = a
+    text = format_coin_telegram(rows, fng=None, glob=None, fx=1450.0,
+                                now=datetime(2026, 6, 7, 17, 0))
+    assert "ㄴ일봉 🟢정상 · 4시간봉 🟡단기눌림 · 전략 없음" in text
 
 
 def test_scheduler_registers_coin_job():

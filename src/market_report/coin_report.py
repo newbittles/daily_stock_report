@@ -209,11 +209,14 @@ def _tf_text(tf: dict | None, units: tuple[str, str], e_bottom: bool = False) ->
         parts.append(f"RSI {tf['rsi']:.0f}")
     if tf.get("macd"):
         parts.append(f"MACD {tf['macd']}")
+    # 전략은 미매칭이어도 '없음' 명시 — 누락으로 오인 방지(사용자 2026-06-07)
     if tf.get("strats"):
         s = "전략 " + "·".join(tf["strats"])
         if e_bottom:
             s += " 🔥시장동반바닥"
         parts.append(s)
+    elif parts:
+        parts.append("전략 없음")
     return " · ".join(parts)
 
 
@@ -245,15 +248,26 @@ def format_coin_telegram(
         if r["kimchi"] is not None:
             seg.append(f"김프 {r['kimchi']:+.1f}%")
         lines.append(" · ".join(seg))
-        # 코인별 하위 줄(사용자 2026-06-07): ㄴ일봉/ㄴ4시간봉 각각 신호등·이격·RSI·MACD·전략
+        # 텔레그램은 신호등 + 전략 여부만(사용자 2026-06-07 정보과다 축소) — 상세는 웹 전용
         a = r.get("analysis")
         if a:
-            day = _tf_text(a.get("daily"), ("20일", "60일"), e_bottom=a.get("e_bottom", False))
-            if day:
-                lines.append(f"   ㄴ일봉: {day}")
-            h4 = _tf_text(a.get("h4"), ("20MA", "60MA"))
-            if h4:
-                lines.append(f"   ㄴ4시간봉: {h4}")
+            sig = []
+            d = a.get("daily") or {}
+            if d.get("phase_name"):
+                sig.append(f"일봉 {d.get('phase_emoji', '')}{d['phase_name']}")
+            h = a.get("h4") or {}
+            if h.get("phase_name"):
+                sig.append(f"4시간봉 {h.get('phase_emoji', '')}{h['phase_name']}")
+            if sig:
+                # 전략(일봉 기준): 미매칭이면 '없음' 명시 — 누락 오인 방지(사용자 2026-06-07)
+                if d.get("strats"):
+                    s = "전략 " + "·".join(d["strats"])
+                    if a.get("e_bottom"):
+                        s += " 🔥시장동반바닥"
+                else:
+                    s = "전략 없음"
+                sig.append(s)
+                lines.append("   ㄴ" + " · ".join(sig))
     lines.append("")
     lines.append(DISCLAIMER)
     if url:
