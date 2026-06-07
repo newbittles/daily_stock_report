@@ -8,13 +8,14 @@
   - 259 테스트(254+5). **새 기준선 259**.
 - **P1 남은 절차**: ①사용자 서버 `.env` `KIS_PAPER_*` 3키 입력(06-07 현재 미입력) → ②월요일(06-09) 장중 dry-run `venv/bin/python -m src.trading.auto_trader buy` → ③정상 시 cron 등록(평일 15:20 buy --send / 15:50 sell --send) → ④첫 체결 KIS 모의계좌 확인.
 
-### 🆕 대기 작업: 코인 시세 리포팅 (매일 17:00 KST, **주말 포함**) — 사용자 확정 스펙(06-07)
-- **콘텐츠**: 시세 + **김치프리미엄** + 코인 공포탐욕지수 + BTC 도미넌스 등 심리지표.
-- **유니버스**: BTC·ETH + 시총 상위 주요코인 ~10개(고정 리스트).
-- **소스**: 업비트 KRW(시세 무인증 `api.upbit.com/v1/ticker`) **+** 글로벌 USD(CoinGecko `/coins/markets`·`/global`(도미넌스)) → 김프 = 업비트KRW ÷ (글로벌USD×USDKRW환율) − 1 (환율 소스 결정 필요). 코인 F&G = `api.alternative.me/fng/`(무료).
-- **채널**: 텔레그램 + 웹 리포트(publisher 경유, 주식 리포트와 동일 패턴).
-- **스케줄**: scheduler에 cron `day_of_week='*'` 17:00 (주식 잡과 달리 주말 포함 — 휴장스킵 로직 타면 안 됨 주의).
-- **미결정(구현 시 확인)**: 환율 소스(기존 프로젝트 내 유무 확인), 신규 mode 추가 시 analyzer 2곳(_market_context·프롬프트선택) 포함 교훈 적용, 외부 API §7 안전규칙(랜덤딜레이·백오프·HARD STOP) 적용.
+### ✅ 코인 시세 리포팅 — 구현·배포 완료(06-07 심야, 커밋 aefe79d+9db9668)
+- **매일 17:00 KST 주말 포함**(scheduler `report_coin`, day_of_week 미지정='*'). `--once coin`. 라이브 발송 2회 검증(텔레그램 2챗+웹 발행).
+- **구성**: `src/datasource/coin/sources.py`(업비트 ticker/일봉200/4H봉120 + CoinGecko markets/global + F&G alternative.me, 순수파서+§7안전+F&G일캐시) + `src/market_report/coin_report.py`(김프·이격·국면·전략·포맷·러너) + `publisher.publish_docs()`(신규, 기존 publish 불변). 웹=docs/reports/<date>-coin.html(주식 index 미통합 v1). AI요약 없음. 환율=기존 `fdr_source.fetch_usd_krw` 재사용.
+- **분석(사용자 추가요청)**: 코인별 일봉 이격(20/60)+RSI+국면 신호등(coin_phase — 주식 골격, **코인 과열임계 120≥30/60≥20 별도**) + 4H RSI/20MA이격 + **ABCDE 전략 평가**(주식 스크리너 엔진 무수정 재사용, E=oversold_leader+4H RSI≤30+시장게이트 코인F&G≤25=🔥시장동반바닥).
+- ⚠️ 함정: 업비트 캔들 응답 **최신순**(파서가 reverse), 캔들 volume **float 유지**(코인 소수 거래량, int 캐스팅 시 E 거래량조건 왜곡).
+- **자동매매 알림 보강**(같은 커밋): 매수/매도 예외 → ⚠️텔레그램 알림+다음 종목 계속, top3 JSON 없음 중단도 알림, 매도 잡 끝 📋포지션 현황(전략·진입가·평가손익·HOLD 포함). dry-run은 여전히 무알림.
+- 테스트 기준선 **278**.
+- ⚠️ 운영주의: 생성된 coin.html을 로컬 dry-run으로 재생성한 채 push하면 서버 발행본과 autostash 충돌 가능(06-07 겪음, origin본 채택으로 해소). 리포트 산출물은 커밋 전 충돌 시 origin 채택.
 
 ## 0b. 2026-06-05 세션 (서학개미 + 미장 리포트 개선 — 전부 배포 완료)
 서학개미(한국인) 미국주식 **종목별 순매수**를 예탁결제원 SEIBro 데이터 endpoint 직접호출로 구현(무인증·서버OK). 상세 스펙·코드맵은 메모리 [[seibro_netbuy]].
