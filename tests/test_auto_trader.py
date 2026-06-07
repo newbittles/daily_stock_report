@@ -151,6 +151,73 @@ async def test_run_sell_tight_ab_full_exit(tmp_path):
     assert not store.is_held("005930")
 
 
+async def test_buy_error_notifies_and_continues(tmp_path):
+    """주문 예외 → ⚠️ 텔레그램 알림 + 다음 종목 계속 (조용한 실패 금지, 사용자 2026-06-07)."""
+    class FailingOrder(FakeOrder):
+        async def order_cash(self, side, ticker, qty, price=0, ord_dvsn="01"):
+            if ticker == "005930":
+                raise RuntimeError("boom")
+            return await super().order_cash(side, ticker, qty, price, ord_dvsn)
+
+    store = PositionStore(tmp_path / "p.db")
+    msgs = []
+
+    async def notify(m):
+        msgs.append(m)
+
+    picks = [
+        {"ticker": "005930", "name": "삼성전자", "price": 82500},
+        {"ticker": "000660", "name": "SK하이닉스", "price": 180000},
+    ]
+    await buy_top3(picks, FakeAdapter(82500, []), FailingOrder(), store,
+                   send=True, today="2026-06-08", notify=notify)
+    assert any("실패" in m and "005930" in m for m in msgs)   # 에러 알림
+    assert store.is_held("000660")                            # 다음 종목은 계속 진행
+    assert not store.is_held("005930")
+
+
+async def test_run_sell_position_summary(tmp_path):
+    """매도 잡 끝에 📋 포지션 현황 요약(전략·평가손익·판정) 알림 (사용자 2026-06-07)."""
+    store = PositionStore(tmp_path / "p.db")
+    store.open_position("005930", "삼성전자", "2026-06-01", 100.0, 10, strategy="C")
+    msgs = []
+
+    async def notify(m):
+        msgs.append(m)
+
+    # 정상 상승 시계열(HOLD) — 마지막 종가 79.0 → 진입 100 대비 -21.0%
+    adapter = FakeAdapter(price=0, closes=[float(i) for i in range(1, 80)])
+    await run_sell(adapter, FakeOrder(), store, send=True, notify=notify)
+    summary = next((m for m in msgs if "포지션 현황" in m), None)
+    assert summary is not None
+    assert "삼성전자" in summary and "C" in summary and "HOLD" in summary
+    assert "-21.0%" in summary
+
+
+async def test_sell_error_notifies_and_continues(tmp_path):
+    """매도 중 종목 1개 데이터 실패 → ⚠️ 알림 + 나머지 종목 계속."""
+    class FlakyAdapter(FakeAdapter):
+        async def get_ohlcv(self, ticker, days=100):
+            if ticker == "005930":
+                raise RuntimeError("api down")
+            return await super().get_ohlcv(ticker, days)
+
+    store = PositionStore(tmp_path / "p.db")
+    store.open_position("005930", "삼성전자", "2026-06-01", 100.0, 10, strategy="C")
+    store.open_position("000660", "SK하이닉스", "2026-06-01", 100.0, 5, strategy="B")
+    msgs = []
+
+    async def notify(m):
+        msgs.append(m)
+
+    # 000660은 20MA 2연속 이탈 + B(tight) → 전량 매도돼야 함
+    adapter = FlakyAdapter(price=0, closes=[100.0] * 19 + [90.0, 90.0])
+    order = FakeOrder()
+    await run_sell(adapter, order, store, send=True, notify=notify)
+    assert any("실패" in m and "005930" in m for m in msgs)
+    assert ("sell", "000660", 5) in order.calls
+
+
 async def test_run_sell_half_then_all(tmp_path):
     store = PositionStore(tmp_path / "p.db")
     store.open_position("005930", "삼성전자", "2026-06-01", 100.0, 12)

@@ -38,58 +38,76 @@ async def buy_top3(picks, adapter, order, store, *, send: bool, today: str, noti
     await _emit(notify, f"=== auto-buy {today} · {len(picks)}종목 후보 ({'LIVE' if send else 'dry-run'}) ===")
     for p in picks:
         ticker, name = p["ticker"], p.get("name", "")
-        if store.is_held(ticker):
-            print(f"  skip {ticker} {name} — 이미 보유")
-            continue
-        quote = await adapter.get_quote(ticker)
-        qty = calc_qty(quote.price)
-        if qty < 1:
-            print(f"  skip {ticker} {name} — 현재가 {quote.price} 1주도 예산초과")
-            continue
-        psbl = await order.inquire_psbl_order(ticker, price=0, ord_dvsn="01")
-        max_qty = int(psbl.get("output", {}).get("nrcvb_buy_qty", "0") or "0")
-        qty = min(qty, max_qty) if max_qty else qty
-        if qty < 1:
-            print(f"  skip {ticker} {name} — 매수가능수량 0")
-            continue
-        if not send:
-            print(f"  BUY(dry-run) {ticker} {name} x{qty} (현재가 {quote.price}, 시장가)")
-            continue
-        res = await order.order_cash("buy", ticker, qty, price=0, ord_dvsn="01")
-        strategy = ",".join(p.get("strategies", []) or [])  # 전략별 손절 선택용(2026-06-07)
-        store.open_position(ticker, name, today, float(quote.price), qty, strategy=strategy)
-        await _emit(notify, f"🟢 모의매수 {name}({ticker}) x{qty} @{quote.price:,.0f} "
-                            f"odno={res.get('output', {}).get('ODNO')} {res.get('msg1', '')}")
+        try:
+            if store.is_held(ticker):
+                print(f"  skip {ticker} {name} — 이미 보유")
+                continue
+            quote = await adapter.get_quote(ticker)
+            qty = calc_qty(quote.price)
+            if qty < 1:
+                print(f"  skip {ticker} {name} — 현재가 {quote.price} 1주도 예산초과")
+                continue
+            psbl = await order.inquire_psbl_order(ticker, price=0, ord_dvsn="01")
+            max_qty = int(psbl.get("output", {}).get("nrcvb_buy_qty", "0") or "0")
+            qty = min(qty, max_qty) if max_qty else qty
+            if qty < 1:
+                print(f"  skip {ticker} {name} — 매수가능수량 0")
+                continue
+            if not send:
+                print(f"  BUY(dry-run) {ticker} {name} x{qty} (현재가 {quote.price}, 시장가)")
+                continue
+            res = await order.order_cash("buy", ticker, qty, price=0, ord_dvsn="01")
+            strategy = ",".join(p.get("strategies", []) or [])  # 전략별 손절 선택용(2026-06-07)
+            store.open_position(ticker, name, today, float(quote.price), qty, strategy=strategy)
+            await _emit(notify, f"🟢 모의매수 {name}({ticker}) x{qty} @{quote.price:,.0f} "
+                                f"odno={res.get('output', {}).get('ODNO')} {res.get('msg1', '')}")
+        except Exception as exc:  # 조용한 실패 금지 — 알리고 다음 종목 계속(사용자 2026-06-07)
+            logger.exception("buy_failed ticker=%s error=%s", ticker, exc)
+            await _emit(notify, f"⚠️ 모의매수 실패 {name}({ticker}) — {exc}")
 
 
 async def run_sell(adapter, order, store, *, send: bool, notify=None) -> None:
     open_pos = store.get_open()
     await _emit(notify, f"=== auto-sell · 보유 {len(open_pos)}종목 ({'LIVE' if send else 'dry-run'}) ===")
+    summary: list[str] = []  # 📋 일일 포지션 현황(사용자 2026-06-07) — HOLD 포함 전 종목
     for pos in open_pos:
-        candles = await adapter.get_ohlcv(pos.ticker, days=80)
-        closes = [c.close for c in candles]
-        strategies = [s for s in pos.strategy.split(",") if s] if pos.strategy else None
-        action, reason = decide_exit(closes, strategies=strategies)
-        print(f"  {pos.ticker} {pos.name} qty={pos.qty} stage={pos.stage} → {action} {reason}")
-        if action == "SELL_HALF" and pos.stage < 2:
-            sell_qty, remaining = split_sell_qty(pos.qty)
-            if not send:
-                print(f"    SELL_HALF(dry-run) x{sell_qty} (잔여 {remaining}) — {reason}")
-                continue
-            await order.order_cash("sell", pos.ticker, sell_qty, price=0, ord_dvsn="01")
-            if remaining > 0:
-                store.update_qty_stage(pos.ticker, remaining, 2)
-            else:
+        try:
+            candles = await adapter.get_ohlcv(pos.ticker, days=80)
+            closes = [c.close for c in candles]
+            strategies = [s for s in pos.strategy.split(",") if s] if pos.strategy else None
+            action, reason = decide_exit(closes, strategies=strategies)
+            print(f"  {pos.ticker} {pos.name} qty={pos.qty} stage={pos.stage} → {action} {reason}")
+            cur = closes[-1] if closes else None
+            line = f"{pos.name}({pos.ticker}) {pos.strategy or '-'} · 진입 {pos.entry_price:,.0f}"
+            if cur is not None and pos.entry_price:
+                pnl = (cur / pos.entry_price - 1) * 100
+                line += f" → 현재 {cur:,.0f} ({pnl:+.1f}%)"
+            summary.append(line + f" · {action}" + (f" {reason}" if reason else ""))
+            if action == "SELL_HALF" and pos.stage < 2:
+                sell_qty, remaining = split_sell_qty(pos.qty)
+                if not send:
+                    print(f"    SELL_HALF(dry-run) x{sell_qty} (잔여 {remaining}) — {reason}")
+                    continue
+                await order.order_cash("sell", pos.ticker, sell_qty, price=0, ord_dvsn="01")
+                if remaining > 0:
+                    store.update_qty_stage(pos.ticker, remaining, 2)
+                else:
+                    store.close(pos.ticker)
+                await _emit(notify, f"🔴 모의매도(50%) {pos.name}({pos.ticker}) x{sell_qty} "
+                                    f"{reason} · 잔여 {remaining}")
+            elif action == "SELL_ALL":
+                if not send:
+                    print(f"    SELL_ALL(dry-run) x{pos.qty} — {reason}")
+                    continue
+                await order.order_cash("sell", pos.ticker, pos.qty, price=0, ord_dvsn="01")
                 store.close(pos.ticker)
-            await _emit(notify, f"🔴 모의매도(50%) {pos.name}({pos.ticker}) x{sell_qty} "
-                                f"{reason} · 잔여 {remaining}")
-        elif action == "SELL_ALL":
-            if not send:
-                print(f"    SELL_ALL(dry-run) x{pos.qty} — {reason}")
-                continue
-            await order.order_cash("sell", pos.ticker, pos.qty, price=0, ord_dvsn="01")
-            store.close(pos.ticker)
-            await _emit(notify, f"🔴 모의매도(전량) {pos.name}({pos.ticker}) x{pos.qty} {reason}")
+                await _emit(notify, f"🔴 모의매도(전량) {pos.name}({pos.ticker}) x{pos.qty} {reason}")
+        except Exception as exc:  # 조용한 실패 금지 — 알리고 다음 종목 계속(사용자 2026-06-07)
+            logger.exception("sell_failed ticker=%s error=%s", pos.ticker, exc)
+            await _emit(notify, f"⚠️ 모의매도 점검 실패 {pos.name}({pos.ticker}) — {exc}")
+            summary.append(f"{pos.name}({pos.ticker}) {pos.strategy or '-'} · ⚠️점검실패 {exc}")
+    if open_pos:
+        await _emit(notify, f"📋 모의 포지션 현황 ({len(open_pos)}종목)\n" + "\n".join(summary))
 
 
 def _build_clients():
@@ -139,8 +157,9 @@ async def _main(action: str, send: bool) -> int:
     notify = _build_notify() if send else None  # dry-run은 알림 안 보냄
     if action == "buy":
         picks = load_top3(today)
-        if not picks:
-            print(f"[중단] 오늘({today}) top3 JSON 없음 — pre 리포트 먼저 실행 필요(구픽 매매 금지).")
+        if not picks:  # 조용한 실패 금지 — cron 무소식 방지(사용자 2026-06-07)
+            await _emit(notify, f"⚠️ 모의매수 중단 — 오늘({today}) top3 JSON 없음. "
+                                f"pre 리포트 먼저 실행 필요(구픽 매매 금지).")
             return 1
         await buy_top3(picks, adapter, order, store, send=send, today=today, notify=notify)
     else:

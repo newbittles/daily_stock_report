@@ -135,6 +135,96 @@ def test_render_coin_html():
     assert "2026-06-07" in html
 
 
+def test_parse_upbit_candles():
+    """업비트 캔들 응답은 최신순 → 과거→현재로 뒤집고, 소수 거래량(코인 단위) 보존."""
+    from src.datasource.coin.sources import _parse_upbit_candles
+    payload = [
+        {"candle_date_time_kst": "2026-06-07T09:00:00", "opening_price": 2.0,
+         "high_price": 3.0, "low_price": 1.0, "trade_price": 2.5,
+         "candle_acc_trade_volume": 10.5},
+        {"candle_date_time_kst": "2026-06-06T09:00:00", "opening_price": 1.8,
+         "high_price": 2.2, "low_price": 1.5, "trade_price": 2.0,
+         "candle_acc_trade_volume": 8.0},
+    ]
+    out = _parse_upbit_candles(payload)
+    assert [c.close for c in out] == [2.0, 2.5]      # 과거 → 현재
+    assert out[0].date == "20260606"
+    assert out[-1].volume == 10.5                     # float 보존 (int 캐스팅 금지)
+
+
+def test_compute_gaps():
+    from src.market_report.coin_report import compute_gaps
+    flat = [100.0] * 130
+    g = compute_gaps(flat)
+    for k in (5, 20, 60, 120):
+        assert abs(g[k]) < 1e-9
+    assert g["rsi"] is not None
+    # 데이터 부족 → 있는 것만 (120 None)
+    g2 = compute_gaps([100.0] * 30)
+    assert g2[120] is None and g2[20] is not None
+
+
+def test_coin_phase():
+    from src.market_report.coin_report import coin_phase
+    base = {5: 1.0, 20: 2.0, 60: 3.0, 120: 10.0, "rsi": 55.0, "g5_prev": 1.0}
+    assert coin_phase(base)[1] == "정상"
+    assert coin_phase({**base, "rsi": 25.0})[1] == "바닥권"          # RSI≤30
+    assert coin_phase({**base, 60: -8.0})[1] == "바닥권"             # 60일 -7%↓
+    # 코인 과열 임계(주식보다 큼): 120≥30 or 60≥20, RSI≥70
+    assert coin_phase({**base, 120: 35.0, "rsi": 75.0})[1] == "과열"
+    assert coin_phase({**base, 120: 35.0, "rsi": 60.0})[1] == "정상"  # RSI 미달 → 과열 아님
+    assert coin_phase({**base, 20: -2.0})[1] == "조정"
+    assert coin_phase({**base, 5: -1.0})[1] == "단기눌림"
+    assert coin_phase({**base, 60: -1.0, 120: 5.0})[1] == "하락전환"
+    assert coin_phase({5: None, 20: None, 60: None, 120: None})[1] == "판단불가"
+
+
+def _mk_candle(close, open_=None, high=None, low=None, vol=1.0, date="20260601"):
+    from src.datasource.base import Candle
+    o = open_ if open_ is not None else close
+    return Candle(date=date, open=o, high=high or max(o, close),
+                  low=low or min(o, close), volume=vol, close=close)
+
+
+def test_analyze_coin_insufficient_data():
+    from src.market_report.coin_report import analyze_coin
+    assert analyze_coin([_mk_candle(100.0)] * 10, [], strategies=[], fng_score=None) is None
+
+
+def test_analyze_coin_e_strategy():
+    """투매 바닥(E): 급락+RSI≤30+거래량 2x+반등양봉 + 4H RSI≤30 → 'E' 배지, F&G≤25면 시장동반."""
+    from src.market_report.coin_report import analyze_coin
+    daily = [_mk_candle(100.0) for _ in range(60)]
+    px = 100.0
+    for _ in range(25):                                  # 연속 급락 → RSI·50MA 이격 추락
+        px *= 0.97
+        daily.append(_mk_candle(px, open_=px * 1.01))
+    daily.append(_mk_candle(px * 1.04, open_=px * 1.005, vol=5.0))  # 반등 양봉 + 투매 거래량
+    h4 = [_mk_candle(100.0 - i * 0.8) for i in range(40)]           # 4H 연속 하락 → RSI 바닥
+    res = analyze_coin(daily, h4, strategies=[], fng_score=20.0)
+    assert res is not None
+    assert "E" in res["strats"]
+    assert res["e_bottom"] is True                       # F&G 20 ≤ 25 → 시장 동반 바닥
+    assert res["h4_rsi"] is not None and res["h4_rsi"] <= 30
+
+
+def test_format_telegram_with_analysis():
+    """분석 부착 시 코인별 둘째 줄: 일봉 국면 + 이격 + 4H + 전략 배지."""
+    rows = _sample_rows()
+    rows[0]["analysis"] = {
+        "phase_emoji": "🟢", "phase_name": "정상", "g20": 3.1, "g60": 8.0,
+        "rsi": 58.0, "h4_rsi": 41.0, "h4_g20": -0.8,
+        "strats": ["B", "E"], "e_bottom": True,
+    }
+    text = format_coin_telegram(rows, fng=None, glob=None, fx=1450.0,
+                                now=datetime(2026, 6, 7, 17, 0))
+    assert "🟢정상" in text
+    assert "20일 +3.1%" in text and "60일 +8.0%" in text
+    assert "4H RSI 41" in text
+    assert "B·E 시그널" in text
+    assert "시장동반" in text                             # E + F&G 바닥 등급
+
+
 def test_scheduler_registers_coin_job():
     """report_coin 잡이 매일(주말 포함) 17:00로 등록 — 일요일에도 next run이 잡혀야 함."""
     from src.market_report.scheduler import build_scheduler

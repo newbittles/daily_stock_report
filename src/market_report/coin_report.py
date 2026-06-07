@@ -65,6 +65,109 @@ def _fmt_pct(v: float | None) -> str:
     return "—" if v is None else f"{v:+.1f}%"
 
 
+def compute_gaps(closes: list[float]) -> dict:
+    """일봉 이평 이격(%) {5,20,60,120} + RSI + 전일 5일이격(g5_prev, 상승전환 판정). 부족분 None."""
+    from src.indicators.core import moving_average
+    from src.indicators.core import rsi as _rsi
+    out: dict = {}
+    last = closes[-1] if closes else None
+    for n in (5, 20, 60, 120):
+        ma = moving_average(closes, n)[-1] if len(closes) >= n else None
+        out[n] = (last - ma) / ma * 100 if (ma and last is not None) else None
+    r = _rsi(closes, 14) if len(closes) >= 15 else None
+    out["rsi"] = r[-1] if r and r[-1] is not None else None
+    out["g5_prev"] = None
+    if len(closes) >= 6:
+        prev = closes[:-1]
+        ma5p = moving_average(prev, 5)[-1]
+        if ma5p:
+            out["g5_prev"] = (prev[-1] - ma5p) / ma5p * 100
+    return out
+
+
+# 코인 과열 임계 — 주식(_market_phase: 나스닥12/코스피40)보다 변동성이 커서 별도 보정.
+# BTC 강세장 120일이격 +30%대가 일상이라 주식 임계(12%) 그대로면 상시 과열 오탐.
+_COIN_OVERHEAT_120 = 30.0
+_COIN_OVERHEAT_60 = 20.0
+
+
+def coin_phase(gaps: dict) -> tuple[str, str]:
+    """코인 일봉 국면 신호등 — 주식 _market_phase 골격(비대칭: 바닥 신뢰>고점) + 코인 임계.
+
+    주봉/월봉/CCI 단계는 v1 미적용(데이터 200봉). (이모지, 국면명) 반환."""
+    g5, g20, g60, g120 = (gaps.get(k) for k in (5, 20, 60, 120))
+    rv = gaps.get("rsi")
+    if g120 is None or g60 is None:
+        return ("⚪", "판단불가")
+    if (rv is not None and rv <= 30) or g60 <= -7:
+        return ("🔵", "바닥권")
+    if (g120 >= _COIN_OVERHEAT_120 or g60 >= _COIN_OVERHEAT_60) \
+            and (rv is None or rv >= 70):
+        return ("🔴", "과열")
+    g5_prev = gaps.get("g5_prev")
+    if g5_prev is not None and g5_prev < 0 and g5 is not None and g5 >= 0 \
+            and g20 is not None and g20 >= 0:
+        return ("🔼", "상승전환")
+    if g60 < 0:
+        return ("🔻", "하락전환")
+    if g20 is not None and g20 < 0:
+        return ("🟠", "조정")
+    if g5 is not None and g5 < 0:
+        return ("🟡", "단기눌림")
+    return ("🟢", "정상")
+
+
+def analyze_coin(
+    daily: list, h4: list, strategies: list, fng_score: float | None,
+    change_pct: float | None = None,
+) -> dict | None:
+    """일봉·4H 이격/RSI + 국면 + ABCDE 전략 평가(주식 엔진 무수정 재사용, 사용자 2026-06-07).
+
+    E = oversold_leader + 4H RSI≤30 (주식과 동일 골격). 코인 시장게이트 = 코인 F&G≤25
+    (주식의 지수RSI/F&G 게이트 대응). 일봉 60봉 미만 → None(분석 생략)."""
+    if len(daily) < 60:
+        return None
+    closes = [c.close for c in daily]
+    gaps = compute_gaps(closes)
+    em, nm = coin_phase(gaps)
+
+    h4_rsi_v: float | None = None
+    h4_g20: float | None = None
+    h4_closes = [c.close for c in h4]
+    if len(h4_closes) >= 20:
+        from src.indicators.core import moving_average
+        from src.indicators.core import rsi as _rsi
+        r = _rsi(h4_closes, 14)
+        h4_rsi_v = r[-1] if r and r[-1] is not None else None
+        ma = moving_average(h4_closes, 20)[-1]
+        if ma:
+            h4_g20 = (h4_closes[-1] - ma) / ma * 100
+
+    strats: list[str] = []
+    if strategies:
+        try:
+            from src.screener.engine import screen_stock
+            strats = [m.strategy_name.split(".")[0].strip()
+                      for m in screen_stock(strategies, daily, change_pct)]
+        except Exception as exc:  # noqa: BLE001 — 전략평가 실패가 리포트를 막지 않도록
+            logger.warning("coin_screen_failed error=%s", exc)
+
+    e_bottom = False
+    try:
+        from src.patterns.core import oversold_leader
+        ol = oversold_leader(daily)
+        if ol.matched and h4_rsi_v is not None and h4_rsi_v <= 30:
+            strats.append("E")
+            e_bottom = fng_score is not None and fng_score <= 25
+    except Exception as exc:  # noqa: BLE001
+        logger.warning("coin_e_eval_failed error=%s", exc)
+
+    return {"phase_emoji": em, "phase_name": nm,
+            "g20": gaps[20], "g60": gaps[60], "rsi": gaps["rsi"],
+            "h4_rsi": h4_rsi_v, "h4_g20": h4_g20,
+            "strats": strats, "e_bottom": e_bottom}
+
+
 def build_coin_rows(
     universe: list[dict], upbit: dict[str, dict], gecko: dict[str, dict], fx: float,
 ) -> list[dict]:
@@ -112,6 +215,31 @@ def format_coin_telegram(
         if r["kimchi"] is not None:
             seg.append(f"김프 {r['kimchi']:+.1f}%")
         lines.append(" · ".join(seg))
+        a = r.get("analysis")
+        if a:  # 일봉 국면·이격 + 4H + ABCDE 전략(주식 리포트와 동일 표현, 사용자 2026-06-07)
+            parts = []
+            head = f"일봉 {a['phase_emoji']}{a['phase_name']}"
+            detail = []
+            if a.get("g20") is not None:
+                detail.append(f"20일 {a['g20']:+.1f}%")
+            if a.get("g60") is not None:
+                detail.append(f"60일 {a['g60']:+.1f}%")
+            if a.get("rsi") is not None:
+                detail.append(f"RSI {a['rsi']:.0f}")
+            if detail:
+                head += " (" + "·".join(detail) + ")"
+            parts.append(head)
+            if a.get("h4_rsi") is not None:
+                h4s = f"4H RSI {a['h4_rsi']:.0f}"
+                if a.get("h4_g20") is not None:
+                    h4s += f" (20MA {a['h4_g20']:+.1f}%)"
+                parts.append(h4s)
+            if a.get("strats"):
+                s = "·".join(a["strats"]) + " 시그널"
+                if a.get("e_bottom"):
+                    s += " 🔥시장동반바닥"
+                parts.append(s)
+            lines.append("  └ " + " · ".join(parts))
     lines.append("")
     lines.append(DISCLAIMER)
     if url:
@@ -132,6 +260,27 @@ def render_coin_html(
 
     body_rows = []
     for r in rows:
+        a = r.get("analysis") or {}
+        if a:
+            detail = []
+            if a.get("g20") is not None:
+                detail.append(f"20일 {a['g20']:+.1f}%")
+            if a.get("g60") is not None:
+                detail.append(f"60일 {a['g60']:+.1f}%")
+            if a.get("rsi") is not None:
+                detail.append(f"RSI {a['rsi']:.0f}")
+            if a.get("h4_rsi") is not None:
+                h4s = f"4H RSI {a['h4_rsi']:.0f}"
+                if a.get("h4_g20") is not None:
+                    h4s += f"(20MA {a['h4_g20']:+.1f}%)"
+                detail.append(h4s)
+            phase_cell = (f"{a['phase_emoji']}{a['phase_name']}<br>"
+                          f"<span class='sym'>{' · '.join(detail)}</span>")
+            strat_cell = "·".join(a.get("strats") or []) or "—"
+            if a.get("e_bottom"):
+                strat_cell += " 🔥"
+        else:
+            phase_cell, strat_cell = "—", "—"
         body_rows.append(
             "<tr>"
             f"<td class='name'>{r['name_ko']} <span class='sym'>{r['sym']}</span></td>"
@@ -141,6 +290,8 @@ def render_coin_html(
             f"<td class='num {chg_cls(r['usd_change'])}'>{_fmt_pct(r['usd_change'])}</td>"
             f"<td class='num {chg_cls(r['kimchi'])}'>"
             f"{('%+.2f%%' % r['kimchi']) if r['kimchi'] is not None else '—'}</td>"
+            f"<td>{phase_cell}</td>"
+            f"<td class='num'>{strat_cell}</td>"
             "</tr>"
         )
     senti = []
@@ -186,13 +337,14 @@ def render_coin_html(
 <div class="senti">{senti_html}</div>
 <table>
 <thead><tr><th class="name">코인</th><th>업비트(원)</th><th>24h</th>
-<th>글로벌(USD)</th><th>24h</th><th>김치프리미엄</th></tr></thead>
+<th>글로벌(USD)</th><th>24h</th><th>김치프리미엄</th><th>일봉·4H 상태</th><th>전략</th></tr></thead>
 <tbody>
 {''.join(body_rows)}
 </tbody>
 </table>
 <p class="disclaimer">{DISCLAIMER}<br>
-소스: 업비트(KRW) · CoinGecko(USD·도미넌스) · alternative.me(공포탐욕). 김프 = 업비트 ÷ (글로벌×환율) − 1.</p>
+소스: 업비트(KRW) · CoinGecko(USD·도미넌스) · alternative.me(공포탐욕). 김프 = 업비트 ÷ (글로벌×환율) − 1.<br>
+전략(A~E) = 주식 스크리너와 동일 로직을 코인 일봉에 적용(참고용). E 🔥 = 코인 공포탐욕≤25 시장동반바닥.</p>
 </div>
 </body>
 </html>
@@ -240,6 +392,25 @@ async def run_coin_report(*, send: bool = True, publish: bool = True) -> dict | 
         return None
 
     rows = build_coin_rows(COIN_UNIVERSE, upbit, gecko, fx)
+
+    # 일봉·4H 이격/국면 + ABCDE 전략 평가 (사용자 2026-06-07). 실패해도 시세 리포트는 계속.
+    try:
+        from src.datasource.coin.sources import fetch_upbit_4h, fetch_upbit_daily
+        from src.screener.config import load_screener_config
+        strategies = load_screener_config().enabled_strategies()
+        fng_score = (fng or {}).get("score")
+        for row, c in zip(rows, COIN_UNIVERSE):
+            daily = await fetch_upbit_daily(c["upbit"])
+            await asyncio.sleep(random.uniform(0.3, 0.8))  # §7 랜덤 딜레이(업비트 공개API)
+            h4 = await fetch_upbit_4h(c["upbit"])
+            await asyncio.sleep(random.uniform(0.3, 0.8))
+            a = analyze_coin(daily, h4, strategies, fng_score,
+                             change_pct=row.get("krw_change"))
+            if a:
+                row["analysis"] = a
+        logger.info("coin_analysis_done analyzed=%d", sum(1 for r in rows if r.get("analysis")))
+    except Exception as exc:  # noqa: BLE001
+        logger.warning("coin_analysis_failed error=%s", exc)
     date_str = now.strftime("%Y-%m-%d")
     url = f"{PAGES_BASE}/reports/{date_str}-coin.html"
 

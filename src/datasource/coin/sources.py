@@ -16,6 +16,8 @@ from pathlib import Path
 logger = logging.getLogger(__name__)
 
 _UPBIT_URL = "https://api.upbit.com/v1/ticker"
+_UPBIT_DAYS_URL = "https://api.upbit.com/v1/candles/days"
+_UPBIT_4H_URL = "https://api.upbit.com/v1/candles/minutes/240"
 _GECKO_MARKETS_URL = "https://api.coingecko.com/api/v3/coins/markets"
 _GECKO_GLOBAL_URL = "https://api.coingecko.com/api/v3/global"
 _FNG_URL = "https://api.alternative.me/fng/"
@@ -103,6 +105,27 @@ def _parse_fng(payload: dict) -> dict | None:
             "rating_ko": FNG_RATING_KO.get(rating.lower(), rating)}
 
 
+def _parse_upbit_candles(payload: list[dict]) -> list:
+    """업비트 캔들 응답(최신순) → Candle 리스트(과거→현재).
+
+    ⚠️ volume은 float 유지 — 코인 거래량은 소수(예: 0.5 BTC)라 int 캐스팅 시 0이 되어
+    거래량 조건(E 투매 2x 등)이 왜곡됨. Candle 타입힌트(int)는 미강제(주식 호환)."""
+    from src.datasource.base import Candle
+    out: list[Candle] = []
+    for c in payload or []:
+        try:
+            out.append(Candle(
+                date=str(c.get("candle_date_time_kst", ""))[:10].replace("-", ""),
+                open=float(c["opening_price"]), high=float(c["high_price"]),
+                low=float(c["low_price"]), close=float(c["trade_price"]),
+                volume=float(c.get("candle_acc_trade_volume") or 0.0),
+            ))
+        except (KeyError, TypeError, ValueError):
+            continue
+    out.reverse()  # 업비트는 최신순 응답 → 지표 계산용 과거→현재로
+    return out
+
+
 # ─── fetch (§7: 재시도 3·랜덤 백오프·HARD STOP) ──────────────────────────────
 
 
@@ -137,6 +160,22 @@ async def fetch_upbit_tickers(markets: list[str]) -> dict[str, dict]:
         _get_json, _UPBIT_URL, {"markets": ",".join(markets)}, "upbit"
     )
     return _parse_upbit(payload) if isinstance(payload, list) else {}
+
+
+async def fetch_upbit_daily(market: str, count: int = 200) -> list:
+    """업비트 일봉(과거→현재). 실패 시 빈 리스트. 120MA·전략평가용 200봉."""
+    payload = await asyncio.to_thread(
+        _get_json, _UPBIT_DAYS_URL, {"market": market, "count": count}, "upbit_days"
+    )
+    return _parse_upbit_candles(payload) if isinstance(payload, list) else []
+
+
+async def fetch_upbit_4h(market: str, count: int = 120) -> list:
+    """업비트 4시간봉(과거→현재). 실패 시 빈 리스트. RSI·20MA 이격용."""
+    payload = await asyncio.to_thread(
+        _get_json, _UPBIT_4H_URL, {"market": market, "count": count}, "upbit_4h"
+    )
+    return _parse_upbit_candles(payload) if isinstance(payload, list) else []
 
 
 async def fetch_gecko_markets(ids: list[str]) -> dict[str, dict]:
