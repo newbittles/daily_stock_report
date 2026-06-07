@@ -24,8 +24,11 @@ _FNG_URL = "https://api.alternative.me/fng/"
 _HEADERS = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"}
 _FNG_CACHE = Path(__file__).resolve().parents[3] / "data" / "coin_fng_cache.json"
 
-# 유니버스 — BTC·ETH + 시총 상위 중 업비트 KRW 마켓 존재 코인(스테이블·BNB 제외) 고정 10개.
+# 유니버스 — USDT(달러 프리미엄 지표, 최상단·사용자 2026-06-07) + BTC·ETH + 시총 상위
+# 업비트 KRW 마켓 존재 코인(BNB 제외) 고정 11개.
 COIN_UNIVERSE: list[dict] = [
+    # USDT: 시세·김프(달러 프리미엄)만 — 스테이블 평탄차트가 A/C/D를 오탐하므로 분석 제외
+    {"sym": "USDT", "name_ko": "테더", "upbit": "KRW-USDT", "gecko": "tether", "analyze": False},
     {"sym": "BTC", "name_ko": "비트코인", "upbit": "KRW-BTC", "gecko": "bitcoin"},
     {"sym": "ETH", "name_ko": "이더리움", "upbit": "KRW-ETH", "gecko": "ethereum"},
     {"sym": "XRP", "name_ko": "리플", "upbit": "KRW-XRP", "gecko": "ripple"},
@@ -170,7 +173,7 @@ async def fetch_upbit_daily(market: str, count: int = 200) -> list:
     return _parse_upbit_candles(payload) if isinstance(payload, list) else []
 
 
-async def fetch_upbit_4h(market: str, count: int = 120) -> list:
+async def fetch_upbit_4h(market: str, count: int = 200) -> list:
     """업비트 4시간봉(과거→현재). 실패 시 빈 리스트. RSI·20MA 이격용."""
     payload = await asyncio.to_thread(
         _get_json, _UPBIT_4H_URL, {"market": market, "count": count}, "upbit_4h"

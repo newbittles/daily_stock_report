@@ -117,55 +117,62 @@ def coin_phase(gaps: dict) -> tuple[str, str]:
     return ("🟢", "정상")
 
 
-def analyze_coin(
-    daily: list, h4: list, strategies: list, fng_score: float | None,
-    change_pct: float | None = None,
-) -> dict | None:
-    """일봉·4H 이격/RSI + 국면 + ABCDE 전략 평가(주식 엔진 무수정 재사용, 사용자 2026-06-07).
-
-    E = oversold_leader + 4H RSI≤30 (주식과 동일 골격). 코인 시장게이트 = 코인 F&G≤25
-    (주식의 지수RSI/F&G 게이트 대응). 일봉 60봉 미만 → None(분석 생략)."""
-    if len(daily) < 60:
+def _macd_label(closes: list[float]) -> str | None:
+    """MACD 상태 라벨 — '양/음(0선 기준)·골든/데드(시그널 교차)'. 데이터 부족 시 None."""
+    if len(closes) < 35:  # slow26 + signal9
         return None
-    closes = [c.close for c in daily]
+    from src.indicators.core import macd as _macd
+    macd_line, signal_line, _hist = _macd(closes)
+    m, s = macd_line[-1], signal_line[-1]
+    if m is None or s is None:
+        return None
+    return f"{'양' if m >= 0 else '음'}·{'골든' if m >= s else '데드'}"
+
+
+def _tf_analysis(candles: list, strategies: list, change_pct: float | None = None) -> dict:
+    """한 타임프레임(일봉 or 4H봉) 분석 — 신호등·20/60이격·RSI·MACD·ABCDE 전략(공용)."""
+    closes = [c.close for c in candles]
     gaps = compute_gaps(closes)
     em, nm = coin_phase(gaps)
-
-    h4_rsi_v: float | None = None
-    h4_g20: float | None = None
-    h4_closes = [c.close for c in h4]
-    if len(h4_closes) >= 20:
-        from src.indicators.core import moving_average
-        from src.indicators.core import rsi as _rsi
-        r = _rsi(h4_closes, 14)
-        h4_rsi_v = r[-1] if r and r[-1] is not None else None
-        ma = moving_average(h4_closes, 20)[-1]
-        if ma:
-            h4_g20 = (h4_closes[-1] - ma) / ma * 100
-
     strats: list[str] = []
     if strategies:
         try:
             from src.screener.engine import screen_stock
             strats = [m.strategy_name.split(".")[0].strip()
-                      for m in screen_stock(strategies, daily, change_pct)]
+                      for m in screen_stock(strategies, candles, change_pct)]
         except Exception as exc:  # noqa: BLE001 — 전략평가 실패가 리포트를 막지 않도록
             logger.warning("coin_screen_failed error=%s", exc)
+    return {"phase_emoji": em, "phase_name": nm,
+            "g20": gaps[20], "g60": gaps[60], "rsi": gaps["rsi"],
+            "macd": _macd_label(closes), "strats": strats}
+
+
+def analyze_coin(
+    daily: list, h4: list, strategies: list, fng_score: float | None,
+    change_pct: float | None = None,
+) -> dict | None:
+    """일봉·4H 각각 신호등·이격·RSI·MACD·ABCDE(주식 엔진 무수정 재사용, 사용자 2026-06-07).
+
+    E = oversold_leader(일봉) + 4H RSI≤30 게이트 → 일봉 전략에 부착(주식과 동일 골격).
+    코인 시장게이트 = 코인 F&G≤25(주식의 지수RSI/F&G 대응). 일봉 60봉 미만 → None."""
+    if len(daily) < 60:
+        return None
+    d = _tf_analysis(daily, strategies, change_pct)
+    h = _tf_analysis(h4, strategies) if len(h4) >= 20 else {
+        "phase_emoji": "⚪", "phase_name": "", "g20": None, "g60": None,
+        "rsi": None, "macd": None, "strats": []}
 
     e_bottom = False
     try:
         from src.patterns.core import oversold_leader
         ol = oversold_leader(daily)
-        if ol.matched and h4_rsi_v is not None and h4_rsi_v <= 30:
-            strats.append("E")
+        if ol.matched and h["rsi"] is not None and h["rsi"] <= 30:
+            d["strats"].append("E")
             e_bottom = fng_score is not None and fng_score <= 25
     except Exception as exc:  # noqa: BLE001
         logger.warning("coin_e_eval_failed error=%s", exc)
 
-    return {"phase_emoji": em, "phase_name": nm,
-            "g20": gaps[20], "g60": gaps[60], "rsi": gaps["rsi"],
-            "h4_rsi": h4_rsi_v, "h4_g20": h4_g20,
-            "strats": strats, "e_bottom": e_bottom}
+    return {"daily": d, "h4": h, "e_bottom": e_bottom}
 
 
 def build_coin_rows(
@@ -187,6 +194,29 @@ def build_coin_rows(
     return rows
 
 
+def _tf_text(tf: dict | None, units: tuple[str, str], e_bottom: bool = False) -> str:
+    """타임프레임 분석 → '신호등 · 이격 · RSI · MACD · 전략' 한 줄(결측 항목 생략)."""
+    if not tf:
+        return ""
+    parts = []
+    if tf.get("phase_name"):
+        parts.append(f"{tf.get('phase_emoji', '')}{tf['phase_name']}")
+    if tf.get("g20") is not None:
+        parts.append(f"{units[0]} {tf['g20']:+.1f}%")
+    if tf.get("g60") is not None:
+        parts.append(f"{units[1]} {tf['g60']:+.1f}%")
+    if tf.get("rsi") is not None:
+        parts.append(f"RSI {tf['rsi']:.0f}")
+    if tf.get("macd"):
+        parts.append(f"MACD {tf['macd']}")
+    if tf.get("strats"):
+        s = "전략 " + "·".join(tf["strats"])
+        if e_bottom:
+            s += " 🔥시장동반바닥"
+        parts.append(s)
+    return " · ".join(parts)
+
+
 def format_coin_telegram(
     rows: list[dict], *, fng: dict | None, glob: dict | None, fx: float,
     now: datetime, url: str = "",
@@ -206,8 +236,8 @@ def format_coin_telegram(
     if fx:
         lines.append(f"💱 환율 {fx:,.0f}원/$")
     lines.append("")
-    for r in rows:
-        seg = [f"{r['name_ko']}({r['sym']})"]
+    for i, r in enumerate(rows, start=1):
+        seg = [f"{i}. {r['name_ko']}({r['sym']})"]
         if r["krw"] is not None:
             seg.append(f"{_fmt_krw(r['krw'])}원 ({_fmt_pct(r['krw_change'])})")
         if r["usd"] is not None:
@@ -215,31 +245,15 @@ def format_coin_telegram(
         if r["kimchi"] is not None:
             seg.append(f"김프 {r['kimchi']:+.1f}%")
         lines.append(" · ".join(seg))
+        # 코인별 하위 줄(사용자 2026-06-07): ㄴ일봉/ㄴ4시간봉 각각 신호등·이격·RSI·MACD·전략
         a = r.get("analysis")
-        if a:  # 일봉 국면·이격 + 4H + ABCDE 전략(주식 리포트와 동일 표현, 사용자 2026-06-07)
-            parts = []
-            head = f"일봉 {a['phase_emoji']}{a['phase_name']}"
-            detail = []
-            if a.get("g20") is not None:
-                detail.append(f"20일 {a['g20']:+.1f}%")
-            if a.get("g60") is not None:
-                detail.append(f"60일 {a['g60']:+.1f}%")
-            if a.get("rsi") is not None:
-                detail.append(f"RSI {a['rsi']:.0f}")
-            if detail:
-                head += " (" + "·".join(detail) + ")"
-            parts.append(head)
-            if a.get("h4_rsi") is not None:
-                h4s = f"4H RSI {a['h4_rsi']:.0f}"
-                if a.get("h4_g20") is not None:
-                    h4s += f" (20MA {a['h4_g20']:+.1f}%)"
-                parts.append(h4s)
-            if a.get("strats"):
-                s = "·".join(a["strats"]) + " 시그널"
-                if a.get("e_bottom"):
-                    s += " 🔥시장동반바닥"
-                parts.append(s)
-            lines.append("  └ " + " · ".join(parts))
+        if a:
+            day = _tf_text(a.get("daily"), ("20일", "60일"), e_bottom=a.get("e_bottom", False))
+            if day:
+                lines.append(f"   ㄴ일봉: {day}")
+            h4 = _tf_text(a.get("h4"), ("20MA", "60MA"))
+            if h4:
+                lines.append(f"   ㄴ4시간봉: {h4}")
     lines.append("")
     lines.append(DISCLAIMER)
     if url:
@@ -250,7 +264,9 @@ def format_coin_telegram(
 def render_coin_html(
     rows: list[dict], *, fng: dict | None, glob: dict | None, fx: float, now: datetime,
 ) -> str:
-    """독립 HTML 리포트 (주식 report.html과 무관한 경량 페이지)."""
+    """독립 HTML 리포트 — 모바일 우선 카드 레이아웃(사용자 2026-06-07).
+
+    광폭 테이블은 모바일에서 가로 넘침·글자 짤림 → 코인당 1카드(좁은 화면 1열, ≥640px 2열)."""
     date_str = now.strftime("%Y-%m-%d")
 
     def chg_cls(v: float | None) -> str:
@@ -258,42 +274,39 @@ def render_coin_html(
             return ""
         return "up" if v >= 0 else "down"
 
-    body_rows = []
+    cards = []
     for r in rows:
         a = r.get("analysis") or {}
-        if a:
-            detail = []
-            if a.get("g20") is not None:
-                detail.append(f"20일 {a['g20']:+.1f}%")
-            if a.get("g60") is not None:
-                detail.append(f"60일 {a['g60']:+.1f}%")
-            if a.get("rsi") is not None:
-                detail.append(f"RSI {a['rsi']:.0f}")
-            if a.get("h4_rsi") is not None:
-                h4s = f"4H RSI {a['h4_rsi']:.0f}"
-                if a.get("h4_g20") is not None:
-                    h4s += f"(20MA {a['h4_g20']:+.1f}%)"
-                detail.append(h4s)
-            phase_cell = (f"{a['phase_emoji']}{a['phase_name']}<br>"
-                          f"<span class='sym'>{' · '.join(detail)}</span>")
-            strat_cell = "·".join(a.get("strats") or []) or "—"
-            if a.get("e_bottom"):
-                strat_cell += " 🔥"
-        else:
-            phase_cell, strat_cell = "—", "—"
-        body_rows.append(
-            "<tr>"
-            f"<td class='name'>{r['name_ko']} <span class='sym'>{r['sym']}</span></td>"
-            f"<td class='num'>{_fmt_krw(r['krw'])}</td>"
-            f"<td class='num {chg_cls(r['krw_change'])}'>{_fmt_pct(r['krw_change'])}</td>"
-            f"<td class='num'>{_fmt_usd(r['usd'])}</td>"
-            f"<td class='num {chg_cls(r['usd_change'])}'>{_fmt_pct(r['usd_change'])}</td>"
-            f"<td class='num {chg_cls(r['kimchi'])}'>"
-            f"{('%+.2f%%' % r['kimchi']) if r['kimchi'] is not None else '—'}</td>"
-            f"<td>{phase_cell}</td>"
-            f"<td class='num'>{strat_cell}</td>"
-            "</tr>"
+        daily = a.get("daily") or {}
+        phase = (f"<span class='phase'>{daily['phase_emoji']}{daily['phase_name']}</span>"
+                 if daily.get("phase_name") else "")
+        krw_html = ""
+        if r["krw"] is not None:
+            krw_html = (f"<div class='krw'>{_fmt_krw(r['krw'])}<span class='won'>원</span> "
+                        f"<span class='{chg_cls(r['krw_change'])}'>{_fmt_pct(r['krw_change'])}</span></div>")
+        sub = []
+        if r["usd"] is not None:
+            sub.append(f"{_fmt_usd(r['usd'])} "
+                       f"<span class='{chg_cls(r['usd_change'])}'>{_fmt_pct(r['usd_change'])}</span>")
+        if r["kimchi"] is not None:
+            sub.append(f"김프 <span class='{chg_cls(r['kimchi'])}'>{r['kimchi']:+.2f}%</span>")
+        sub_html = f"<div class='sub'>{' · '.join(sub)}</div>" if sub else ""
+        ind = []  # 일봉/4시간봉 각각 신호등·이격·RSI·MACD·전략(텔레그램과 동일, _tf_text 공용)
+        day_txt = _tf_text(a.get("daily"), ("20일", "60일"), e_bottom=a.get("e_bottom", False))
+        if day_txt:
+            ind.append(f"일봉: {day_txt}")
+        h4_txt = _tf_text(a.get("h4"), ("20MA", "60MA"))
+        if h4_txt:
+            ind.append(f"4시간봉: {h4_txt}")
+        ind_html = f"<div class='ind'>{'<br>'.join(ind)}</div>" if ind else ""
+        cards.append(
+            "<div class=\"card\">"
+            f"<div class='head'><span class='cname'>{r['name_ko']} "
+            f"<span class='sym'>{r['sym']}</span></span>{phase}</div>"
+            f"{krw_html}{sub_html}{ind_html}"
+            "</div>"
         )
+
     senti = []
     if fng:
         senti.append(f"😨 공포탐욕 <b>{fng['score']}</b> ({fng.get('rating_ko', '')})")
@@ -304,7 +317,7 @@ def render_coin_html(
         senti.append(s)
     if fx:
         senti.append(f"💱 환율 {fx:,.0f}원/$")
-    senti_html = " &nbsp;|&nbsp; ".join(senti)
+    senti_html = "".join(f"<span class='chip'>{s}</span>" for s in senti)
     return f"""<!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -314,36 +327,45 @@ def render_coin_html(
 <style>
   :root {{ --bg:#0f1117; --card:#1a1d27; --text:#e8eaf0; --muted:#8b91a5;
            --up:#2ecc71; --down:#e74c3c; --line:#2a2e3d; }}
+  * {{ box-sizing:border-box; }}
   body {{ background:var(--bg); color:var(--text); font-family:'Segoe UI',sans-serif;
-          margin:0; padding:16px; }}
+          margin:0; padding:12px; overflow-wrap:anywhere; }}
   .wrap {{ max-width:760px; margin:0 auto; }}
-  h1 {{ font-size:1.3rem; }}
-  .senti {{ background:var(--card); border:1px solid var(--line); border-radius:10px;
-            padding:10px 14px; margin:12px 0; font-size:.95rem; }}
-  table {{ width:100%; border-collapse:collapse; background:var(--card);
-           border-radius:10px; overflow:hidden; }}
-  th, td {{ padding:8px 10px; border-bottom:1px solid var(--line); font-size:.9rem; }}
-  th {{ color:var(--muted); text-align:right; font-weight:600; }}
-  th.name, td.name {{ text-align:left; }}
-  td.num {{ text-align:right; font-variant-numeric:tabular-nums; }}
-  .sym {{ color:var(--muted); font-size:.8rem; }}
+  h1 {{ font-size:1.15rem; margin:6px 0 10px; line-height:1.4; }}
+  .senti {{ display:flex; flex-wrap:wrap; gap:6px; margin:10px 0 14px; }}
+  .chip {{ background:var(--card); border:1px solid var(--line); border-radius:8px;
+           padding:6px 10px; font-size:.85rem; line-height:1.5; }}
+  .cards {{ display:grid; grid-template-columns:1fr; gap:10px; }}
+  @media (min-width:640px) {{ .cards {{ grid-template-columns:1fr 1fr; }} }}
+  .card {{ background:var(--card); border:1px solid var(--line); border-radius:12px;
+           padding:12px 14px; min-width:0; }}
+  .head {{ display:flex; justify-content:space-between; align-items:center; gap:8px; }}
+  .cname {{ font-weight:700; font-size:1rem; }}
+  .phase {{ font-size:.85rem; white-space:nowrap; }}
+  .krw {{ font-size:1.25rem; font-weight:700; margin-top:6px;
+          font-variant-numeric:tabular-nums; }}
+  .won {{ font-size:.85rem; font-weight:400; color:var(--muted); margin:0 4px 0 1px; }}
+  .krw .up, .krw .down {{ font-size:.95rem; }}
+  .sub {{ color:var(--text); font-size:.9rem; margin-top:4px;
+          font-variant-numeric:tabular-nums; }}
+  .ind {{ color:var(--muted); font-size:.82rem; margin-top:8px; line-height:1.6;
+          border-top:1px solid var(--line); padding-top:8px;
+          font-variant-numeric:tabular-nums; }}
+  .strat {{ margin-top:6px; font-size:.85rem; color:#f5c542; }}
+  .sym {{ color:var(--muted); font-size:.8rem; font-weight:400; }}
   .up {{ color:var(--up); }} .down {{ color:var(--down); }}
-  .disclaimer {{ color:var(--muted); font-size:.8rem; margin-top:14px; }}
+  .disclaimer {{ color:var(--muted); font-size:.78rem; margin-top:16px; line-height:1.6; }}
 </style>
 </head>
 <body>
 <div class="wrap">
 <h1>🪙 코인 시세 리포트 <span class="sym">{date_str} {now.strftime('%H:%M')} KST</span></h1>
 <div class="senti">{senti_html}</div>
-<table>
-<thead><tr><th class="name">코인</th><th>업비트(원)</th><th>24h</th>
-<th>글로벌(USD)</th><th>24h</th><th>김치프리미엄</th><th>일봉·4H 상태</th><th>전략</th></tr></thead>
-<tbody>
-{''.join(body_rows)}
-</tbody>
-</table>
+<div class="cards">
+{''.join(cards)}
+</div>
 <p class="disclaimer">{DISCLAIMER}<br>
-소스: 업비트(KRW) · CoinGecko(USD·도미넌스) · alternative.me(공포탐욕). 김프 = 업비트 ÷ (글로벌×환율) − 1.<br>
+소스: 업비트(KRW) · CoinGecko(USD·도미넌스) · alternative.me(공포탐욕). 김치프리미엄 = 업비트 ÷ (글로벌×환율) − 1.<br>
 전략(A~E) = 주식 스크리너와 동일 로직을 코인 일봉에 적용(참고용). E 🔥 = 코인 공포탐욕≤25 시장동반바닥.</p>
 </div>
 </body>
@@ -400,6 +422,8 @@ async def run_coin_report(*, send: bool = True, publish: bool = True) -> dict | 
         strategies = load_screener_config().enabled_strategies()
         fng_score = (fng or {}).get("score")
         for row, c in zip(rows, COIN_UNIVERSE):
+            if not c.get("analyze", True):  # USDT 등 스테이블 — 전략/국면 오탐 방지
+                continue
             daily = await fetch_upbit_daily(c["upbit"])
             await asyncio.sleep(random.uniform(0.3, 0.8))  # §7 랜덤 딜레이(업비트 공개API)
             h4 = await fetch_upbit_4h(c["upbit"])

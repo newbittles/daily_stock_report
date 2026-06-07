@@ -19,10 +19,12 @@ from src.market_report.coin_report import (
 
 
 def test_coin_universe_shape():
-    """유니버스 ~10개, 각 항목에 sym/name_ko/upbit/gecko 키. BTC·ETH 포함."""
+    """유니버스 ~11개, 각 항목에 sym/name_ko/upbit/gecko 키. USDT가 맨 위(사용자 2026-06-07)."""
     assert 8 <= len(COIN_UNIVERSE) <= 12
     syms = [c["sym"] for c in COIN_UNIVERSE]
     assert "BTC" in syms and "ETH" in syms
+    assert COIN_UNIVERSE[0]["sym"] == "USDT"   # 테더 최상단 (달러 프리미엄 지표)
+    assert COIN_UNIVERSE[0].get("analyze") is False   # 스테이블 — 전략/국면 분석 제외(오탐)
     for c in COIN_UNIVERSE:
         assert c["upbit"].startswith("KRW-")
         assert c["gecko"]
@@ -126,6 +128,7 @@ def test_format_coin_telegram():
 
 def test_render_coin_html():
     rows = _sample_rows()
+    rows[0]["analysis"] = _sample_analysis()
     fng = {"score": 25, "rating_ko": "극단적 공포"}
     glob = {"btc_dominance": 58.3, "mcap_change_24h": -1.4}
     html = render_coin_html(rows, fng=fng, glob=glob, fx=1450.0,
@@ -133,6 +136,14 @@ def test_render_coin_html():
     assert "<html" in html.lower()
     assert "비트코인" in html and "김치프리미엄" in html
     assert "2026-06-07" in html
+    # 모바일 가시성(사용자 2026-06-07): 광폭 테이블 금지 → 카드 레이아웃 + viewport
+    assert "<table" not in html
+    assert 'class="card"' in html
+    assert "viewport" in html
+    # 일봉/4시간봉 각각 신호등·이격·RSI·MACD·전략 표기
+    assert "일봉: 🟢정상" in html and "RSI 58" in html and "MACD 양·골든" in html
+    assert "4시간봉: 🟡단기눌림" in html and "MACD 음·데드" in html
+    assert "B·E" in html and "시장동반" in html
 
 
 def test_parse_upbit_candles():
@@ -192,7 +203,7 @@ def test_analyze_coin_insufficient_data():
 
 
 def test_analyze_coin_e_strategy():
-    """투매 바닥(E): 급락+RSI≤30+거래량 2x+반등양봉 + 4H RSI≤30 → 'E' 배지, F&G≤25면 시장동반."""
+    """투매 바닥(E): 급락+RSI≤30+거래량 2x+반등양봉 + 4H RSI≤30 → 일봉 'E' 배지, F&G≤25면 시장동반."""
     from src.market_report.coin_report import analyze_coin
     daily = [_mk_candle(100.0) for _ in range(60)]
     px = 100.0
@@ -203,26 +214,35 @@ def test_analyze_coin_e_strategy():
     h4 = [_mk_candle(100.0 - i * 0.8) for i in range(40)]           # 4H 연속 하락 → RSI 바닥
     res = analyze_coin(daily, h4, strategies=[], fng_score=20.0)
     assert res is not None
-    assert "E" in res["strats"]
+    assert "E" in res["daily"]["strats"]                 # E는 일봉 전략(4H RSI는 게이트)
     assert res["e_bottom"] is True                       # F&G 20 ≤ 25 → 시장 동반 바닥
-    assert res["h4_rsi"] is not None and res["h4_rsi"] <= 30
+    assert res["h4"]["rsi"] is not None and res["h4"]["rsi"] <= 30
+    assert res["daily"]["macd"] is not None              # MACD 라벨(양·골든/음·데드 등)
+    assert res["h4"]["phase_name"]                       # 4H에도 신호등
+
+
+def _sample_analysis():
+    return {
+        "daily": {"phase_emoji": "🟢", "phase_name": "정상", "g20": 3.1, "g60": 8.0,
+                  "rsi": 58.0, "macd": "양·골든", "strats": ["B", "E"]},
+        "h4": {"phase_emoji": "🟡", "phase_name": "단기눌림", "g20": -0.8, "g60": 1.5,
+               "rsi": 41.0, "macd": "음·데드", "strats": ["C"]},
+        "e_bottom": True,
+    }
 
 
 def test_format_telegram_with_analysis():
-    """분석 부착 시 코인별 둘째 줄: 일봉 국면 + 이격 + 4H + 전략 배지."""
+    """코인별 구조(사용자 2026-06-07): 번호 + ㄴ일봉/ㄴ4시간봉 각각 신호등·이격·RSI·MACD·전략."""
     rows = _sample_rows()
-    rows[0]["analysis"] = {
-        "phase_emoji": "🟢", "phase_name": "정상", "g20": 3.1, "g60": 8.0,
-        "rsi": 58.0, "h4_rsi": 41.0, "h4_g20": -0.8,
-        "strats": ["B", "E"], "e_bottom": True,
-    }
+    rows[0]["analysis"] = _sample_analysis()
     text = format_coin_telegram(rows, fng=None, glob=None, fx=1450.0,
                                 now=datetime(2026, 6, 7, 17, 0))
-    assert "🟢정상" in text
-    assert "20일 +3.1%" in text and "60일 +8.0%" in text
-    assert "4H RSI 41" in text
-    assert "B·E 시그널" in text
-    assert "시장동반" in text                             # E + F&G 바닥 등급
+    assert "1. 비트코인" in text and "2. 이더리움" in text   # 번호 매김
+    assert "ㄴ일봉: 🟢정상 · 20일 +3.1% · 60일 +8.0% · RSI 58 · MACD 양·골든 · 전략 B·E 🔥시장동반바닥" in text
+    assert "ㄴ4시간봉: 🟡단기눌림 · 20MA -0.8% · 60MA +1.5% · RSI 41 · MACD 음·데드 · 전략 C" in text
+    # 분석 없는 코인(ETH)은 시세 줄만 있고 ㄴ줄 없음 — 죽지 않아야 함
+    eth_idx = text.index("2. 이더리움")
+    assert "ㄴ일봉" not in text[eth_idx:]
 
 
 def test_scheduler_registers_coin_job():
