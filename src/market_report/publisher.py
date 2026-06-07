@@ -48,6 +48,35 @@ def _run_git(*args: str, timeout: int = 60) -> tuple[bool, str]:
         return False, str(exc)
 
 
+def publish_docs(commit_msg: str) -> bool:
+    """docs/ 변경분 git push — 스냅샷 없는 독립 리포트용(코인 등). publish()와 동일 4단계.
+
+    기존 publish(snap)는 주식 스냅샷 전용으로 불변 유지(2026-06-07)."""
+    ok, msg = _run_git("add", "-A", "docs/")
+    if not ok:
+        logger.error("publish_docs_add_failed error=%s", msg)
+        return False
+    ok, _ = _run_git("diff", "--cached", "--quiet")  # 변경 있으면 exit 1
+    if ok:
+        logger.info("publish_docs_no_changes — 변경 없음, 스킵")
+        return True
+    ok, msg = _run_git("commit", "-m", f"{commit_msg}\n\n자동 생성: coin_report")
+    if not ok:
+        logger.error("publish_docs_commit_failed error=%s", msg)
+        return False
+    ok, msg = _run_git("pull", "--rebase", "--autostash", "origin", "main", timeout=120)
+    if not ok:
+        logger.error("publish_docs_pull_rebase_failed error=%s", msg)
+        _run_git("rebase", "--abort")
+        return False
+    ok, msg = _run_git("push", "origin", "main", timeout=120)
+    if not ok:
+        logger.error("publish_docs_push_failed error=%s", msg)
+        return False
+    logger.info("publish_docs_done msg=%s", commit_msg)
+    return True
+
+
 def publish(snap: MarketSnapshot) -> bool:
     """docs/ 변경분 git push. 성공 여부 반환.
 

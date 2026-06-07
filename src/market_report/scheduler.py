@@ -172,6 +172,17 @@ async def _dashboard_job() -> None:
         logger.exception("dashboard_job_failed error=%s", exc)
 
 
+async def _coin_job() -> None:
+    """코인 시세 리포트 (매일 17:00, 주말 포함 — 코인은 무휴장이라 휴장스킵 없음)."""
+    logger.info("coin_job_start now=%s", datetime.now().isoformat())
+    try:
+        from src.market_report.coin_report import run_coin_report
+        res = await run_coin_report()
+        logger.info("coin_job_done result=%s", res)
+    except Exception as exc:
+        logger.exception("coin_job_failed error=%s", exc)
+
+
 def build_scheduler() -> AsyncIOScheduler:
     """평일 14:40 / 16:30 트리거 등록."""
     scheduler = AsyncIOScheduler(timezone=KST)
@@ -239,6 +250,11 @@ def build_scheduler() -> AsyncIOScheduler:
         _us_intraday_job, CronTrigger(day_of_week="mon-fri", hour=23, minute=40, timezone=KST),
         args=[False], id="report_us_intraday_std", replace_existing=True, misfire_grace_time=900,
     )
+    # 코인 시세 리포트 — 매일 17:00, 주말 포함 (day_of_week 미지정 = '*', 사용자 2026-06-07)
+    scheduler.add_job(
+        _coin_job, CronTrigger(hour=17, minute=0, timezone=KST),
+        id="report_coin", replace_existing=True, misfire_grace_time=900,
+    )
     return scheduler
 
 
@@ -274,11 +290,13 @@ def main() -> int:
     )
     parser = argparse.ArgumentParser(description="Daily report scheduler")
     parser.add_argument("--once", choices=["pre", "post", "us", "holdings", "dashboard",
-                                           "midday", "uspre", "usmid"],
+                                           "midday", "uspre", "usmid", "coin"],
                         help="등록된 잡 1회 즉시 실행 후 종료")
     args = parser.parse_args()
 
-    if args.once == "holdings":
+    if args.once == "coin":
+        asyncio.run(_coin_job())
+    elif args.once == "holdings":
         asyncio.run(_holdings_job())
     elif args.once == "dashboard":
         asyncio.run(_dashboard_job())
