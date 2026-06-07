@@ -1,5 +1,14 @@
 [
   {
+    "date": "2026-06-08",
+    "time": "08:05",
+    "mode": "kr_premarket",
+    "url": "reports/2026-06-08-kr-pre.html",
+    "summary": "오늘 한국 증시는 KOSPI와 KOSDAQ 모두 보합권에서 횡보하며 뚜렷한 방향성을 보이지 않고 있습니다. 다만, 화폐/금융자동화기기, OLED, 반도체 장비 등 일부 테마는 강세를 나타내고 있습니다.",
+    "kospi_pct": -0.0,
+    "kosdaq_pct": -0.0
+  },
+  {
     "date": "2026-06-07",
     "time": "00:53",
     "mode": "us_morning",
