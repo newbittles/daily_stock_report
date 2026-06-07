@@ -11,7 +11,7 @@
 ### ✅ 코인 시세 리포팅 — 구현·배포 완료(06-07 심야, 커밋 aefe79d+9db9668)
 - **매일 17:00 KST 주말 포함**(scheduler `report_coin`, day_of_week 미지정='*'). `--once coin`. 라이브 발송 2회 검증(텔레그램 2챗+웹 발행).
 - **구성**: `src/datasource/coin/sources.py`(업비트 ticker/일봉200/4H봉120 + CoinGecko markets/global + F&G alternative.me, 순수파서+§7안전+F&G일캐시) + `src/market_report/coin_report.py`(김프·이격·국면·전략·포맷·러너) + `publisher.publish_docs()`(신규, 기존 publish 불변). 웹=docs/reports/<date>-coin.html(주식 index 미통합 v1). AI요약 없음. 환율=기존 `fdr_source.fetch_usd_krw` 재사용.
-- **분석(사용자 추가요청)**: 코인별 일봉 이격(20/60)+RSI+국면 신호등(coin_phase — 주식 골격, **코인 과열임계 120≥30/60≥20 별도**) + 4H RSI/20MA이격 + **ABCDE 전략 평가**(주식 스크리너 엔진 무수정 재사용, E=oversold_leader+4H RSI≤30+시장게이트 코인F&G≤25=🔥시장동반바닥).
+- **분석(사용자 추가요청, caa4d59 최종)**: 코인별 번호 + ㄴ일봉/ㄴ4시간봉 줄 — **각각** 신호등(coin_phase, 코인 과열임계 120≥30/60≥20)·20/60이격·RSI·MACD(양/음·골든/데드)·ABCDE 전략(_tf_analysis/_tf_text 공용, 텔레그램=웹 동일). E=일봉 부착(4H RSI≤30 게이트)+코인F&G≤25=🔥시장동반바닥. **웹=모바일 카드 레이아웃**(테이블 폐기 — 가로넘침). **USDT 최상단**(김프=달러 프리미엄), analyze=False(스테이블 A/C/D 오탐 방지).
 - ⚠️ 함정: 업비트 캔들 응답 **최신순**(파서가 reverse), 캔들 volume **float 유지**(코인 소수 거래량, int 캐스팅 시 E 거래량조건 왜곡).
 - **자동매매 알림 보강**(같은 커밋): 매수/매도 예외 → ⚠️텔레그램 알림+다음 종목 계속, top3 JSON 없음 중단도 알림, 매도 잡 끝 📋포지션 현황(전략·진입가·평가손익·HOLD 포함). dry-run은 여전히 무알림.
 - 테스트 기준선 **278**.
