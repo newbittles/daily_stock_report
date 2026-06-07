@@ -20,6 +20,46 @@ def test_top3_bridge_roundtrip(tmp_path):
     assert load_top3("2026-06-05", base_dir=tmp_path) is None
 
 
+def test_top3_bridge_persists_strategies(tmp_path):
+    """전략 라벨(ABCDE별 손절용)이 브리지 JSON에 보존돼야 한다 (2026-06-07)."""
+    picks = [
+        {"ticker": "005930", "name": "삼성전자", "price": 82500, "strategies": ["A", "C"]},
+        {"ticker": "000660", "name": "SK하이닉스", "price": 180000},  # strategies 없음 → []
+    ]
+    persist_top3(picks, "pre_close", "2026-06-08", base_dir=tmp_path)
+    loaded = load_top3("2026-06-08", base_dir=tmp_path)
+    assert loaded[0]["strategies"] == ["A", "C"]
+    assert loaded[1]["strategies"] == []
+
+
+def test_position_store_strategy_and_migration(tmp_path):
+    """포지션에 strategy 저장 + 구 스키마(컬럼 없음) DB 자동 마이그레이션."""
+    import sqlite3
+
+    store = PositionStore(tmp_path / "p.db")
+    store.open_position("005930", "삼성전자", "2026-06-08", 100.0, 10, strategy="A,C")
+    assert store.get_open()[0].strategy == "A,C"
+
+    # 구 스키마 DB(strategy 컬럼 없음)를 열어도 깨지지 않고 빈 전략으로 복구(wide 폴백)
+    old = tmp_path / "old.db"
+    conn = sqlite3.connect(str(old))
+    conn.execute(
+        """CREATE TABLE paper_positions (
+            ticker TEXT PRIMARY KEY, name TEXT, entry_date TEXT,
+            entry_price REAL, qty INTEGER, stage INTEGER, opened INTEGER DEFAULT 1
+        )"""
+    )
+    conn.execute(
+        "INSERT INTO paper_positions VALUES ('000660','SK하이닉스','2026-06-01',180000.0,5,0,1)"
+    )
+    conn.commit()
+    conn.close()
+    store2 = PositionStore(old)
+    pos = store2.get_open()[0]
+    assert pos.ticker == "000660"
+    assert pos.strategy == ""
+
+
 class _FakeQuote:
     def __init__(self, price):
         self.price = price
@@ -90,6 +130,25 @@ async def test_buy_dry_run_no_order(tmp_path):
     await buy_top3(picks, FakeAdapter(82500, []), order, store, send=False, today="2026-06-04")
     assert order.calls == []            # dry-run: 주문 없음
     assert not store.is_held("005930")  # 기록도 없음
+
+
+async def test_buy_top3_persists_strategy(tmp_path):
+    """매수 시 picks의 strategies가 포지션 DB에 'A,C' 형태로 저장돼야 한다."""
+    store = PositionStore(tmp_path / "p.db")
+    picks = [{"ticker": "005930", "name": "삼성전자", "price": 82500, "strategies": ["A", "C"]}]
+    await buy_top3(picks, FakeAdapter(82500, []), FakeOrder(), store, send=True, today="2026-06-08")
+    assert store.get_open()[0].strategy == "A,C"
+
+
+async def test_run_sell_tight_ab_full_exit(tmp_path):
+    """B(tight) 포지션: 20MA 2연속 이탈 → 50%가 아니라 전량 매도."""
+    store = PositionStore(tmp_path / "p.db")
+    store.open_position("005930", "삼성전자", "2026-06-01", 100.0, 12, strategy="B")
+    order = FakeOrder()
+    adapter = FakeAdapter(price=0, closes=[100.0] * 19 + [90.0, 90.0])
+    await run_sell(adapter, order, store, send=True)
+    assert order.calls == [("sell", "005930", 12)]   # 전량
+    assert not store.is_held("005930")
 
 
 async def test_run_sell_half_then_all(tmp_path):

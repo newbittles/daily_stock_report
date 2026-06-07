@@ -16,6 +16,7 @@ class Position:
     entry_price: float
     qty: int
     stage: int  # 0=정상보유, 2=2차 50%청산 완료
+    strategy: str = ""  # 매칭 전략 CSV("A,C") — 전략별 손절 선택용. ""=구포지션(wide 폴백)
 
 
 class PositionStore:
@@ -26,9 +27,16 @@ class PositionStore:
         self._conn.execute(
             """CREATE TABLE IF NOT EXISTS paper_positions (
                 ticker TEXT PRIMARY KEY, name TEXT, entry_date TEXT,
-                entry_price REAL, qty INTEGER, stage INTEGER, opened INTEGER DEFAULT 1
+                entry_price REAL, qty INTEGER, stage INTEGER, opened INTEGER DEFAULT 1,
+                strategy TEXT DEFAULT ''
             )"""
         )
+        # 구 스키마(strategy 컬럼 없음) 마이그레이션 — 기존 포지션은 ''(wide 폴백)
+        cols = {r[1] for r in self._conn.execute("PRAGMA table_info(paper_positions)")}
+        if "strategy" not in cols:
+            self._conn.execute(
+                "ALTER TABLE paper_positions ADD COLUMN strategy TEXT DEFAULT ''"
+            )
         self._conn.commit()
 
     def is_held(self, ticker: str) -> bool:
@@ -38,19 +46,20 @@ class PositionStore:
         return cur.fetchone() is not None
 
     def open_position(
-        self, ticker: str, name: str, entry_date: str, entry_price: float, qty: int
+        self, ticker: str, name: str, entry_date: str, entry_price: float, qty: int,
+        strategy: str = "",
     ) -> None:
         self._conn.execute(
             """INSERT OR REPLACE INTO paper_positions
-               (ticker, name, entry_date, entry_price, qty, stage, opened)
-               VALUES (?,?,?,?,?,0,1)""",
-            (ticker, name, entry_date, entry_price, qty),
+               (ticker, name, entry_date, entry_price, qty, stage, opened, strategy)
+               VALUES (?,?,?,?,?,0,1,?)""",
+            (ticker, name, entry_date, entry_price, qty, strategy),
         )
         self._conn.commit()
 
     def get_open(self) -> list[Position]:
         cur = self._conn.execute(
-            "SELECT ticker,name,entry_date,entry_price,qty,stage "
+            "SELECT ticker,name,entry_date,entry_price,qty,stage,strategy "
             "FROM paper_positions WHERE opened=1"
         )
         return [Position(*row) for row in cur.fetchall()]

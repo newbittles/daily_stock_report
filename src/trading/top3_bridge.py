@@ -18,11 +18,14 @@ def _path(date: str, base_dir: Path) -> Path:
 def persist_top3(
     picks: list[dict], mode: str, date: str, base_dir: Path | str = DEFAULT_DIR
 ) -> Path:
-    """ticker/name/price만 추려 JSON 기록. pre_close 전용."""
+    """ticker/name/price/strategies만 추려 JSON 기록. pre_close 전용.
+
+    strategies(매칭 전략 라벨, 예 ["A","C"])는 전략별 손절 선택용(2026-06-07)."""
     base = Path(base_dir)
     base.mkdir(parents=True, exist_ok=True)
     slim = [
-        {"ticker": p["ticker"], "name": p.get("name", ""), "price": p.get("price", 0)}
+        {"ticker": p["ticker"], "name": p.get("name", ""), "price": p.get("price", 0),
+         "strategies": p.get("strategies", []) or []}
         for p in picks
     ]
     path = _path(date, base)

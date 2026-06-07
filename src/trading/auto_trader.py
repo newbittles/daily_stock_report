@@ -56,7 +56,8 @@ async def buy_top3(picks, adapter, order, store, *, send: bool, today: str, noti
             print(f"  BUY(dry-run) {ticker} {name} x{qty} (현재가 {quote.price}, 시장가)")
             continue
         res = await order.order_cash("buy", ticker, qty, price=0, ord_dvsn="01")
-        store.open_position(ticker, name, today, float(quote.price), qty)
+        strategy = ",".join(p.get("strategies", []) or [])  # 전략별 손절 선택용(2026-06-07)
+        store.open_position(ticker, name, today, float(quote.price), qty, strategy=strategy)
         await _emit(notify, f"🟢 모의매수 {name}({ticker}) x{qty} @{quote.price:,.0f} "
                             f"odno={res.get('output', {}).get('ODNO')} {res.get('msg1', '')}")
 
@@ -67,7 +68,8 @@ async def run_sell(adapter, order, store, *, send: bool, notify=None) -> None:
     for pos in open_pos:
         candles = await adapter.get_ohlcv(pos.ticker, days=80)
         closes = [c.close for c in candles]
-        action, reason = decide_exit(closes)
+        strategies = [s for s in pos.strategy.split(",") if s] if pos.strategy else None
+        action, reason = decide_exit(closes, strategies=strategies)
         print(f"  {pos.ticker} {pos.name} qty={pos.qty} stage={pos.stage} → {action} {reason}")
         if action == "SELL_HALF" and pos.stage < 2:
             sell_qty, remaining = split_sell_qty(pos.qty)
