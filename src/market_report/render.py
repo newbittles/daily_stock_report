@@ -71,7 +71,7 @@ def render_report(snap: MarketSnapshot) -> Path:
         "midday": "장중 시장 리포트",
         "us_premarket": "미국장 장전(프리장) 리포트",
         "us_intraday": "미국장 장중 리포트 (잠정)",
-        "kr_premarket": "한국장 프리 리포트 (NXT 시초)",
+        "kr_premarket": "한국장 프리 리포트 (NXT 프리장)",
         "kr_open": "한국장 장초 리포트",
     }.get(snap.mode, "시장 리포트")
     html = template.render(title=title, snap=snap)

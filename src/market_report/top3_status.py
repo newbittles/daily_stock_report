@@ -70,11 +70,11 @@ def find_prev_candidates(
     return (date, picks) if picks else None
 
 
-def compute_status(pick: dict, cur_price: float, today_pct: float) -> dict:
+def compute_status(pick: dict, cur_price: float, today_pct: float | None) -> dict:
     """추천 pick + 현재가 → 상태 dict.
 
     return_pct = (현재가-추천가)/추천가*100 (추천가 대비 누적 수익률),
-    today_pct  = 오늘 등락률(전일종가 대비, KIS prdy_ctrt).
+    today_pct  = 오늘 등락률(전일종가 대비, KIS prdy_ctrt). None=미산출(프리장 NXT 미체결 등).
     """
     rec = float(pick.get("price", 0) or 0)
     ret = (cur_price - rec) / rec * 100 if rec else 0.0
@@ -84,20 +84,35 @@ def compute_status(pick: dict, cur_price: float, today_pct: float) -> dict:
         "rec_price": rec,
         "cur_price": float(cur_price or 0),
         "return_pct": round(ret, 2),
-        "today_pct": round(float(today_pct or 0), 2),
+        "today_pct": round(float(today_pct), 2) if today_pct is not None else None,
     }
 
 
-async def fetch_prev_top3_status(picks: list[dict], adapter) -> list[dict]:
-    """각 pick의 KIS 현재가 조회 → 상태 리스트. 개별 실패는 건너뜀(부분 결과 허용)."""
+async def fetch_prev_top3_status(
+    picks: list[dict], adapter, *, use_nxt: bool = False
+) -> list[dict]:
+    """각 pick의 KIS 현재가 조회 → 상태 리스트. 개별 실패는 건너뜀(부분 결과 허용).
+
+    use_nxt=True(프리장 08:0x): KRX 정규장 quote는 prdy_ctrt=0·현재가=전일종가만 와서
+    무의미(#469 실측) → NXT 프리장 시세로 조회. NXT 미체결(price=0)이면 KRX 전일종가로
+    추천가대비만 계산하고 today_pct=None(표시는 '—').
+    """
     out: list[dict] = []
     for pk in picks:
         tk = str(pk.get("ticker", "")).strip()
         if not tk:
             continue
         try:
-            q = await adapter.get_quote(tk)
-            out.append(compute_status(pk, q.price, q.change_pct))
+            if use_nxt:
+                q = await adapter.get_nxt_quote(tk)
+                if q.price > 0:
+                    out.append(compute_status(pk, q.price, q.change_pct))
+                    continue
+                q = await adapter.get_quote(tk)  # NXT 미체결 → 전일종가, 오늘등락 미산출
+                out.append(compute_status(pk, q.price, None))
+            else:
+                q = await adapter.get_quote(tk)
+                out.append(compute_status(pk, q.price, q.change_pct))
         except Exception as exc:  # noqa: BLE001
             logger.warning("prev_top3_quote_failed ticker=%s error=%s", tk, exc)
     return out

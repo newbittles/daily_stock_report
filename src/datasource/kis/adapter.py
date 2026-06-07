@@ -184,6 +184,26 @@ class KisAdapter:
             timestamp=datetime.now().strftime("%Y%m%d"),
         )
 
+    async def get_nxt_quote(self, ticker: str) -> Quote:
+        """NXT(넥스트레이드) 현재가 — 프리장(08:00~08:50)·애프터마켓(15:30~20:00) 시세.
+
+        inquire-price에 시장코드 NX 사용(2026-06-08 프리장 실측 확인: prdy_ctrt가
+        전일 KRX 종가 대비 NXT 등락률로 계산되어 옴). NXT 미체결/미지원 종목은 price=0."""
+        data = await self._request(
+            "/uapi/domestic-stock/v1/quotations/inquire-price",
+            _TR["quote"],
+            {"FID_COND_MRKT_DIV_CODE": "NX", "FID_INPUT_ISCD": ticker},
+        )
+        out = data.get("output", {})
+        return Quote(
+            ticker=ticker,
+            name=str(out.get("bstp_kor_isnm", "")).strip(),
+            price=_f(out.get("stck_prpr")),
+            change_pct=_f(out.get("prdy_ctrt")),
+            volume=_i(out.get("acml_vol")),
+            timestamp=datetime.now().strftime("%Y%m%d"),
+        )
+
     async def get_ohlcv(self, ticker: str, days: int = 100, end_date: str | None = None) -> list[Candle]:
         """일봉 조회. KIS는 1회 100건 제한 → days>100이면 기간 분할 다회 호출.
 

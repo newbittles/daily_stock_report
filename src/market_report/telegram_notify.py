@@ -108,10 +108,12 @@ def _phase_suffix(snap: MarketSnapshot, label: str) -> str:
 def _format_index_lines(snap: MarketSnapshot) -> list[str]:
     """주요 지수 4개 — 모바일 줄바꿈 자연스럽게 각각 한 줄씩. 지수 옆 신호등 병기(#426)."""
     lines: list[str] = []
+    lbl = getattr(snap, "index_pct_label", "")  # 프리장=전일 등락 표기(#469)
     for idx in (snap.kospi, snap.kosdaq):
         if idx:
             mk = "코스피" if idx.market == "KOSPI" else "코스닥"
-            lines.append(f"📊 {mk} {idx.value:,.1f} ({idx.change_pct:+.2f}%){_phase_suffix(snap, mk)}")
+            pct = f"{lbl} {idx.change_pct:+.2f}%" if lbl else f"{idx.change_pct:+.2f}%"
+            lines.append(f"📊 {mk} {idx.value:,.1f} ({pct}){_phase_suffix(snap, mk)}")
     if snap.fx:
         lines.append(f"💱 원/달러 {snap.fx['value']:,.1f} ({snap.fx['change_pct']:+.2f}%)")
     if snap.wti:
@@ -464,7 +466,7 @@ def _format_midday_summary(snap: MarketSnapshot) -> str:
         lines.append(head)
         for t in snap.prev_top3_status:
             rp = t.get("return_pct", 0.0)
-            tp = t.get("today_pct", 0.0)
+            tp = t.get("today_pct") or 0.0  # None=미산출(프리장 NXT 미체결) 방어
             rs = "+" if rp >= 0 else ""
             ts = "+" if tp >= 0 else ""
             lines.append(f"  · {_naver_link(t['name'], t['ticker'])} "
@@ -561,7 +563,7 @@ def _format_us_morning_summary(snap: MarketSnapshot) -> str:
 
 def _format_kr_morning_summary(snap: MarketSnapshot) -> str:
     """한국장 프리(08:05)/장초(09:15) 요약 — 지수·신호등 + 시초 상승률 + 전일 Top3·종가베팅 시초 + AI(#404)."""
-    title = "🌅 *한국장 프리 리포트* (NXT 시초)" if snap.mode == "kr_premarket" else "🏁 *한국장 장초 리포트*"
+    title = "🌅 *한국장 프리 리포트* (NXT 프리장)" if snap.mode == "kr_premarket" else "🏁 *한국장 장초 리포트*"
     lines: list[str] = [f"{title} — {snap.generated_at.strftime('%m-%d %H:%M')}", ""]
     lines.extend(_format_index_lines(snap))  # 지수·공포탐욕·신호등/이격
     if snap.mode == "kr_premarket" and snap.overtime_gainers:
@@ -575,16 +577,23 @@ def _format_kr_morning_summary(snap: MarketSnapshot) -> str:
         for g in snap.top_gainers[:5]:
             lines.append(f"  · {_naver_link(g.name, g.ticker)} {g.price:,.0f}원 (+{g.change_pct:.1f}%)")
         lines.append("")
+    # 프리장(08:0x)은 정규장 시초가 아직 없어 NXT 프리장 시세 기준(#469). 미체결은 '—'.
+    px_label = "NXT" if snap.mode == "kr_premarket" else "시초"
+
+    def _tp(t: dict) -> str:
+        tp = t.get("today_pct")
+        return f"{tp:+.1f}%" if tp is not None else "—"
+
     if snap.prev_top3_status:
-        lines.append(f"🏆 *전일 추천 Top3 시초* ({snap.prev_top3_date[5:]})")
+        lines.append(f"🏆 *전일 추천 Top3 {px_label}* ({snap.prev_top3_date[5:]})")
         for t in snap.prev_top3_status:
-            lines.append(f"  · {_naver_link(t['name'], t['ticker'])} 시초 {t.get('today_pct', 0):+.1f}% "
+            lines.append(f"  · {_naver_link(t['name'], t['ticker'])} {px_label} {_tp(t)} "
                          f"(추천가대비 {t.get('return_pct', 0):+.1f}%)")
         lines.append("")
     if snap.prev_candidates_status:
-        lines.append(f"🎯 *전일 종가베팅 시초* ({snap.prev_candidates_date[5:]})")
+        lines.append(f"🎯 *전일 종가베팅 {px_label}* ({snap.prev_candidates_date[5:]})")
         for t in snap.prev_candidates_status:
-            lines.append(f"  · {_naver_link(t['name'], t['ticker'])} 시초 {t.get('today_pct', 0):+.1f}%")
+            lines.append(f"  · {_naver_link(t['name'], t['ticker'])} {px_label} {_tp(t)}")
         lines.append("")
     if snap.summary:
         lines.append(f"🤖 {snap.summary}")

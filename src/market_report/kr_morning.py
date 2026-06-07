@@ -15,6 +15,43 @@ from src.market_report.models import MarketSnapshot
 logger = logging.getLogger(__name__)
 
 
+def last_session_pct(closes: list[tuple[str, float]], today: str) -> tuple[float, float] | None:
+    """(날짜 YYYY-MM-DD, 종가) 시계열 → (직전 거래일 종가, 그 날 등락률%). 순수·결정론.
+
+    today 이전 데이터만 사용(강제 재실행으로 당일 봉이 섞여도 안전). 2개 미만이면 None."""
+    rows = sorted((d, c) for d, c in closes if d < today and c)
+    if len(rows) < 2:
+        return None
+    prev, last = rows[-2][1], rows[-1][1]
+    return last, (last / prev - 1) * 100
+
+
+async def _fill_prev_session_index(snap: MarketSnapshot, today: str) -> None:
+    """프리장(08:0x) 지수 보정 — 네이버는 개장 전 '전일종가 + 0.00%' 고정(#469 실측).
+
+    FDR 일봉 마지막 2종가로 '전일 등락률'을 계산해 대체하고 라벨을 '전일'로 표기."""
+    import dataclasses
+
+    def _closes(sym: str) -> list[tuple[str, float]]:
+        import FinanceDataReader as fdr
+        df = fdr.DataReader(sym).tail(5)
+        return [(idx.strftime("%Y-%m-%d"), float(c)) for idx, c in df["Close"].dropna().items()]
+
+    import asyncio
+    for attr, sym in (("kospi", "KS11"), ("kosdaq", "KQ11")):
+        idx = getattr(snap, attr)
+        if idx is None:
+            continue
+        try:
+            r = last_session_pct(await asyncio.to_thread(_closes, sym), today)
+        except Exception as exc:  # noqa: BLE001
+            logger.warning("prev_session_index_failed sym=%s error=%s", sym, exc)
+            continue
+        if r:
+            setattr(snap, attr, dataclasses.replace(idx, value=r[0], change_pct=r[1]))
+            snap.index_pct_label = "전일"
+
+
 async def run_kr_morning(
     mode: str, *, do_telegram: bool = True, do_publish: bool = True, force: bool = False,
 ) -> MarketSnapshot | None:
@@ -42,24 +79,27 @@ async def run_kr_morning(
         today = snap.generated_at.strftime("%Y-%m-%d")
 
         # 프리(08:05): NXT 프리장 상승률 상위 — 정규장 gainers는 아직 의미없어 NXT로 대체
-        if mode == "kr_premarket":
+        use_nxt = mode == "kr_premarket"
+        if use_nxt:
             try:
                 snap.overtime_gainers = await adapter.get_nxt_overtime_gainers(top=7)
             except Exception as exc:  # noqa: BLE001
                 logger.warning("kr_premarket_nxt_failed error=%s", exc)
             snap.top_gainers = []  # 08:05 정규장 시초 없음 → 정규장 gainers 숨김
+            # 지수도 개장 전엔 0.00% 고정 → 전일 등락률로 대체 표기(#469)
+            await _fill_prev_session_index(snap, today)
 
-        # 전일 추천 Top3 시초 현황 (추천가 대비 + 오늘 등락)
+        # 전일 추천 Top3 현황 (추천가 대비 + 오늘 등락) — 프리장은 NXT 시세(#469)
         prev = find_prev_top3(today)
         if prev:
             d, picks = prev
-            snap.prev_top3_status = await fetch_prev_top3_status(picks, adapter)
+            snap.prev_top3_status = await fetch_prev_top3_status(picks, adapter, use_nxt=use_nxt)
             snap.prev_top3_date = d
         # 전일 종가베팅 후보 시초 현황
         pc = find_prev_candidates(today)
         if pc:
             d, picks = pc
-            snap.prev_candidates_status = await fetch_prev_top3_status(picks, adapter)
+            snap.prev_candidates_status = await fetch_prev_top3_status(picks, adapter, use_nxt=use_nxt)
             snap.prev_candidates_date = d
 
         # 지수 신호등/이격도(고점·바닥 분위기)
