@@ -149,7 +149,7 @@ def _tf_analysis(candles: list, strategies: list, change_pct: float | None = Non
 
 def analyze_coin(
     daily: list, h4: list, strategies: list, fng_score: float | None,
-    change_pct: float | None = None,
+    change_pct: float | None = None, include_e: bool = True,
 ) -> dict | None:
     """일봉·4H 각각 신호등·이격·RSI·MACD·ABCDE(주식 엔진 무수정 재사용, 사용자 2026-06-07).
 
@@ -165,8 +165,8 @@ def analyze_coin(
     e_bottom = False
     try:
         from src.patterns.core import oversold_leader
-        ol = oversold_leader(daily)
-        if ol.matched and h["rsi"] is not None and h["rsi"] <= 30:
+        ol = oversold_leader(daily) if include_e else None
+        if ol is not None and ol.matched and h["rsi"] is not None and h["rsi"] <= 30:
             d["strats"].append("E")
             e_bottom = fng_score is not None and fng_score <= 25
     except Exception as exc:  # noqa: BLE001
@@ -194,8 +194,11 @@ def build_coin_rows(
     return rows
 
 
-def _tf_text(tf: dict | None, units: tuple[str, str], e_bottom: bool = False) -> str:
-    """타임프레임 분석 → '신호등 · 이격 · RSI · MACD · 전략' 한 줄(결측 항목 생략)."""
+def _tf_text(tf: dict | None, units: tuple[str, str], e_bottom: bool = False,
+             show_strats: bool = True) -> str:
+    """타임프레임 분석 → '신호등 · 이격 · RSI · MACD · 전략' 한 줄(결측 항목 생략).
+
+    show_strats=False(테더 등 전략 미적용 자산): 전략 항목 자체를 생략('없음'도 X)."""
     if not tf:
         return ""
     parts = []
@@ -209,14 +212,15 @@ def _tf_text(tf: dict | None, units: tuple[str, str], e_bottom: bool = False) ->
         parts.append(f"RSI {tf['rsi']:.0f}")
     if tf.get("macd"):
         parts.append(f"MACD {tf['macd']}")
-    # 전략은 미매칭이어도 '없음' 명시 — 누락으로 오인 방지(사용자 2026-06-07)
-    if tf.get("strats"):
-        s = "전략 " + "·".join(tf["strats"])
-        if e_bottom:
-            s += " 🔥시장동반바닥"
-        parts.append(s)
-    elif parts:
-        parts.append("전략 없음")
+    if show_strats:
+        # 전략은 미매칭이어도 '없음' 명시 — 누락으로 오인 방지(사용자 2026-06-07)
+        if tf.get("strats"):
+            s = "전략 " + "·".join(tf["strats"])
+            if e_bottom:
+                s += " 🔥시장동반바닥"
+            parts.append(s)
+        elif parts:
+            parts.append("전략 없음")
     return " · ".join(parts)
 
 
@@ -245,6 +249,12 @@ def format_coin_telegram(
             t = f"₮ 테더(USDT) {_fmt_krw(r['krw'])}원 ({_fmt_pct(r['krw_change'])})"
             if r["kimchi"] is not None:
                 t += f" · 김프 {r['kimchi']:+.1f}%"
+            a = r.get("analysis") or {}
+            d, h = a.get("daily") or {}, a.get("h4") or {}
+            if d.get("phase_name"):  # 신호등=달러 프리미엄 추세(전략은 미적용, 2026-06-08)
+                t += f" · 일봉 {d.get('phase_emoji', '')}{d['phase_name']}"
+            if h.get("phase_name"):
+                t += f" · 4시간봉 {h.get('phase_emoji', '')}{h['phase_name']}"
             lines.append(t)
         else:
             coins.append(r)
@@ -308,6 +318,16 @@ def render_coin_html(
             if r["kimchi"] is not None:
                 t += (f" · 김프(달러 프리미엄) <span class='{chg_cls(r['kimchi'])}'>"
                       f"{r['kimchi']:+.2f}%</span>")
+            a = r.get("analysis") or {}
+            det = []  # 지표 상세(전략 항목 제외 — 스테이블, 2026-06-08)
+            day_txt = _tf_text(a.get("daily"), ("20일", "60일"), show_strats=False)
+            if day_txt:
+                det.append(f"일봉: {day_txt}")
+            h4_txt = _tf_text(a.get("h4"), ("20MA", "60MA"), show_strats=False)
+            if h4_txt:
+                det.append(f"4시간봉: {h4_txt}")
+            if det:
+                t += f"<div class='ind'>{'<br>'.join(det)}</div>"
             tether_html = f"<div class=\"tether\">{t}</div>"
         else:
             coin_rows.append(r)
@@ -464,14 +484,13 @@ async def run_coin_report(*, send: bool = True, publish: bool = True) -> dict | 
         strategies = load_screener_config().enabled_strategies()
         fng_score = (fng or {}).get("score")
         for row, c in zip(rows, COIN_UNIVERSE):
-            if not c.get("analyze", True):  # USDT 등 스테이블 — 전략/국면 오탐 방지
-                continue
+            use_strats = c.get("strategies", True)  # USDT=False: 지표만, ABCDE/E 제외(오탐)
             daily = await fetch_upbit_daily(c["upbit"])
             await asyncio.sleep(random.uniform(0.3, 0.8))  # §7 랜덤 딜레이(업비트 공개API)
             h4 = await fetch_upbit_4h(c["upbit"])
             await asyncio.sleep(random.uniform(0.3, 0.8))
-            a = analyze_coin(daily, h4, strategies, fng_score,
-                             change_pct=row.get("krw_change"))
+            a = analyze_coin(daily, h4, strategies if use_strats else [], fng_score,
+                             change_pct=row.get("krw_change"), include_e=use_strats)
             if a:
                 row["analysis"] = a
         logger.info("coin_analysis_done analyzed=%d", sum(1 for r in rows if r.get("analysis")))

@@ -27,8 +27,10 @@ _FNG_CACHE = Path(__file__).resolve().parents[3] / "data" / "coin_fng_cache.json
 # 유니버스 — 6개 고정(사용자 2026-06-07 정보과다 축소): USDT(달러 프리미엄, 최상단)
 # + BTC·ETH·XRP·SOL·DOGE. 업비트 KRW 마켓 기준.
 COIN_UNIVERSE: list[dict] = [
-    # USDT: 시세·김프(달러 프리미엄)만 — 스테이블 평탄차트가 A/C/D를 오탐하므로 분석 제외
-    {"sym": "USDT", "name_ko": "테더", "upbit": "KRW-USDT", "gecko": "tether", "analyze": False},
+    # USDT: 지표(이격·RSI·신호등=달러 프리미엄 추세)는 표시, ABCDE/E 전략만 제외
+    # (스테이블 평탄차트가 A/C/D를 오탐, 2026-06-08)
+    {"sym": "USDT", "name_ko": "테더", "upbit": "KRW-USDT", "gecko": "tether",
+     "strategies": False},
     {"sym": "BTC", "name_ko": "비트코인", "upbit": "KRW-BTC", "gecko": "bitcoin"},
     {"sym": "ETH", "name_ko": "이더리움", "upbit": "KRW-ETH", "gecko": "ethereum"},
     {"sym": "XRP", "name_ko": "리플", "upbit": "KRW-XRP", "gecko": "ripple"},
