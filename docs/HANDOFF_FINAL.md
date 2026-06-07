@@ -1,4 +1,20 @@
-# HANDOFF_FINAL — stock_report 단일 최종 인계 (2026-06-05)
+# HANDOFF_FINAL — stock_report 단일 최종 인계 (2026-06-07)
+
+## 0a. 2026-06-07 세션 (P1 자동매매 — 전략별 손절 + 배포 진행중)
+- **ABCDE 전략별 손절 반영**(커밋 8c1f906, 서버 pull 완료): 사용자 결정 = ①전략별 최신 손절(screener.yaml) ②단계청산 유지 ③다중매칭 넓은쪽 우선 ④CORRECTION 선제50% 유지 ⑤v1 사이징 그대로(Top3×100만, 익절X).
+  - `ma_exit.decide_exit(closes, strategies=)`: **tight**(A/B만 매칭)=20MA 2일이탈 **전량** / **wide**(C/D 포함 or 전략정보 없음 폴백)=기존 20MA 50%→60MA 전량. PULLBACK 보호·CORRECTION 선제50%는 양쪽 유지.
+  - 배선: top3_bridge가 picks `strategies`(["A","C"]) 보존 → positions DB `strategy` 컬럼(CSV, 구스키마 ALTER 마이그레이션) → auto_trader 매수 시 저장·매도 시 적용.
+  - **D 손절 모순 해소**: yaml 주석(구름하단/20일선, 05-31)은 구버전 — opinion(60일선 2일이탈, 06-01 b1a1d3c)이 최신. 주석 정정함. E·급등초입은 Top3 비포함이라 자동매매 무관.
+  - 259 테스트(254+5). **새 기준선 259**.
+- **P1 남은 절차**: ①사용자 서버 `.env` `KIS_PAPER_*` 3키 입력(06-07 현재 미입력) → ②월요일(06-09) 장중 dry-run `venv/bin/python -m src.trading.auto_trader buy` → ③정상 시 cron 등록(평일 15:20 buy --send / 15:50 sell --send) → ④첫 체결 KIS 모의계좌 확인.
+
+### 🆕 대기 작업: 코인 시세 리포팅 (매일 17:00 KST, **주말 포함**) — 사용자 확정 스펙(06-07)
+- **콘텐츠**: 시세 + **김치프리미엄** + 코인 공포탐욕지수 + BTC 도미넌스 등 심리지표.
+- **유니버스**: BTC·ETH + 시총 상위 주요코인 ~10개(고정 리스트).
+- **소스**: 업비트 KRW(시세 무인증 `api.upbit.com/v1/ticker`) **+** 글로벌 USD(CoinGecko `/coins/markets`·`/global`(도미넌스)) → 김프 = 업비트KRW ÷ (글로벌USD×USDKRW환율) − 1 (환율 소스 결정 필요). 코인 F&G = `api.alternative.me/fng/`(무료).
+- **채널**: 텔레그램 + 웹 리포트(publisher 경유, 주식 리포트와 동일 패턴).
+- **스케줄**: scheduler에 cron `day_of_week='*'` 17:00 (주식 잡과 달리 주말 포함 — 휴장스킵 로직 타면 안 됨 주의).
+- **미결정(구현 시 확인)**: 환율 소스(기존 프로젝트 내 유무 확인), 신규 mode 추가 시 analyzer 2곳(_market_context·프롬프트선택) 포함 교훈 적용, 외부 API §7 안전규칙(랜덤딜레이·백오프·HARD STOP) 적용.
 
 ## 0b. 2026-06-05 세션 (서학개미 + 미장 리포트 개선 — 전부 배포 완료)
 서학개미(한국인) 미국주식 **종목별 순매수**를 예탁결제원 SEIBro 데이터 endpoint 직접호출로 구현(무인증·서버OK). 상세 스펙·코드맵은 메모리 [[seibro_netbuy]].
@@ -120,7 +136,7 @@
    - **15:50 sell**: `venv/bin/python -m src.trading.auto_trader sell --send`
    - ⚠️ 전제: pre 리포트(14:50)가 `data/top3_<date>_pre.json` 생성해야 buy 동작(브리지).
 4. 첫 `--send` 매수일에 KIS 모의계좌에서 체결·odno 확인.
-**⚠️ 사용자 결정 필요(코딩 전 협의)**: 손절 전략 확정(① 일봉 20/60MA[현재 구현] vs ② 60분 20MA 1차손절[`scripts/backtest_60min_stop.py`로 백테스트 가능, KIS 분봉 제약→yfinance 우회 필요] vs ③ ATR). 동시보유 상한·익절(목표가) 추가 여부.
+**✅ 손절 전략 확정·구현 완료(06-07)**: ABCDE 전략별 손절(§0a, 커밋 8c1f906). 동시보유 상한·익절 = v1 그대로(추가 안 함, 사용자 확정). 60분/ATR 손절은 폐기(전략별 채택).
 
 ### 🟠 P2. 미국 스크리닝 잔버그
 - **심볼 정규화**: FDR `BRKB`/`BFB` → yfinance `BRK-B`/`BF-B` (2종목 OHLCV 실패). us_morning 라이브에 미국 스크리닝이 들어왔으니 우선순위 ↑. 양방향 매핑(요청·결과 키) 주의.
