@@ -7,36 +7,45 @@
 <style>
   :root { --bg:#0f1117; --card:#1a1d27; --text:#e8eaf0; --muted:#8b91a5;
            --up:#2ecc71; --down:#e74c3c; --line:#2a2e3d; }
+  * { box-sizing:border-box; }
   body { background:var(--bg); color:var(--text); font-family:'Segoe UI',sans-serif;
-          margin:0; padding:16px; }
+          margin:0; padding:12px; overflow-wrap:anywhere; }
   .wrap { max-width:760px; margin:0 auto; }
-  h1 { font-size:1.3rem; }
-  .senti { background:var(--card); border:1px solid var(--line); border-radius:10px;
-            padding:10px 14px; margin:12px 0; font-size:.95rem; }
-  table { width:100%; border-collapse:collapse; background:var(--card);
-           border-radius:10px; overflow:hidden; }
-  th, td { padding:8px 10px; border-bottom:1px solid var(--line); font-size:.9rem; }
-  th { color:var(--muted); text-align:right; font-weight:600; }
-  th.name, td.name { text-align:left; }
-  td.num { text-align:right; font-variant-numeric:tabular-nums; }
-  .sym { color:var(--muted); font-size:.8rem; }
+  h1 { font-size:1.15rem; margin:6px 0 10px; line-height:1.4; }
+  .senti { display:flex; flex-wrap:wrap; gap:6px; margin:10px 0 14px; }
+  .chip { background:var(--card); border:1px solid var(--line); border-radius:8px;
+           padding:6px 10px; font-size:.85rem; line-height:1.5; }
+  .cards { display:grid; grid-template-columns:1fr; gap:10px; }
+  @media (min-width:640px) { .cards { grid-template-columns:1fr 1fr; } }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:12px;
+           padding:12px 14px; min-width:0; }
+  .head { display:flex; justify-content:space-between; align-items:center; gap:8px; }
+  .cname { font-weight:700; font-size:1rem; }
+  .phase { font-size:.85rem; white-space:nowrap; }
+  .krw { font-size:1.25rem; font-weight:700; margin-top:6px;
+          font-variant-numeric:tabular-nums; }
+  .won { font-size:.85rem; font-weight:400; color:var(--muted); margin:0 4px 0 1px; }
+  .krw .up, .krw .down { font-size:.95rem; }
+  .sub { color:var(--text); font-size:.9rem; margin-top:4px;
+          font-variant-numeric:tabular-nums; }
+  .ind { color:var(--muted); font-size:.82rem; margin-top:8px; line-height:1.6;
+          border-top:1px solid var(--line); padding-top:8px;
+          font-variant-numeric:tabular-nums; }
+  .strat { margin-top:6px; font-size:.85rem; color:#f5c542; }
+  .sym { color:var(--muted); font-size:.8rem; font-weight:400; }
   .up { color:var(--up); } .down { color:var(--down); }
-  .disclaimer { color:var(--muted); font-size:.8rem; margin-top:14px; }
+  .disclaimer { color:var(--muted); font-size:.78rem; margin-top:16px; line-height:1.6; }
 </style>
 </head>
 <body>
 <div class="wrap">
-<h1>🪙 코인 시세 리포트 <span class="sym">2026-06-07 23:25 KST</span></h1>
-<div class="senti">😨 공포탐욕 <b>12</b> (극단적 공포) &nbsp;|&nbsp; 👑 BTC 도미넌스 <b>56.1%</b> · 전체시총 24h +3.2% &nbsp;|&nbsp; 💱 환율 1,559원/$</div>
-<table>
-<thead><tr><th class="name">코인</th><th>업비트(원)</th><th>24h</th>
-<th>글로벌(USD)</th><th>24h</th><th>김치프리미엄</th><th>일봉·4H 상태</th><th>전략</th></tr></thead>
-<tbody>
-<tr><td class='name'>비트코인 <span class='sym'>BTC</span></td><td class='num'>94,300,000</td><td class='num up'>+1.9%</td><td class='num'>$62,007</td><td class='num up'>+1.9%</td><td class='num down'>-2.44%</td><td>🔵바닥권<br><span class='sym'>20일 -11.6% · 60일 -15.9% · RSI 22 · 4H RSI 45(20MA +0.8%)</span></td><td class='num'>—</td></tr><tr><td class='name'>이더리움 <span class='sym'>ETH</span></td><td class='num'>2,475,000</td><td class='num up'>+3.7%</td><td class='num'>$1,629</td><td class='num up'>+4.4%</td><td class='num down'>-2.52%</td><td>🔵바닥권<br><span class='sym'>20일 -15.0% · 60일 -23.6% · RSI 21 · 4H RSI 41(20MA +0.1%)</span></td><td class='num'>—</td></tr><tr><td class='name'>리플 <span class='sym'>XRP</span></td><td class='num'>1,718</td><td class='num up'>+3.4%</td><td class='num'>$1.13</td><td class='num up'>+2.7%</td><td class='num down'>-2.47%</td><td>🔵바닥권<br><span class='sym'>20일 -9.9% · 60일 -15.3% · RSI 29 · 4H RSI 48(20MA +1.4%)</span></td><td class='num'>—</td></tr><tr><td class='name'>솔라나 <span class='sym'>SOL</span></td><td class='num'>98,550</td><td class='num up'>+4.2%</td><td class='num'>$64.90</td><td class='num up'>+3.7%</td><td class='num down'>-2.59%</td><td>🔵바닥권<br><span class='sym'>20일 -16.1% · 60일 -21.1% · RSI 24 · 4H RSI 41(20MA +0.4%)</span></td><td class='num'>—</td></tr><tr><td class='name'>도지코인 <span class='sym'>DOGE</span></td><td class='num'>129</td><td class='num up'>+4.0%</td><td class='num'>$0.0845</td><td class='num up'>+2.9%</td><td class='num down'>-2.04%</td><td>🔵바닥권<br><span class='sym'>20일 -11.6% · 60일 -14.6% · RSI 27 · 4H RSI 45(20MA +0.9%)</span></td><td class='num'>—</td></tr><tr><td class='name'>에이다 <span class='sym'>ADA</span></td><td class='num'>247</td><td class='num up'>+3.3%</td><td class='num'>$0.1630</td><td class='num up'>+1.5%</td><td class='num down'>-2.82%</td><td>🔵바닥권<br><span class='sym'>20일 -25.0% · 60일 -31.5% · RSI 17 · 4H RSI 35(20MA -0.6%)</span></td><td class='num'>—</td></tr><tr><td class='name'>트론 <span class='sym'>TRX</span></td><td class='num'>499</td><td class='num up'>+1.4%</td><td class='num'>$0.3286</td><td class='num up'>+2.4%</td><td class='num down'>-2.58%</td><td>🔻하락전환<br><span class='sym'>20일 -4.2% · 60일 -1.1% · RSI 42 · 4H RSI 57(20MA +1.5%)</span></td><td class='num'>—</td></tr><tr><td class='name'>아발란체 <span class='sym'>AVAX</span></td><td class='num'>10,200</td><td class='num up'>+0.7%</td><td class='num'>$6.70</td><td class='num down'>-1.4%</td><td class='num down'>-2.34%</td><td>🔵바닥권<br><span class='sym'>20일 -20.2% · 60일 -25.0% · RSI 17 · 4H RSI 31(20MA -3.5%)</span></td><td class='num'>—</td></tr><tr><td class='name'>체인링크 <span class='sym'>LINK</span></td><td class='num'>11,790</td><td class='num up'>+4.9%</td><td class='num'>$7.74</td><td class='num up'>+4.5%</td><td class='num down'>-2.28%</td><td>🔵바닥권<br><span class='sym'>20일 -11.0% · 60일 -14.8% · RSI 32 · 4H RSI 51(20MA +2.7%)</span></td><td class='num'>—</td></tr><tr><td class='name'>폴카닷 <span class='sym'>DOT</span></td><td class='num'>1,468</td><td class='num up'>+2.6%</td><td class='num'>$0.9672</td><td class='num up'>+1.2%</td><td class='num down'>-2.64%</td><td>🔵바닥권<br><span class='sym'>20일 -15.4% · 60일 -20.0% · RSI 27 · 4H RSI 41(20MA -0.5%)</span></td><td class='num'>—</td></tr>
-</tbody>
-</table>
+<h1>🪙 코인 시세 리포트 <span class="sym">2026-06-07 23:39 KST</span></h1>
+<div class="senti"><span class='chip'>😨 공포탐욕 <b>12</b> (극단적 공포)</span><span class='chip'>👑 BTC 도미넌스 <b>56.1%</b> · 전체시총 24h +3.2%</span><span class='chip'>💱 환율 1,559원/$</span></div>
+<div class="cards">
+<div class="card"><div class='head'><span class='cname'>테더 <span class='sym'>USDT</span></span></div><div class='krw'>1,517<span class='won'>원</span> <span class='down'>-0.2%</span></div><div class='sub'>$0.9995 <span class='up'>+0.0%</span> · 김프 <span class='down'>-2.64%</span></div></div><div class="card"><div class='head'><span class='cname'>비트코인 <span class='sym'>BTC</span></span><span class='phase'>🔵바닥권</span></div><div class='krw'>94,406,000<span class='won'>원</span> <span class='up'>+2.0%</span></div><div class='sub'>$62,202 <span class='up'>+2.1%</span> · 김프 <span class='down'>-2.64%</span></div><div class='ind'>일봉: 🔵바닥권 · 20일 -11.5% · 60일 -15.8% · RSI 23 · MACD 음·데드<br>4시간봉: 🔻하락전환 · 20MA +0.9% · 60MA -6.6% · RSI 45 · MACD 음·골든</div></div><div class="card"><div class='head'><span class='cname'>이더리움 <span class='sym'>ETH</span></span><span class='phase'>🔵바닥권</span></div><div class='krw'>2,480,000<span class='won'>원</span> <span class='up'>+3.9%</span></div><div class='sub'>$1,635 <span class='up'>+4.7%</span> · 김프 <span class='down'>-2.71%</span></div><div class='ind'>일봉: 🔵바닥권 · 20일 -14.9% · 60일 -23.5% · RSI 21 · MACD 음·데드<br>4시간봉: 🔵바닥권 · 20MA +0.2% · 60MA -10.1% · RSI 41 · MACD 음·골든</div></div><div class="card"><div class='head'><span class='cname'>리플 <span class='sym'>XRP</span></span><span class='phase'>🔵바닥권</span></div><div class='krw'>1,723<span class='won'>원</span> <span class='up'>+3.7%</span></div><div class='sub'>$1.14 <span class='up'>+2.7%</span> · 김프 <span class='down'>-3.04%</span></div><div class='ind'>일봉: 🔵바닥권 · 20일 -9.8% · 60일 -15.1% · RSI 29 · MACD 음·데드<br>4시간봉: 🔻하락전환 · 20MA +1.6% · 60MA -6.1% · RSI 48 · MACD 음·골든</div></div><div class="card"><div class='head'><span class='cname'>솔라나 <span class='sym'>SOL</span></span><span class='phase'>🔵바닥권</span></div><div class='krw'>98,800<span class='won'>원</span> <span class='up'>+4.4%</span></div><div class='sub'>$65.22 <span class='up'>+3.9%</span> · 김프 <span class='down'>-2.82%</span></div><div class='ind'>일봉: 🔵바닥권 · 20일 -15.9% · 60일 -21.0% · RSI 25 · MACD 음·데드<br>4시간봉: 🔵바닥권 · 20MA +0.6% · 60MA -10.9% · RSI 41 · MACD 음·골든</div></div><div class="card"><div class='head'><span class='cname'>도지코인 <span class='sym'>DOGE</span></span><span class='phase'>🔵바닥권</span></div><div class='krw'>129<span class='won'>원</span> <span class='up'>+4.0%</span></div><div class='sub'>$0.0848 <span class='up'>+3.1%</span> · 김프 <span class='down'>-2.40%</span></div><div class='ind'>일봉: 🔵바닥권 · 20일 -11.0% · 60일 -14.0% · RSI 29 · MACD 음·데드<br>4시간봉: 🔵바닥권 · 20MA +1.7% · 60MA -7.1% · RSI 48 · MACD 음·골든</div></div><div class="card"><div class='head'><span class='cname'>에이다 <span class='sym'>ADA</span></span><span class='phase'>🔵바닥권</span></div><div class='krw'>248<span class='won'>원</span> <span class='up'>+3.8%</span></div><div class='sub'>$0.1636 <span class='up'>+1.7%</span> · 김프 <span class='down'>-2.73%</span></div><div class='ind'>일봉: 🔵바닥권 · 20일 -25.0% · 60일 -31.5% · RSI 17 · MACD 음·데드<br>4시간봉: 🔵바닥권 · 20MA -0.6% · 60MA -19.0% · RSI 35 · MACD 음·골든</div></div><div class="card"><div class='head'><span class='cname'>트론 <span class='sym'>TRX</span></span><span class='phase'>🔻하락전환</span></div><div class='krw'>499<span class='won'>원</span> <span class='up'>+1.4%</span></div><div class='sub'>$0.3286 <span class='up'>+2.5%</span> · 김프 <span class='down'>-2.59%</span></div><div class='ind'>일봉: 🔻하락전환 · 20일 -4.2% · 60일 -1.1% · RSI 42 · MACD 음·데드<br>4시간봉: 🔻하락전환 · 20MA +1.5% · 60MA -0.6% · RSI 57 · MACD 음·골든</div></div><div class="card"><div class='head'><span class='cname'>아발란체 <span class='sym'>AVAX</span></span><span class='phase'>🔵바닥권</span></div><div class='krw'>10,270<span class='won'>원</span> <span class='up'>+1.4%</span></div><div class='sub'>$6.76 <span class='down'>-0.4%</span> · 김프 <span class='down'>-2.54%</span></div><div class='ind'>일봉: 🔵바닥권 · 20일 -19.7% · 60일 -24.4% · RSI 18 · MACD 음·데드<br>4시간봉: 🔵바닥권 · 20MA -2.8% · 60MA -15.0% · RSI 32 · MACD 음·골든</div></div><div class="card"><div class='head'><span class='cname'>체인링크 <span class='sym'>LINK</span></span><span class='phase'>🔵바닥권</span></div><div class='krw'>11,820<span class='won'>원</span> <span class='up'>+5.2%</span></div><div class='sub'>$7.78 <span class='up'>+4.9%</span> · 김프 <span class='down'>-2.54%</span></div><div class='ind'>일봉: 🔵바닥권 · 20일 -10.7% · 60일 -14.6% · RSI 32 · MACD 음·데드<br>4시간봉: 🔻하락전환 · 20MA +2.9% · 60MA -5.9% · RSI 51 · MACD 음·골든</div></div><div class="card"><div class='head'><span class='cname'>폴카닷 <span class='sym'>DOT</span></span><span class='phase'>🔵바닥권</span></div><div class='krw'>1,471<span class='won'>원</span> <span class='up'>+2.8%</span></div><div class='sub'>$0.9718 <span class='up'>+1.7%</span> · 김프 <span class='down'>-2.89%</span></div><div class='ind'>일봉: 🔵바닥권 · 20일 -15.2% · 60일 -19.9% · RSI 27 · MACD 음·데드<br>4시간봉: 🔵바닥권 · 20MA -0.3% · 60MA -9.9% · RSI 41 · MACD 음·골든</div></div>
+</div>
 <p class="disclaimer">📌 참고용 정보입니다. 매수·매도 추천이 아니며 투자 판단과 책임은 본인에게 있습니다.<br>
-소스: 업비트(KRW) · CoinGecko(USD·도미넌스) · alternative.me(공포탐욕). 김프 = 업비트 ÷ (글로벌×환율) − 1.<br>
+소스: 업비트(KRW) · CoinGecko(USD·도미넌스) · alternative.me(공포탐욕). 김치프리미엄 = 업비트 ÷ (글로벌×환율) − 1.<br>
 전략(A~E) = 주식 스크리너와 동일 로직을 코인 일봉에 적용(참고용). E 🔥 = 코인 공포탐욕≤25 시장동반바닥.</p>
 </div>
 </body>
