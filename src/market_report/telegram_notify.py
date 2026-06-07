@@ -542,6 +542,15 @@ def _format_us_morning_summary(snap: MarketSnapshot) -> str:
                 lines.append(f"  · {q['name']} {sign}{q.get('change_pct', 0):.2f}%")
             lines.append("")
 
+    # 🚀 프리장 급등 TOP5 — overview-only 정책의 승인된 예외(us_premarket 한정, 사용자 2026-06-08)
+    if snap.mode == "us_premarket" and getattr(snap, "us_premarket_top", None):
+        lines.append("🚀 *프리장 급등 TOP5* (ABCD 통과 종목 중)")
+        for t in snap.us_premarket_top[:5]:
+            sign = "+" if t.get("change_pct", 0) >= 0 else ""
+            nm = t.get("name") or t.get("symbol", "")
+            lines.append(f"  · {nm}({t.get('symbol', '')}) {sign}{t.get('change_pct', 0):.1f}%")
+        lines.append("")
+
     # 종목 상세(주요종목·관심테마·Top3·스크리닝)는 텔레그램에서 생략 → 웹 링크로(사용자 2026-06-04).
     # 텔레그램은 '시황(지수·AI요약·뉴스) + 주도섹터'까지만. 웹 report.html은 전체 섹션 유지.
     lines.append(f"📄 *종목·추천·스크리닝 전체 보기* → [리포트 열기]({url})")

@@ -39,6 +39,26 @@ def test_us_morning_telegram_is_overview_only() -> None:
     assert "한국장 시사점" not in msg
 
 
+def test_us_premarket_telegram_top5() -> None:
+    """프리장 급등 TOP5를 텔레그램에도 표시(us_premarket 한정, 사용자 2026-06-08 승인).
+
+    overview-only 정책(2026-06-04)의 승인된 예외 — 마감(us_morning)에는 여전히 없음."""
+    snap = _us_snap()
+    snap.mode = "us_premarket"
+    snap.us_premarket_top = [
+        {"symbol": "NVDA", "name": "NVIDIA", "change_pct": 4.2, "sector": "IT"},
+        {"symbol": "AVGO", "name": "Broadcom", "change_pct": 2.1, "sector": "IT"},
+    ]
+    msg = _format_us_morning_summary(snap)
+    assert "프리장 급등 TOP5" in msg
+    assert "NVIDIA(NVDA) +4.2%" in msg
+    # 마감 리포트(us_morning)에는 TOP5 섹션 없음(overview-only 유지)
+    snap2 = _us_snap()
+    snap2.us_premarket_top = snap.us_premarket_top
+    msg2 = _format_us_morning_summary(snap2)
+    assert "프리장 급등 TOP5" not in msg2
+
+
 def test_us_morning_no_korean_stock_links() -> None:
     """미국 종목만 — 한국 네이버 종목 링크가 없어야 함."""
     msg = _format_us_morning_summary(_us_snap())
