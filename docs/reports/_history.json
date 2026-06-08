@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-06-08",
+    "time": "14:50",
+    "mode": "pre_close",
+    "url": "reports/2026-06-08-pre.html",
+    "summary": "코스피와 코스닥 지수가 모두 8% 이상 급락하며 투자심리가 크게 위축된 하루입니다. 장중 서킷브레이커가 발동되는 등 변동성이 극심했습니다.",
+    "kospi_pct": -8.07,
+    "kosdaq_pct": -8.04
+  },
+  {
+    "date": "2026-06-08",
     "time": "14:40",
     "mode": "midday",
     "url": "reports/2026-06-08-midday.html",
