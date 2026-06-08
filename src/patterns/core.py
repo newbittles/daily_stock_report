@@ -1139,3 +1139,46 @@ def is_surge_start(
     vr = bo.metrics.get("vol_ratio", 0)
     return PatternResult(True, f"급등초입 ({breakout_lookback}일돌파·거래량{vr:.1f}배·당일{chg:+.1f}%·20선{gap20:+.0f}%)",
                          {"gap20": gap20, "chg": chg, "vol_ratio": vr})
+
+
+def is_ma60_support(
+    candles: list[Candle], ma_period: int = 60, touch_tol: float = 0.01,
+    close_pos_min: float = 0.5, trend_lookback: int = 5,
+) -> PatternResult:
+    """F. 60일선 지지 마감 — 장중 60일선 터치/하회 후 60일선 위로 끌어올려 마감(아랫꼬리 지지).
+
+    사용자 2026-06-09(피에스케이 6/2 사례): 상승추세 종목이 60일선까지 눌렸다가 지지받고
+    마감하는 자리. E(투매바닥)는 RSI≤30 과매도를 요구해 이런 '얕은 눌림 지지'를 놓친다 → 별도 F.
+
+    조건(모두 충족):
+      ① 당일 저가가 60일선 터치/하회   (low ≤ MA60×(1+touch_tol))
+      ② 종가는 60일선 위 마감(지지 성공) (close ≥ MA60)
+      ③ 아랫꼬리 지지 — 종가가 당일 캔들 상단부 (종가위치 ≥ close_pos_min)
+      ④ falling-knife 제외 — 60일선이 우상향(최근 trend_lookback봉 상승)
+    ※ 지수 게이트(코스피/나스닥 RSI 등)는 순수성 위해 호출측(pipeline)에서 AND 결합.
+    """
+    closes = _closes(candles)
+    if len(candles) < ma_period + trend_lookback + 1:
+        return PatternResult(False, f"데이터 부족({ma_period + trend_lookback + 1}봉)")
+    ma = moving_average(closes, ma_period)
+    ma60 = ma[-1]
+    if ma60 is None or ma60 <= 0:
+        return PatternResult(False, "MA60 없음")
+    last = candles[-1]
+    low_gap = (last.low / ma60 - 1) * 100
+    close_gap = (last.close / ma60 - 1) * 100
+    if last.low > ma60 * (1 + touch_tol):
+        return PatternResult(False, f"저가 60선 미접촉({low_gap:+.1f}%>{touch_tol * 100:.0f}%)")
+    if last.close < ma60:
+        return PatternResult(False, f"종가 60선 이탈({close_gap:+.1f}%)")
+    rng = last.high - last.low
+    pos = (last.close - last.low) / rng if rng > 0 else 1.0
+    if pos < close_pos_min:
+        return PatternResult(False, f"아랫꼬리 약함(종가위치 {pos * 100:.0f}%<{close_pos_min * 100:.0f}%)")
+    prior = ma[-(trend_lookback + 1)]
+    if prior is None or ma60 <= prior:
+        return PatternResult(False, "60선 우상향 아님(falling-knife 제외)")
+    return PatternResult(
+        True,
+        f"60일선 지지 (저가 {low_gap:+.1f}%·종가 {close_gap:+.1f}%·꼬리지지 {pos * 100:.0f}%)",
+        {"ma60_gap_low": low_gap, "ma60_gap_close": close_gap, "close_pos": pos * 100})
