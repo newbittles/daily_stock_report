@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-06-08",
+    "time": "19:00",
+    "mode": "us_premarket",
+    "url": "reports/2026-06-08-us-pre.html",
+    "summary": "프리장에서 미국 증시는 혼조세를 보이고 있습니다. 중동 지정학적 리스크로 인한 유가 상승 우려에도 불구하고, AI 관련 기술주 및 반도체 섹터가 강세를 보이며 시장 하단을 지지하는 모습입니다. 다만, 직전 정규장 마감 기준 주요 지수들은 하락 마감했으",
+    "kospi_pct": null,
+    "kosdaq_pct": null
+  },
+  {
+    "date": "2026-06-08",
     "time": "16:00",
     "mode": "post_close",
     "url": "reports/2026-06-08-post.html",
