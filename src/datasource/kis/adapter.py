@@ -259,6 +259,61 @@ class KisAdapter:
         candles = [all_candles[d] for d in sorted(all_candles)]  # 과거→최신
         return candles[-days:] if len(candles) > days else candles
 
+    async def get_today_minutes(self, ticker: str, day: str | None = None) -> list[dict]:
+        """당일 1분봉(과거→현재) — 장중 흐름 분석용(#473/#474).
+
+        inquire-time-itemchartprice(FHKST03010200, 검증 TR)를 FID_INPUT_HOUR_1을
+        뒤로 밀며 09:00까지 페이징(1회 30봉, 당일만 INCU_YN=N). 정규장(09:00~15:30).
+        반환 [{hhmm('HHMM'), open, high, low, close, volume}] 과거→현재. 실패/빈 시 [].
+        §7: 페이지 간 분산 딜레이. HARD STOP은 전파(삼키지 않음)."""
+        day = day or datetime.now().strftime("%Y%m%d")
+        rows: dict[str, dict] = {}  # 'HHMMSS' → bar (당일만)
+        cursor = "153000"
+        prev_oldest: str | None = None
+        for _ in range(40):
+            params = {
+                "FID_ETC_CLS_CODE": "", "FID_COND_MRKT_DIV_CODE": "J",
+                "FID_INPUT_ISCD": ticker, "FID_INPUT_HOUR_1": cursor,
+                "FID_PW_DATA_INCU_YN": "N",  # 당일만
+            }
+            try:
+                data = await self._request(
+                    "/uapi/domestic-stock/v1/quotations/inquire-time-itemchartprice",
+                    _TR["ohlcv_minute"], params,
+                )
+            except KisHardStop:
+                raise  # §7: 429/인증급변 → 전체 중단
+            except Exception as exc:  # noqa: BLE001
+                logger.warning("today_minutes_failed ticker=%s error=%s", ticker, exc)
+                break
+            out = data.get("output2", []) or []
+            today = [r for r in out if str(r.get("stck_bsop_date", "")).strip() == day]
+            if not today:
+                break
+            for r in today:
+                h = str(r.get("stck_cntg_hour", "")).strip()
+                if h and h not in rows:
+                    rows[h] = r
+            oldest = min(str(r.get("stck_cntg_hour", "")).strip() for r in today)
+            if oldest == prev_oldest or oldest <= "090000":
+                break
+            prev_oldest = oldest
+            cursor = oldest
+            await asyncio.sleep(random.uniform(0.1, 0.25))  # §7 분산 딜레이
+
+        bars: list[dict] = []
+        for h in sorted(rows):  # 과거→현재
+            r = rows[h]
+            bar = {
+                "hhmm": h[:4],
+                "open": _f(r.get("stck_oprc")), "high": _f(r.get("stck_hgpr")),
+                "low": _f(r.get("stck_lwpr")), "close": _f(r.get("stck_prpr")),
+                "volume": _f(r.get("cntg_vol")),
+            }
+            if bar["open"] > 0 and bar["close"] > 0:
+                bars.append(bar)
+        return bars
+
     async def get_ranking(self, kind: RankingKind, top: int = 20) -> list[RankedStock]:
         if kind == RankingKind.VOLUME:
             return await self._ranking_volume(top)
