@@ -259,6 +259,25 @@ class KisAdapter:
         candles = [all_candles[d] for d in sorted(all_candles)]  # 과거→최신
         return candles[-days:] if len(candles) > days else candles
 
+    async def get_price_safe(self, ticker: str) -> float:
+        """현재가 — get_quote 우선, 실패(inquire-price 500 장애 #484) 시 일봉 폴백.
+
+        real 도메인 장중엔 일봉 마지막봉 close=현재가(미완성봉), 마감 후엔 당일 종가.
+        quote가 종일 500이어도 자동매매·현황이 멈추지 않게 한다. 둘 다 실패 시 0.0."""
+        try:
+            q = await self.get_quote(ticker)
+            if q.price > 0:
+                return float(q.price)
+        except Exception as exc:  # noqa: BLE001
+            logger.info("price_fallback_to_ohlcv ticker=%s reason=%s", ticker, type(exc).__name__)
+        try:
+            candles = await self.get_ohlcv(ticker, days=3)
+            if candles and candles[-1].close > 0:
+                return float(candles[-1].close)
+        except Exception as exc:  # noqa: BLE001
+            logger.warning("price_safe_ohlcv_failed ticker=%s error=%s", ticker, exc)
+        return 0.0
+
     async def get_today_minutes(self, ticker: str, day: str | None = None) -> list[dict]:
         """당일 1분봉(과거→현재) — 장중 흐름 분석용(#473/#474).
 

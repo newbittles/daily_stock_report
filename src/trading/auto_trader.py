@@ -42,10 +42,13 @@ async def buy_top3(picks, adapter, order, store, *, send: bool, today: str, noti
             if store.is_held(ticker):
                 print(f"  skip {ticker} {name} — 이미 보유")
                 continue
-            quote = await adapter.get_quote(ticker)
-            qty = calc_qty(quote.price)
+            price = await adapter.get_price_safe(ticker)  # quote 500 장애 시 일봉 폴백(#484/#492)
+            if price <= 0:
+                print(f"  skip {ticker} {name} — 현재가 조회 실패(quote·일봉 모두)")
+                continue
+            qty = calc_qty(price)
             if qty < 1:
-                print(f"  skip {ticker} {name} — 현재가 {quote.price} 1주도 예산초과")
+                print(f"  skip {ticker} {name} — 현재가 {price} 1주도 예산초과")
                 continue
             psbl = await order.inquire_psbl_order(ticker, price=0, ord_dvsn="01")
             max_qty = int(psbl.get("output", {}).get("nrcvb_buy_qty", "0") or "0")
@@ -54,12 +57,12 @@ async def buy_top3(picks, adapter, order, store, *, send: bool, today: str, noti
                 print(f"  skip {ticker} {name} — 매수가능수량 0")
                 continue
             if not send:
-                print(f"  BUY(dry-run) {ticker} {name} x{qty} (현재가 {quote.price}, 시장가)")
+                print(f"  BUY(dry-run) {ticker} {name} x{qty} (현재가 {price}, 시장가)")
                 continue
             res = await order.order_cash("buy", ticker, qty, price=0, ord_dvsn="01")
             strategy = ",".join(p.get("strategies", []) or [])  # 전략별 손절 선택용(2026-06-07)
-            store.open_position(ticker, name, today, float(quote.price), qty, strategy=strategy)
-            await _emit(notify, f"🟢 모의매수 {name}({ticker}) x{qty} @{quote.price:,.0f} "
+            store.open_position(ticker, name, today, float(price), qty, strategy=strategy)
+            await _emit(notify, f"🟢 모의매수 {name}({ticker}) x{qty} @{price:,.0f} "
                                 f"odno={res.get('output', {}).get('ODNO')} {res.get('msg1', '')}")
         except Exception as exc:  # 조용한 실패 금지 — 알리고 다음 종목 계속(사용자 2026-06-07)
             logger.exception("buy_failed ticker=%s error=%s", ticker, exc)

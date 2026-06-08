@@ -71,15 +71,28 @@ class _FakeCandle:
 
 
 class FakeAdapter:
-    def __init__(self, price, closes):
+    def __init__(self, price, closes, quote_fails=False):
         self._price = price
         self._closes = closes
+        self._quote_fails = quote_fails  # quote 500 장애 재현(#492)
 
     async def get_quote(self, ticker):
+        if self._quote_fails:
+            raise RuntimeError("inquire-price 500")
         return _FakeQuote(self._price)
 
     async def get_ohlcv(self, ticker, days=100):
         return [_FakeCandle(c) for c in self._closes]
+
+    async def get_price_safe(self, ticker):
+        try:
+            q = await self.get_quote(ticker)
+            if q.price > 0:
+                return float(q.price)
+        except Exception:  # noqa: BLE001
+            pass
+        c = await self.get_ohlcv(ticker)
+        return float(c[-1].close) if c else 0.0
 
 
 class FakeOrder:
@@ -130,6 +143,29 @@ async def test_buy_dry_run_no_order(tmp_path):
     await buy_top3(picks, FakeAdapter(82500, []), order, store, send=False, today="2026-06-04")
     assert order.calls == []            # dry-run: 주문 없음
     assert not store.is_held("005930")  # 기록도 없음
+
+
+async def test_buy_falls_back_to_ohlcv_when_quote_500(tmp_path):
+    """quote 500 장애여도 일봉 현재가로 매수 진행 (#492). 종일 quote 장애 대응."""
+    store = PositionStore(tmp_path / "p.db")
+    order = FakeOrder()
+    # quote 실패 + 일봉 마지막 종가 82500 → 12주 매수
+    adapter = FakeAdapter(price=0, closes=[80000.0, 82500.0], quote_fails=True)
+    picks = [{"ticker": "005930", "name": "삼성전자", "price": 82500}]
+    await buy_top3(picks, adapter, order, store, send=True, today="2026-06-08")
+    assert order.calls == [("buy", "005930", 12)]
+    assert store.get_open()[0].entry_price == 82500.0
+
+
+async def test_buy_skips_when_price_unavailable(tmp_path):
+    """quote·일봉 모두 실패 시 매수 스킵(주문 없음)."""
+    store = PositionStore(tmp_path / "p.db")
+    order = FakeOrder()
+    adapter = FakeAdapter(price=0, closes=[], quote_fails=True)  # 폴백도 빈 일봉
+    picks = [{"ticker": "005930", "name": "삼성전자", "price": 82500}]
+    await buy_top3(picks, adapter, order, store, send=True, today="2026-06-08")
+    assert order.calls == []
+    assert not store.is_held("005930")
 
 
 async def test_buy_top3_persists_strategy(tmp_path):
