@@ -118,6 +118,23 @@ def _phase_suffix(snap: MarketSnapshot, label: str) -> str:
     return f" {ph['emoji']} {ph['name']}" if ph else ""
 
 
+def _format_us_overnight(snap: MarketSnapshot) -> list[str]:
+    """🇺🇸 미국 야간 — 나스닥 선물 + M7 (한국 리포트 최상단, #476). 없으면 []."""
+    ov = getattr(snap, "us_overnight", None) or {}
+    fut = ov.get("futures") or []
+    m7 = ov.get("m7") or []
+    if not fut and not m7:
+        return []
+    lines: list[str] = ["🇺🇸 *미국 야간*"]
+    for f in fut:
+        lines.append(f"  {f['name']} {f['change_pct']:+.2f}%")
+    if m7:
+        parts = [f"{q['name']} {q['change_pct']:+.1f}%" for q in m7]
+        lines.append("  M7: " + " · ".join(parts))
+    lines.append("")
+    return lines
+
+
 def _format_index_lines(snap: MarketSnapshot) -> list[str]:
     """주요 지수 4개 — 모바일 줄바꿈 자연스럽게 각각 한 줄씩. 지수 옆 신호등 병기(#426)."""
     lines: list[str] = []
@@ -447,6 +464,8 @@ def _format_midday_summary(snap: MarketSnapshot) -> str:
     date = snap.generated_at.strftime("%Y-%m-%d %H:%M")
     lines: list[str] = [f"🟢 *장중 리포트* — {date}", ""]
 
+    lines.extend(_format_us_overnight(snap))  # 🇺🇸 미국 야간(나스닥선물+M7) 최상단(#476)
+
     # 지수 (코스피·코스닥·환율·유가 각 1줄)
     lines.extend(_format_index_lines(snap))
 
@@ -563,6 +582,9 @@ def _format_us_morning_summary(snap: MarketSnapshot) -> str:
             lines.append(f"🪙 금 ${snap.gold['value']:,.0f} ({snap.gold['change_pct']:+.1f}%)")
         if snap.wti:
             lines.append(f"🛢 WTI ${snap.wti['value']:,.1f} ({snap.wti['change_pct']:+.1f}%)")
+        ewy = getattr(snap, "ewy", None)  # 🇰🇷 한국 추종 ETF 고정 표시(#479)
+        if ewy:
+            lines.append(f"🇰🇷 {ewy['name']} ${ewy['price']:,.2f} ({ewy['change_pct']:+.2f}%)")
         lines.append("")
 
     fg = getattr(snap, "fear_greed", None)
@@ -625,6 +647,7 @@ def _format_kr_morning_summary(snap: MarketSnapshot) -> str:
     """한국장 프리(08:05)/장초(09:15) 요약 — 지수·신호등 + 시초 상승률 + 전일 Top3·종가베팅 시초 + AI(#404)."""
     title = "🌅 *한국장 프리 리포트* (NXT 프리장)" if snap.mode == "kr_premarket" else "🏁 *한국장 장초 리포트*"
     lines: list[str] = [f"{title} — {snap.generated_at.strftime('%m-%d %H:%M')}", ""]
+    lines.extend(_format_us_overnight(snap))  # 🇺🇸 미국 야간(나스닥선물+M7) 최상단(#476)
     lines.extend(_format_index_lines(snap))  # 지수·공포탐욕·신호등/이격
     if snap.mode == "kr_premarket" and snap.overtime_gainers:
         lines.append("🚀 *NXT 프리장 상승률 상위*")

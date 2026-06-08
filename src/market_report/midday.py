@@ -87,6 +87,13 @@ async def run_midday(
     except Exception as exc:  # noqa: BLE001
         logger.warning("midday_kis_failed error=%s", exc)
 
+    # 미국 야간 시세(나스닥 선물 + M7) — 한국 리포트 최상단(#476)
+    try:
+        from src.datasource.us.overnight import fetch_us_overnight
+        snap.us_overnight = await fetch_us_overnight()
+    except Exception as exc:  # noqa: BLE001
+        logger.warning("midday_overnight_failed error=%s", exc)
+
     # 강세 테마는 collect_snapshot의 snap.top_themes(naver, 빠름)로 충분.
     # 주도테마(judal) 역인덱스는 정오 최초 크롤이 무거워 midday에선 생략(가벼운 알림 유지).
 

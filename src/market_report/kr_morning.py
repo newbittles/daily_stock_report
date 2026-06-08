@@ -122,6 +122,13 @@ async def run_kr_morning(
     except Exception as exc:  # noqa: BLE001
         logger.warning("%s_kis_failed error=%s", mode, exc)
 
+    # 미국 야간 시세(나스닥 선물 + M7) — 한국 리포트 최상단(#476)
+    try:
+        from src.datasource.us.overnight import fetch_us_overnight
+        snap.us_overnight = await fetch_us_overnight()
+    except Exception as exc:  # noqa: BLE001
+        logger.warning("%s_overnight_failed error=%s", mode, exc)
+
     # AI 시장 분위기 요약(전일 미국장·환율·수급·신호등 종합 → 오늘 시초 분위기)
     try:
         from src.market_report.analyzer import summarize_midday

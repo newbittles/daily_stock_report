@@ -129,6 +129,11 @@ async def collect_us_snapshot() -> MarketSnapshot:
         snap.fear_greed = await fetch_fear_greed()  # 공포탐욕지수(바닥 보조, 사용자 #331)
     except Exception as exc:  # noqa: BLE001
         logger.warning("us_fear_greed_failed error=%s", exc)
+    try:  # EWY(한국 MSCI ETF) — 미국 마감 리포트 고정 표시(#479)
+        from src.datasource.us.fdr_source import fetch_ewy
+        snap.ewy = await fetch_ewy()
+    except Exception as exc:  # noqa: BLE001
+        logger.warning("us_ewy_failed error=%s", exc)
     try:  # 지수 이평선 이격도(고점 판단, 사용자 #357) + 시장 국면 신호등(#362)
         snap.ma_gaps = {"나스닥": await _index_ma_gaps("IXIC"), "S&P500": await _index_ma_gaps("US500")}
         _fill_market_phase(snap)

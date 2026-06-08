@@ -512,6 +512,11 @@ ${{ "{:,.2f}".format(item.price) }} <span class="{{ 'up-text' if pct >= 0 else '
         </div>
         {% endif %}
       </div>
+      {# 🇰🇷 EWY(한국 MSCI ETF) 고정 표시 — 미국이 본 한국 시장(#479) #}
+      {% if snap.ewy %}
+      <p style="margin-top:0.6rem;">🇰🇷 <strong>{{ snap.ewy.name }}</strong> ${{ "{:,.2f}".format(snap.ewy.price) }}
+        <span class="{{ 'up-text' if snap.ewy.change_pct >= 0 else 'down-text' }}">{{ '+' if snap.ewy.change_pct >= 0 else '' }}{{ "{:.2f}".format(snap.ewy.change_pct) }}%</span></p>
+      {% endif %}
       {# 🤖 AI 시장요약 — 지수 바로 아래 (us_morning/us_premarket) #}
       {% if snap.mode in ['us_morning', 'us_premarket', 'us_intraday'] and snap.summary %}
       <div class="summary-box" style="margin-top:0.8rem;"><div class="label">🤖 AI 시장 요약</div><p>{{ snap.summary }}</p></div>
@@ -678,6 +683,24 @@ ${{ "{:,.2f}".format(item.price) }} <span class="{{ 'up-text' if pct >= 0 else '
       </ul>
       {% endif %}
       <p class="disclaimer" style="font-size:12px;">※ 예탁결제원(SEIBro) 최근 5거래일 한국인 순매수/순매도 결제금액. 자금이 어디로 유입·유출되는지 참고용.</p>
+    </section>
+    {% endif %}
+
+    {# 🇺🇸 미국 야간 — 나스닥 선물 + M7 (한국 리포트 최상단, #476) #}
+    {% if snap.us_overnight and (snap.us_overnight.futures or snap.us_overnight.m7) %}
+    <section>
+      <h2><span class="icon">🇺🇸</span>미국 야간 <span style="color:var(--text-dim);font-size:0.8rem;">(나스닥 선물·M7, 전일 정규장 종가 대비)</span></h2>
+      {% for f in snap.us_overnight.futures %}
+      <p>📊 <strong>{{ f.name }}</strong> <span class="{{ 'up-text' if f.change_pct >= 0 else 'down-text' }}">{{ '+' if f.change_pct >= 0 else '' }}{{ "{:.2f}".format(f.change_pct) }}%</span></p>
+      {% endfor %}
+      {% if snap.us_overnight.m7 %}
+      <ul class="watch-list">
+        {% for q in snap.us_overnight.m7 %}
+        <li>{{ q.name }} <span class="pick-ticker">{{ q.symbol }}{{ mk(q.symbol) }}</span> ${{ "{:,.2f}".format(q.price) }}
+          <span class="{{ 'up-text' if q.change_pct >= 0 else 'down-text' }}">{{ '+' if q.change_pct >= 0 else '' }}{{ "{:.1f}".format(q.change_pct) }}%</span></li>
+        {% endfor %}
+      </ul>
+      {% endif %}
     </section>
     {% endif %}
 

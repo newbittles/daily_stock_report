@@ -83,6 +83,10 @@ class MarketSnapshot:
     # 지수 등락률 라벨 — 프리장(08:0x)엔 당일 등락이 없어(네이버 0.00% 고정, #469)
     # FDR 직전 거래일 등락률로 대체하고 "전일"로 표기. 빈 문자열=당일 등락(기본).
     index_pct_label: str = ""
+    # 미국 야간 시세 — 한국 리포트 최상단(#476). {futures:[{symbol,name,price,change_pct}], m7:[...]}
+    us_overnight: dict | None = None
+    # EWY(한국 MSCI ETF) — 미국 마감 리포트 고정(#479). {name, price, change_pct, date}
+    ewy: dict | None = None
     # 매크로 (지수 2x2 매트릭스 — 환율/유가)
     fx: dict | None = None    # {name, value, change_pct} USD/KRW
     wti: dict | None = None   # {name, value, change_pct} WTI 유가

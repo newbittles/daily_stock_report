@@ -147,6 +147,18 @@ async def fetch_us_top_volume_sectors(top: int = 5) -> list[USQuote]:
     return ranked[:top]
 
 
+async def fetch_ewy() -> dict | None:
+    """EWY(iShares MSCI Korea ETF) 시세 — 미국 마감 리포트 고정 표시(사용자 #479).
+
+    미국 투자자가 본 '한국 시장' 등락. FDR 일봉(전일 미국 정규장 종가 대비).
+    실패 시 None(섹션 생략). 반환 {name, price, change_pct, date}."""
+    quotes = await asyncio.to_thread(_fetch_quotes_sync, {"EWY": "EWY(한국 MSCI ETF)"})
+    if not quotes:
+        return None
+    q = quotes[0]
+    return {"name": q.name, "price": q.price, "change_pct": q.change_pct, "date": q.date}
+
+
 async def fetch_us_indices() -> list[USQuote]:
     """미국 주요 지수 등락 (S&P500·나스닥·다우·SOX)."""
     return await asyncio.to_thread(_fetch_quotes_sync, US_INDICES)
