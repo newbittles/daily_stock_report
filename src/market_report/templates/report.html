@@ -512,10 +512,11 @@ ${{ "{:,.2f}".format(item.price) }} <span class="{{ 'up-text' if pct >= 0 else '
         </div>
         {% endif %}
       </div>
-      {# 🇰🇷 EWY(한국 MSCI ETF) 고정 표시 — 미국이 본 한국 시장(#479) #}
+      {# 🇰🇷 EWY(한국 MSCI ETF) 고정 — 미국이 본 한국 시장, 마감+애프터 병기(#479/#507) #}
       {% if snap.ewy %}
       <p style="margin-top:0.6rem;">🇰🇷 <strong>{{ snap.ewy.name }}</strong> ${{ "{:,.2f}".format(snap.ewy.price) }}
-        <span class="{{ 'up-text' if snap.ewy.change_pct >= 0 else 'down-text' }}">{{ '+' if snap.ewy.change_pct >= 0 else '' }}{{ "{:.2f}".format(snap.ewy.change_pct) }}%</span></p>
+        <span class="{{ 'up-text' if snap.ewy.change_pct >= 0 else 'down-text' }}">마감 {{ '+' if snap.ewy.change_pct >= 0 else '' }}{{ "{:.2f}".format(snap.ewy.change_pct) }}%</span>
+        {% if snap.ewy.session_pct is not none and snap.ewy.session_label %}· <span class="{{ 'up-text' if snap.ewy.session_pct >= 0 else 'down-text' }}">{{ snap.ewy.session_label }} {{ '+' if snap.ewy.session_pct >= 0 else '' }}{{ "{:.2f}".format(snap.ewy.session_pct) }}%</span>{% endif %}</p>
       {% endif %}
       {# 🤖 AI 시장요약 — 지수 바로 아래 (us_morning/us_premarket) #}
       {% if snap.mode in ['us_morning', 'us_premarket', 'us_intraday'] and snap.summary %}
@@ -689,19 +690,16 @@ ${{ "{:,.2f}".format(item.price) }} <span class="{{ 'up-text' if pct >= 0 else '
     {# 🇺🇸 미국 야간 — 나스닥 선물 + M7 (한국 리포트 최상단, #476) #}
     {% if snap.us_overnight and (snap.us_overnight.futures or snap.us_overnight.m7) %}
     <section>
-      <h2><span class="icon">🇺🇸</span>미국 야간 <span style="color:var(--text-dim);font-size:0.8rem;">(나스닥 선물·M7, 전일 정규장 종가 대비)</span></h2>
+      <h2><span class="icon">🇺🇸</span>미국 야간 <span style="color:var(--text-dim);font-size:0.8rem;">(선물·M7·SOXL · 마감 등락 + 프리장/애프터 등락)</span></h2>
       {% for f in snap.us_overnight.futures %}
       <p>📊 <strong>{{ f.name }}</strong> <span class="{{ 'up-text' if f.change_pct >= 0 else 'down-text' }}">{{ '+' if f.change_pct >= 0 else '' }}{{ "{:.2f}".format(f.change_pct) }}%</span></p>
       {% endfor %}
-      {% if snap.us_overnight.m7 %}
+      {% if snap.us_overnight.m7 or snap.us_overnight.etf %}
       <ul class="watch-list">
-        {% for q in snap.us_overnight.m7 %}
-        <li>{{ q.name }} <span class="pick-ticker">{{ q.symbol }}{{ mk(q.symbol) }}</span> ${{ "{:,.2f}".format(q.price) }}
-          <span class="{{ 'up-text' if q.change_pct >= 0 else 'down-text' }}">{{ '+' if q.change_pct >= 0 else '' }}{{ "{:.1f}".format(q.change_pct) }}%</span></li>
-        {% endfor %}
-        {% for e in snap.us_overnight.etf %}
-        <li>{{ e.name }} <span class="pick-ticker">{{ e.symbol }}</span> ${{ "{:,.2f}".format(e.price) }}
-          <span class="{{ 'up-text' if e.change_pct >= 0 else 'down-text' }}">{{ '+' if e.change_pct >= 0 else '' }}{{ "{:.1f}".format(e.change_pct) }}%</span></li>
+        {% for q in (snap.us_overnight.m7 + snap.us_overnight.etf) %}
+        <li>{{ q.name }} <span class="pick-ticker">{{ q.symbol }}{{ mk(q.symbol) }}</span>
+          <span class="{{ 'up-text' if q.change_pct >= 0 else 'down-text' }}">마감 {{ '+' if q.change_pct >= 0 else '' }}{{ "{:.1f}".format(q.change_pct) }}%</span>
+          {% if q.session_pct is not none and q.session_label %}· <span class="{{ 'up-text' if q.session_pct >= 0 else 'down-text' }}">{{ q.session_label }} {{ '+' if q.session_pct >= 0 else '' }}{{ "{:.1f}".format(q.session_pct) }}%</span>{% endif %}</li>
         {% endfor %}
       </ul>
       {% endif %}

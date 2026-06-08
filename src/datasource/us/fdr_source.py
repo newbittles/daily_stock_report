@@ -148,15 +148,23 @@ async def fetch_us_top_volume_sectors(top: int = 5) -> list[USQuote]:
 
 
 async def fetch_ewy() -> dict | None:
-    """EWY(iShares MSCI Korea ETF) 시세 — 미국 마감 리포트 고정 표시(사용자 #479).
+    """EWY(iShares MSCI Korea ETF) 시세 — 미국 마감 리포트 고정 표시(#479/#507).
 
-    미국 투자자가 본 '한국 시장' 등락. FDR 일봉(전일 미국 정규장 종가 대비).
-    실패 시 None(섹션 생략). 반환 {name, price, change_pct, date}."""
-    quotes = await asyncio.to_thread(_fetch_quotes_sync, {"EWY": "EWY(한국 MSCI ETF)"})
+    미국 투자자가 본 '한국 시장' 등락. yfinance info로 마감 등락(정규장) + 애프터/프리장
+    등락 병기(#507). info 실패 시 FDR 일봉(마감만) 폴백. 실패 시 None(섹션 생략).
+    반환 {name, price, change_pct(마감), session_pct, session_label}."""
+    from src.datasource.us.overnight import _fetch_detail
+    name = "EWY(한국 MSCI ETF)"
+    d = await asyncio.to_thread(_fetch_detail, "EWY")
+    if d:
+        return {"name": name, **d}
+    # 폴백: FDR 일봉(마감 등락만)
+    quotes = await asyncio.to_thread(_fetch_quotes_sync, {"EWY": name})
     if not quotes:
         return None
     q = quotes[0]
-    return {"name": q.name, "price": q.price, "change_pct": q.change_pct, "date": q.date}
+    return {"name": name, "price": q.price, "change_pct": q.change_pct,
+            "session_pct": None, "session_label": "", "date": q.date}
 
 
 async def fetch_us_indices() -> list[USQuote]:

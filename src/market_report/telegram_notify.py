@@ -118,21 +118,37 @@ def _phase_suffix(snap: MarketSnapshot, label: str) -> str:
     return f" {ph['emoji']} {ph['name']}" if ph else ""
 
 
-def _format_us_overnight(snap: MarketSnapshot) -> list[str]:
-    """🇺🇸 미국 야간 — 나스닥 선물 + M7 (한국 리포트 최상단, #476). 없으면 []."""
+def _overnight_quote_line(q: dict) -> str:
+    """미국 야간 종목 한 줄 — 마감 등락 + (프리장/애프터 등락) 병기(#503).
+
+    예: '엔비디아 마감 -6.2% · 프리장 +2.0%'. 세션 등락 없으면(장중/결측) 마감만."""
+    s = f"{q['name']} 마감 {q['change_pct']:+.1f}%"
+    sp, sl = q.get("session_pct"), q.get("session_label")
+    if sp is not None and sl:
+        s += f" · {sl} {sp:+.1f}%"
+    return s
+
+
+def _format_us_overnight(snap: MarketSnapshot, *, include_futures: bool = True) -> list[str]:
+    """🇺🇸 미국 야간 — 선물 + M7 + SOXL (마감·프리장 병기, #476/#485/#503).
+
+    include_futures=False: 선물 생략(us_premarket은 지수 카드에 선물이 이미 있어 중복 방지).
+    없으면 [].
+    """
     ov = getattr(snap, "us_overnight", None) or {}
     fut = ov.get("futures") or []
     m7 = ov.get("m7") or []
-    if not fut and not m7:
+    etf = ov.get("etf") or []
+    if not (fut and include_futures) and not m7 and not etf:
         return []
-    lines: list[str] = ["🇺🇸 *미국 야간*"]
-    for f in fut:
-        lines.append(f"  {f['name']} {f['change_pct']:+.2f}%")
-    if m7:
-        parts = [f"{q['name']} {q['change_pct']:+.1f}%" for q in m7]
-        lines.append("  M7: " + " · ".join(parts))
-    for e in ov.get("etf") or []:  # SOXL 등 — M7 아래 별도(#485)
-        lines.append(f"  {e['name']} {e['change_pct']:+.1f}%")
+    lines: list[str] = ["🇺🇸 *미국 야간* (마감·프리장)"]
+    if include_futures:
+        for f in fut:
+            lines.append(f"  {f['name']} {f['change_pct']:+.2f}%")
+    for q in m7:
+        lines.append(f"  {_overnight_quote_line(q)}")
+    for e in etf:  # SOXL 등 — M7 아래 별도(#485)
+        lines.append(f"  {_overnight_quote_line(e)}")
     lines.append("")
     return lines
 
@@ -584,10 +600,18 @@ def _format_us_morning_summary(snap: MarketSnapshot) -> str:
             lines.append(f"🪙 금 ${snap.gold['value']:,.0f} ({snap.gold['change_pct']:+.1f}%)")
         if snap.wti:
             lines.append(f"🛢 WTI ${snap.wti['value']:,.1f} ({snap.wti['change_pct']:+.1f}%)")
-        ewy = getattr(snap, "ewy", None)  # 🇰🇷 한국 추종 ETF 고정 표시(#479)
+        ewy = getattr(snap, "ewy", None)  # 🇰🇷 한국 추종 ETF — 마감·애프터 병기(#479/#507)
         if ewy:
-            lines.append(f"🇰🇷 {ewy['name']} ${ewy['price']:,.2f} ({ewy['change_pct']:+.2f}%)")
+            el = f"🇰🇷 {ewy['name']} ${ewy['price']:,.2f} 마감 {ewy['change_pct']:+.2f}%"
+            if ewy.get("session_pct") is not None and ewy.get("session_label"):
+                el += f" · {ewy['session_label']} {ewy['session_pct']:+.2f}%"
+            lines.append(el)
         lines.append("")
+
+    # 🇺🇸 미국 야간(M7+SOXL, 마감·프리장 병기) — 프리장 리포트에도 표시(#503 B).
+    # 선물은 이미 지수 카드(나스닥/S&P 선물)에 있어 제외(include_futures=False).
+    if snap.mode == "us_premarket":
+        lines.extend(_format_us_overnight(snap, include_futures=False))
 
     fg = getattr(snap, "fear_greed", None)
     if fg and fg.get("score") is not None:

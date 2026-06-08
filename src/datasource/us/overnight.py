@@ -29,7 +29,7 @@ _ETF = {"SOXL": "SOXL(반도체 3X)"}
 
 
 def _fetch_one(sym: str) -> dict | None:
-    """단일 심볼 fast_info → {price, change_pct}. 전일종가≤0/실패 시 None."""
+    """단일 심볼 fast_info → {price, change_pct}. 전일종가≤0/실패 시 None. 선물용(연속)."""
     import yfinance as yf
 
     fi = yf.Ticker(sym).fast_info
@@ -38,6 +38,34 @@ def _fetch_one(sym: str) -> dict | None:
     if prev <= 0 or last <= 0:
         return None
     return {"price": round(last, 2), "change_pct": round((last / prev - 1) * 100, 2)}
+
+
+def _fetch_detail(sym: str) -> dict | None:
+    """info 기반 → {price, change_pct(정규장 마감 등락), session_pct, session_label}(#503).
+
+    change_pct = regularMarketChangePercent(정규장 당일 등락), session = marketState에 따라
+    프리장(PRE)/애프터(POST) 등락. 한국 아침=애프터, 한국 저녁=프리장. 장중(REGULAR)·결측은
+    session 없음(마감만 표시). info 실패/결측 시 None → 호출측이 fast_info 폴백."""
+    import yfinance as yf
+
+    info = yf.Ticker(sym).info
+    reg = info.get("regularMarketChangePercent")
+    price = info.get("regularMarketPrice")
+    if reg is None or price is None:
+        return None
+    state = str(info.get("marketState", "")).upper()
+    if state == "PRE":
+        sess, label = info.get("preMarketChangePercent"), "프리장"
+    elif state in ("POST", "POSTPOST", "CLOSED"):
+        sess, label = info.get("postMarketChangePercent"), "애프터"
+    else:  # REGULAR(미국 장중) 등 — 세션 등락 없음
+        sess, label = None, ""
+    return {
+        "price": round(float(price), 2),
+        "change_pct": round(float(reg), 2),
+        "session_pct": round(float(sess), 2) if sess is not None else None,
+        "session_label": label,
+    }
 
 
 def _fetch_sync() -> dict:
@@ -54,18 +82,18 @@ def _fetch_sync() -> dict:
     m7: list[dict] = []
     for sym, name in _M7.items():
         try:
-            q = _fetch_one(sym)
+            q = _fetch_detail(sym) or _fetch_one(sym)  # 마감+프리장 분리(#503), 실패 시 fast_info
             if q:
                 m7.append({"symbol": sym, "name": name, **q})
         except Exception as exc:  # noqa: BLE001
             logger.warning("overnight_m7_failed sym=%s error=%s", sym, exc)
         time.sleep(random.uniform(0.2, 0.5))
-    m7.sort(key=lambda x: x["change_pct"], reverse=True)  # 등락률 내림차순
+    m7.sort(key=lambda x: x["change_pct"], reverse=True)  # 마감 등락률 내림차순
 
     etf: list[dict] = []  # SOXL 등 — M7 아래 별도(#485)
     for sym, name in _ETF.items():
         try:
-            q = _fetch_one(sym)
+            q = _fetch_detail(sym) or _fetch_one(sym)
             if q:
                 etf.append({"symbol": sym, "name": name, **q})
         except Exception as exc:  # noqa: BLE001

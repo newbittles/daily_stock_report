@@ -14,17 +14,37 @@ def _idx(market: str, value: float, pct: float) -> IndexQuote:
                       volume=0, trade_value=0.0, timestamp=datetime.now())
 
 
-def test_format_us_overnight_futures_and_m7() -> None:
+def test_format_us_overnight_close_and_session_split() -> None:
+    """미국 야간 — 선물 + M7·SOXL 마감·프리장 병기(#503)."""
     snap = MarketSnapshot(mode="midday", generated_at=datetime.now())
     snap.us_overnight = {
         "futures": [{"symbol": "NQ=F", "name": "나스닥 선물", "price": 29223.0, "change_pct": 0.68}],
-        "m7": [{"symbol": "NVDA", "name": "엔비디아", "price": 205.1, "change_pct": -5.2},
-               {"symbol": "AAPL", "name": "애플", "price": 307.3, "change_pct": -1.1}],
+        "m7": [{"symbol": "NVDA", "name": "엔비디아", "price": 205.1, "change_pct": -6.2,
+                "session_pct": 2.0, "session_label": "프리장"},
+               {"symbol": "AAPL", "name": "애플", "price": 307.3, "change_pct": -1.1,
+                "session_pct": None, "session_label": ""}],  # 세션 없음 → 마감만
+        "etf": [{"symbol": "SOXL", "name": "SOXL(반도체 3X)", "price": 182.5, "change_pct": -30.5,
+                 "session_pct": 7.0, "session_label": "프리장"}],
     }
     out = "\n".join(_format_us_overnight(snap))
-    assert "미국 야간" in out
     assert "나스닥 선물 +0.68%" in out
-    assert "엔비디아 -5.2%" in out and "애플 -1.1%" in out
+    assert "엔비디아 마감 -6.2% · 프리장 +2.0%" in out
+    assert "애플 마감 -1.1%" in out and "애플 마감 -1.1% ·" not in out  # 세션 없으면 마감만
+    assert "SOXL(반도체 3X) 마감 -30.5% · 프리장 +7.0%" in out
+
+
+def test_format_us_overnight_excludes_futures_for_premarket() -> None:
+    """us_premarket: 선물은 지수 카드에 있어 야간 섹션에서 제외(#503 B)."""
+    snap = MarketSnapshot(mode="us_premarket", generated_at=datetime.now())
+    snap.us_overnight = {
+        "futures": [{"symbol": "NQ=F", "name": "나스닥 선물", "price": 1.0, "change_pct": 0.5}],
+        "m7": [{"symbol": "NVDA", "name": "엔비디아", "price": 205.1, "change_pct": -6.2,
+                "session_pct": 2.0, "session_label": "프리장"}],
+        "etf": [],
+    }
+    out = "\n".join(_format_us_overnight(snap, include_futures=False))
+    assert "나스닥 선물" not in out          # 선물 제외
+    assert "엔비디아 마감 -6.2% · 프리장 +2.0%" in out
 
 
 def test_format_us_overnight_empty() -> None:
@@ -49,9 +69,10 @@ def test_us_morning_shows_ewy() -> None:
     snap = MarketSnapshot(mode="us_morning", generated_at=datetime.now())
     snap.us_indices = [{"name": "S&P500", "price": 5300.0, "change_pct": 1.2},
                        {"name": "나스닥", "price": 17000.0, "change_pct": 1.5}]
-    snap.ewy = {"name": "EWY(한국 MSCI ETF)", "price": 175.19, "change_pct": -14.11, "date": "2026-06-05"}
+    snap.ewy = {"name": "EWY(한국 MSCI ETF)", "price": 175.19, "change_pct": -14.11,
+                "session_pct": 0.5, "session_label": "애프터", "date": "2026-06-05"}
     msg = _format_us_morning_summary(snap)
-    assert "EWY" in msg and "-14.11%" in msg
+    assert "EWY" in msg and "마감 -14.11%" in msg and "애프터 +0.50%" in msg  # 병기(#507)
 
 
 def test_us_morning_no_ewy_when_absent() -> None:
