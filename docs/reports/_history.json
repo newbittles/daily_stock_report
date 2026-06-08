@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-06-08",
+    "time": "22:40",
+    "mode": "us_intraday",
+    "url": "reports/2026-06-08-us-mid.html",
+    "summary": "S&P500 선물 7,457(+0.56%) · 나스닥 선물 29,532(+1.12%). 강세 섹터: 반도체, 기술/IT, 에너지.",
+    "kospi_pct": null,
+    "kosdaq_pct": null
+  },
+  {
+    "date": "2026-06-08",
     "time": "21:50",
     "mode": "us_premarket",
     "url": "reports/2026-06-08-us-pre.html",
