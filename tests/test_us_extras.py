@@ -60,3 +60,42 @@ def test_us_morning_no_ewy_when_absent() -> None:
                        {"name": "나스닥", "price": 17000.0, "change_pct": 1.5}]
     msg = _format_us_morning_summary(snap)
     assert "EWY" not in msg
+
+
+# ─── #497: 프리장/장중 지수 = 선물 실시간 교체 ───────────────────────────────
+async def test_apply_index_futures_overrides_nasdaq_sp(monkeypatch) -> None:
+    from src.market_report.us_report_runner import _apply_index_futures
+
+    async def fake_overnight():
+        return {"futures": [{"symbol": "NQ=F", "name": "나스닥 선물", "price": 29000.0, "change_pct": 0.69},
+                            {"symbol": "ES=F", "name": "S&P500 선물", "price": 7400.0, "change_pct": 0.13}],
+                "m7": [], "etf": []}
+    monkeypatch.setattr("src.datasource.us.overnight.fetch_us_overnight", fake_overnight)
+
+    snap = MarketSnapshot(mode="us_premarket", generated_at=datetime.now())
+    snap.us_indices = [
+        {"name": "S&P500", "price": 5300.0, "change_pct": -1.2},   # 전날 마감
+        {"name": "나스닥", "price": 17000.0, "change_pct": -1.5},
+        {"name": "다우", "price": 38000.0, "change_pct": -0.8},
+    ]
+    await _apply_index_futures(snap)
+    sp, nq, dow = snap.us_indices
+    assert sp["name"] == "S&P500 선물" and sp["change_pct"] == 0.13 and sp["is_futures"]
+    assert nq["name"] == "나스닥 선물" and nq["change_pct"] == 0.69
+    assert dow["name"] == "다우" and dow["change_pct"] == -0.8  # 선물 없는 지수는 전날 유지
+    assert snap.us_overnight["futures"]  # 보관
+
+
+async def test_apply_index_futures_keeps_prev_on_missing(monkeypatch) -> None:
+    """선물 수신 실패 시 전날 종가 유지(섹션 안 깨짐)."""
+    from src.market_report.us_report_runner import _apply_index_futures
+
+    async def empty_overnight():
+        return {"futures": [], "m7": [], "etf": []}
+    monkeypatch.setattr("src.datasource.us.overnight.fetch_us_overnight", empty_overnight)
+
+    snap = MarketSnapshot(mode="us_premarket", generated_at=datetime.now())
+    snap.us_indices = [{"name": "나스닥", "price": 17000.0, "change_pct": -1.5}]
+    await _apply_index_futures(snap)
+    assert snap.us_indices[0]["name"] == "나스닥"  # 교체 안 됨
+    assert snap.us_indices[0]["change_pct"] == -1.5

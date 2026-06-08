@@ -18,6 +18,31 @@ from src.market_report.models import MarketSnapshot
 
 logger = logging.getLogger(__name__)
 
+# 지수 표시명 → 선물 심볼 (프리장/장중 실시간 교체용, #497)
+_INDEX_FUTURES = {"S&P500": "ES=F", "나스닥": "NQ=F"}
+
+
+async def _apply_index_futures(snap: MarketSnapshot) -> None:
+    """프리장/장중: us_indices의 S&P500·나스닥을 선물 실시간 등락률로 교체(#497).
+
+    fetch_us_overnight(NQ=F·ES=F)로 선물 시세를 받아 해당 지수 카드의 price·change_pct를
+    덮어쓰고 이름에 '선물' 표기. 선물 미수신 항목은 전날 종가 유지(best-effort).
+    snap.us_overnight에도 보관(M7 등 다른 표시에 재사용)."""
+    from src.datasource.us.overnight import fetch_us_overnight
+
+    ov = await fetch_us_overnight()
+    snap.us_overnight = ov
+    futs = {f["symbol"]: f for f in ov.get("futures", [])}
+    for q in snap.us_indices:
+        fsym = _INDEX_FUTURES.get(q.get("name", ""))
+        f = futs.get(fsym) if fsym else None
+        if f:
+            q["name"] = f"{q['name']} 선물"
+            q["price"] = f["price"]
+            q["change_pct"] = f["change_pct"]
+            q["is_futures"] = True
+    logger.info("index_futures_applied futures=%d", len(futs))
+
 
 async def run_us_report(
     mode: str,
@@ -56,6 +81,11 @@ async def run_us_report(
             await coro
         except Exception as exc:  # noqa: BLE001
             logger.warning("%s_%s_failed error=%s", mode, label, exc)
+
+    # 프리장/장중 리포트: 지수를 선물 실시간으로 교체 — FDR 전날 마감 종가를 그대로 쓰면
+    # 프리장 분위기를 못 보임(나스닥 NQ=F·S&P ES=F 실시간, 사용자 #497).
+    if mode in ("us_premarket", "us_intraday"):
+        await _step(_apply_index_futures(snap), "index_futures")
 
     await _step(_collect_us_screening(snap, per_group=3), "screening")  # 하이브리드 ABCD(마감 일봉), 3개씩
     await _step(overlay(snap), "overlay")                               # 프리장/장중 시세 오버레이
