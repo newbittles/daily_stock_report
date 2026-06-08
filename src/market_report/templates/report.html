@@ -43,6 +43,11 @@ ${{ "{:,.2f}".format(item.price) }} <span class="{{ 'up-text' if pct >= 0 else '
 {%- macro strat_badge(strats, suffix=' 시그널') -%}
 <span class="strat-badge" onclick="showStrat(this)" data-strats="{{ strats|join(',') }}" style="cursor:pointer;" title="전략 설명 보기">{{ strats|join('/') }}{{ suffix }} ⓘ</span>
 {%- endmacro -%}
+{# 종목 소속 시장 라벨(코스피/코스닥/나스닥/NYSE) — render.py env.globals['mkt'] 조회(#471). 미발견은 생략 #}
+{%- macro mk(code) -%}
+{%- set m = mkt(code) -%}
+{%- if m %}·{{ m }}{% endif -%}
+{%- endmacro -%}
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -527,7 +532,7 @@ ${{ "{:,.2f}".format(item.price) }} <span class="{{ 'up-text' if pct >= 0 else '
         {% for t in snap.us_premarket_top %}
         <li>
           <a href="https://search.naver.com/search.naver?query={{ (t.name ~ ' 주가') | urlencode }}" target="_blank" rel="noopener"><strong>{{ t.name }}</strong></a>
-          <span class="pick-ticker">{{ t.symbol }}</span> · {{ us_px(t, snap.mode) }}
+          <span class="pick-ticker">{{ t.symbol }}{{ mk(t.symbol) }}</span> · {{ us_px(t, snap.mode) }}
           {% if t.sector %}<span style="color:var(--text-dim);font-size:0.82rem;"> · {{ t.sector }}</span>{% endif %}
           {% if t.strategies %}{{ strat_badge(t.strategies) }}{% endif %}
           {% if t.reason %}<div class="theme-reason">{{ t.reason }}</div>{% endif %}
@@ -561,7 +566,7 @@ ${{ "{:,.2f}".format(item.price) }} <span class="{{ 'up-text' if pct >= 0 else '
         <li>
           <span class="strat-badge">{{ t.sector }}</span>
           <a href="https://search.naver.com/search.naver?query={{ (t.name ~ ' 주가') | urlencode }}" target="_blank" rel="noopener"><strong>{{ t.name }}</strong></a>
-          <span class="pick-ticker">{{ t.symbol }}</span> · {{ us_px(t, snap.mode) }}{% if t.week_pct is not none %} <span class="{{ 'up-text' if t.week_pct >= 0 else 'down-text' }}" style="font-size:0.82rem;">1주일 {{ '+' if t.week_pct >= 0 else '' }}{{ "{:.1f}".format(t.week_pct) }}%</span>{% endif %}
+          <span class="pick-ticker">{{ t.symbol }}{{ mk(t.symbol) }}</span> · {{ us_px(t, snap.mode) }}{% if t.week_pct is not none %} <span class="{{ 'up-text' if t.week_pct >= 0 else 'down-text' }}" style="font-size:0.82rem;">1주일 {{ '+' if t.week_pct >= 0 else '' }}{{ "{:.1f}".format(t.week_pct) }}%</span>{% endif %}
           {{ kr_nb(t) }}
           {% if t.ai_summary %}<button type="button" class="ai-btn" onclick="showAI(this)" data-name="{{ t.name }}" data-summary="{{ t.ai_summary|e }}">🤖 AI요약</button>{% endif %}
         </li>
@@ -574,7 +579,7 @@ ${{ "{:,.2f}".format(item.price) }} <span class="{{ 'up-text' if pct >= 0 else '
         {% for t in snap.us_theme_leaders %}
         <li>
           <a href="https://search.naver.com/search.naver?query={{ (t.name ~ ' 주가') | urlencode }}" target="_blank" rel="noopener"><strong>{{ t.name }}</strong></a>
-          <span class="pick-ticker">{{ t.symbol }}</span>
+          <span class="pick-ticker">{{ t.symbol }}{{ mk(t.symbol) }}</span>
           {% if t.strategies %}{{ strat_badge(t.strategies, '') }}{% endif %}
           · {{ us_px(t, snap.mode) }}{% if t.week_pct is not none %} <span class="{{ 'up-text' if t.week_pct >= 0 else 'down-text' }}" style="font-size:0.82rem;">1주일 {{ '+' if t.week_pct >= 0 else '' }}{{ "{:.1f}".format(t.week_pct) }}%</span>{% endif %}
           {% if t.sector %}<div class="pick-sub">테마: {{ t.sector }}{% if t.marcap_str %} · 시총 {{ t.marcap_str }}{% endif %}{% if t.turnover_str %} · 거래대금 {{ t.turnover_str }}{% endif %}</div>{% endif %}
@@ -598,7 +603,7 @@ ${{ "{:,.2f}".format(item.price) }} <span class="{{ 'up-text' if pct >= 0 else '
         <div class="top3-head">
           <span class="top3-rank">{{ loop.index }}</span>
           <a href="https://search.naver.com/search.naver?query={{ (t.name ~ ' 주가') | urlencode }}" target="_blank" rel="noopener">{{ t.name }}</a>
-          <span class="pick-ticker">{{ t.symbol }}</span>
+          <span class="pick-ticker">{{ t.symbol }}{{ mk(t.symbol) }}</span>
           {% if t.strategies %}{{ strat_badge(t.strategies, '') }}{% endif %}
           <span class="px">{{ us_px(t, snap.mode) }}</span>
           {{ cond_badges(t) }}{% if t.endstage %} <span class="down-text" style="font-size:0.8rem;cursor:pointer;" onclick="showFlag(this)" data-flag="endstage">⚠️끝물ⓘ</span>{% endif %}
@@ -621,7 +626,7 @@ ${{ "{:,.2f}".format(item.price) }} <span class="{{ 'up-text' if pct >= 0 else '
         {% for p in snap.us_screen_ranked %}
         <li>
           <a href="https://search.naver.com/search.naver?query={{ (p.name ~ ' 주가') | urlencode }}" target="_blank" rel="noopener"><strong>{{ p.name }}</strong></a>
-          <span class="pick-ticker">{{ p.symbol }}</span> · {{ us_px(p, snap.mode) }}
+          <span class="pick-ticker">{{ p.symbol }}{{ mk(p.symbol) }}</span> · {{ us_px(p, snap.mode) }}
           {% if p.strategies %}{{ strat_badge(p.strategies) }}{% endif %}
           {{ cond_badges(p) }}{% if p.endstage %} <span class="down-text" style="font-size:0.8rem;cursor:pointer;" onclick="showFlag(this)" data-flag="endstage">⚠️끝물ⓘ</span>{% endif %}
           {% if p.marcap_str or p.turnover_str %}<div class="pick-sub">{% if p.marcap_str %}시총 {{ p.marcap_str }}{% endif %}{% if p.turnover_str %} · 거래대금 {{ p.turnover_str }}{% endif %}</div>{% endif %}
@@ -652,7 +657,7 @@ ${{ "{:,.2f}".format(item.price) }} <span class="{{ 'up-text' if pct >= 0 else '
       <h3 style="margin-top:0.6rem;color:var(--green);">💰 순매수 TOP5 — 개별종목</h3>
       <ul class="watch-list">
         {% for r in _stocks[:5] %}
-        <li><a href="https://search.naver.com/search.naver?query={{ (r.name ~ ' 주가') | urlencode }}" target="_blank" rel="noopener"><strong>{{ r.name }}</strong></a>{% if r.ticker %} <span class="pick-ticker">{{ r.ticker }}</span>{% endif %} <span style="color:var(--green);">+{{ "{:,}".format(r.net_buy_eok) }}억</span></li>
+        <li><a href="https://search.naver.com/search.naver?query={{ (r.name ~ ' 주가') | urlencode }}" target="_blank" rel="noopener"><strong>{{ r.name }}</strong></a>{% if r.ticker %} <span class="pick-ticker">{{ r.ticker }}{{ mk(r.ticker) }}</span>{% endif %} <span style="color:var(--green);">+{{ "{:,}".format(r.net_buy_eok) }}억</span></li>
         {% endfor %}
       </ul>
       {% endif %}
@@ -660,7 +665,7 @@ ${{ "{:,.2f}".format(item.price) }} <span class="{{ 'up-text' if pct >= 0 else '
       <h3 style="margin-top:0.6rem;color:var(--green);">📦 순매수 TOP5 — ETF</h3>
       <ul class="watch-list">
         {% for r in _etfs[:5] %}
-        <li><a href="https://search.naver.com/search.naver?query={{ (r.name ~ ' 주가') | urlencode }}" target="_blank" rel="noopener"><strong>{{ r.name }}</strong></a>{% if r.ticker %} <span class="pick-ticker">{{ r.ticker }}</span>{% endif %} <span style="color:var(--green);">+{{ "{:,}".format(r.net_buy_eok) }}억</span></li>
+        <li><a href="https://search.naver.com/search.naver?query={{ (r.name ~ ' 주가') | urlencode }}" target="_blank" rel="noopener"><strong>{{ r.name }}</strong></a>{% if r.ticker %} <span class="pick-ticker">{{ r.ticker }}{{ mk(r.ticker) }}</span>{% endif %} <span style="color:var(--green);">+{{ "{:,}".format(r.net_buy_eok) }}억</span></li>
         {% endfor %}
       </ul>
       {% endif %}
@@ -668,7 +673,7 @@ ${{ "{:,.2f}".format(item.price) }} <span class="{{ 'up-text' if pct >= 0 else '
       <h3 style="margin-top:0.6rem;color:var(--red);">🔻 순매도 TOP3 — 자금 유출</h3>
       <ul class="watch-list">
         {% for r in snap.kr_us_netsell[:3] %}
-        <li><a href="https://search.naver.com/search.naver?query={{ (r.name ~ ' 주가') | urlencode }}" target="_blank" rel="noopener"><strong>{{ r.name }}</strong></a>{% if r.ticker %} <span class="pick-ticker">{{ r.ticker }}</span>{% endif %} <span style="color:var(--red);">−{{ "{:,}".format(r.net_sell_eok) }}억</span></li>
+        <li><a href="https://search.naver.com/search.naver?query={{ (r.name ~ ' 주가') | urlencode }}" target="_blank" rel="noopener"><strong>{{ r.name }}</strong></a>{% if r.ticker %} <span class="pick-ticker">{{ r.ticker }}{{ mk(r.ticker) }}</span>{% endif %} <span style="color:var(--red);">−{{ "{:,}".format(r.net_sell_eok) }}억</span></li>
         {% endfor %}
       </ul>
       {% endif %}
@@ -822,6 +827,7 @@ ${{ "{:,.2f}".format(item.price) }} <span class="{{ 'up-text' if pct >= 0 else '
         <div class="top3-head">
           <span class="top3-rank">{{ loop.index }}</span>
           <a href="https://finance.naver.com/item/main.naver?code={{ t.ticker }}" target="_blank" rel="noopener"><strong>{{ t.name }}</strong></a>
+          {% if mkt(t.ticker) %}<span class="pick-ticker">{{ mkt(t.ticker) }}</span>{% endif %}
           <button type="button" class="code-copy" data-code="{{ t.ticker }}" onclick="copyCode(this)" title="종목코드 복사 (MTS 검색창에 붙여넣기)">📋</button>
           <span class="px">{{ "{:,.0f}".format(t.price) }}원</span>
           <span class="{{ 'up-text' if t.change_pct >= 0 else 'down-text' }}">{{ '+' if t.change_pct >= 0 else '' }}{{ "{:.1f}".format(t.change_pct) }}%</span>
@@ -852,7 +858,7 @@ ${{ "{:,.2f}".format(item.price) }} <span class="{{ 'up-text' if pct >= 0 else '
         {% for g in snap.overtime_gainers %}
         <li>
           <a href="https://finance.naver.com/item/main.naver?code={{ g.ticker }}" target="_blank" rel="noopener"><strong>{{ g.name }}</strong></a>
-          <span class="pick-ticker">{{ g.ticker }}</span> · {{ "{:,.0f}".format(g.nxt_price) }}원
+          <span class="pick-ticker">{{ g.ticker }}{{ mk(g.ticker) }}</span> · {{ "{:,.0f}".format(g.nxt_price) }}원
           <span class="up-text">+{{ "{:.2f}".format(g.overtime_pct) }}%</span>
           <span style="color:var(--text-dim);font-size:0.8rem;">(종가 {{ "{:,.0f}".format(g.reg_close) }})</span>
         </li>
@@ -874,10 +880,10 @@ ${{ "{:,.2f}".format(item.price) }} <span class="{{ 'up-text' if pct >= 0 else '
         <li>
           {% if p.ticker %}
           <a href="https://finance.naver.com/item/main.naver?code={{ p.ticker }}" target="_blank" rel="noopener"><strong>{{ p.name }}</strong></a>
-          <span class="pick-ticker">{{ p.ticker }}</span> · {{ "{:,.0f}".format(p.price) }}원
+          <span class="pick-ticker">{{ p.ticker }}{{ mk(p.ticker) }}</span> · {{ "{:,.0f}".format(p.price) }}원
           {% else %}
           <a href="https://search.naver.com/search.naver?query={{ (p.name ~ ' 주가') | urlencode }}" target="_blank" rel="noopener"><strong>{{ p.name }}</strong></a>
-          <span class="pick-ticker">{{ p.symbol }}</span> · ${{ "{:,.2f}".format(p.price) }}
+          <span class="pick-ticker">{{ p.symbol }}{{ mk(p.symbol) }}</span> · ${{ "{:,.2f}".format(p.price) }}
           {% endif %}
           <span class="{{ 'up-text' if p.change_pct >= 0 else 'down-text' }}">{{ '+' if p.change_pct >= 0 else '' }}{{ "{:.2f}".format(p.change_pct) }}%</span>
           <span style="color:var(--text-dim);font-size:0.8rem;">RSI {{ "{:.0f}".format(p.rsi) }}</span>
@@ -902,10 +908,10 @@ ${{ "{:,.2f}".format(item.price) }} <span class="{{ 'up-text' if pct >= 0 else '
         <li>
           {% if p.ticker %}
           <a href="https://finance.naver.com/item/main.naver?code={{ p.ticker }}" target="_blank" rel="noopener"><strong>{{ p.name }}</strong></a>
-          <span class="pick-ticker">{{ p.ticker }}</span> · {{ "{:,.0f}".format(p.price) }}원
+          <span class="pick-ticker">{{ p.ticker }}{{ mk(p.ticker) }}</span> · {{ "{:,.0f}".format(p.price) }}원
           {% else %}
           <a href="https://search.naver.com/search.naver?query={{ (p.name ~ ' 주가') | urlencode }}" target="_blank" rel="noopener"><strong>{{ p.name }}</strong></a>
-          <span class="pick-ticker">{{ p.symbol }}</span> · ${{ "{:,.2f}".format(p.price) }}
+          <span class="pick-ticker">{{ p.symbol }}{{ mk(p.symbol) }}</span> · ${{ "{:,.2f}".format(p.price) }}
           {% endif %}
           <span class="{{ 'up-text' if p.change_pct >= 0 else 'down-text' }}">{{ '+' if p.change_pct >= 0 else '' }}{{ "{:.2f}".format(p.change_pct) }}%</span>
           {% if p.reason %}<div class="theme-reason">{{ p.reason }}</div>{% endif %}
@@ -926,7 +932,7 @@ ${{ "{:,.2f}".format(item.price) }} <span class="{{ 'up-text' if pct >= 0 else '
       <h3 style="margin-top:0.5rem;color:var(--green);">🟢 연속 순매수 Top</h3>
       <ul class="watch-list">
         {% for r in snap.supply_buy_streaks %}
-        <li><a href="https://finance.naver.com/item/main.naver?code={{ r.ticker }}" target="_blank" rel="noopener"><strong>{{ r.name }}</strong></a> <span class="pick-ticker">{{ r.ticker }}</span> <span style="color:var(--green);">기관 {{ r.orgn }}일 · 외인 {{ r.frgn }}일 연속</span></li>
+        <li><a href="https://finance.naver.com/item/main.naver?code={{ r.ticker }}" target="_blank" rel="noopener"><strong>{{ r.name }}</strong></a> <span class="pick-ticker">{{ r.ticker }}{{ mk(r.ticker) }}</span> <span style="color:var(--green);">기관 {{ r.orgn }}일 · 외인 {{ r.frgn }}일 연속</span></li>
         {% endfor %}
       </ul>
       {% endif %}
@@ -934,7 +940,7 @@ ${{ "{:,.2f}".format(item.price) }} <span class="{{ 'up-text' if pct >= 0 else '
       <h3 style="margin-top:0.5rem;color:var(--red);">🔴 연속 순매도 Top</h3>
       <ul class="watch-list">
         {% for r in snap.supply_sell_streaks %}
-        <li><a href="https://finance.naver.com/item/main.naver?code={{ r.ticker }}" target="_blank" rel="noopener"><strong>{{ r.name }}</strong></a> <span class="pick-ticker">{{ r.ticker }}</span> <span style="color:var(--red);">기관 {{ r.orgn }}일 · 외인 {{ r.frgn }}일 연속</span></li>
+        <li><a href="https://finance.naver.com/item/main.naver?code={{ r.ticker }}" target="_blank" rel="noopener"><strong>{{ r.name }}</strong></a> <span class="pick-ticker">{{ r.ticker }}{{ mk(r.ticker) }}</span> <span style="color:var(--red);">기관 {{ r.orgn }}일 · 외인 {{ r.frgn }}일 연속</span></li>
         {% endfor %}
       </ul>
       {% endif %}
@@ -952,7 +958,7 @@ ${{ "{:,.2f}".format(item.price) }} <span class="{{ 'up-text' if pct >= 0 else '
           <div class="pick-head">
             <a class="pick-name" href="https://finance.naver.com/item/main.naver?code={{ p.ticker }}" target="_blank" rel="noopener">{{ p.name }}</a>
             <span class="pick-meta-group">
-              <span class="pick-ticker">{{ p.ticker }}</span>
+              <span class="pick-ticker">{{ p.ticker }}{{ mk(p.ticker) }}</span>
               <button type="button" class="code-copy" data-code="{{ p.ticker }}" onclick="copyCode(this)" title="종목코드 복사 (MTS 검색창에 붙여넣기)">📋</button>
               {% if p.strategies is defined %}{% if p.strategies %}{{ strat_badge(p.strategies) }}{% else %}<span class="strat-badge" style="background:var(--text-dim);">ABCD 미해당(AI선정)</span>{% endif %}{% endif %}
               {% if p.price %}
@@ -1002,6 +1008,7 @@ ${{ "{:,.2f}".format(item.price) }} <span class="{{ 'up-text' if pct >= 0 else '
         {% for p in snap.screen_ranked %}
         <li>
           <a href="https://finance.naver.com/item/main.naver?code={{ p.ticker }}" target="_blank" rel="noopener"><strong>{{ p.name }}</strong></a>
+          {% if mkt(p.ticker) %}<span class="pick-ticker">{{ mkt(p.ticker) }}</span>{% endif %}
           <button type="button" class="code-copy" data-code="{{ p.ticker }}" onclick="copyCode(this)" title="종목코드 복사 (MTS 검색창에 붙여넣기)">📋</button>
           {{ strat_badge(p.strategies) }}
           <span class="px">{{ "{:,.0f}".format(p.price) }}원</span>
@@ -1039,7 +1046,7 @@ ${{ "{:,.2f}".format(item.price) }} <span class="{{ 'up-text' if pct >= 0 else '
       <ul class="watch-list">
         {% for h in snap.holdings_status %}
         <li>
-          <a href="https://finance.naver.com/item/main.naver?code={{ h.ticker }}" target="_blank" rel="noopener"><strong>{{ h.name }}</strong></a> ({{ h.ticker }}) · {{ "{:,.0f}".format(h.price) }}원
+          <a href="https://finance.naver.com/item/main.naver?code={{ h.ticker }}" target="_blank" rel="noopener"><strong>{{ h.name }}</strong></a> ({{ h.ticker }}{{ mk(h.ticker) }}) · {{ "{:,.0f}".format(h.price) }}원
           <span class="{{ 'up-text' if h.profit_rate >= 0 else 'down-text' }}">
             ({{ '+' if h.profit_rate >= 0 else '' }}{{ "{:.1f}".format(h.profit_rate) }}%)
           </span>
@@ -1062,7 +1069,7 @@ ${{ "{:,.2f}".format(item.price) }} <span class="{{ 'up-text' if pct >= 0 else '
         {% for h in snap.hot_stocks %}
         <li>
           <a href="https://finance.naver.com/item/main.naver?code={{ h.ticker }}" target="_blank" rel="noopener"><strong>{{ h.name }}</strong></a>
-          <span class="pick-ticker">{{ h.ticker }}</span> · {{ "{:,.0f}".format(h.price) }}원
+          <span class="pick-ticker">{{ h.ticker }}{{ mk(h.ticker) }}</span> · {{ "{:,.0f}".format(h.price) }}원
           <span class="{{ 'up-text' if h.change_pct >= 0 else 'down-text' }}">{{ '+' if h.change_pct >= 0 else '' }}{{ "{:.1f}".format(h.change_pct) }}%</span>
           {% if h.tv_today %}<div class="pick-sub">거래대금 {{ fmt_won(h.tv_today) }}{% if h.tv_change is not none %} (전일대비:{{ '+' if h.tv_change >= 0 else '' }}{{ "{:.0f}".format(h.tv_change) }}%){% endif %}</div>{% endif %}
           {% set st = h.streak or {} %}
@@ -1086,8 +1093,9 @@ ${{ "{:,.2f}".format(item.price) }} <span class="{{ 'up-text' if pct >= 0 else '
         {% for t in snap.prev_top3_status %}
         <li>
           <a href="https://finance.naver.com/item/main.naver?code={{ t.ticker }}" target="_blank" rel="noopener"><strong>{{ t.name }}</strong></a>
+          {% if mkt(t.ticker) %}<span class="pick-ticker">{{ mkt(t.ticker) }}</span>{% endif %}
           <span class="{{ 'up-text' if t.return_pct >= 0 else 'down-text' }}">추천가대비 {{ '+' if t.return_pct >= 0 else '' }}{{ "{:.1f}".format(t.return_pct) }}%</span>
-          <span class="pick-sub">(오늘 {{ '+' if t.today_pct >= 0 else '' }}{{ "{:.1f}".format(t.today_pct) }}%)</span>
+          {% if t.today_pct is not none %}<span class="pick-sub">(오늘 {{ '+' if t.today_pct >= 0 else '' }}{{ "{:.1f}".format(t.today_pct) }}%)</span>{% endif %}
         </li>
         {% endfor %}
       </ul>
@@ -1102,7 +1110,8 @@ ${{ "{:,.2f}".format(item.price) }} <span class="{{ 'up-text' if pct >= 0 else '
         {% for t in snap.prev_candidates_status %}
         <li>
           <a href="https://finance.naver.com/item/main.naver?code={{ t.ticker }}" target="_blank" rel="noopener"><strong>{{ t.name }}</strong></a>
-          <span class="{{ 'up-text' if t.today_pct >= 0 else 'down-text' }}">시초 {{ '+' if t.today_pct >= 0 else '' }}{{ "{:.1f}".format(t.today_pct) }}%</span>
+          {% if mkt(t.ticker) %}<span class="pick-ticker">{{ mkt(t.ticker) }}</span>{% endif %}
+          {% if t.today_pct is not none %}<span class="{{ 'up-text' if t.today_pct >= 0 else 'down-text' }}">시초 {{ '+' if t.today_pct >= 0 else '' }}{{ "{:.1f}".format(t.today_pct) }}%</span>{% else %}<span class="pick-sub">NXT 미체결</span>{% endif %}
         </li>
         {% endfor %}
       </ul>
@@ -1118,6 +1127,7 @@ ${{ "{:,.2f}".format(item.price) }} <span class="{{ 'up-text' if pct >= 0 else '
         {% for g in snap.top_gainers[:7] %}
         <li>
           <a href="https://finance.naver.com/item/main.naver?code={{ g.ticker }}" target="_blank" rel="noopener"><strong>{{ g.name }}</strong></a>
+          {% if mkt(g.ticker) %}<span class="pick-ticker">{{ mkt(g.ticker) }}</span>{% endif %}
           <span class="pick-ticker">{{ "{:,.0f}".format(g.price) }}원</span>
           <span class="up-text">+{{ "{:.1f}".format(g.change_pct) }}%</span>
         </li>
@@ -1147,7 +1157,7 @@ ${{ "{:,.2f}".format(item.price) }} <span class="{{ 'up-text' if pct >= 0 else '
           <div class="stock-row">
             <div class="stock-rank">{{ s.rank }}</div>
             <div class="stock-name">
-              {{ s.name }}<span class="ticker">{{ s.ticker }}</span>
+              {{ s.name }}<span class="ticker">{{ s.ticker }}{{ mk(s.ticker) }}</span>
             </div>
             <div class="stock-price">{{ "{:,.0f}".format(s.price) }}원</div>
             <div class="stock-pct {{ 'up-text' if s.change_pct >= 0 else 'down-text' }}">

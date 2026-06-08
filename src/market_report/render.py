@@ -14,6 +14,7 @@ from pathlib import Path
 
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 
+from src.datasource.market_map import ensure_maps, label_any
 from src.market_report.models import MarketSnapshot, ReportMode
 
 logger = logging.getLogger(__name__)
@@ -36,6 +37,7 @@ def _env() -> Environment:
         lstrip_blocks=True,
     )
     env.globals["fmt_won"] = format_marcap  # 거래대금/금액 원화(조/억) 포맷
+    env.globals["mkt"] = label_any  # 종목 소속 시장 라벨(코스피/코스닥/나스닥…, #471)
     return env
 
 
@@ -60,6 +62,11 @@ def report_url_rel(snap: MarketSnapshot) -> str:
 def render_report(snap: MarketSnapshot) -> Path:
     """단일 리포트 HTML 생성. 히스토리·index도 갱신."""
     REPORTS_DIR.mkdir(parents=True, exist_ok=True)
+
+    try:  # 시장 라벨 맵(일1회 캐시) — 실패 시 라벨만 생략(#471)
+        ensure_maps()
+    except Exception as exc:  # noqa: BLE001
+        logger.warning("market_map_ensure_failed error=%s", exc)
 
     env = _env()
     template = env.get_template("report.html")

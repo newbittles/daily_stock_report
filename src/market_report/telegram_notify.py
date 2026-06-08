@@ -59,8 +59,21 @@ _US_CROSS = {"PULLBACK": " 🟢단기눌림", "CORRECTION": " ⚠️조정시작
 
 
 def _naver_link(name: str, ticker: str) -> str:
-    """텔레그램 Markdown 종목 링크 → 네이버 금융 개별 페이지."""
-    return f"[{name}](https://finance.naver.com/item/main.naver?code={ticker})"
+    """텔레그램 Markdown 종목 링크 → 네이버 금융 개별 페이지.
+
+    종목명 뒤에 소속 시장(코스피/코스닥) 병기 — 모든 KR 종목란 공통(사용자 #471).
+    """
+    from src.datasource.market_map import label_any
+    mk = label_any(ticker)
+    suffix = f"({mk})" if mk else ""
+    return f"[{name}](https://finance.naver.com/item/main.naver?code={ticker}){suffix}"
+
+
+def _us_name(name: str, symbol: str) -> str:
+    """US 종목 표기 — 이름(심볼·시장) 예: 엔비디아(NVDA·나스닥) (사용자 #471)."""
+    from src.datasource.market_map import label_any
+    mk = label_any(symbol)
+    return f"{name}({symbol}·{mk})" if mk else f"{name}({symbol})"
 
 
 def _format_strategy_holdings(snap: MarketSnapshot) -> list[str]:
@@ -249,7 +262,7 @@ def _format_e_picks(snap: MarketSnapshot) -> list[str]:
         if tk.isdigit():  # KR
             head = f"{_naver_link(nm, tk)} {p.get('price', 0):,.0f}원"
         else:             # US
-            head = f"{nm}({tk}) ${p.get('price', 0):,.2f}"
+            head = f"{_us_name(nm, tk)} ${p.get('price', 0):,.2f}"
         # 2단계 등급: 지수RSI<35 OR 공포탐욕≤25 → 🔥강 / 아니면 개별(시장 양호) (사용자 #330/#331/#339)
         _fg = p.get("fg_score")
         _fgs = f"·공포탐욕{_fg}" if _fg is not None else ""
@@ -284,7 +297,7 @@ def _format_surge_picks(snap: MarketSnapshot) -> list[str]:
         if tk.isdigit():
             head = f"{_naver_link(nm, tk)} {p.get('price', 0):,.0f}원"
         else:
-            head = f"{nm}({tk}) ${p.get('price', 0):,.2f}"
+            head = f"{_us_name(nm, tk)} ${p.get('price', 0):,.2f}"
         lines.append(f"  · {head} ({sign}{chg:.1f}%)")
         det = _pick_detail_line(p)
         if det:
@@ -550,7 +563,7 @@ def _format_us_morning_summary(snap: MarketSnapshot) -> str:
         for t in snap.us_premarket_top[:5]:
             sign = "+" if t.get("change_pct", 0) >= 0 else ""
             nm = t.get("name") or t.get("symbol", "")
-            lines.append(f"  · {nm}({t.get('symbol', '')}) {sign}{t.get('change_pct', 0):.1f}%")
+            lines.append(f"  · {_us_name(nm, t.get('symbol', ''))} {sign}{t.get('change_pct', 0):.1f}%")
         lines.append("")
 
     # 종목 상세(주요종목·관심테마·Top3·스크리닝)는 텔레그램에서 생략 → 웹 링크로(사용자 2026-06-04).
@@ -609,6 +622,15 @@ async def send_report(snap: MarketSnapshot) -> bool:
     if not chat_ids:
         logger.warning("telegram_no_chat_id — allowed_chat_ids 비어있음")
         return False
+
+    # 종목 옆 시장 라벨(코스피/나스닥 등) 맵 준비 — 일1회 캐시, 실패해도 라벨만 생략(#471)
+    try:
+        import asyncio
+
+        from src.datasource.market_map import ensure_maps
+        await asyncio.to_thread(ensure_maps)
+    except Exception as exc:  # noqa: BLE001
+        logger.warning("market_map_ensure_failed error=%s", exc)
 
     if snap.mode in ("us_morning", "us_premarket", "us_intraday"):
         text = _format_us_morning_summary(snap)
