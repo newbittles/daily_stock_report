@@ -107,6 +107,28 @@ async def test_apply_index_futures_overrides_nasdaq_sp(monkeypatch) -> None:
     assert snap.us_overnight["futures"]  # 보관
 
 
+async def test_apply_index_realtime_for_intraday(monkeypatch) -> None:
+    """장중(us_intraday): 선물 아닌 실시간 지수(^GSPC/^IXIC)로 교체, 이름은 지수 그대로(#511)."""
+    from src.market_report.us_report_runner import _apply_index_realtime
+
+    def fake_fetch_one(sym):
+        return {"^GSPC": {"price": 7443.0, "change_pct": 0.81},
+                "^IXIC": {"price": 26035.0, "change_pct": 1.27}}.get(sym)
+    monkeypatch.setattr("src.datasource.us.overnight._fetch_one", fake_fetch_one)
+
+    snap = MarketSnapshot(mode="us_intraday", generated_at=datetime.now())
+    snap.us_indices = [
+        {"name": "S&P500", "price": 5300.0, "change_pct": -1.2},
+        {"name": "나스닥", "price": 17000.0, "change_pct": -1.5},
+        {"name": "다우", "price": 38000.0, "change_pct": -0.8},
+    ]
+    await _apply_index_realtime(snap)
+    sp, nq, dow = snap.us_indices
+    assert sp["change_pct"] == 0.81 and sp["is_realtime"] and "선물" not in sp["name"]  # 지수 그대로
+    assert nq["change_pct"] == 1.27 and nq["name"] == "나스닥"
+    assert dow["name"] == "다우" and dow["change_pct"] == -0.8  # 매핑 없는 지수 유지
+
+
 async def test_apply_index_futures_keeps_prev_on_missing(monkeypatch) -> None:
     """선물 수신 실패 시 전날 종가 유지(섹션 안 깨짐)."""
     from src.market_report.us_report_runner import _apply_index_futures

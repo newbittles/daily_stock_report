@@ -18,16 +18,16 @@ from src.market_report.models import MarketSnapshot
 
 logger = logging.getLogger(__name__)
 
-# 지수 표시명 → 선물 심볼 (프리장/장중 실시간 교체용, #497)
+# 지수 표시명 → 선물 심볼(프리장, #497) / 실시간 지수 심볼(장중, #511)
 _INDEX_FUTURES = {"S&P500": "ES=F", "나스닥": "NQ=F"}
+_INDEX_REALTIME = {"S&P500": "^GSPC", "나스닥": "^IXIC"}
 
 
 async def _apply_index_futures(snap: MarketSnapshot) -> None:
-    """프리장/장중: us_indices의 S&P500·나스닥을 선물 실시간 등락률로 교체(#497).
+    """프리장(us_premarket): us_indices의 S&P500·나스닥을 선물 실시간 등락률로 교체(#497).
 
-    fetch_us_overnight(NQ=F·ES=F)로 선물 시세를 받아 해당 지수 카드의 price·change_pct를
-    덮어쓰고 이름에 '선물' 표기. 선물 미수신 항목은 전날 종가 유지(best-effort).
-    snap.us_overnight에도 보관(M7 등 다른 표시에 재사용)."""
+    미국 정규장 휴장(프리장) 시간대라 선물(NQ=F·ES=F)이 분위기 지표. 이름에 '선물' 표기.
+    선물 미수신 항목은 전날 종가 유지. snap.us_overnight에도 보관(M7 등 재사용)."""
     from src.datasource.us.overnight import fetch_us_overnight
 
     ov = await fetch_us_overnight()
@@ -42,6 +42,31 @@ async def _apply_index_futures(snap: MarketSnapshot) -> None:
             q["change_pct"] = f["change_pct"]
             q["is_futures"] = True
     logger.info("index_futures_applied futures=%d", len(futs))
+
+
+async def _apply_index_realtime(snap: MarketSnapshot) -> None:
+    """장중(us_intraday): us_indices의 S&P500·나스닥을 실시간 '지수'로 교체(#511).
+
+    미국 정규장 진행 중이라 선물이 아니라 실제 지수(^GSPC·^IXIC) 실시간값이 맞다.
+    FDR 전날 마감 종가 대신 yfinance fast_info 실시간으로 덮어씀(이름은 지수 그대로)."""
+    import asyncio
+
+    from src.datasource.us.overnight import _fetch_one
+
+    for q in snap.us_indices:
+        sym = _INDEX_REALTIME.get(q.get("name", ""))
+        if not sym:
+            continue
+        try:
+            r = await asyncio.to_thread(_fetch_one, sym)
+        except Exception as exc:  # noqa: BLE001
+            logger.warning("index_realtime_failed sym=%s error=%s", sym, exc)
+            continue
+        if r:
+            q["price"] = r["price"]
+            q["change_pct"] = r["change_pct"]
+            q["is_realtime"] = True
+    logger.info("index_realtime_applied")
 
 
 async def run_us_report(
@@ -82,10 +107,12 @@ async def run_us_report(
         except Exception as exc:  # noqa: BLE001
             logger.warning("%s_%s_failed error=%s", mode, label, exc)
 
-    # 프리장/장중 리포트: 지수를 선물 실시간으로 교체 — FDR 전날 마감 종가를 그대로 쓰면
-    # 프리장 분위기를 못 보임(나스닥 NQ=F·S&P ES=F 실시간, 사용자 #497).
-    if mode in ("us_premarket", "us_intraday"):
+    # 지수 실시간화 — FDR 전날 마감 종가를 그대로 쓰면 안 됨.
+    # 프리장(미국 휴장)=선물(#497), 장중(정규장 진행)=실제 지수 실시간(#511).
+    if mode == "us_premarket":
         await _step(_apply_index_futures(snap), "index_futures")
+    elif mode == "us_intraday":
+        await _step(_apply_index_realtime(snap), "index_realtime")
 
     await _step(_collect_us_screening(snap, per_group=3), "screening")  # 하이브리드 ABCD(마감 일봉), 3개씩
     await _step(overlay(snap), "overlay")                               # 프리장/장중 시세 오버레이

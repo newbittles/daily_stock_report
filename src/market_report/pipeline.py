@@ -235,8 +235,9 @@ async def _render_candles(snap: MarketSnapshot) -> None:
     from src.market_report.chart import candle_url_rel, render_index_chart
 
     date = snap.generated_at.strftime("%Y-%m-%d")
+    # us_intraday도 미국 차트(S&P·나스닥·금·유가) — 누락 시 금 차트 빠짐(#511)
     items = (_CANDLE_ITEMS["us_morning"]
-             if snap.mode in ("us_morning", "us_premarket") else _CANDLE_ITEMS["kr"])
+             if snap.mode in ("us_morning", "us_premarket", "us_intraday") else _CANDLE_ITEMS["kr"])
 
     def _one(sym: str, key: str, src: str):
         try:

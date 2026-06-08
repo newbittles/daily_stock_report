@@ -717,6 +717,30 @@ def _format_kr_morning_summary(snap: MarketSnapshot) -> str:
     return "\n".join(lines)
 
 
+async def _wait_pages_built(url: str, timeout: float = 150.0, interval: float = 12.0) -> bool:
+    """리포트 웹 URL이 200(GitHub Pages 빌드 완료)될 때까지 대기(#512).
+
+    발송 직후 클릭 시 빌드 전 404를 막기 위해 발송 전에 호출. 신규 파일은 200까지 대기,
+    재발행(이미 200)은 즉시 통과. timeout 초과 시 그냥 발송(웹 늦어도 메시지는 보냄)."""
+    import asyncio
+    import time
+
+    import httpx
+
+    deadline = time.monotonic() + timeout
+    async with httpx.AsyncClient(timeout=10.0, follow_redirects=True) as client:
+        while time.monotonic() < deadline:
+            try:
+                r = await client.head(url)
+                if r.status_code == 200:
+                    return True
+            except Exception:  # noqa: BLE001
+                pass
+            await asyncio.sleep(interval)
+    logger.warning("wait_pages_timeout url=%s", url)
+    return False
+
+
 async def send_report(snap: MarketSnapshot) -> bool:
     """리포트 요약을 텔레그램으로 발송. 성공 여부 반환."""
     settings = get_settings()
@@ -733,6 +757,12 @@ async def send_report(snap: MarketSnapshot) -> bool:
         await asyncio.to_thread(ensure_maps)
     except Exception as exc:  # noqa: BLE001
         logger.warning("market_map_ensure_failed error=%s", exc)
+
+    # 웹 빌드 완료까지 대기 후 발송 — 발송 직후 클릭 시 404 방지(#512). 실패해도 발송 진행.
+    try:
+        await _wait_pages_built(report_url(snap))
+    except Exception as exc:  # noqa: BLE001
+        logger.warning("wait_pages_failed error=%s", exc)
 
     if snap.mode in ("us_morning", "us_premarket", "us_intraday"):
         text = _format_us_morning_summary(snap)
