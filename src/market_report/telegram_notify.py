@@ -410,7 +410,7 @@ def _format_post_summary(snap: MarketSnapshot) -> str:
     return "\n".join(lines)
 
 
-_FLOW_EMOJI = {"V_REBOUND": "🔄", "STRONG": "🚀", "PEAK_FADE": "📉", "WEAK": "📉", "FLAT": "➖"}
+_FLOW_EMOJI = {"V_REBOUND": "V", "STRONG": "🚀", "PEAK_FADE": "📉", "WEAK": "📉", "FLAT": "➖"}
 
 
 def _flow_line(row: dict) -> str | None:
