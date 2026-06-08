@@ -654,13 +654,17 @@ ${{ "{:,.2f}".format(item.price) }} <span class="{{ 'up-text' if pct >= 0 else '
     {% set _etfs = snap.kr_us_netbuy | selectattr('is_etf') | list %}
     <section>
       <h2><span class="icon">🇰🇷</span>한국인 자금흐름 <span style="color:var(--text-dim);font-size:0.8rem;">(서학개미 · 최근 5거래일 순매수/순매도, 억원)</span></h2>
+      {% if snap.kr_us_netbuy_dates %}{% set dt = snap.kr_us_netbuy_dates %}
+      <p style="color:var(--text-dim);font-size:0.8rem;margin:0.2rem 0;">📅 결제일 {{ dt.range }}({{ dt.trading_days }}거래일) 기준{% if dt.delay_days and dt.delay_days > 0 %} · 오늘 {{ dt.today }} 기준 약 {{ dt.delay_days }}일 전 데이터{% endif %} · <span title="결제(T+2): 실제 매수·매도는 결제일보다 2거래일 앞섰다는 뜻">T+2 결제 기준(실제 매매는 약 2거래일 전)</span></p>
+      {% endif %}
       {% if snap.kr_us_netbuy_total %}{% set t = snap.kr_us_netbuy_total %}
       <div class="summary-box" style="margin:0.3rem 0;border-left:4px solid var(--green);">
         <p style="margin:0;">💸 <strong>한국인 순매수 일평균: {{ '{:+,}'.format(t.daily_avg_eok) }}억</strong>{% if t.change_pct is not none %} (전주 {{ '{:+,}'.format(t.prev_daily_avg_eok) }}억 대비 <strong class="{{ 'up-text' if t.change_pct >= 0 else 'down-text' }}">{{ '+' if t.change_pct >= 0 else '' }}{{ t.change_pct }}%</strong>){% endif %} <span style="color:var(--text-dim);font-size:0.8rem;">· 5일 총액 {{ '{:+,}'.format(t.total_eok) }}억</span></p>
       </div>
       {% endif %}
+      {% set _dtr = (snap.kr_us_netbuy_dates.range ~ ' 결제 기준') if snap.kr_us_netbuy_dates else '' %}
       {% if _stocks %}
-      <h3 style="margin-top:0.6rem;color:var(--green);">💰 순매수 TOP5 — 개별종목</h3>
+      <h3 style="margin-top:0.6rem;color:var(--green);">💰 순매수 TOP5 — 개별종목{% if _dtr %} <span style="color:var(--text-dim);font-size:0.78rem;font-weight:normal;">({{ _dtr }})</span>{% endif %}</h3>
       <ul class="watch-list">
         {% for r in _stocks[:5] %}
         <li><a href="https://search.naver.com/search.naver?query={{ (r.name ~ ' 주가') | urlencode }}" target="_blank" rel="noopener"><strong>{{ r.name }}</strong></a>{% if r.ticker %} <span class="pick-ticker">{{ r.ticker }}{{ mk(r.ticker) }}</span>{% endif %} <span style="color:var(--green);">+{{ "{:,}".format(r.net_buy_eok) }}억</span></li>
@@ -668,7 +672,7 @@ ${{ "{:,.2f}".format(item.price) }} <span class="{{ 'up-text' if pct >= 0 else '
       </ul>
       {% endif %}
       {% if _etfs %}
-      <h3 style="margin-top:0.6rem;color:var(--green);">📦 순매수 TOP5 — ETF</h3>
+      <h3 style="margin-top:0.6rem;color:var(--green);">📦 순매수 TOP5 — ETF{% if _dtr %} <span style="color:var(--text-dim);font-size:0.78rem;font-weight:normal;">({{ _dtr }})</span>{% endif %}</h3>
       <ul class="watch-list">
         {% for r in _etfs[:5] %}
         <li><a href="https://search.naver.com/search.naver?query={{ (r.name ~ ' 주가') | urlencode }}" target="_blank" rel="noopener"><strong>{{ r.name }}</strong></a>{% if r.ticker %} <span class="pick-ticker">{{ r.ticker }}{{ mk(r.ticker) }}</span>{% endif %} <span style="color:var(--green);">+{{ "{:,}".format(r.net_buy_eok) }}억</span></li>
@@ -676,14 +680,14 @@ ${{ "{:,.2f}".format(item.price) }} <span class="{{ 'up-text' if pct >= 0 else '
       </ul>
       {% endif %}
       {% if snap.kr_us_netsell %}
-      <h3 style="margin-top:0.6rem;color:var(--red);">🔻 순매도 TOP3 — 자금 유출</h3>
+      <h3 style="margin-top:0.6rem;color:var(--red);">🔻 순매도 TOP3 — 자금 유출{% if _dtr %} <span style="color:var(--text-dim);font-size:0.78rem;font-weight:normal;">({{ _dtr }})</span>{% endif %}</h3>
       <ul class="watch-list">
         {% for r in snap.kr_us_netsell[:3] %}
         <li><a href="https://search.naver.com/search.naver?query={{ (r.name ~ ' 주가') | urlencode }}" target="_blank" rel="noopener"><strong>{{ r.name }}</strong></a>{% if r.ticker %} <span class="pick-ticker">{{ r.ticker }}{{ mk(r.ticker) }}</span>{% endif %} <span style="color:var(--red);">−{{ "{:,}".format(r.net_sell_eok) }}억</span></li>
         {% endfor %}
       </ul>
       {% endif %}
-      <p class="disclaimer" style="font-size:12px;">※ 예탁결제원(SEIBro) 최근 5거래일 한국인 순매수/순매도 결제금액. 자금이 어디로 유입·유출되는지 참고용.</p>
+      <p class="disclaimer" style="font-size:12px;">※ 예탁결제원(SEIBro) 최근 5거래일 한국인 순매수/순매도 <strong>결제금액(T+2)</strong>{% if snap.kr_us_netbuy_dates %} · {{ snap.kr_us_netbuy_dates.range }} 결제 기준(실제 매매는 약 2거래일 전){% endif %}. 자금이 어디로 유입·유출되는지 참고용.</p>
     </section>
     {% endif %}
 

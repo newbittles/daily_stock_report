@@ -624,6 +624,10 @@ def _format_us_morning_summary(snap: MarketSnapshot) -> str:
         chg = (f" (전주 {t['prev_daily_avg_eok']:+,}억 대비 {t['change_pct']:+.1f}%)"
                if t.get("change_pct") is not None else "")
         lines.append(f"💸 한국인 순매수 일평균 {t['daily_avg_eok']:+,}억{chg} · 5일총액 {t['total_eok']:+,}억")
+        d = getattr(snap, "kr_us_netbuy_dates", None)  # 결제일 기준 명시(T+2, 사용자 2026-06-09)
+        if d:
+            delay = f" · 오늘 {d['today']} 기준 약 {d['delay_days']}일 전" if d.get("delay_days") else ""
+            lines.append(f"  📅 결제일 {d['range']}({d['trading_days']}거래일) 기준{delay} · T+2 결제(실제 매매는 약 2거래일 전)")
         lines.append("")
 
     if snap.summary:

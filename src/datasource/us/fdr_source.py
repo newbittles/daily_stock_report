@@ -122,6 +122,25 @@ async def fetch_sector_leaders(sector_names: list[str]) -> list[dict]:
     return out
 
 
+async def fetch_soxl_leader() -> dict | None:
+    """SOXL(반도체 3X 레버리지 ETF)을 '섹터별 대장주'에 고정 병기(사용자 2026-06-09).
+
+    섹터 시총1등(NVDA 등)과 별개로, 사용자가 추적하는 SOXL을 섹터 대장 리스트에 항상 추가.
+    반환 형태는 fetch_sector_leaders와 동일({sector, symbol, name, price, change_pct, week_pct}).
+    장전 모드의 프리장 오버레이는 호출부(_collect_sector_leaders)에서 leaders와 함께 처리됨.
+    실패 시 None(생략)."""
+    from src.datasource.us.names_ko import korean_name
+
+    quotes = await asyncio.to_thread(_fetch_quotes_sync, {"SOXL": "SOXL"})
+    if not quotes:
+        return None
+    q = quotes[0]
+    wk = await asyncio.to_thread(_week_pct_sync, ["SOXL"])
+    return {"sector": "반도체 3X", "symbol": "SOXL", "name": korean_name("SOXL", "SOXL"),
+            "price": round(q.price, 2), "change_pct": round(q.change_pct, 2),
+            "week_pct": wk.get("SOXL")}
+
+
 def _week_pct_sync(symbols: list[str]) -> dict[str, float]:
     """심볼별 최근 1주일(5거래일) 상승률% — FDR 14일 조회(#433). 실패 종목은 생략."""
     import datetime as _dt

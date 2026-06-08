@@ -132,6 +132,7 @@ class MarketSnapshot:
     kr_us_netbuy: list[dict] = field(default_factory=list)  # [{rank, ticker, name, net_buy_eok, net_buy_usd}]
     kr_us_netsell: list[dict] = field(default_factory=list)  # 한국인 순매도(자금유출) TOP3 [{ticker,name,net_sell_eok}] (#318)
     kr_us_netbuy_total: dict | None = None  # 한국인 미국주식 순매수 총액 {total_eok,daily_avg_eok,prev_daily_avg_eok,change_pct} (#377)
+    kr_us_netbuy_dates: dict | None = None  # 자금흐름 데이터 기준일 {range,latest,today,delay_days,trading_days} — T+2 결제 기준(사용자 2026-06-09)
 
     # AI 분석 결과 (analyzer가 채움)
     summary: str = ""           # 시장 한줄 요약

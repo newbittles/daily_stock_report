@@ -44,11 +44,21 @@ def test_ticker_for_observed_and_unknown() -> None:
 
 
 def test_lookback_range_window() -> None:
-    end = date(2026, 6, 4)
-    start_dt, end_dt = ss.lookback_range(trading_days=5, end=end)
-    assert end_dt == "20260604"
-    # 5거래일 ≈ 11 캘린더일 여유 → start < end, YYYYMMDD 형식
-    assert len(start_dt) == 8 and start_dt < end_dt
+    # end=6/4(목) → 포함 역방향 정확히 5거래일: 6/4,6/3,6/2,6/1,5/29(5/30·31 주말 스킵)
+    start_dt, end_dt = ss.lookback_range(trading_days=5, end=date(2026, 6, 4))
+    assert (start_dt, end_dt) == ("20260529", "20260604")
+
+
+def test_lookback_range_end_on_weekend_backs_to_friday() -> None:
+    # end=6/7(일) → 직전 거래일 6/5(금)로 보정, 5거래일=6/5,6/4,6/3,6/2,6/1
+    start_dt, end_dt = ss.lookback_range(trading_days=5, end=date(2026, 6, 7))
+    assert (start_dt, end_dt) == ("20260601", "20260605")
+
+
+def test_step_back_trading_days() -> None:
+    assert ss._step_back_trading_days(date(2026, 6, 8), 0) == date(2026, 6, 8)   # 월(평일 그대로)
+    assert ss._step_back_trading_days(date(2026, 6, 8), 1) == date(2026, 6, 5)   # 직전 거래일=금
+    assert ss._step_back_trading_days(date(2026, 6, 6), 0) == date(2026, 6, 5)   # 토→금 보정
 
 
 def test_fetch_sorts_by_netbuy_desc_and_caches(monkeypatch, tmp_path) -> None:
@@ -192,6 +202,42 @@ def test_attach_kr_netbuy_to_picks(monkeypatch) -> None:
     assert mu["kr_netbuy_5d_eok"] is not None and mu["kr_netbuy_5d_eok"] > 0  # MICRON 824M×1450/1e8
     # TOP50 권외(미매칭) 종목엔 부착 안 됨
     assert "kr_netbuy_5d_eok" not in snap.us_screen_groups[0]["picks"][0]
+
+
+def test_collect_kr_us_netbuy_sets_dates(monkeypatch) -> None:
+    """자금흐름 데이터 기준일(kr_us_netbuy_dates)이 채워지는지 — 5거래일·T+2 표기용(사용자 2026-06-09)."""
+    from datetime import datetime
+
+    from src.datasource.us import fdr_source, seibro_source
+    from src.market_report.models import MarketSnapshot
+    from src.market_report.pipeline import _collect_kr_us_netbuy
+
+    rows = ss.parse_netbuy_xml(_FIXTURE.read_bytes())
+
+    async def fake_netbuy(*a, **k):
+        return rows
+
+    async def fake_sell(*a, **k):
+        return []
+
+    async def fake_rate():
+        return 1400.0
+
+    monkeypatch.setattr(seibro_source, "fetch_us_net_buy", fake_netbuy)
+    monkeypatch.setattr(seibro_source, "fetch_us_net_sell", fake_sell)
+    monkeypatch.setattr(fdr_source, "fetch_usd_krw", fake_rate)
+
+    snap = MarketSnapshot(mode="us_morning", generated_at=datetime(2026, 6, 9, 7, 0))
+    asyncio.run(_collect_kr_us_netbuy(snap))
+
+    d = snap.kr_us_netbuy_dates
+    assert d is not None
+    assert d["trading_days"] == 5
+    assert "~" in d["range"]            # M/D~M/D 결제 구간
+    assert d["delay_days"] >= 1         # END=직전 거래일 → 최소 1일 전 데이터
+    # 윈도 정정(정확히 5거래일) 후 일평균 = 5일 합 ÷ 5
+    tot = snap.kr_us_netbuy_total
+    assert tot["daily_avg_eok"] == round(tot["total_eok"] / 5)
 
 
 def test_telegram_section_empty_when_no_data() -> None:

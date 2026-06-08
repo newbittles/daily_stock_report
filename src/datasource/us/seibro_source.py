@@ -119,15 +119,33 @@ def prev_trading_day(end: date | None = None) -> str:
     return d.strftime("%Y%m%d")
 
 
-def lookback_range(trading_days: int = 5, end: date | None = None) -> tuple[str, str]:
-    """최근 N거래일 누적 조회용 (START_DT, END_DT) YYYYMMDD.
+def _step_back_trading_days(d: date, n: int) -> date:
+    """d(주말이면 직전 거래일)에서 역방향으로 n번째 거래일(주말 스킵). n=0이면 d의 직전 거래일.
 
-    SEIBro는 결제(T+2~3) 기준이라 최신 영업일이 다소 지연될 수 있다 → END=어제 기본.
-    거래일 정밀 계산 대신 주말 여유(×1.6+3일)로 넉넉히 잡는다(SEIBro가 구간 합산하므로 무해).
+    공휴일 미반영(거래소 캘린더 없이) — best-effort. 휴장일이 구간 안에 들면 실제 거래일은
+    5보다 적을 수 있으나 종전 ×1.6 휴리스틱(≈8거래일 과다합산)보다 정확하다.
     """
-    end = end or (date.today() - timedelta(days=1))
-    start = end - timedelta(days=int(trading_days * 1.6) + 3)
-    return start.strftime("%Y%m%d"), end.strftime("%Y%m%d")
+    while d.weekday() >= 5:  # 토(5)·일(6) → 직전 평일
+        d -= timedelta(days=1)
+    steps = 0
+    while steps < n:
+        d -= timedelta(days=1)
+        while d.weekday() >= 5:
+            d -= timedelta(days=1)
+        steps += 1
+    return d
+
+
+def lookback_range(trading_days: int = 5, end: date | None = None) -> tuple[str, str]:
+    """최근 N거래일 누적 조회용 (START_DT, END_DT) YYYYMMDD — 정확히 N거래일(주말 스킵).
+
+    SEIBro는 결제(T+2~3) 기준이라 최신 영업일이 다소 지연될 수 있다 → END=어제 기본
+    (주말이면 직전 거래일로 보정). START는 END 포함 역방향 N거래일째라 [START, END] 구간이
+    정확히 N개 거래일을 담는다(종전 ×1.6 여유는 ≈8거래일을 합산해 금액·일평균을 부풀림, 사용자 2026-06-09).
+    """
+    end_d = _step_back_trading_days(end or (date.today() - timedelta(days=1)), 0)
+    start_d = _step_back_trading_days(end_d, max(0, trading_days - 1))
+    return start_d.strftime("%Y%m%d"), end_d.strftime("%Y%m%d")
 
 
 def _fetch_sync(start_dt: str, end_dt: str, top: int, d_type: str = "4") -> list[SeibroNetBuy]:

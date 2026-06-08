@@ -47,6 +47,51 @@ def test_format_us_overnight_excludes_futures_for_premarket() -> None:
     assert "엔비디아 마감 -6.2% · 프리장 +2.0%" in out
 
 
+async def test_collect_sector_leaders_appends_soxl(monkeypatch) -> None:
+    """섹터별 대장주 끝에 SOXL(반도체 3X)이 고정 추가되는지(사용자 2026-06-09)."""
+    from src.market_report import pipeline as P
+
+    async def fake_leaders(names):
+        return [{"sector": "반도체", "symbol": "NVDA", "name": "엔비디아",
+                 "price": 200.0, "change_pct": 1.0, "week_pct": 3.0}]
+
+    async def fake_soxl():
+        return {"sector": "반도체 3X", "symbol": "SOXL", "name": "반도체 3X(SOXL)",
+                "price": 30.0, "change_pct": 5.0, "week_pct": 9.0}
+
+    monkeypatch.setattr("src.datasource.us.fdr_source.fetch_sector_leaders", fake_leaders)
+    monkeypatch.setattr("src.datasource.us.fdr_source.fetch_soxl_leader", fake_soxl)
+
+    snap = MarketSnapshot(mode="us_morning", generated_at=datetime.now())
+    snap.us_sectors = [{"name": "반도체", "change_pct": 2.0}]
+    await P._collect_sector_leaders(snap)
+
+    syms = [d["symbol"] for d in snap.us_sector_leaders]
+    assert "SOXL" in syms and syms[-1] == "SOXL"   # 본 리스트 뒤에 병기
+
+
+async def test_collect_sector_leaders_soxl_no_dup(monkeypatch) -> None:
+    """SOXL이 이미 섹터 대장에 있으면 중복 추가하지 않음."""
+    from src.market_report import pipeline as P
+
+    async def fake_leaders(names):
+        return [{"sector": "반도체 3X", "symbol": "SOXL", "name": "반도체 3X(SOXL)",
+                 "price": 30.0, "change_pct": 5.0, "week_pct": 9.0}]
+
+    async def fake_soxl():
+        return {"sector": "반도체 3X", "symbol": "SOXL", "name": "반도체 3X(SOXL)",
+                "price": 30.0, "change_pct": 5.0, "week_pct": 9.0}
+
+    monkeypatch.setattr("src.datasource.us.fdr_source.fetch_sector_leaders", fake_leaders)
+    monkeypatch.setattr("src.datasource.us.fdr_source.fetch_soxl_leader", fake_soxl)
+
+    snap = MarketSnapshot(mode="us_morning", generated_at=datetime.now())
+    snap.us_sectors = [{"name": "반도체", "change_pct": 2.0}]
+    await P._collect_sector_leaders(snap)
+
+    assert [d["symbol"] for d in snap.us_sector_leaders].count("SOXL") == 1
+
+
 def test_format_us_overnight_empty() -> None:
     snap = MarketSnapshot(mode="midday", generated_at=datetime.now())
     assert _format_us_overnight(snap) == []

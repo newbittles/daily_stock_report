@@ -606,6 +606,26 @@ async def _collect_kr_us_netbuy(snap: MarketSnapshot) -> None:
     n_stock = sum(1 for o in out if not o["is_etf"])
     logger.info("kr_us_netbuy_ready n=%d stocks=%d etfs=%d", len(out), n_stock, len(out) - n_stock)
 
+    # 데이터 기준일 표기(사용자 2026-06-09) — SEIBro는 날짜필드가 없어 우리가 조회한 구간으로 표기.
+    # fetch_us_net_buy(trading_days=5)와 동일한 lookback_range(5)를 재계산(결정론적)해 정확히 일치시킨다.
+    try:
+        import datetime as _dt
+        from src.datasource.us.seibro_source import lookback_range
+        sdt, edt = lookback_range(5)
+        sd = _dt.datetime.strptime(sdt, "%Y%m%d").date()
+        ed = _dt.datetime.strptime(edt, "%Y%m%d").date()
+        today = _dt.date.today()
+
+        def _md(d: _dt.date) -> str:
+            return f"{d.month}/{d.day}"
+
+        snap.kr_us_netbuy_dates = {
+            "range": f"{_md(sd)}~{_md(ed)}", "latest": _md(ed), "today": _md(today),
+            "delay_days": (today - ed).days, "trading_days": 5,
+        }
+    except Exception as exc:  # noqa: BLE001
+        logger.warning("kr_us_netbuy_dates_failed error=%s", exc)
+
     sell_out: list[dict] = []
     # 순매도(자금 유출) TOP3 — 매도결제금액 상위 중 순매수 음수(사용자 #318: 자금이 어디로 빠지는지)
     try:
@@ -1264,6 +1284,14 @@ async def _collect_sector_leaders(snap: MarketSnapshot) -> None:
     except Exception as exc:  # noqa: BLE001
         logger.warning("us_sector_leaders_failed error=%s", exc)
         return
+    # SOXL(반도체 3X) 고정 병기 — 섹터 대장 리스트 끝에 추가(사용자 2026-06-09). 실패해도 본 리스트는 유지.
+    try:
+        from src.datasource.us.fdr_source import fetch_soxl_leader
+        soxl = await fetch_soxl_leader()
+        if soxl and not any(d.get("symbol") == "SOXL" for d in leaders):
+            leaders.append(soxl)
+    except Exception as exc:  # noqa: BLE001
+        logger.warning("us_sector_leaders_soxl_failed error=%s", exc)
     if snap.mode == "us_premarket" and leaders:
         try:
             from src.datasource.us.fdr_source import fetch_us_premarket
