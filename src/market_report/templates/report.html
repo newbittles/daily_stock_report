@@ -1052,6 +1052,7 @@ ${{ "{:,.2f}".format(item.price) }} <span class="{{ 'up-text' if pct >= 0 else '
           </span>
           {% if h.endstage %}<span class="down-text" style="cursor:pointer;" onclick="showFlag(this)" data-flag="endstage">⚠️끝물ⓘ</span>{% endif %}
           {% if h.cross_signal == 'PULLBACK' %}<span class="up-text" style="font-size:0.85rem;">🟢5&lt;10 단기눌림(홀드)</span>{% elif h.cross_signal == 'CORRECTION' %}<span class="down-text" style="font-size:0.85rem;">⚠️5&lt;10 조정시작(익절검토)</span>{% endif %}
+          {% if h.flow_desc %}<div class="pick-sub" style="color:var(--text-dim);">📊 {{ h.flow_desc }}</div>{% endif %}
           <div class="theme-reason">{{ h.reason }}</div>
         </li>
         {% endfor %}
@@ -1077,6 +1078,7 @@ ${{ "{:,.2f}".format(item.price) }} <span class="{{ 'up-text' if pct >= 0 else '
           {% if st.orgn and st.orgn > 0 %}{% set _ = streak.append('기관' ~ st.orgn ~ '일') %}{% endif %}
           {% if st.frgn and st.frgn > 0 %}{% set _ = streak.append('외인' ~ st.frgn ~ '일') %}{% endif %}
           {% if st.prsn and st.prsn > 0 %}{% set _ = streak.append('개인' ~ st.prsn ~ '일') %}{% endif %}
+          {% if h.flow_desc %}<div class="pick-sub" style="color:var(--text-dim);">📊 {{ h.flow_desc }}</div>{% endif %}
           {% if streak %}<div class="pick-sub">수급: {{ streak|join('·') }} 순매수</div>{% endif %}
           {% if h.theme %}<div class="pick-sub">테마: {{ h.theme }}</div>{% endif %}
         </li>
@@ -1096,6 +1098,7 @@ ${{ "{:,.2f}".format(item.price) }} <span class="{{ 'up-text' if pct >= 0 else '
           {% if mkt(t.ticker) %}<span class="pick-ticker">{{ mkt(t.ticker) }}</span>{% endif %}
           <span class="{{ 'up-text' if t.return_pct >= 0 else 'down-text' }}">추천가대비 {{ '+' if t.return_pct >= 0 else '' }}{{ "{:.1f}".format(t.return_pct) }}%</span>
           {% if t.today_pct is not none %}<span class="pick-sub">(오늘 {{ '+' if t.today_pct >= 0 else '' }}{{ "{:.1f}".format(t.today_pct) }}%)</span>{% endif %}
+          {% if t.flow_desc %}<div class="pick-sub" style="color:var(--text-dim);">📊 {{ t.flow_desc }}</div>{% endif %}
         </li>
         {% endfor %}
       </ul>
@@ -1112,6 +1115,7 @@ ${{ "{:,.2f}".format(item.price) }} <span class="{{ 'up-text' if pct >= 0 else '
           <a href="https://finance.naver.com/item/main.naver?code={{ t.ticker }}" target="_blank" rel="noopener"><strong>{{ t.name }}</strong></a>
           {% if mkt(t.ticker) %}<span class="pick-ticker">{{ mkt(t.ticker) }}</span>{% endif %}
           {% if t.today_pct is not none %}<span class="{{ 'up-text' if t.today_pct >= 0 else 'down-text' }}">시초 {{ '+' if t.today_pct >= 0 else '' }}{{ "{:.1f}".format(t.today_pct) }}%</span>{% else %}<span class="pick-sub">NXT 미체결</span>{% endif %}
+          {% if t.flow_desc %}<div class="pick-sub" style="color:var(--text-dim);">📊 {{ t.flow_desc }}</div>{% endif %}
         </li>
         {% endfor %}
       </ul>

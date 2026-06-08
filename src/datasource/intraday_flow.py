@@ -45,6 +45,38 @@ def flow_summary(raw_1m: list[dict], prev_close: float) -> dict | None:
     }
 
 
+def prev_close_of(row: dict) -> float | None:
+    """status/holdings dict에서 전일종가 산출 — 분봉 흐름 % 기준 통일.
+
+    우선순위: 명시 prev_close → (현재가 ÷ (1+오늘등락/100)) 역산.
+    현재가 키는 cur_price|price, 등락 키는 today_pct|change_pct. 산출 불가 시 None.
+    """
+    pc = row.get("prev_close")
+    if pc and pc > 0:
+        return float(pc)
+    cur = row.get("cur_price") or row.get("price")
+    pct = row.get("today_pct")
+    if pct is None:
+        pct = row.get("change_pct")
+    if not cur or cur <= 0 or pct is None or pct <= -100:
+        return None
+    return float(cur) / (1 + float(pct) / 100)
+
+
+async def inject_flows(adapter, rows: list[dict], day: str | None = None) -> None:
+    """status/holdings dict 리스트에 장중 흐름 주입(제자리 변경). 키 'flow_desc'/'flow_shape'.
+
+    각 row에서 ticker + 전일종가(prev_close_of)를 뽑아 분봉 흐름을 수집해 붙인다.
+    흐름 산출 불가(분봉 없음·전일종가 없음)면 해당 row는 키 미추가(템플릿 가드로 생략)."""
+    items = [(str(r.get("ticker", "")).strip(), prev_close_of(r) or 0.0) for r in rows]
+    flows = await fetch_intraday_flows(adapter, items, day)
+    for r in rows:
+        f = flows.get(str(r.get("ticker", "")).strip())
+        if f:
+            r["flow_desc"] = f["desc"]
+            r["flow_shape"] = f["shape"]
+
+
 async def fetch_intraday_flows(
     adapter, items: list[tuple[str, float]], day: str | None = None,
 ) -> dict[str, dict]:

@@ -102,6 +102,16 @@ async def run_kr_morning(
             snap.prev_candidates_status = await fetch_prev_top3_status(picks, adapter, use_nxt=use_nxt)
             snap.prev_candidates_date = d
 
+        # 장초(kr_open, 09:15) 분봉 추세 주입(#473) — 프리장(08:05)은 당일 분봉 없어 스킵
+        if not use_nxt:
+            try:
+                from src.datasource.intraday_flow import inject_flows
+                for rows in (snap.prev_top3_status, snap.prev_candidates_status):
+                    if rows:
+                        await inject_flows(adapter, rows)
+            except Exception as exc:  # noqa: BLE001
+                logger.warning("%s_intraday_flow_failed error=%s", mode, exc)
+
         # 지수 신호등/이격도(고점·바닥 분위기)
         try:
             from src.market_report.pipeline import _fill_market_phase, _index_ma_gaps

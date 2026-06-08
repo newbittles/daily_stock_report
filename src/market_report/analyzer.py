@@ -258,8 +258,22 @@ def _fallback_summary(snap: MarketSnapshot) -> str:
     return head + (f". 강세 테마: {', '.join(themes)}." if themes else ".")
 
 
+def _intraday_flow_context(snap: MarketSnapshot) -> str:
+    """주요 종목 장중 분봉 흐름(flow_desc)을 프롬프트용 텍스트로(#473/#474). 없으면 ''."""
+    rows: list[str] = []
+    seen: set[str] = set()
+    for r in ((snap.prev_top3_status or []) + (snap.hot_stocks or [])
+              + (snap.holdings_status or []) + (snap.prev_candidates_status or [])):
+        tk = str(r.get("ticker", ""))
+        d = r.get("flow_desc")
+        if d and tk not in seen:
+            seen.add(tk)
+            rows.append(f"  {r.get('name', '')}: {d}")
+    return ("\n[주요 종목 장중 분봉 흐름]\n" + "\n".join(rows)) if rows else ""
+
+
 async def summarize_midday(snap: MarketSnapshot) -> str:
-    """장중(정오) 한줄 코멘트 — 지수·수급·강세테마 기반 1~2문장.
+    """장중(정오) 한줄 코멘트 — 지수·수급·강세테마 + 주요종목 장중 흐름 기반 1~3문장.
 
     Gemini 1회 시도, 실패/키없음 시 결정론 폴백(_fallback_summary). 종목 추천·매수의견 금지.
     """
@@ -268,10 +282,12 @@ async def summarize_midday(snap: MarketSnapshot) -> str:
     if not settings.gemini_api_key:
         return fallback
 
-    context = _build_snapshot_context(snap)
+    context = _build_snapshot_context(snap) + _intraday_flow_context(snap)
     prompt = (
-        "다음은 오늘 한국 증시 '장중(정오)' 스냅샷이다. 지금까지의 흐름을 "
-        "1~2문장으로 간결히 코멘트하라(지수 방향·수급·강세테마 중심). "
+        "다음은 오늘 한국 증시 '장중' 스냅샷이다. 지금까지의 흐름을 "
+        "2~3문장으로 간결히 코멘트하라(지수 방향·수급·강세테마 중심). "
+        "지수 약세/강세만 말하지 말고, '주요 종목 장중 분봉 흐름'이 있으면 "
+        "급락 후 반등·고점 후 하락처럼 눈에 띄는 종목의 장중 궤적을 1문장 포함하라. "
         "종목 추천·매수의견·목표가는 절대 쓰지 말 것. 사실을 지어내지 말 것.\n\n"
         f"{context}"
     )

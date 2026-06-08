@@ -162,3 +162,35 @@ def test_format_hot_stocks_renders():
     assert "수급: 기관2일·외인1일 순매수" in txt   # 아래 줄 수급현황
     assert "개인" not in txt                      # prsn=0 → 표시 안 함
     assert "테마: 로봇" in txt
+
+
+# ─── 장중 분봉 추세 통합 (#473/#474) ─────────────────────────────────────────
+def test_format_midday_shows_intraday_flow_and_new_sections():
+    """전일Top3·종가베팅·보유에 장중 분봉 추세 줄 + 신규 섹션 표시."""
+    snap = _midday_snap()
+    snap.prev_top3_status[0]["flow_desc"] = "장중 -10.4%(09:00)까지 밀렸다 반등 양봉, 현재 -2.0%(저점대비 +8.4%p)"
+    snap.prev_top3_status[0]["flow_shape"] = "V_REBOUND"
+    snap.prev_candidates_status = [
+        {"ticker": "005930", "name": "삼성전자", "rec_price": 80000, "cur_price": 78000,
+         "return_pct": -2.5, "today_pct": -1.1,
+         "flow_desc": "장중 약세 지속, 현재 -1.1%(저점 -2.0%)", "flow_shape": "WEAK"},
+    ]
+    snap.prev_candidates_date = "2026-06-03"
+    snap.holdings_status = [
+        {"ticker": "042660", "name": "한화오션", "price": 112000, "profit_rate": 8.5,
+         "cross_signal": None,
+         "flow_desc": "장중 +5.0%까지 올랐다 밀림, 현재 +1.2%(고점대비 -3.8%p)",
+         "flow_shape": "PEAK_FADE"},
+    ]
+    msg = _format_midday_summary(snap)
+    assert "밀렸다 반등 양봉" in msg                       # 전일Top3 흐름 줄
+    assert "🎯 *전일 종가베팅 후보 현황*" in msg           # 신규 섹션
+    assert "약세 지속" in msg
+    assert "📋 *보유종목 장중 추세*" in msg                # 신규 섹션
+    assert "한화오션" in msg and "올랐다 밀림" in msg
+
+
+def test_format_midday_flow_omitted_when_absent():
+    """flow_desc 없으면 추세 줄 생략(기존 동작 유지)."""
+    msg = _format_midday_summary(_midday_snap())
+    assert "📊 장중" not in msg  # 흐름 미주입 → 줄 없음

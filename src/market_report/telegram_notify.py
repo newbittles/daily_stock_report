@@ -393,6 +393,18 @@ def _format_post_summary(snap: MarketSnapshot) -> str:
     return "\n".join(lines)
 
 
+_FLOW_EMOJI = {"V_REBOUND": "🔄", "STRONG": "🚀", "PEAK_FADE": "📉", "WEAK": "📉", "FLAT": "➖"}
+
+
+def _flow_line(row: dict) -> str | None:
+    """장중 분봉 흐름 한 줄(#473/#474). flow_desc 없으면 None(생략)."""
+    d = row.get("flow_desc")
+    if not d:
+        return None
+    em = _FLOW_EMOJI.get(row.get("flow_shape", ""), "📊")
+    return f"    {em} {d}"
+
+
 def _format_hot_stocks(hot: list[dict]) -> list[str]:
     """핫종목 텔레그램 라인 — 거래대금 금액(전일대비:%) + 아래줄 수급현황 + 테마.
 
@@ -413,6 +425,9 @@ def _format_hot_stocks(hot: list[dict]) -> list[str]:
                 line += f" (전일대비:{'+' if tv >= 0 else ''}{tv:.0f}%)"
             lines.append("    " + line)
         # 수급현황 (기관/외인/개인 순매수 연속일) — 아래 줄
+        fl = _flow_line(h)  # 장중 분봉 흐름(#473)
+        if fl:
+            lines.append(fl)
         st = h.get("streak") or {}
         streak = [f"{lbl}{st[k]}일" for k, lbl in (("orgn", "기관"), ("frgn", "외인"), ("prsn", "개인"))
                   if st.get(k, 0) > 0]
@@ -484,6 +499,38 @@ def _format_midday_summary(snap: MarketSnapshot) -> str:
             ts = "+" if tp >= 0 else ""
             lines.append(f"  · {_naver_link(t['name'], t['ticker'])} "
                          f"추천가대비 {rs}{rp:.1f}% (오늘 {ts}{tp:.1f}%)")
+            fl = _flow_line(t)  # 장중 분봉 추세(#474)
+            if fl:
+                lines.append(fl)
+        lines.append("")
+
+    # 전일 종가베팅 후보 5선 현황 + 장중 추세 (#474)
+    if getattr(snap, "prev_candidates_status", None):
+        d = snap.prev_candidates_date
+        head = "🎯 *전일 종가베팅 후보 현황*"
+        if d:
+            head += f" ({d[5:]})"
+        lines.append(head)
+        for t in snap.prev_candidates_status:
+            tp = t.get("today_pct")
+            ts = f"오늘 {tp:+.1f}%" if tp is not None else "—"
+            lines.append(f"  · {_naver_link(t['name'], t['ticker'])} {ts}")
+            fl = _flow_line(t)
+            if fl:
+                lines.append(fl)
+        lines.append("")
+
+    # 보유종목 장중 추세 (#474)
+    if getattr(snap, "holdings_status", None):
+        lines.append("📋 *보유종목 장중 추세*")
+        for h in snap.holdings_status:
+            pr = h.get("profit_rate", 0.0)
+            badge = cross_badge(h.get("cross_signal"))
+            lines.append(f"  · {_naver_link(h['name'], h['ticker'])} "
+                         f"({pr:+.1f}%){badge}")
+            fl = _flow_line(h)
+            if fl:
+                lines.append(fl)
         lines.append("")
 
     lines.append(f"📄 [전체 리포트 보기]({report_url(snap)})")
@@ -602,11 +649,17 @@ def _format_kr_morning_summary(snap: MarketSnapshot) -> str:
         for t in snap.prev_top3_status:
             lines.append(f"  · {_naver_link(t['name'], t['ticker'])} {px_label} {_tp(t)} "
                          f"(추천가대비 {t.get('return_pct', 0):+.1f}%)")
+            fl = _flow_line(t)  # 장초(09:15) 분봉 추세(#473) — 프리장은 흐름 없어 미표기
+            if fl:
+                lines.append(fl)
         lines.append("")
     if snap.prev_candidates_status:
         lines.append(f"🎯 *전일 종가베팅 {px_label}* ({snap.prev_candidates_date[5:]})")
         for t in snap.prev_candidates_status:
             lines.append(f"  · {_naver_link(t['name'], t['ticker'])} {px_label} {_tp(t)}")
+            fl = _flow_line(t)
+            if fl:
+                lines.append(fl)
         lines.append("")
     if snap.summary:
         lines.append(f"🤖 {snap.summary}")

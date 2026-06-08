@@ -35,8 +35,10 @@ async def run_midday(
         from src.config.settings import get_settings
         from src.datasource.kis.adapter import KisAdapter
         from src.market_report.pipeline import collect_hot_stocks
+        from src.market_report.strategy_section import collect_holdings_status
         from src.market_report.top3_status import (
             fetch_prev_top3_status,
+            find_prev_candidates,
             find_prev_top3,
         )
 
@@ -59,6 +61,29 @@ async def run_midday(
             logger.info("midday_prev_top3 date=%s count=%d", date, len(snap.prev_top3_status))
         else:
             logger.info("midday_prev_top3_none — 직전 거래일 top3 파일 없음")
+
+        # 전일 종가베팅 후보 5선 현황 (#474)
+        pc = find_prev_candidates(today)
+        if pc:
+            cdate, cpicks = pc
+            snap.prev_candidates_status = await fetch_prev_top3_status(cpicks, adapter)
+            snap.prev_candidates_date = cdate
+
+        # 보유종목 상태 (#474, holdings.yaml/계좌)
+        try:
+            snap.holdings_status = await collect_holdings_status(adapter)
+        except Exception as exc:  # noqa: BLE001
+            logger.warning("midday_holdings_failed error=%s", exc)
+
+        # 장중 분봉 흐름 주입 — 전일Top3·종가베팅·보유·핫종목 각 줄에 추세 한 줄(#473/#474)
+        try:
+            from src.datasource.intraday_flow import inject_flows
+            for rows in (snap.prev_top3_status, snap.prev_candidates_status,
+                         snap.holdings_status, snap.hot_stocks):
+                if rows:
+                    await inject_flows(adapter, rows)
+        except Exception as exc:  # noqa: BLE001
+            logger.warning("midday_intraday_flow_failed error=%s", exc)
     except Exception as exc:  # noqa: BLE001
         logger.warning("midday_kis_failed error=%s", exc)
 

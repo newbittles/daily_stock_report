@@ -78,6 +78,10 @@ async def diagnose_holdings(adapter, holdings: list[dict] | None = None) -> list
             profit = (price - avg) / avg * 100 if avg else 0.0
         qty = h.get("quantity")
         eval_pl = (price - avg) * qty if (avg and qty) else None
+        # 전일종가·오늘등락(전일 대비) — 장중 분봉 흐름 % 기준(#473/#474). real 장중엔
+        # candles[-1]=오늘 미완성봉, [-2]=전일. 데이터 부족 시 None(흐름 스킵).
+        prev_close = candles[-2].close if len(candles) >= 2 else None
+        today_pct = ((price / prev_close - 1) * 100) if prev_close else None
         results.append({
             "ticker": ticker,
             "name": h["name"],
@@ -88,6 +92,8 @@ async def diagnose_holdings(adapter, holdings: list[dict] | None = None) -> list
             "quantity": qty,
             "eval_pl": eval_pl,
             "profit_rate": profit,
+            "prev_close": prev_close,
+            "today_pct": round(today_pct, 2) if today_pct is not None else None,
             "gap20_pct": r.metrics.get("gap20_pct"),
             "gap60_pct": r.metrics.get("gap60_pct"),
             "endstage": bool(r.metrics.get("endstage")),
