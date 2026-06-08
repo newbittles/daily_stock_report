@@ -62,6 +62,19 @@ async def _us_premarket_job() -> None:
         logger.exception("us_premarket_job_failed error=%s", exc)
 
 
+async def _warm_us_cache_job() -> None:
+    """미국 ohlcv 캐시 선제 워밍 (#499) — 리포트 시각 전 1회 다운로드로 14분 지연 제거.
+
+    화~토 06:00(06:30/07:00/19:00 대비) + 월 18:30(월 19:00 대비). 발송·웹 없음."""
+    logger.info("warm_us_cache_start now=%s", datetime.now().isoformat())
+    try:
+        from src.market_report.pipeline import warm_us_cache
+        await warm_us_cache()
+        logger.info("warm_us_cache_done")
+    except Exception as exc:  # noqa: BLE001
+        logger.warning("warm_us_cache_failed error=%s", exc)
+
+
 def _us_data_fresh_sync() -> bool:
     """방금 마감된 미국 세션이 데이터 피드에 반영됐는지(yfinance ^GSPC 최신 일봉 == ET 세션일).
 
@@ -209,6 +222,17 @@ def build_scheduler() -> AsyncIOScheduler:
     )
     # 미국장 아침 요약 — 06:30 조기(데이터 확보 시) + 07:00 안전망(중복발행 방지, 사용자 2026-06-05).
     # 06:30은 겨울철 마감 30분 후라 일봉 미갱신 위험 → _us_morning_job이 신선도 확인 후 발행/이월.
+    # 미국 ohlcv 캐시 워밍 — 리포트 14분 지연 제거(#499). 화~토 06:00(아침 리포트+당일 19:00),
+    # 월 18:30(월 19:00 us_premarket; 화~금 19:00은 06:00 워밍이 같은 날 캐시로 커버).
+    scheduler.add_job(
+        _warm_us_cache_job, CronTrigger(day_of_week="tue-sat", hour=6, minute=0, timezone=KST),
+        id="warm_us_cache_am", replace_existing=True, misfire_grace_time=1200,
+    )
+    scheduler.add_job(
+        _warm_us_cache_job, CronTrigger(day_of_week="mon", hour=18, minute=30, timezone=KST),
+        id="warm_us_cache_pm", replace_existing=True, misfire_grace_time=1200,
+    )
+
     scheduler.add_job(
         _us_morning_job, CronTrigger(day_of_week="tue-sat", hour=6, minute=30, timezone=KST),
         args=[True], id="report_us_morning_early", replace_existing=True, misfire_grace_time=900,

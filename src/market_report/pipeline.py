@@ -145,6 +145,19 @@ async def collect_us_snapshot() -> MarketSnapshot:
     return snap
 
 
+async def warm_us_cache() -> None:
+    """미국 ohlcv 캐시 선제 워밍 — 리포트 시각 전에 1회 다운로드(#499).
+
+    us_morning/us_premarket의 14분 지연 대부분이 yfinance 일봉 다운로드(캐시 미스).
+    리포트 전 워밍 잡이 동일 유니버스·days로 `data/us_ohlcv_cache.json`을 채워두면
+    실제 리포트는 캐시 히트로 수십 초에 끝난다(같은 마감 데이터 재사용 → 정보 손실 0).
+    발송·웹 없음. 실패해도 리포트는 자체 다운로드로 폴백(best-effort)."""
+    snap = await collect_us_snapshot()
+    await _collect_us_screening(snap, per_group=3)
+    logger.info("us_cache_warmed top3=%d screen=%d",
+                len(snap.us_top3 or []), len(snap.us_screen_ranked or []))
+
+
 async def generate_report(mode: ReportMode) -> MarketSnapshot:
     """전체 파이프라인 — 데이터 수집 + AI 분석 + 추천 종목 차트 생성."""
     if mode == "us_morning":
