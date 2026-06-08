@@ -279,6 +279,11 @@ def build_scheduler() -> AsyncIOScheduler:
         _coin_job, CronTrigger(hour=17, minute=0, timezone=KST),
         id="report_coin", replace_existing=True, misfire_grace_time=900,
     )
+    # 코인 시세 리포트 2차 — 매일 08:30, 주말 포함 (아침 추가 발송, 사용자 2026-06-09)
+    scheduler.add_job(
+        _coin_job, CronTrigger(hour=8, minute=30, timezone=KST),
+        id="report_coin_am", replace_existing=True, misfire_grace_time=900,
+    )
     return scheduler
 
 

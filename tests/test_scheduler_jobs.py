@@ -22,3 +22,14 @@ def test_warm_us_cache_importable() -> None:
     """워밍 함수가 pipeline에 존재·import 가능(잡이 호출)."""
     from src.market_report.pipeline import warm_us_cache
     assert callable(warm_us_cache)
+
+
+def test_coin_jobs_registered_daily_17_and_0830() -> None:
+    """코인 리포트 2회(17:00 + 08:30) 모두 매일(주말포함) 등록(사용자 2026-06-09)."""
+    from src.market_report.scheduler import build_scheduler
+    jobs = {j.id: str(j.trigger) for j in build_scheduler().get_jobs()}
+    assert "report_coin" in jobs and "report_coin_am" in jobs
+    assert "hour='17'" in jobs["report_coin"] and "minute='0'" in jobs["report_coin"]
+    assert "hour='8'" in jobs["report_coin_am"] and "minute='30'" in jobs["report_coin_am"]
+    # 주말 포함 = day_of_week 미지정(트리거에 'day_of_week' 제약 없음)
+    assert "day_of_week" not in jobs["report_coin_am"]
