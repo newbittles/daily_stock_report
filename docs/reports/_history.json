@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-06-08",
+    "time": "11:40",
+    "mode": "midday",
+    "url": "reports/2026-06-08-midday.html",
+    "summary": "오늘 한국 증시는 전반적으로 큰 폭의 하락세를 보이고 있으며, 특히 코스닥 지수의 하락폭이 두드러집니다. SK네트웍스, NAVER 등 일부 종목은 강세를 보이고 있으나, 전반적인 시장 분위기는 약세 흐름을 이어가고 있습니다.",
+    "kospi_pct": -4.35,
+    "kosdaq_pct": -6.1
+  },
+  {
+    "date": "2026-06-08",
     "time": "09:15",
     "mode": "kr_open",
     "url": "reports/2026-06-08-kr-open.html",
