@@ -111,8 +111,32 @@ async def fetch_prev_top3_status(
                 q = await adapter.get_quote(tk)  # NXT 미체결 → 전일종가, 오늘등락 미산출
                 out.append(compute_status(pk, q.price, None))
             else:
-                q = await adapter.get_quote(tk)
-                out.append(compute_status(pk, q.price, q.change_pct))
+                st = await _status_with_fallback(pk, tk, adapter)
+                if st:
+                    out.append(st)
         except Exception as exc:  # noqa: BLE001
             logger.warning("prev_top3_quote_failed ticker=%s error=%s", tk, exc)
     return out
+
+
+async def _status_with_fallback(pk: dict, tk: str, adapter) -> dict | None:
+    """현재가·오늘등락 — get_quote 우선, 실패(KIS inquire-price 500 등 #484) 시 일봉 폴백.
+
+    일봉 폴백: real 장중엔 마지막봉=현재가(미완성), [-2]=전일종가. quote 광범위 500 장애
+    시에도 전일Top3·종가베팅 현황이 비지 않도록 한다(분봉 추세도 이 값 기준)."""
+    try:
+        q = await adapter.get_quote(tk)
+        if q.price > 0:
+            return compute_status(pk, q.price, q.change_pct)
+    except Exception as exc:  # noqa: BLE001
+        logger.info("quote_fallback_to_ohlcv ticker=%s reason=%s", tk, type(exc).__name__)
+    try:
+        candles = await adapter.get_ohlcv(tk, days=5)
+    except Exception as exc:  # noqa: BLE001
+        logger.warning("ohlcv_fallback_failed ticker=%s error=%s", tk, exc)
+        return None
+    if len(candles) < 2:
+        return None
+    cur, prev = candles[-1].close, candles[-2].close
+    today_pct = (cur / prev - 1) * 100 if prev else None
+    return compute_status(pk, cur, today_pct)

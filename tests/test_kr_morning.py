@@ -111,6 +111,42 @@ def test_fetch_status_regular_keeps_krx() -> None:
     assert out[0]["cur_price"] == 1757000.0  # 장중(09:15~)은 기존 KRX 경로 유지
 
 
+# ─── #484: quote 500 장애 → 일봉 폴백 ────────────────────────────────────────
+
+
+class _QuoteFailAdapter:
+    """get_quote는 항상 실패(KIS inquire-price 500 재현), get_ohlcv는 정상."""
+
+    def __init__(self, candles_by_ticker: dict) -> None:
+        self.table = candles_by_ticker
+
+    async def get_quote(self, ticker: str):
+        raise RuntimeError("inquire-price 500")
+
+    async def get_ohlcv(self, ticker: str, days: int = 5):
+        from src.datasource.base import Candle
+        rows = self.table.get(ticker, [])
+        return [Candle(date=d, open=c, high=c, low=c, close=c, volume=0) for d, c in rows]
+
+
+def test_fetch_status_falls_back_to_ohlcv_on_quote_500() -> None:
+    picks = [{"ticker": "009150", "name": "삼성전기", "price": 1790000}]
+    # 일봉: 전일 1700000 → 오늘(현재가) 1586000 = -6.7%
+    adapter = _QuoteFailAdapter({"009150": [("20260605", 1700000.0), ("20260608", 1586000.0)]})
+    out = asyncio.run(fetch_prev_top3_status(picks, adapter, use_nxt=False))
+    assert len(out) == 1
+    assert out[0]["cur_price"] == 1586000.0
+    assert out[0]["today_pct"] == round((1586000 / 1700000 - 1) * 100, 2)
+    assert out[0]["return_pct"] == round((1586000 - 1790000) / 1790000 * 100, 2)
+
+
+def test_fetch_status_skips_when_both_fail() -> None:
+    picks = [{"ticker": "009150", "name": "삼성전기", "price": 1790000}]
+    adapter = _QuoteFailAdapter({})  # ohlcv도 빈 → 폴백 실패 → 스킵
+    out = asyncio.run(fetch_prev_top3_status(picks, adapter, use_nxt=False))
+    assert out == []
+
+
 def test_compute_status_today_pct_none_passthrough() -> None:
     st = compute_status({"ticker": "1", "name": "x", "price": 100}, 98.0, None)
     assert st["today_pct"] is None

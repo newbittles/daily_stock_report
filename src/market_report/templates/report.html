@@ -699,6 +699,10 @@ ${{ "{:,.2f}".format(item.price) }} <span class="{{ 'up-text' if pct >= 0 else '
         <li>{{ q.name }} <span class="pick-ticker">{{ q.symbol }}{{ mk(q.symbol) }}</span> ${{ "{:,.2f}".format(q.price) }}
           <span class="{{ 'up-text' if q.change_pct >= 0 else 'down-text' }}">{{ '+' if q.change_pct >= 0 else '' }}{{ "{:.1f}".format(q.change_pct) }}%</span></li>
         {% endfor %}
+        {% for e in snap.us_overnight.etf %}
+        <li>{{ e.name }} <span class="pick-ticker">{{ e.symbol }}</span> ${{ "{:,.2f}".format(e.price) }}
+          <span class="{{ 'up-text' if e.change_pct >= 0 else 'down-text' }}">{{ '+' if e.change_pct >= 0 else '' }}{{ "{:.1f}".format(e.change_pct) }}%</span></li>
+        {% endfor %}
       </ul>
       {% endif %}
     </section>

@@ -24,6 +24,9 @@ _M7 = {
     "AMZN": "아마존", "META": "메타", "TSLA": "테슬라",
 }
 
+# M7 아래 별도 표시 ETF (사용자 #485) — 반도체 3배 레버리지
+_ETF = {"SOXL": "SOXL(반도체 3X)"}
+
 
 def _fetch_one(sym: str) -> dict | None:
     """단일 심볼 fast_info → {price, change_pct}. 전일종가≤0/실패 시 None."""
@@ -58,8 +61,18 @@ def _fetch_sync() -> dict:
             logger.warning("overnight_m7_failed sym=%s error=%s", sym, exc)
         time.sleep(random.uniform(0.2, 0.5))
     m7.sort(key=lambda x: x["change_pct"], reverse=True)  # 등락률 내림차순
-    logger.info("us_overnight collected futures=%d m7=%d", len(fut), len(m7))
-    return {"futures": fut, "m7": m7}
+
+    etf: list[dict] = []  # SOXL 등 — M7 아래 별도(#485)
+    for sym, name in _ETF.items():
+        try:
+            q = _fetch_one(sym)
+            if q:
+                etf.append({"symbol": sym, "name": name, **q})
+        except Exception as exc:  # noqa: BLE001
+            logger.warning("overnight_etf_failed sym=%s error=%s", sym, exc)
+        time.sleep(random.uniform(0.2, 0.5))
+    logger.info("us_overnight collected futures=%d m7=%d etf=%d", len(fut), len(m7), len(etf))
+    return {"futures": fut, "m7": m7, "etf": etf}
 
 
 async def fetch_us_overnight() -> dict:

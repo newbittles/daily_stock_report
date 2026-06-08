@@ -131,6 +131,8 @@ def _format_us_overnight(snap: MarketSnapshot) -> list[str]:
     if m7:
         parts = [f"{q['name']} {q['change_pct']:+.1f}%" for q in m7]
         lines.append("  M7: " + " · ".join(parts))
+    for e in ov.get("etf") or []:  # SOXL 등 — M7 아래 별도(#485)
+        lines.append(f"  {e['name']} {e['change_pct']:+.1f}%")
     lines.append("")
     return lines
 
