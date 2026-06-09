@@ -972,6 +972,38 @@ ${{ "{:,.2f}".format(item.price) }} <span class="{{ 'up-text' if pct >= 0 else '
     </section>
     {% endif %}
 
+    {# 🧬 G. 삼각수렴(코일) 임박 (참고용·가중치0·차트에 추세선, 사용자 2026-06-09) #}
+    {% if snap.coil_picks %}
+    <section>
+      <h2><span class="icon">🧬</span>삼각수렴 임박 <span style="color:var(--text-dim);font-size:0.8rem;">(변동성 수축·돌파 직전 코일 · 참고용)</span></h2>
+      {% for p in snap.coil_picks %}
+      <div class="pick {{ 'has-chart' if p.chart_url else '' }}">
+        <div class="pick-body">
+          <div class="pick-head">
+            <a class="pick-name" href="https://finance.naver.com/item/main.naver?code={{ p.ticker }}" target="_blank" rel="noopener">{{ p.name }}</a>
+            <span class="pick-meta-group">
+              <span class="pick-ticker">{{ p.ticker }}{{ mk(p.ticker) }}</span>
+              <button type="button" class="code-copy" data-code="{{ p.ticker }}" onclick="copyCode(this)" title="종목코드 복사 (MTS 검색창에 붙여넣기)">📋</button>
+              {% if p.shape %}<span class="strat-badge" style="background:var(--accent);">{{ '🔻' if p.shape == '대칭수렴' else '🟰' }} {{ p.shape }}</span>{% endif %}
+              {% if p.price %}<span class="px">{{ "{:,.0f}".format(p.price) }}원</span>
+              <span class="{{ 'up-text' if p.change_pct >= 0 else 'down-text' }}">{{ '+' if p.change_pct >= 0 else '' }}{{ "{:.2f}".format(p.change_pct) }}%</span>{% endif %}
+            </span>
+          </div>
+          {% if p.reason %}<div class="pick-rationale">{{ p.reason }}</div>{% endif %}
+          {{ sec_detail(p) }}
+        </div>
+        {% if p.chart_url %}
+        <div class="pick-chart">
+          <img src="{{ p.chart_url }}" alt="{{ p.name }} 삼각수렴 차트" loading="lazy"
+               onclick="document.getElementById('lightbox-img').src=this.src;document.getElementById('lightbox').classList.add('active');">
+        </div>
+        {% endif %}
+      </div>
+      {% endfor %}
+      <p class="disclaimer" style="font-size:12px;">※ 삼각수렴(변동성 축소→이평 수렴) 돌파 <strong>임박</strong> 종목. 🔻대칭=고점↓·저점↑ / 🟰바닥지지=저점 평평+상단 눌림. 차트 🔴상단선=고점 저항·🟢하단선=저점 지지(꼭짓점 수렴). <strong>백테스트 엣지 약함(첫코일 5일 +2.7%·승률60%, 베타 소폭상회)·매수추천 아님·종합점수/Top3 미반영</strong>. 돌파 실패(하락 이탈)도 ~40%. 단순 참고용.</p>
+    </section>
+    {% endif %}
+
     {# 🏦 기관·외인 연속 순매수/매도 (시총 상위, 스마트머니 선행, 사용자 #393) #}
     {% if snap.supply_buy_streaks or snap.supply_sell_streaks %}
     <section>

@@ -164,6 +164,9 @@ class MarketSnapshot:
     # F. 60일선 지지 마감(참고용): 상승추세 종목이 60일선까지 눌렸다 지지받고 마감. 별도 '참고' 섹션.
     # 백테스트상 다음날 반등 엣지 없음(48~49%·생존편향) 확인 → 가중치 0·Top3/종합점수 미반영, 단순 참고만(2026-06-09)
     support_picks: list[dict] = field(default_factory=list)  # [{ticker, name, price, change_pct, reason}]
+    # G. 삼각수렴(코일) 임박(참고용): 상승추세 중 변동성 축소+이평 수렴 = 돌파 직전. 형태태그(대칭/바닥지지)+추세선 차트.
+    # 백테스트(12개월·첫신호) 5d +2.7%·승률60%로 베타 소폭상회+우편향. BB17 완화기준. 가중치 0·Top3 미반영(2026-06-09)
+    coil_picks: list[dict] = field(default_factory=list)  # [{ticker, name, price, change_pct, shape, bb_width, ma_conv, reason, chart_url}]
 
     # 핫종목 — 거래대금 상위 + 시총 하한 필터 (거래대금 전일대비·순매수 연속일·소속테마)
     hot_stocks: list[dict] = field(default_factory=list)

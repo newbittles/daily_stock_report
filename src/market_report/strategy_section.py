@@ -62,7 +62,8 @@ async def collect_screen_picks(adapter, per_strategy: int = 8,
                                drop_today: bool = False,
                                e_out: list[dict] | None = None,
                                surge_out: list[dict] | None = None,
-                               support_out: list[dict] | None = None) -> list[dict]:
+                               support_out: list[dict] | None = None,
+                               coil_out: list[dict] | None = None) -> list[dict]:
     """오늘 A/B/C 전략 포착 종목 (유니버스: 주도주 + 핫종목).
 
     drop_today: 마지막 봉이 '오늘'(장전 미완성 봉)이면 제외하고 전일 마감 기준 평가.
@@ -235,6 +236,19 @@ async def collect_screen_picks(adapter, per_strategy: int = 8,
                     "change_pct": round(change_pct, 2), "gap20": round(_gap20, 1),
                     "vol_x": round(_volx, 1), "reason": _fr.reason,
                     "volume": c[-1].volume, "trade_value": c[-1].close * c[-1].volume,
+                })
+        # G. 삼각수렴(코일) 임박(참고용) — 별도 수집. BB17 완화기준(테크윙류 포함). 가중치 0·Top3 미반영.
+        # 'fresh'(신규진입)만: 신호 5일전엔 코일 아니었던 것 — 백테스트상 첫신호만 베타 상회(질질끄는 코일 제외).
+        if coil_out is not None and len(coil_out) < 40:
+            from src.patterns.core import is_coil_squeeze
+            _cr = is_coil_squeeze(c, bb_max=17.0)
+            if _cr.matched and not (len(c) >= 130 and is_coil_squeeze(c[:-5], bb_max=17.0).matched):
+                _shape = {1: "대칭수렴", 2: "바닥지지수렴"}.get(int(_cr.metrics.get("shape", 0)), "")
+                coil_out.append({
+                    "ticker": tk, "name": nm, "price": round(c[-1].close, 1),
+                    "change_pct": round(change_pct, 2), "shape": _shape,
+                    "bb_width": _cr.metrics.get("bb_width"), "ma_conv": _cr.metrics.get("ma_conv"),
+                    "reason": _cr.reason, "volume": c[-1].volume, "trade_value": c[-1].close * c[-1].volume,
                 })
     return picks
 

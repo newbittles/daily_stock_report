@@ -1182,3 +1182,102 @@ def is_ma60_support(
         True,
         f"60일선 지지 (저가 {low_gap:+.1f}%·종가 {close_gap:+.1f}%·꼬리지지 {pos * 100:.0f}%)",
         {"ma60_gap_low": low_gap, "ma60_gap_close": close_gap, "close_pos": pos * 100})
+
+
+def _lin_slope(ys: list[float]) -> float:
+    """단순 선형회귀 기울기 (가격/일). 순수 — 외부 의존 없음."""
+    n = len(ys)
+    if n < 2:
+        return 0.0
+    mx = (n - 1) / 2
+    my = sum(ys) / n
+    cov = sum((x - mx) * (y - my) for x, y in enumerate(ys))
+    var = sum((x - mx) ** 2 for x in range(n))
+    return cov / var if var else 0.0
+
+
+def is_coil_squeeze(
+    candles: list[Candle],
+    bb_max: float = 15.0, ma_conv_max: float = 3.0, vol_dry: float = 0.8,
+    win: int = 20, slope_eps: float = 0.03, flat_eps: float = 0.05,
+    ma_rising_lookback: int = 5,
+) -> PatternResult:
+    """G. 삼각수렴(코일) 임박 — 상승추세 중 변동성 축소+이평 수렴 = 돌파 직전 자리.
+
+    사용자 2026-06-09(테크윙 089030 발단): 밑바닥 다지며 변동성 줄여 이격 모으는 코일을
+    '돌파 임박' 전에 선제 포착. 백테스트(12개월·시총상위, 종목별 첫신호) 5거래일 +2.70%·
+    승률 60%로 베타(+2.18%/55%) 소폭 상회 + 우편향(대박 초입 포착). ⚠️엣지는 약하므로
+    매수 시그널이 아닌 '참고'(가중치 0). NR7/꼭짓점 트리거는 백테스트상 오히려 해로워 미사용.
+
+    조건(모두 충족):
+      G0 추세 — 종가 > MA120 AND MA60 우상향(최근 ma_rising_lookback봉 상승; falling-knife 제외)
+      G1 수축 — BB폭(20,2)=4·σ20/MA20 ≤ bb_max% AND MA5/10/20 이격 ≤ ma_conv_max%
+               AND 거래량 건조(최근10일평균 ≤ 직전20일평균×vol_dry) AND 당일 미돌파(거래량 ≤ 20일평균×1.5)
+      G2 형태 — 최근 win일 고점/저점 선형회귀 기울기(%/일)로 분류:
+               ①대칭수렴: 고점선 < -slope_eps AND 저점선 > +slope_eps (양쪽 수렴)
+               ②바닥지지: |저점선| < flat_eps AND 고점선 < -slope_eps (저점 평평 + 상단 눌림)
+    ※ 지수 게이트(코스피 RSI 등)는 순수성 위해 호출측(pipeline)에서 AND 결합.
+    metrics: shape(1=대칭,2=바닥지지), bb_width, ma_conv, slope_high, slope_low(%/일).
+    """
+    from statistics import pstdev
+
+    closes = _closes(candles)
+    if len(closes) < 125 or len(closes) < max(win, 30) + 1:
+        return PatternResult(False, "데이터 부족(125봉+)")
+    highs = _highs(candles)
+    lows = _lows(candles)
+    vols = _volumes(candles)
+
+    ma5 = moving_average(closes, 5)[-1]
+    ma10 = moving_average(closes, 10)[-1]
+    ma20 = moving_average(closes, 20)[-1]
+    ma60_series = moving_average(closes, 60)
+    ma60 = ma60_series[-1]
+    ma60_prev = ma60_series[-(ma_rising_lookback + 1)]
+    ma120 = moving_average(closes, 120)[-1]
+    if None in (ma5, ma10, ma20, ma60, ma60_prev, ma120) or ma20 <= 0:
+        return PatternResult(False, "이평선 계산 불가")
+
+    price = closes[-1]
+    metrics: dict[str, float] = {"price": round(price, 1)}
+
+    # G0 추세 (Ⓐ 상승추세형): 종가>120선 + 60선 우상향
+    if price <= ma120:
+        return PatternResult(False, f"120선 아래(추세 아님, {(price / ma120 - 1) * 100:+.1f}%)", metrics)
+    if ma60 <= ma60_prev:
+        return PatternResult(False, "60선 우상향 아님(falling-knife 제외)", metrics)
+
+    # G1 수축
+    bb_width = 4 * pstdev(closes[-20:]) / ma20 * 100
+    ma_conv = (max(ma5, ma10, ma20) - min(ma5, ma10, ma20)) / ma20 * 100
+    metrics["bb_width"] = round(bb_width, 1)
+    metrics["ma_conv"] = round(ma_conv, 2)
+    if bb_width > bb_max:
+        return PatternResult(False, f"변동성 수축 부족 (BB폭 {bb_width:.1f}%>{bb_max:.0f}%)", metrics)
+    if ma_conv > ma_conv_max:
+        return PatternResult(False, f"이평 수렴 부족 (이격 {ma_conv:.1f}%)", metrics)
+    v_recent = sum(vols[-10:]) / 10
+    v_prior = sum(vols[-30:-10]) / 20
+    v20 = sum(vols[-20:]) / 20
+    if not (v_prior > 0 and v_recent <= v_prior * vol_dry):
+        return PatternResult(False, "거래량 안 마름(코일 미형성)", metrics)
+    if vols[-1] > v20 * 1.5:
+        return PatternResult(False, "당일 거래량 급증(이미 돌파, 임박 아님)", metrics)
+
+    # G2 형태 — 고점/저점 회귀 기울기(%/일)
+    slope_high = _lin_slope(highs[-win:]) / price * 100
+    slope_low = _lin_slope(lows[-win:]) / price * 100
+    metrics["slope_high"] = round(slope_high, 3)
+    metrics["slope_low"] = round(slope_low, 3)
+    if slope_high < -slope_eps and slope_low > slope_eps:
+        shape, shape_name = 1, "대칭수렴"
+    elif abs(slope_low) < flat_eps and slope_high < -slope_eps:
+        shape, shape_name = 2, "바닥지지수렴"
+    else:
+        return PatternResult(False, "삼각수렴 형태 아님(고점↓/저점 조건 미충족)", metrics)
+    metrics["shape"] = shape
+
+    return PatternResult(
+        True,
+        f"삼각수렴 {shape_name} (BB폭 {bb_width:.1f}%·이격 {ma_conv:.1f}%·고점{slope_high:+.2f}/저점{slope_low:+.2f}%일)",
+        metrics)

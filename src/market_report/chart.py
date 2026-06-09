@@ -195,6 +195,95 @@ def render_candidate_chart(ticker: str, name: str, date: str | None = None) -> P
     return _render_df(df, ticker, name, date, signal_dates=signal_dates, layout="candidate")
 
 
+def coil_chart_url_rel(ticker: str, date: str | None = None) -> str:
+    """리포트 HTML에서 코일 차트 상대경로 참조."""
+    date_str = date or datetime.now().strftime("%Y-%m-%d")
+    return f"charts/{date_str}-{ticker}-coil.png"
+
+
+def _coil_trendlines(hi: list[float], lo: list[float], si: int):
+    """삼각수렴선 좌표 산출(사용자 2026-06-09 확정).
+
+    상단=최근 PWIN일 고점 local-max 피벗 회귀(우하향 저항),
+    하단=초반 깊은 저점(앵커1) → 꼭짓점 부근 저점(앵커2) 연결 상승 지지선.
+    반환: (w0, (su,iu) 상단직선, sl_lo·a1 하단직선앵커, ph 고점피벗idx, a1,a2 저점앵커idx)
+    """
+    PWIN, ORD = 36, 2
+    w0 = max(0, si - PWIN + 1)
+    seg_hi = hi[w0:si + 1]
+    ph = [k for k in range(ORD, len(seg_hi) - ORD) if seg_hi[k] == max(seg_hi[k - ORD:k + ORD + 1])]
+
+    def _fit(xs, ys):
+        n = len(xs)
+        if n >= 2:
+            mx = sum(xs) / n; my = sum(ys) / n
+            var = sum((x - mx) ** 2 for x in xs)
+            s_ = sum((x - mx) * (y - my) for x, y in zip(xs, ys)) / var if var else 0.0
+            return s_, my - s_ * mx
+        if n == 1:
+            return 0.0, ys[0]
+        return 0.0, sum(seg_hi) / len(seg_hi)
+
+    su, iu = _fit(ph, [seg_hi[k] for k in ph]) if ph else _fit(list(range(len(seg_hi))), seg_hi)
+    apex0 = max(w0 + 1, si - 6)
+    a1 = min(range(w0, apex0), key=lambda j: lo[j])
+    a2 = min(range(apex0, si + 1), key=lambda j: lo[j])
+    sl_lo = (lo[a2] - lo[a1]) / (a2 - a1) if a2 != a1 else 0.0
+    return w0, (su, iu), (sl_lo, a1), ph, a1, a2
+
+
+def render_coil_chart(ticker: str, name: str, shape: str = "", date: str | None = None) -> Path | None:
+    """G. 삼각수렴 코일 차트 — 캔들 + 추세선 2개(🔴상단 고점피벗 회귀 저항 / 🟢하단 깊은저점→꼭짓점 상승지지) + ▽△ 마커.
+
+    신호=마지막 봉(오늘). render_candidate_chart와 동일하게 pykrx 자체 조회. 실패 시 None.
+    """
+    df = _fetch_ohlcv(ticker, days=250)
+    if df is None or len(df) < 130:
+        logger.warning("coil_chart_skip ticker=%s rows=%s", ticker, len(df) if df is not None else 0)
+        return None
+    hi = df["High"].tolist(); lo = df["Low"].tolist()
+    si = len(df) - 1
+    w0, (su, iu), (sl_lo, a1), ph, la1, la2 = _coil_trendlines(hi, lo, si)
+    u0, u1 = iu, iu + su * (si - w0)
+    l0, l1 = lo[a1] + sl_lo * (w0 - a1), lo[a1] + sl_lo * (si - a1)
+    d0, d1 = df.index[w0], df.index[si]
+    alines = dict(alines=[[(d0, u0), (d1, u1)], [(d0, l0), (d1, l1)]],
+                  colors=["#ff5b5b", "#22c55e"], linewidths=[1.8, 1.8])
+
+    show = min(46, len(df))
+    dfx = df.tail(show)
+    seg_hi = hi[w0:si + 1]
+    hi_m = pd.Series(index=dfx.index, dtype=float)
+    for k in ph:
+        d = df.index[w0 + k]
+        if d in hi_m.index:
+            hi_m[d] = seg_hi[k] * 1.015
+    lo_m = pd.Series(index=dfx.index, dtype=float)
+    for j in (la1, la2):
+        if df.index[j] in lo_m.index:
+            lo_m[df.index[j]] = lo[j] * 0.985
+    adds = []
+    if hi_m.notna().any():
+        adds.append(mpf.make_addplot(hi_m, type="scatter", marker="v", markersize=42, color="#ff5b5b"))
+    if lo_m.notna().any():
+        adds.append(mpf.make_addplot(lo_m, type="scatter", marker="^", markersize=42, color="#22c55e"))
+
+    CHARTS_DIR.mkdir(parents=True, exist_ok=True)
+    date_str = date or datetime.now().strftime("%Y-%m-%d")
+    out_path = CHARTS_DIR / f"{date_str}-{ticker}-coil.png"
+    title = f"{name}({ticker}) 삼각수렴{(' ' + shape) if shape else ''}"
+    try:
+        mpf.plot(dfx, type="candle", style=STYLE, mav=(5, 20), volume=True, addplot=adds,
+                 alines=alines, title=title, datetime_format="%m/%d",
+                 figratio=(16, 9), figscale=1.0, tight_layout=True,
+                 savefig=dict(fname=str(out_path), dpi=110, bbox_inches="tight", facecolor="#0f172a"))
+    except Exception as exc:  # noqa: BLE001
+        logger.warning("coil_chart_failed ticker=%s error=%s", ticker, exc)
+        return None
+    logger.info("coil_chart_rendered ticker=%s path=%s", ticker, out_path)
+    return out_path
+
+
 def _render_df(
     df: "pd.DataFrame", ticker: str, name: str, date: str | None = None,
     signal_dates: list[str] | None = None, buy_dates: list[str] | None = None,

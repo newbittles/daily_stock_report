@@ -451,7 +451,7 @@ def _inject_marcap(snap: MarketSnapshot) -> None:
         if not mm:
             return
         for lst in (snap.top3, snap.screen_picks, snap.candidate_picks, snap.e_picks,
-                    snap.surge_picks, snap.support_picks):
+                    snap.surge_picks, snap.support_picks, snap.coil_picks):
             for p in (lst or []):
                 tk = str(p.get("ticker", "")).strip()
                 if tk:
@@ -1419,10 +1419,23 @@ async def run_full(
         _e_cand: list[dict] = []
         _surge: list[dict] = []
         _support: list[dict] = []  # F. 60일선 지지(참고용) — 가중치 0, Top3 미반영
+        _coil: list[dict] = []     # G. 삼각수렴 코일(참고용) — 가중치 0, Top3 미반영
         snap.screen_picks = await collect_screen_picks(
-            adapter, e_out=_e_cand, surge_out=_surge, support_out=_support)
+            adapter, e_out=_e_cand, surge_out=_surge, support_out=_support, coil_out=_coil)
         snap.surge_picks = sorted(_surge, key=lambda p: p.get("change_pct", 0), reverse=True)[:7]
         snap.support_picks = sorted(_support, key=lambda p: p.get("change_pct", 0), reverse=True)[:10]
+        # 코일: 더 조여진 것(BB폭 작은 순) 우선 — 임박도 높음
+        snap.coil_picks = sorted(_coil, key=lambda p: p.get("bb_width", 99))[:8]
+        # 코일 차트(삼각수렴선) 렌더 — 상위 5개만(부하), chart_url 부착
+        if snap.coil_picks:
+            from src.market_report.chart import coil_chart_url_rel, render_coil_chart
+            _d = snap.generated_at.strftime("%Y-%m-%d")
+            for p in snap.coil_picks[:5]:
+                try:
+                    if await asyncio.to_thread(render_coil_chart, p["ticker"], p["name"], p.get("shape", ""), _d):
+                        p["chart_url"] = coil_chart_url_rel(p["ticker"], _d)
+                except Exception as exc:  # noqa: BLE001
+                    logger.warning("coil_chart_render_failed ticker=%s error=%s", p.get("ticker"), exc)
         snap.holdings_status = await collect_holdings_status(adapter)
         # E전략 4시간봉 게이트 — 일봉 과매도 주도주 후보 중 4H RSI(14)≤30도 충족하는 종목만(사용자 2026-06-05)
         if _e_cand:
@@ -1473,7 +1486,7 @@ async def run_full(
 
         # E/급등초입 픽에도 테마 부착(judal → 네이버 세분업종 폴백, 사용자 2026-06-05)
         try:
-            _sec_picks = (snap.e_picks or []) + (snap.surge_picks or []) + (snap.support_picks or [])
+            _sec_picks = (snap.e_picks or []) + (snap.surge_picks or []) + (snap.support_picks or []) + (snap.coil_picks or [])
             for p in _sec_picks:
                 jv = jmap.get(p.get("ticker", ""))
                 if jv and jv.get("theme") and not _is_nontheme(jv["theme"]):
