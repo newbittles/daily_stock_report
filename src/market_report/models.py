@@ -161,6 +161,9 @@ class MarketSnapshot:
     e_picks: list[dict] = field(default_factory=list)  # [{ticker/symbol, name, price, change_pct, rsi, reason}]
     # 급등 초입: 20일 신고가 돌파+거래량급증+당일강세(추세확인보다 빠름). KR/US 공용(별도 섹션, Top3 비포함)
     surge_picks: list[dict] = field(default_factory=list)  # [{ticker/symbol, name, price, change_pct, reason}]
+    # F. 60일선 지지 마감(참고용): 상승추세 종목이 60일선까지 눌렸다 지지받고 마감. 별도 '참고' 섹션.
+    # 백테스트상 다음날 반등 엣지 없음(48~49%·생존편향) 확인 → 가중치 0·Top3/종합점수 미반영, 단순 참고만(2026-06-09)
+    support_picks: list[dict] = field(default_factory=list)  # [{ticker, name, price, change_pct, reason}]
 
     # 핫종목 — 거래대금 상위 + 시총 하한 필터 (거래대금 전일대비·순매수 연속일·소속테마)
     hot_stocks: list[dict] = field(default_factory=list)

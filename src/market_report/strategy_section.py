@@ -61,7 +61,8 @@ def load_manual_holdings() -> list[dict]:
 async def collect_screen_picks(adapter, per_strategy: int = 8,
                                drop_today: bool = False,
                                e_out: list[dict] | None = None,
-                               surge_out: list[dict] | None = None) -> list[dict]:
+                               surge_out: list[dict] | None = None,
+                               support_out: list[dict] | None = None) -> list[dict]:
     """오늘 A/B/C 전략 포착 종목 (유니버스: 주도주 + 핫종목).
 
     drop_today: 마지막 봉이 '오늘'(장전 미완성 봉)이면 제외하고 전일 마감 기준 평가.
@@ -221,6 +222,18 @@ async def collect_screen_picks(adapter, per_strategy: int = 8,
                     "ticker": tk, "name": nm, "price": round(c[-1].close, 1),
                     "change_pct": round(change_pct, 2), "gap20": round(_gap20, 1),
                     "vol_x": round(_volx, 1), "reason": _sr.reason,
+                    "volume": c[-1].volume, "trade_value": c[-1].close * c[-1].volume,
+                })
+        # F. 60일선 지지 마감(참고용) — 별도 수집. 종합점수/Top3 미반영(가중치 0), 단순 참고 섹션만.
+        # 백테스트상 다음날 반등 엣지 없음(48~49%) 확인됨 → 추천 아님(사용자 2026-06-09)
+        if support_out is not None and len(support_out) < 40:
+            from src.patterns.core import is_ma60_support
+            _fr = is_ma60_support(c)
+            if _fr.matched:
+                support_out.append({
+                    "ticker": tk, "name": nm, "price": round(c[-1].close, 1),
+                    "change_pct": round(change_pct, 2), "gap20": round(_gap20, 1),
+                    "vol_x": round(_volx, 1), "reason": _fr.reason,
                     "volume": c[-1].volume, "trade_value": c[-1].close * c[-1].volume,
                 })
     return picks

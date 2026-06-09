@@ -953,6 +953,25 @@ ${{ "{:,.2f}".format(item.price) }} <span class="{{ 'up-text' if pct >= 0 else '
     </section>
     {% endif %}
 
+    {# 📐 F. 60일선 지지 마감 (참고용 · 가중치 0 · Top3/종합점수 미반영, 사용자 2026-06-09) #}
+    {% if snap.support_picks %}
+    <section>
+      <h2><span class="icon">📐</span>F. 60일선 지지 <span style="color:var(--text-dim);font-size:0.8rem;">(60일선까지 눌렸다 지지 마감 · 참고용)</span></h2>
+      <ul class="watch-list">
+        {% for p in snap.support_picks %}
+        <li>
+          <a href="https://finance.naver.com/item/main.naver?code={{ p.ticker }}" target="_blank" rel="noopener"><strong>{{ p.name }}</strong></a>
+          <span class="pick-ticker">{{ p.ticker }}{{ mk(p.ticker) }}</span> · {{ "{:,.0f}".format(p.price) }}원
+          <span class="{{ 'up-text' if p.change_pct >= 0 else 'down-text' }}">{{ '+' if p.change_pct >= 0 else '' }}{{ "{:.2f}".format(p.change_pct) }}%</span>
+          {% if p.reason %}<div class="theme-reason">{{ p.reason }}</div>{% endif %}
+          {{ sec_detail(p) }}
+        </li>
+        {% endfor %}
+      </ul>
+      <p class="disclaimer" style="font-size:12px;">※ 60일선까지 눌렸다 지지받고 마감한 종목(<strong>참고 태그</strong>). 백테스트상 다음날 반등 엣지 없음(승률 48~49%·생존편향 포함) 확인됨 — <strong>매수 추천·시그널 아님, 종합점수/Top3에도 미반영</strong>. 단순 참고용.</p>
+    </section>
+    {% endif %}
+
     {# 🏦 기관·외인 연속 순매수/매도 (시총 상위, 스마트머니 선행, 사용자 #393) #}
     {% if snap.supply_buy_streaks or snap.supply_sell_streaks %}
     <section>

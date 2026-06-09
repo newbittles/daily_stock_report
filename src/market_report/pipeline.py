@@ -450,7 +450,8 @@ def _inject_marcap(snap: MarketSnapshot) -> None:
         mm = get_market_cap_map()
         if not mm:
             return
-        for lst in (snap.top3, snap.screen_picks, snap.candidate_picks, snap.e_picks, snap.surge_picks):
+        for lst in (snap.top3, snap.screen_picks, snap.candidate_picks, snap.e_picks,
+                    snap.surge_picks, snap.support_picks):
             for p in (lst or []):
                 tk = str(p.get("ticker", "")).strip()
                 if tk:
@@ -1417,8 +1418,11 @@ async def run_full(
         adapter = KisAdapter(s.kis_app_key, s.kis_app_secret, s.kis_account_no, s.kis_env)
         _e_cand: list[dict] = []
         _surge: list[dict] = []
-        snap.screen_picks = await collect_screen_picks(adapter, e_out=_e_cand, surge_out=_surge)
+        _support: list[dict] = []  # F. 60일선 지지(참고용) — 가중치 0, Top3 미반영
+        snap.screen_picks = await collect_screen_picks(
+            adapter, e_out=_e_cand, surge_out=_surge, support_out=_support)
         snap.surge_picks = sorted(_surge, key=lambda p: p.get("change_pct", 0), reverse=True)[:7]
+        snap.support_picks = sorted(_support, key=lambda p: p.get("change_pct", 0), reverse=True)[:10]
         snap.holdings_status = await collect_holdings_status(adapter)
         # E전략 4시간봉 게이트 — 일봉 과매도 주도주 후보 중 4H RSI(14)≤30도 충족하는 종목만(사용자 2026-06-05)
         if _e_cand:
@@ -1469,7 +1473,7 @@ async def run_full(
 
         # E/급등초입 픽에도 테마 부착(judal → 네이버 세분업종 폴백, 사용자 2026-06-05)
         try:
-            _sec_picks = (snap.e_picks or []) + (snap.surge_picks or [])
+            _sec_picks = (snap.e_picks or []) + (snap.surge_picks or []) + (snap.support_picks or [])
             for p in _sec_picks:
                 jv = jmap.get(p.get("ticker", ""))
                 if jv and jv.get("theme") and not _is_nontheme(jv["theme"]):
