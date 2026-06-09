@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-06-09",
+    "time": "09:15",
+    "mode": "kr_open",
+    "url": "reports/2026-06-09-kr-open.html",
+    "summary": "코스피 7,732.2(+3.31%) · 코스닥 940.0(+3.14%). 강세 테마: 소캠(SOCAMM), 광통신(광케이블/광섬유 등), 반도체 기판(FC-BGA/PCB/MLB 등).",
+    "kospi_pct": 3.31,
+    "kosdaq_pct": 3.14
+  },
+  {
+    "date": "2026-06-09",
     "time": "08:17",
     "mode": "us_morning",
     "url": "reports/2026-06-09-us.html",
