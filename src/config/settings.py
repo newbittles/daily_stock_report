@@ -30,6 +30,10 @@ class Settings(BaseSettings):
     gemini_api_key: str
     ai_daily_call_limit: int = 100
 
+    # DART 전자공시 OpenAPI (opendart.fss.or.kr) — 종목별 최근 공시 조회(AI요약 호재/공시 유무).
+    # 무료 키(읽기전용 공개데이터). 미설정이면 빈 문자열 → 공시 '확인 불가'로 표기(뉴스만 반영).
+    dart_api_key: str = ""
+
     # KRX 정보데이터시스템(data.krx.co.kr) 로그인 — pykrx 투자자 수급(개인/외인/기관)
     # 과거 백필용(선택). 미설정이면 빈 문자열 → 수급은 당일치 누적만(KRX 백필 비활성).
     # ⚠️ pykrx는 os.environ을 읽으므로, 백필 사용 시 이 값을 os.environ에 export 해야 함.

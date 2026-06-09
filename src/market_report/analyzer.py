@@ -494,6 +494,42 @@ async def summarize_stocks(snap: MarketSnapshot) -> None:
     if not targets:
         return
 
+    # 종목별 최근 뉴스 + 공시(DART) 조회 — 호재뉴스·공시 유무를 '사실 기반'으로 명시(환각 방지).
+    # 조회 성공+없음=없음, 조회실패/매핑없음=확인불가(거짓 '없음' 방지). 동시 조회로 시간 절약.
+    from src.market_report.scrapers.stock_news import fetch_stock_news
+    dart_key = settings.dart_api_key
+
+    async def _stock_ctx(tk: str, name: str):
+        try:
+            news = await fetch_stock_news(name, top=3)
+        except Exception:  # noqa: BLE001
+            news = []
+        disc = None
+        if dart_key:
+            try:
+                from src.datasource.dart import fetch_recent_disclosures
+                disc = await fetch_recent_disclosures(tk, dart_key, days=10, top=5)
+            except Exception:  # noqa: BLE001
+                disc = None
+        return tk, news, disc
+
+    _ctx_res = await asyncio.gather(
+        *[_stock_ctx(tk, p.get("name", "")) for tk, p in targets.items()], return_exceptions=True)
+    stock_ctx: dict[str, tuple] = {r[0]: (r[1], r[2]) for r in _ctx_res if isinstance(r, tuple)}
+
+    def _ctx_block(tk: str, name: str) -> str:
+        news, disc = stock_ctx.get(tk, ([], None))
+        nlines = "; ".join(n.title for n in (news or [])[:3]) if news else "최근 종목 뉴스 없음"
+        if disc is None:
+            dlines = "확인 불가"
+        elif not disc:
+            dlines = "최근 공시 없음"
+        else:
+            dlines = "; ".join(f"{d['date'][4:6]}/{d['date'][6:8]} {d['title']}" for d in disc[:5])
+        return f"{tk} {name}\n  뉴스: {nlines}\n  공시: {dlines}"
+
+    stock_ctx_blob = "\n".join(_ctx_block(tk, p.get("name", "")) for tk, p in targets.items())
+
     # 컨텍스트: 강세 테마(주도주) + 시장 뉴스 → "왜 올랐나/내렸나" 추론 근거
     theme_blob = "\n".join(
         f"- {t.name} {t.change_pct:+.1f}% [주도주 {', '.join(t.leading_stocks[:3]) or '-'}]"
@@ -511,11 +547,18 @@ async def summarize_stocks(snap: MarketSnapshot) -> None:
         "근거는 ①주요 뉴스 ②소속 테마 ③주도주 여부 중심으로. "
         "진입가·손절가·매수추천은 절대 언급하지 말 것(그건 따로 표시됨). "
         "뉴스에 근거가 없으면 테마·수급 맥락으로 설명하되, 사실을 지어내지 말 것. "
-        "숫자(가격·금액)는 천단위 콤마로 표기(예: 66,000원).\n\n"
+        "숫자(가격·금액)는 천단위 콤마로 표기(예: 66,000원).\n"
+        "★요약 끝에 반드시 줄을 바꿔 두 항목을 덧붙여라(아래 [종목별 최근 뉴스·공시]에 주어진 것만 사용, "
+        "지어내기 절대 금지):\n"
+        "  📰 호재뉴스: {해당 종목 뉴스에 호재성 내용 있으면 한 줄 요약 / 뉴스가 '최근 종목 뉴스 없음'이면 '없음'}\n"
+        "  📋 공시: {공시 목록 있으면 핵심 1~2건 제목 요약 / '최근 공시 없음'이면 '없음' / '확인 불가'이면 '확인 불가'}\n"
+        "공시 항목은 주어진 '공시:' 값에 근거해서만 적되, 유상증자·전환사채 등은 악재성, 수주(공급계약)·자사주취득 등은 호재성으로 톤을 반영하라.\n\n"
         f"[오늘 강세 테마]\n{theme_blob}\n\n"
         f"[시장 뉴스 헤드라인]\n{news_blob}\n\n"
+        f"[종목별 최근 뉴스·공시]\n{stock_ctx_blob}\n\n"
         f"[대상 종목]\n{blob}\n\n"
-        '반드시 JSON으로만 답하라: {"종목코드": "왜 올랐는지(또는 왜 하락했는지) 1~2문장", ...}'
+        '반드시 JSON으로만 답하라(값은 위 형식의 줄바꿈 포함 문자열): '
+        '{"종목코드": "왜 올랐는지(또는 왜 하락했는지) 1~2문장\\n📰 호재뉴스: …\\n📋 공시: …", ...}'
     )
 
     client = genai.Client(api_key=settings.gemini_api_key)
