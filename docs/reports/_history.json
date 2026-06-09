@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-06-09",
+    "time": "17:10",
+    "mode": "post_close",
+    "url": "reports/2026-06-09-post.html",
+    "summary": "오늘 코스피와 코스닥 지수가 각각 8.18%, 6.19% 급등하며 8,096.93, 967.81로 마감했습니다. 반도체 관련주들의 강세가 시장을 주도했습니다.",
+    "kospi_pct": 8.18,
+    "kosdaq_pct": 6.19
+  },
+  {
+    "date": "2026-06-09",
     "time": "14:50",
     "mode": "pre_close",
     "url": "reports/2026-06-09-pre.html",
