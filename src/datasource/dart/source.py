@@ -26,6 +26,25 @@ PROJECT_ROOT = Path(__file__).resolve().parents[3]
 CACHE_FILE = PROJECT_ROOT / "data" / "dart_corpcode.json"  # gitignore된 런타임 캐시
 _BASE = "https://opendart.fss.or.kr/api"
 
+# 주요(시그널성) 공시 허용리스트 — 제목에 아래 키워드가 있어야 표기(사용자 2026-06-09 "단순공시는 제외").
+# 지분변동·임원소유·대기업집단현황·지배구조보고서·정기보고서·주총소집 등 루틴은 자동 제외(키워드 미포함).
+# blocklist는 종류가 끝없어 allowlist 채택 — 빠진 주요유형은 키워드 추가로 확장.
+_MATERIAL_KEYWORDS = (
+    "공급계약", "수주", "계약체결", "납품", "공급계약체결",          # 수주
+    "유상증자", "무상증자", "전환사채", "신주인수권", "교환사채", "사채권발행",  # 증자·메자닌
+    "자기주식", "자사주",                                          # 자사주
+    "실적", "손익구조", "매출액",                                   # 실적
+    "합병", "분할결정", "양수도", "영업양수", "영업양도", "주식교환",     # M&A·구조
+    "시설투자", "신규시설", "출자증권취득", "지분취득", "유형자산취득",    # 투자
+    "특허", "임상", "품목허가", "기술이전", "기술수출", "라이선스", "공동연구",  # R&D·바이오
+    "최대주주 변경", "경영권", "공개매수", "무상감자", "유상감자",      # 지배구조 이벤트
+)
+
+
+def _is_material(title: str) -> bool:
+    """주요(시그널성) 공시만 True. 루틴 공시는 키워드 미포함이라 False."""
+    return any(kw in title for kw in _MATERIAL_KEYWORDS)
+
 _corp_map: dict[str, str] | None = None  # 프로세스 메모리 캐시
 
 
@@ -97,11 +116,14 @@ async def fetch_recent_disclosures(
             if status != "000":
                 logger.warning("dart_status ticker=%s status=%s msg=%s", ticker, status, data.get("message"))
                 return None
-            return [
+            items = [
                 {"date": str(it.get("rcept_dt", "")).strip(),
                  "title": str(it.get("report_nm", "")).strip()}
-                for it in (data.get("list") or [])[:top]
+                for it in (data.get("list") or [])
             ]
+            # 주요공시만 남김(루틴 제외, allowlist). 주요공시 0건이면 []='공시 없음'(환각 아님)
+            items = [x for x in items if _is_material(x["title"])]
+            return items[:top]
         except Exception as exc:  # noqa: BLE001
             logger.warning("dart_fetch_error ticker=%s attempt=%d error=%s", ticker, attempt, exc)
     return None

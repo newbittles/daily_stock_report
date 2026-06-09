@@ -16,6 +16,24 @@ def test_dart_no_key_returns_none() -> None:
     assert asyncio.run(fetch_recent_disclosures("005930", key="")) is None
 
 
+def test_material_disclosure_filter() -> None:
+    """주요공시(수주·증자·실적·M&A·투자)만 유지, 루틴(지분/임원/지배구조/대기업집단)은 제외(allowlist, 사용자 2026-06-09)."""
+    from src.datasource.dart.source import _is_material
+
+    # 주요공시(유지)
+    assert _is_material("단일판매ㆍ공급계약체결")   # 수주
+    assert _is_material("유상증자결정")
+    assert _is_material("영업(잠정)실적(공정공시)")
+    assert _is_material("주요사항보고서(자기주식취득결정)")
+    assert _is_material("타법인주식및출자증권취득결정")
+    # 루틴(제외)
+    assert not _is_material("최대주주등소유주식변동신고서")
+    assert not _is_material("임원ㆍ주요주주특정증권등소유상황보고서")
+    assert not _is_material("주식등의대량보유상황보고서(약식)")
+    assert not _is_material("대규모기업집단현황공시[연1회(동일인용)]")
+    assert not _is_material("기업지배구조보고서공시")
+
+
 def test_settings_has_dart_field() -> None:
     """pydantic 필드 존재(미설정 기본 빈문자열) — .env에 키 넣어도 forbid 크래시 없음."""
     assert "dart_api_key" in Settings.model_fields
