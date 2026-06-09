@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-06-09",
+    "time": "14:50",
+    "mode": "pre_close",
+    "url": "reports/2026-06-09-pre.html",
+    "summary": "코스피와 코스닥 지수 모두 큰 폭으로 반등하며 시장 분위기가 호전되고 있습니다. 특히 반도체 관련주들이 강세를 보이며 지수 상승을 주도하고 있습니다.",
+    "kospi_pct": 8.36,
+    "kosdaq_pct": 6.37
+  },
+  {
+    "date": "2026-06-09",
     "time": "11:40",
     "mode": "midday",
     "url": "reports/2026-06-09-midday.html",
