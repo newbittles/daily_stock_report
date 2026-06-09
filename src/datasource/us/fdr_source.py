@@ -575,9 +575,14 @@ def _fetch_intraday_sync(symbols: list[str]) -> dict[str, dict]:
             info = yf.Ticker(to_yf_symbol(sym)).info
             price = info.get("regularMarketPrice")
             prev = info.get("regularMarketPreviousClose") or info.get("previousClose")
+            op = info.get("regularMarketOpen") or info.get("open")
             if price is not None and prev:
                 chg = (float(price) - float(prev)) / float(prev) * 100
-                out[sym] = {"price": float(price), "change_pct": round(chg, 2)}
+                rec = {"price": float(price), "change_pct": round(chg, 2)}
+                # 시초대비 등락률(당일 시가 대비) — 장중 리포트 표시용(사용자 2026-06-09)
+                if op:
+                    rec["open_pct"] = round((float(price) - float(op)) / float(op) * 100, 2)
+                out[sym] = rec
         except Exception as exc:  # noqa: BLE001
             logger.debug("intraday_failed symbol=%s error=%s", sym, exc)
         if i < len(symbols) - 1:

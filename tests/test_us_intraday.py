@@ -31,7 +31,7 @@ def _snap(mode: str) -> MarketSnapshot:
     s.us_sectors = [{"name": "반도체", "change_pct": 2.1}]
     s.summary = "테스트 요약"
     s.us_top3 = [{"symbol": "MU", "name": "마이크론", "price": 120.5, "change_pct": 2.3,
-                  "intraday": True, "intraday_price": 122.0, "close_pct": 2.3,
+                  "intraday": True, "intraday_price": 122.0, "close_pct": 2.3, "open_pct": 1.5,
                   "sector": "반도체", "reason": "x"}]
     s.us_news = [{"title": "테스트 뉴스", "source": "Reuters"}]
     return s
@@ -43,6 +43,12 @@ def test_us_intraday_price_is_realtime_only() -> None:
     assert "장중 $122.00" in html          # 장중 현재가
     assert html.count("종가 $") == 0       # 마감 포맷 아님
     assert html.count("(전일 ") == 0       # 전일 등락률 없음
+
+
+def test_us_intraday_shows_open_pct() -> None:
+    """장중 리포트에 시초대비 등락률(시초 +X%) 표시(사용자 2026-06-09)."""
+    html = render_report(_snap("us_intraday")).read_text(encoding="utf-8")
+    assert "(시초 +1.50%)" in html
 
 
 def test_us_news_moved_to_bottom() -> None:

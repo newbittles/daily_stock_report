@@ -1220,6 +1220,8 @@ async def _overlay_live_quote(snap: MarketSnapshot, fetch_fn, flag: str,
             d["change_pct"] = q["change_pct"]          # 표시 등락률 = 실시간(프리장/장중)
             # 가격은 전일마감가 유지(사용자), 실시간가는 참고용으로만 보관
             d[price_key] = round(q["price"], 2)
+            if "open_pct" in q:                        # 시초대비 등락률(장중, 사용자 2026-06-09)
+                d["open_pct"] = q["open_pct"]
         else:
             d.setdefault(flag, False)
     # 주요종목·섹터·테마대장은 실시간 등락률순 재정렬 (섹터 전체 → 표시단에서 강세/약세 슬라이스)

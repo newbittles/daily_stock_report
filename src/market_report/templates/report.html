@@ -9,7 +9,7 @@
 장마감 ${{ "{:,.2f}".format(item.price) }} <span class="{{ 'up-text' if pct >= 0 else 'down-text' }}">({{ '+' if pct >= 0 else '' }}{{ "{:.2f}".format(pct) }}%)</span>{% if item.after_pct is defined %} <span class="{{ 'up-text' if item.after_pct >= 0 else 'down-text' }}">(애프터장 {{ '+' if item.after_pct >= 0 else '' }}{{ "{:.2f}".format(item.after_pct) }}%)</span>{% endif %}
 {%- elif mode == 'us_intraday' -%}
 {%- set px = item.intraday_price if item.intraday else item.price -%}
-장중 ${{ "{:,.2f}".format(px) }} <span class="{{ 'up-text' if pct >= 0 else 'down-text' }}">({{ '+' if pct >= 0 else '' }}{{ "{:.2f}".format(pct) }}%)</span>
+장중 ${{ "{:,.2f}".format(px) }} <span class="{{ 'up-text' if pct >= 0 else 'down-text' }}">({{ '+' if pct >= 0 else '' }}{{ "{:.2f}".format(pct) }}%)</span>{% if item.open_pct is defined and item.open_pct is not none %} <span class="{{ 'up-text' if item.open_pct >= 0 else 'down-text' }}">(시초 {{ '+' if item.open_pct >= 0 else '' }}{{ "{:.2f}".format(item.open_pct) }}%)</span>{% endif %}
 {%- else -%}
 ${{ "{:,.2f}".format(item.price) }} <span class="{{ 'up-text' if pct >= 0 else 'down-text' }}">{{ '+' if pct >= 0 else '' }}{{ "{:.2f}".format(pct) }}%</span>
 {%- endif -%}
