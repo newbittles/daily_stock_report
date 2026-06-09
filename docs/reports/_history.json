@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-06-09",
+    "time": "22:40",
+    "mode": "us_intraday",
+    "url": "reports/2026-06-09-us-mid.html",
+    "summary": "S&P500 7,457(+0.69%) · 나스닥 26,132(+0.78%). 강세 섹터: 2차전지/리튬, 반도체, 방산/우주항공.",
+    "kospi_pct": null,
+    "kosdaq_pct": null
+  },
+  {
+    "date": "2026-06-09",
     "time": "21:50",
     "mode": "us_premarket",
     "url": "reports/2026-06-09-us-pre.html",
