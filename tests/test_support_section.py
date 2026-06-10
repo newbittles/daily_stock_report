@@ -38,12 +38,23 @@ def test_support_section_renders_when_picks_present() -> None:
     assert "미반영" in html
 
 
-def test_support_section_absent_when_no_picks() -> None:
-    """support_picks가 비면 F 섹션 자체가 렌더되지 않는다."""
+def test_support_section_always_shown_with_placeholder() -> None:
+    """support_picks가 비어도 F 섹션은 pre/post에서 항상 노출 + '없음' 표기(사용자 2026-06-10).
+
+    예전엔 빈 날 섹션이 통째로 사라져 '누락'처럼 보이던 문제 → E 섹션과 동일 패턴으로 통일."""
     snap = _base_snap()
     snap.support_picks = []
     html = _render(snap)
-    assert "F. 60일선 지지" not in html
+    assert "F. 60일선 지지" in html
+    assert "60일선 지지 마감 종목 없음" in html
+
+
+def test_support_section_hidden_in_non_close_modes() -> None:
+    """F는 전략스크린이 도는 pre/post에서만 노출(프리장·장중 등에선 미노출)."""
+    snap = _base_snap()
+    snap.mode = "midday"  # type: ignore[assignment]
+    snap.support_picks = []
+    assert "F. 60일선 지지" not in _render(snap)
 
 
 def test_collect_screen_picks_has_support_out_param() -> None:

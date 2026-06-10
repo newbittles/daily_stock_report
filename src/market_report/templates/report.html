@@ -990,10 +990,13 @@ ${{ "{:,.2f}".format(item.price) }} <span class="{{ 'up-text' if pct >= 0 else '
     </section>
     {% endif %}
 
-    {# 📐 F. 60일선 지지 마감 (참고용 · 가중치 0 · Top3/종합점수 미반영, 사용자 2026-06-09) #}
-    {% if snap.support_picks %}
+    {# 📐 F. 60일선 지지 마감 — 칸 항상 노출(없으면 '없음'), pre/post만 (사용자 2026-06-10: F가 빈 날 통째로 사라져 '누락'처럼 보이던 문제 → E와 동일 패턴) #}
+    {% if snap.mode in ['pre_close', 'post_close'] %}
     <section>
       <h2><span class="icon">📐</span>F. 60일선 지지 <span style="color:var(--text-dim);font-size:0.8rem;">(60일선까지 눌렸다 지지 마감 · 참고용)</span></h2>
+      {% if not snap.support_picks %}
+      <p style="color:var(--text-dim);font-size:0.9rem;margin:0.4rem 0;">오늘 60일선 지지 마감 종목 없음 — 60일선까지 눌렸다 지지받고 마감한 종목이 있을 때만 표시됩니다(참고용).</p>
+      {% else %}
       <ul class="watch-list">
         {% for p in snap.support_picks %}
         <li>
@@ -1005,14 +1008,18 @@ ${{ "{:,.2f}".format(item.price) }} <span class="{{ 'up-text' if pct >= 0 else '
         </li>
         {% endfor %}
       </ul>
+      {% endif %}
       <p class="disclaimer" style="font-size:12px;">※ 60일선까지 눌렸다 지지받고 마감한 종목(<strong>참고 태그</strong>). 백테스트상 다음날 반등 엣지 없음(승률 48~49%·생존편향 포함) 확인됨 — <strong>매수 추천·시그널 아님, 종합점수/Top3에도 미반영</strong>. 단순 참고용.</p>
     </section>
     {% endif %}
 
-    {# 🧬 G. 삼각수렴(코일) 임박 (참고용·가중치0·차트에 추세선, 사용자 2026-06-09) #}
-    {% if snap.coil_picks %}
+    {# 🧬 G. 삼각수렴(코일) 임박 — 칸 항상 노출(없으면 '없음'), pre/post만 (사용자 2026-06-10) #}
+    {% if snap.mode in ['pre_close', 'post_close'] %}
     <section>
       <h2><span class="icon">🧬</span>삼각수렴 임박 <span style="color:var(--text-dim);font-size:0.8rem;">(변동성 수축·돌파 직전 코일 · 참고용)</span></h2>
+      {% if not snap.coil_picks %}
+      <p style="color:var(--text-dim);font-size:0.9rem;margin:0.4rem 0;">오늘 삼각수렴 임박 종목 없음 — 변동성이 수축돼 돌파 직전인 코일 종목이 있을 때만 표시됩니다(참고용).</p>
+      {% else %}
       {% for p in snap.coil_picks %}
       <div class="pick {{ 'has-chart' if p.chart_url else '' }}">
         <div class="pick-body">
@@ -1037,6 +1044,7 @@ ${{ "{:,.2f}".format(item.price) }} <span class="{{ 'up-text' if pct >= 0 else '
         {% endif %}
       </div>
       {% endfor %}
+      {% endif %}
       <p class="disclaimer" style="font-size:12px;">※ 삼각수렴(변동성 축소→이평 수렴) 돌파 <strong>임박</strong> 종목. 🔻대칭=고점↓·저점↑ / 🟰바닥지지=저점 평평+상단 눌림. 차트 🔴상단선=고점 저항·🟢하단선=저점 지지(꼭짓점 수렴). <strong>백테스트 엣지 약함(첫코일 5일 +2.7%·승률60%, 베타 소폭상회)·매수추천 아님·종합점수/Top3 미반영</strong>. 돌파 실패(하락 이탈)도 ~40%. 단순 참고용.</p>
     </section>
     {% endif %}
