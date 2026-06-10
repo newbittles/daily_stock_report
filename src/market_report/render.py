@@ -45,7 +45,7 @@ def report_path(snap: MarketSnapshot) -> Path:
     """리포트 출력 경로."""
     date_str = snap.generated_at.strftime("%Y-%m-%d")
     suffix = {"pre_close": "pre", "post_close": "post", "us_morning": "us",
-              "midday": "midday", "us_premarket": "us-pre",
+              "midday": "midday", "us_premarket": "us-pre", "us_afterhours": "us-after",
               "us_intraday": "us-mid", "kr_premarket": "kr-pre", "kr_open": "kr-open"}.get(snap.mode, "post")
     return REPORTS_DIR / f"{date_str}-{suffix}.html"
 
@@ -54,7 +54,7 @@ def report_url_rel(snap: MarketSnapshot) -> str:
     """index.html → 리포트 상대 URL."""
     date_str = snap.generated_at.strftime("%Y-%m-%d")
     suffix = {"pre_close": "pre", "post_close": "post", "us_morning": "us",
-              "midday": "midday", "us_premarket": "us-pre",
+              "midday": "midday", "us_premarket": "us-pre", "us_afterhours": "us-after",
               "us_intraday": "us-mid", "kr_premarket": "kr-pre", "kr_open": "kr-open"}.get(snap.mode, "post")
     return f"reports/{date_str}-{suffix}.html"
 
@@ -78,6 +78,7 @@ def render_report(snap: MarketSnapshot) -> Path:
         "midday": "장중 시장 리포트",
         "us_premarket": "미국장 장전(프리장) 리포트",
         "us_intraday": "미국장 장중 리포트 (잠정)",
+        "us_afterhours": "미국 애프터장 리뷰 (한국 오후)",
         "kr_premarket": "한국장 프리 리포트 (NXT 프리장)",
         "kr_open": "한국장 장초 리포트",
     }.get(snap.mode, "시장 리포트")

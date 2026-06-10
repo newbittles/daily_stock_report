@@ -588,6 +588,9 @@ def _format_us_morning_summary(snap: MarketSnapshot) -> str:
     elif snap.mode == "us_intraday":
         lines = [f"🇺🇸 *미국장 장중 리포트* 🕒 — {date}",
                  "_장중 잠정(개장 직후) · 실시간 등락률 · ABCD는 직전 마감 일봉 · 마감 시 변동 가능_", ""]
+    elif snap.mode == "us_afterhours":
+        lines = [f"🌃 *미국 애프터장 리뷰* (한국 오후) — {date}",
+                 "_직전 미국 정규장 마감 + 애프터장(시간외) 등락 · ABCD는 마감 일봉_", ""]
     else:
         lines = [f"🌎 *미국 증시 마감 요약* — {date}", ""]
 
@@ -788,7 +791,7 @@ async def send_report(snap: MarketSnapshot) -> bool:
     except Exception as exc:  # noqa: BLE001
         logger.warning("wait_pages_failed error=%s", exc)
 
-    if snap.mode in ("us_morning", "us_premarket", "us_intraday"):
+    if snap.mode in ("us_morning", "us_premarket", "us_intraday", "us_afterhours"):
         text = _format_us_morning_summary(snap)
     elif snap.mode in ("midday", "kr_premarket", "kr_open"):
         text = _format_kr_morning_summary(snap) if snap.mode in ("kr_premarket", "kr_open") \

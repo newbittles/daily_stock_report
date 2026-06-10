@@ -160,8 +160,9 @@ async def warm_us_cache() -> None:
 
 async def generate_report(mode: ReportMode) -> MarketSnapshot:
     """전체 파이프라인 — 데이터 수집 + AI 분석 + 추천 종목 차트 생성."""
-    if mode == "us_morning":
+    if mode in ("us_morning", "us_afterhours"):
         snap = await collect_us_snapshot()
+        snap.mode = mode  # type: ignore[assignment]  # us_afterhours도 동일 수집(애프터 재방문)
         snap = await analyze(snap)
         await _render_candles(snap)
         return snap
@@ -237,7 +238,7 @@ async def _render_candles(snap: MarketSnapshot) -> None:
     date = snap.generated_at.strftime("%Y-%m-%d")
     # us_intraday도 미국 차트(S&P·나스닥·금·유가) — 누락 시 금 차트 빠짐(#511)
     items = (_CANDLE_ITEMS["us_morning"]
-             if snap.mode in ("us_morning", "us_premarket", "us_intraday") else _CANDLE_ITEMS["kr"])
+             if snap.mode in ("us_morning", "us_premarket", "us_intraday", "us_afterhours") else _CANDLE_ITEMS["kr"])
 
     def _one(sym: str, key: str, src: str):
         try:
@@ -1346,8 +1347,8 @@ async def run_full(
     logger.info("pipeline_data_ready mode=%s picks=%d themes=%d",
                 mode, len(snap.candidate_picks), len(snap.top_themes))
 
-    # 미국장(us_morning) P2: 미국 강세테마 연동 한국 시초 매수 Top3
-    if mode == "us_morning":
+    # 미국장(us_morning/us_afterhours) — 미국 종목 스크리닝·섹터·애프터장 오버레이·AI요약
+    if mode in ("us_morning", "us_afterhours"):
         # Q4: 미국 휴장 스킵 — 지수 최신 거래일이 3일 이상 지났으면(주말+휴장) 발송 안 함
         try:
             from datetime import date as _date

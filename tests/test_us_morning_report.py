@@ -4,7 +4,21 @@ from __future__ import annotations
 from datetime import datetime
 
 from src.market_report.models import MarketSnapshot
+from src.market_report.render import report_path
 from src.market_report.telegram_notify import _format_us_morning_summary
+
+
+def test_us_afterhours_routes_like_us_morning() -> None:
+    """13시 미국 애프터장 리뷰(us_afterhours, 사용자 2026-06-10): 별도 파일(us-after) +
+    미국 마감 구조 텔레그램 포맷(애프터장 타이틀), 한국지수 미표시."""
+    snap = MarketSnapshot(mode="us_afterhours", generated_at=datetime(2026, 6, 10, 13, 0))
+    snap.us_indices = [{"name": "나스닥", "price": 20000.0, "change_pct": 1.2}]
+    snap.us_sectors = [{"name": "반도체", "change_pct": 2.1}]
+    # 별도 출력 파일(us_morning 덮어쓰지 않음)
+    assert report_path(snap).name == "2026-06-10-us-after.html"
+    txt = _format_us_morning_summary(snap)
+    assert "애프터장 리뷰" in txt
+    assert "코스피" not in txt
 
 
 def _us_snap() -> MarketSnapshot:

@@ -244,7 +244,7 @@ def _fallback_summary(snap: MarketSnapshot) -> str:
     담도록 보장. 'AI 분석 불가' 단순 메시지 대신 실제 지수·테마 수치를 제공한다.
     """
     parts: list[str] = []
-    if snap.mode in ("us_morning", "us_premarket", "us_intraday"):
+    if snap.mode in ("us_morning", "us_premarket", "us_intraday", "us_afterhours"):
         for q in (snap.us_indices or [])[:2]:
             parts.append(f"{q.get('name', '')} {q.get('price', 0):,.0f}({q.get('change_pct', 0):+.2f}%)")
         secs = [q.get("name", "") for q in (snap.us_sectors or [])[:3] if q.get("name")]
@@ -314,8 +314,9 @@ async def analyze(snap: MarketSnapshot) -> MarketSnapshot:
     if snap.mode == "us_premarket":
         context = _build_us_context(snap)
         prompt = _us_premarket_prompt(snap, context)
-    elif snap.mode in ("us_morning", "us_intraday"):
-        # us_intraday(장중)도 미국 컨텍스트·프롬프트 사용 — 안 그러면 KR 프롬프트로 빠져 '코스피 요약'이 나옴(버그)
+    elif snap.mode in ("us_morning", "us_intraday", "us_afterhours"):
+        # us_intraday(장중)·us_afterhours(애프터 리뷰)도 미국 컨텍스트·프롬프트 사용
+        # (안 그러면 KR 프롬프트로 빠져 '코스피 요약'이 나옴, 버그)
         context = _build_us_context(snap)
         prompt = _us_morning_prompt(snap, context)
     elif snap.mode == "pre_close":

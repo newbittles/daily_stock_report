@@ -9,7 +9,7 @@ from datetime import datetime
 from typing import Literal
 
 ReportMode = Literal["pre_close", "post_close", "us_morning", "midday", "us_premarket", "us_intraday",
-                     "kr_premarket", "kr_open"]
+                     "us_afterhours", "kr_premarket", "kr_open"]
 MarketCode = Literal["KOSPI", "KOSDAQ"]
 
 

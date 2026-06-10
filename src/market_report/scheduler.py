@@ -274,6 +274,12 @@ def build_scheduler() -> AsyncIOScheduler:
         _us_intraday_job, CronTrigger(day_of_week="mon-fri", hour=23, minute=40, timezone=KST),
         args=[False], id="report_us_intraday_std", replace_existing=True, misfire_grace_time=900,
     )
+    # 미국 애프터장 리뷰 — 평일 13:00 KST (한국 오후, 미국 마감+애프터 종목변동 체크, 사용자 2026-06-10).
+    # 구조는 미국 마감(us_morning)과 동일, 별도 파일(us-after). us 블록 자체 신선도 스킵 보유.
+    scheduler.add_job(
+        _job, CronTrigger(day_of_week="mon-fri", hour=13, minute=0, timezone=KST),
+        args=["us_afterhours"], id="report_us_afterhours", replace_existing=True, misfire_grace_time=900,
+    )
     # 코인 시세 리포트 — 매일 17:00, 주말 포함 (day_of_week 미지정 = '*', 사용자 2026-06-07)
     scheduler.add_job(
         _coin_job, CronTrigger(hour=17, minute=0, timezone=KST),
@@ -319,7 +325,7 @@ def main() -> int:
     )
     parser = argparse.ArgumentParser(description="Daily report scheduler")
     parser.add_argument("--once", choices=["pre", "post", "us", "holdings", "dashboard",
-                                           "midday", "uspre", "usmid", "coin"],
+                                           "midday", "uspre", "usmid", "usafter", "coin"],
                         help="등록된 잡 1회 즉시 실행 후 종료")
     args = parser.parse_args()
 
@@ -336,7 +342,8 @@ def main() -> int:
     elif args.once == "usmid":
         asyncio.run(_us_intraday_job())
     elif args.once:
-        mode = {"pre": "pre_close", "post": "post_close", "us": "us_morning"}[args.once]
+        mode = {"pre": "pre_close", "post": "post_close", "us": "us_morning",
+                "usafter": "us_afterhours"}[args.once]
         asyncio.run(_job(mode))
     else:
         asyncio.run(run_forever())
