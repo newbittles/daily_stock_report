@@ -1328,6 +1328,13 @@ async def run_full(
 
     logger.info("pipeline_start mode=%s force=%s", mode, force)
 
+    # Gemini 일일 한도 차단기 초기화 — 새 런마다 한도 회복 재평가(사용자 2026-06-10)
+    try:
+        from src.market_report.analyzer import reset_quota_breaker
+        reset_quota_breaker()
+    except Exception:  # noqa: BLE001
+        pass
+
     # 한국장 휴장일 스킵 (평일 공휴일·임시공휴일·선거일 등). pre/post만 — us_morning은
     # 미국 캘린더 기준이라 별도(자체 신선도 스킵 보유). 휴장이면 데이터·AI 호출 전에 중단.
     if mode in ("pre_close", "post_close") and not force:

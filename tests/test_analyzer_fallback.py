@@ -84,6 +84,24 @@ def test_summary_target_line_correction_stock() -> None:
     assert "조정(상승 후 하락 전환)" in line
 
 
+def test_quota_breaker_trips_on_429_and_resets() -> None:
+    """Gemini 일일 한도(429) 차단기: 429 RESOURCE_EXHAUSTED만 트립, 일반오류는 무시, reset로 해제."""
+    from src.market_report.analyzer import (
+        _maybe_trip_quota, quota_blocked, reset_quota_breaker,
+    )
+    reset_quota_breaker()
+    assert quota_blocked() is False
+    # 일반/일시 오류는 트립 안 함(503 등은 재시도해야 함)
+    assert _maybe_trip_quota(Exception("503 Service Unavailable")) is False
+    assert quota_blocked() is False
+    # 429 한도 소진은 트립
+    assert _maybe_trip_quota(Exception("429 RESOURCE_EXHAUSTED quota exceeded")) is True
+    assert quota_blocked() is True
+    # 트립 후엔 새 런 시작 reset로만 해제
+    reset_quota_breaker()
+    assert quota_blocked() is False
+
+
 def test_summary_target_line_today_pct_fallback() -> None:
     """전날Top3·종가베팅은 change_pct가 없고 today_pct가 오늘 등락 → 폴백 사용(장중 #2026-06-10)."""
     line = _summary_target_line("093370", {"name": "후성", "today_pct": -2.7})

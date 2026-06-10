@@ -29,6 +29,33 @@ logger = logging.getLogger(__name__)
 
 MODEL_NAME = "gemini-2.5-flash-lite"  # 빠르고 저렴 + 무료 일일 한도 여유 (flash 대비)
 
+# ── Gemini 일일 한도(429) 차단기 (사용자 2026-06-10) ──────────────────────────
+# 무료 한도(20/일) 소진 시 한 리포트 런에서 종목·테마·수급 요약마다 3회 재시도+긴 백오프가
+# 누적돼 렌더·발송이 10분+ 지연·중단(행)되는 문제 방지. 첫 429 RESOURCE_EXHAUSTED 감지 시
+# 차단기를 트립 → 이후 AI 호출은 즉시 폴백(스킵). run_full 시작 시 reset_quota_breaker()로 초기화.
+_QUOTA_STATE = {"tripped": False}
+
+
+def reset_quota_breaker() -> None:
+    """새 리포트 런 시작 시 차단기 초기화(한도 회복 재평가)."""
+    _QUOTA_STATE["tripped"] = False
+
+
+def quota_blocked() -> bool:
+    """차단기 트립 상태(한도 소진으로 AI 스킵 중)면 True."""
+    return _QUOTA_STATE["tripped"]
+
+
+def _maybe_trip_quota(exc: Exception) -> bool:
+    """예외가 Gemini 일일 한도(429 RESOURCE_EXHAUSTED)면 차단기 트립. 트립이면 True."""
+    s = str(exc)
+    if "RESOURCE_EXHAUSTED" in s or "exceeded your current quota" in s:
+        if not _QUOTA_STATE["tripped"]:
+            logger.warning("gemini_quota_breaker_tripped — 이후 AI 호출 스킵(폴백 유지)")
+        _QUOTA_STATE["tripped"] = True
+        return True
+    return False
+
 DISCLAIMER = (
     "※ 본 리포트는 공개 데이터 기반 참고용 정보입니다. "
     "투자 판단·매매 결정·결과 책임은 전적으로 본인에게 있습니다."
@@ -279,7 +306,7 @@ async def summarize_midday(snap: MarketSnapshot) -> str:
     """
     settings = get_settings()
     fallback = _fallback_summary(snap)
-    if not settings.gemini_api_key:
+    if not settings.gemini_api_key or quota_blocked():
         return fallback
 
     context = _build_snapshot_context(snap) + _intraday_flow_context(snap)
@@ -310,6 +337,12 @@ async def analyze(snap: MarketSnapshot) -> MarketSnapshot:
     실패 시 빈 요약·후보로 채워서 반환 (리포트 자체는 발송 가능하도록).
     """
     settings = get_settings()
+    if not settings.gemini_api_key or quota_blocked():  # 키없음/한도소진 → 결정론 폴백(사용자 2026-06-10)
+        snap.summary = _fallback_summary(snap)
+        snap.why_moved = ""
+        snap.theme_commentary = ""
+        snap.candidate_picks = []
+        return snap
 
     if snap.mode == "us_premarket":
         context = _build_us_context(snap)
@@ -355,6 +388,8 @@ async def analyze(snap: MarketSnapshot) -> MarketSnapshot:
         except Exception as exc:
             last_exc = exc
             logger.warning("gemini_attempt_failed mode=%s attempt=%d error=%s", snap.mode, attempt, exc)
+            if _maybe_trip_quota(exc):  # 일일 한도 → 재시도 중단(폭풍 방지)
+                break
 
     if data is None:
         logger.error("gemini_analyze_failed mode=%s error=%s", snap.mode, last_exc)
@@ -493,7 +528,7 @@ async def summarize_stocks(
     import random
 
     settings = get_settings()
-    if not settings.gemini_api_key:
+    if not settings.gemini_api_key or quota_blocked():
         return
 
     # 요약 대상 풀(기본 + 추가). put-back도 동일 풀을 재사용해 일관성 유지.
@@ -600,6 +635,8 @@ async def summarize_stocks(
             break
         except Exception as exc:  # noqa: BLE001
             logger.warning("stock_summary_attempt_failed attempt=%d error=%s", attempt, exc)
+            if _maybe_trip_quota(exc):
+                break
 
     if not isinstance(data, dict):
         logger.error("stock_summary_failed — 종목 요약 생성 실패")
@@ -628,7 +665,7 @@ async def summarize_us_stocks(snap: MarketSnapshot) -> None:
     import random
 
     settings = get_settings()
-    if not settings.gemini_api_key:
+    if not settings.gemini_api_key or quota_blocked():
         return
 
     pools: list[list[dict]] = [
@@ -680,6 +717,8 @@ async def summarize_us_stocks(snap: MarketSnapshot) -> None:
             break
         except Exception as exc:  # noqa: BLE001
             logger.warning("us_stock_summary_attempt_failed attempt=%d error=%s", attempt, exc)
+            if _maybe_trip_quota(exc):
+                break
 
     if not isinstance(data, dict):
         logger.error("us_stock_summary_failed — 미국 종목 요약 생성 실패")
@@ -702,7 +741,7 @@ async def translate_us_news(snap: MarketSnapshot) -> None:
     비용 최소화: 헤드라인 일괄 1회 호출(flash-lite). 키없음/한도/실패 시 생략(원문 영어 표시)."""
     settings = get_settings()
     news = snap.us_news or []
-    if not settings.gemini_api_key or not news:
+    if not settings.gemini_api_key or quota_blocked() or not news:
         return
     items = "\n".join(f"{i}: {n.get('title', '')}" for i, n in enumerate(news[:15]) if n.get("title"))
     if not items:
@@ -759,7 +798,7 @@ async def summarize_flows(snap: MarketSnapshot) -> None:
     snap.flows_summary = " · ".join(lines[:4])  # 기본 = 결정론 팩트(외인·기관 우선)
 
     settings = get_settings()
-    if not settings.gemini_api_key or not fact_blob:
+    if not settings.gemini_api_key or quota_blocked() or not fact_blob:
         return
     prompt = (
         "다음은 최근 거래일 한국 증시 투자자별 순매수(억원, +매수/−매도) 데이터다.\n"
@@ -791,7 +830,7 @@ async def summarize_themes(snap: MarketSnapshot) -> None:
     import random
 
     settings = get_settings()
-    if not settings.gemini_api_key or not snap.top_themes:
+    if not settings.gemini_api_key or quota_blocked() or not snap.top_themes:
         return
 
     targets = snap.top_themes[:6]
@@ -871,7 +910,7 @@ async def summarize_holdings(snap: MarketSnapshot) -> None:
         return
 
     settings = get_settings()
-    if not settings.gemini_api_key:
+    if not settings.gemini_api_key or quota_blocked():
         snap.holdings_summary = _holdings_fallback(rows)
         return
 
