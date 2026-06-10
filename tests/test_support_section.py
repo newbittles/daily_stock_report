@@ -49,6 +49,17 @@ def test_support_section_always_shown_with_placeholder() -> None:
     assert "60일선 지지 마감 종목 없음" in html
 
 
+def test_support_section_renders_us_stock_dollar() -> None:
+    """미국 리포트(us_premarket)에서도 F 섹션이 symbol·$로 렌더(사용자 2026-06-10)."""
+    snap = MarketSnapshot(mode="us_premarket", generated_at=datetime(2026, 6, 9, 19, 0))
+    snap.support_picks = [{"symbol": "AAPL", "name": "애플", "price": 230.55,
+                           "change_pct": 1.2, "reason": "60일선 지지"}]
+    html = _render(snap)
+    assert "F. 60일선 지지" in html
+    assert "애플" in html and "AAPL" in html
+    assert "$230.55" in html  # 달러 표기(원 아님)
+
+
 def test_support_section_hidden_in_non_close_modes() -> None:
     """F는 전략스크린이 도는 pre/post에서만 노출(프리장·장중 등에선 미노출)."""
     snap = _base_snap()

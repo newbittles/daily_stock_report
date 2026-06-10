@@ -35,6 +35,17 @@ def test_coil_section_renders_with_picks() -> None:
     assert "매수추천 아님" in html and "미반영" in html   # 면책
 
 
+def test_coil_section_renders_us_stock_dollar() -> None:
+    """미국 리포트(us_premarket)에서도 G 섹션이 symbol·$로 렌더(사용자 2026-06-10)."""
+    snap = MarketSnapshot(mode="us_premarket", generated_at=datetime(2026, 6, 9, 19, 0))
+    snap.coil_picks = [{"symbol": "AMD", "name": "AMD", "price": 180.25, "change_pct": 0.5,
+                        "shape": "대칭수렴", "reason": "삼각수렴 대칭수렴"}]
+    html = _render(snap)
+    assert "삼각수렴 임박" in html
+    assert "AMD" in html
+    assert "$180.25" in html
+
+
 def test_coil_section_always_shown_with_placeholder() -> None:
     """coil_picks가 비어도 G(삼각수렴) 섹션은 pre/post에서 항상 노출 + '없음' 표기(사용자 2026-06-10)."""
     snap = _snap()

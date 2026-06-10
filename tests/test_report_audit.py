@@ -26,7 +26,8 @@ def test_flags_us_routing_leak() -> None:
 
 def test_us_allows_codespi_in_commentary() -> None:
     """미국 리포트에 '코스피'(시사점 텍스트)는 합법 — 오탐 내면 안 됨."""
-    html = "강세 섹터 E 투매 바닥 반등 한국장 시사점: 코스피 주목 ... 책임은 본인"
+    html = ("강세 섹터 E 투매 바닥 반등 F. 60일선 지지 삼각수렴 임박 "
+            "한국장 시사점: 코스피 주목 ... 책임은 본인")
     assert audit_html("us_morning", html) == []
 
 

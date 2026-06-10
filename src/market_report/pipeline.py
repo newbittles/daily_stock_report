@@ -1150,9 +1150,11 @@ async def _collect_us_screening(snap: MarketSnapshot, *, per_group: int = 5) -> 
         if uni_syms:
             ohlcv = await fetch_us_ohlcv_batch(uni_syms, days=120)  # 캐시 히트(스크리닝과 동일)
             meta2 = {u.symbol: u for u in (universe or [])}
-            from src.patterns.core import is_surge_start
+            from src.patterns.core import is_coil_squeeze, is_ma60_support, is_surge_start
             e_cand: list[dict] = []
             surge: list[dict] = []
+            support: list[dict] = []  # F. 60일선 지지(참고용·미국, 사용자 2026-06-10)
+            coil: list[dict] = []     # G. 삼각수렴 코일(참고용·미국)
             for sym, cs in ohlcv.items():
                 if len(cs) < 60 or cs[-1].close < _PRICE_FLOOR_USD:
                     continue
@@ -1178,6 +1180,20 @@ async def _collect_us_screening(snap: MarketSnapshot, *, per_group: int = 5) -> 
                     surge.append({"symbol": sym, "name": korean_name(sym, u.name if u else sym),
                                   "price": round(cs[-1].close, 2), "change_pct": round(ch, 2),
                                   "reason": sr.reason, **_extra})
+                # F. 60일선 지지 (참고용·미국)
+                fr = is_ma60_support(cs)
+                if fr.matched:
+                    support.append({"symbol": sym, "name": korean_name(sym, u.name if u else sym),
+                                    "price": round(cs[-1].close, 2), "change_pct": round(ch, 2),
+                                    "reason": fr.reason, **_extra})
+                # G. 삼각수렴 코일 (참고용·미국) — 'fresh' 첫신호만(KR과 동일 기준)
+                cr = is_coil_squeeze(cs, bb_max=17.0)
+                if cr.matched and not (len(cs) >= 130 and is_coil_squeeze(cs[:-5], bb_max=17.0).matched):
+                    _shape = {1: "대칭수렴", 2: "바닥지지수렴"}.get(int(cr.metrics.get("shape", 0)), "")
+                    coil.append({"symbol": sym, "name": korean_name(sym, u.name if u else sym),
+                                 "price": round(cs[-1].close, 2), "change_pct": round(ch, 2),
+                                 "shape": _shape, "bb_width": cr.metrics.get("bb_width"),
+                                 "ma_conv": cr.metrics.get("ma_conv"), "reason": cr.reason, **_extra})
             e_cand.sort(key=lambda x: x["rsi"])  # 가장 과매도부터 4H 확인
             e_cand = e_cand[:12]
             from src.datasource.kr_4h import fetch_4h_rsi_oversold
@@ -1190,8 +1206,11 @@ async def _collect_us_screening(snap: MarketSnapshot, *, per_group: int = 5) -> 
             _tag_market_bottom([b for b in (snap.us_bigtech or []) if b.get("e_bottom")],
                                _us_mr, fg_score=_fg_us)
             snap.surge_picks = sorted(surge, key=lambda x: x["change_pct"], reverse=True)[:7]
-            logger.info("us_e_picks_ready daily=%d final=%d surge=%d",
-                        len(e_cand), len(snap.e_picks), len(snap.surge_picks))
+            snap.support_picks = sorted(support, key=lambda x: x["change_pct"], reverse=True)[:10]  # F(미국)
+            snap.coil_picks = coil[:10]  # G(미국)
+            logger.info("us_e_picks_ready daily=%d final=%d surge=%d support=%d coil=%d",
+                        len(e_cand), len(snap.e_picks), len(snap.surge_picks),
+                        len(snap.support_picks), len(snap.coil_picks))
     except Exception as exc:  # noqa: BLE001
         logger.warning("us_e_picks_failed error=%s", exc)
 

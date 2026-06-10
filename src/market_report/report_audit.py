@@ -43,10 +43,10 @@ REQUIRED: dict[str, list[str]] = {
     "midday":        ["AI 시장 요약", "주요 지수"],
     "kr_open":       ["AI 시장 요약", "주요 지수"],
     "kr_premarket":  [],  # 대부분 데이터 의존/의도적 미표시 → forbidden + 면책으로만 점검
-    "us_morning":    ["E 투매 바닥 반등"],
-    "us_afterhours": ["E 투매 바닥 반등"],
-    "us_premarket":  ["E 투매 바닥 반등"],
-    "us_intraday":   ["E 투매 바닥 반등"],
+    "us_morning":    ["E 투매 바닥 반등", "F. 60일선 지지", "삼각수렴 임박"],
+    "us_afterhours": ["E 투매 바닥 반등", "F. 60일선 지지", "삼각수렴 임박"],
+    "us_premarket":  ["E 투매 바닥 반등", "F. 60일선 지지", "삼각수렴 임박"],
+    "us_intraday":   ["E 투매 바닥 반등", "F. 60일선 지지", "삼각수렴 임박"],
 }
 
 # 절대 나오면 안 되는 마커(라우팅/의도 위반). US에 '코스피'는 시사점 텍스트로 합법 출현 → 쓰지 않음.

@@ -530,6 +530,25 @@ ${{ "{:,.2f}".format(item.price) }} <span class="{{ 'up-text' if pct >= 0 else '
       {% endif %}
     </section>
 
+    {# 🇺🇸 미국 야간 — 선물 + M7 + EWY/SOXL. 지수 요약 바로 아래로 이동(사용자 2026-06-10) #}
+    {% if snap.us_overnight and (snap.us_overnight.futures or snap.us_overnight.m7) %}
+    <section>
+      <h2><span class="icon">🇺🇸</span>미국 야간 <span style="color:var(--text-dim);font-size:0.8rem;">(선물·M7·SOXL · 마감 등락 + 프리장/애프터 등락)</span></h2>
+      {% for f in snap.us_overnight.futures %}
+      <p>📊 <strong>{{ f.name }}</strong> <span class="{{ 'up-text' if f.change_pct >= 0 else 'down-text' }}">{{ '+' if f.change_pct >= 0 else '' }}{{ "{:.2f}".format(f.change_pct) }}%</span></p>
+      {% endfor %}
+      {% if snap.us_overnight.m7 or snap.us_overnight.etf %}
+      <ul class="watch-list">
+        {% for q in (snap.us_overnight.m7 + snap.us_overnight.etf) %}
+        <li>{{ q.name }} <span class="pick-ticker">{{ q.symbol }}{{ mk(q.symbol) }}</span>
+          <span class="{{ 'up-text' if q.change_pct >= 0 else 'down-text' }}">마감 {{ '+' if q.change_pct >= 0 else '' }}{{ "{:.1f}".format(q.change_pct) }}%</span>
+          {% if q.session_pct is not none and q.session_label %}· <span class="{{ 'up-text' if q.session_pct >= 0 else 'down-text' }}">{{ q.session_label }} {{ '+' if q.session_pct >= 0 else '' }}{{ "{:.1f}".format(q.session_pct) }}%</span>{% endif %}</li>
+        {% endfor %}
+      </ul>
+      {% endif %}
+    </section>
+    {% endif %}
+
     {# 🚀 프리장 급등 TOP5 (us_premarket — ABCD 필터 통과 종목 중 프리장 상승률 상위) #}
     {% if snap.mode == 'us_premarket' and snap.us_premarket_top %}
     <section>
@@ -688,25 +707,6 @@ ${{ "{:,.2f}".format(item.price) }} <span class="{{ 'up-text' if pct >= 0 else '
       </ul>
       {% endif %}
       <p class="disclaimer" style="font-size:12px;">※ 예탁결제원(SEIBro) 최근 5거래일 한국인 순매수/순매도 <strong>결제금액(T+2)</strong>{% if snap.kr_us_netbuy_dates %} · {{ snap.kr_us_netbuy_dates.range }} 결제 기준(실제 매매는 약 2거래일 전){% endif %}. 자금이 어디로 유입·유출되는지 참고용.</p>
-    </section>
-    {% endif %}
-
-    {# 🇺🇸 미국 야간 — 나스닥 선물 + M7 (한국 리포트 최상단, #476) #}
-    {% if snap.us_overnight and (snap.us_overnight.futures or snap.us_overnight.m7) %}
-    <section>
-      <h2><span class="icon">🇺🇸</span>미국 야간 <span style="color:var(--text-dim);font-size:0.8rem;">(선물·M7·SOXL · 마감 등락 + 프리장/애프터 등락)</span></h2>
-      {% for f in snap.us_overnight.futures %}
-      <p>📊 <strong>{{ f.name }}</strong> <span class="{{ 'up-text' if f.change_pct >= 0 else 'down-text' }}">{{ '+' if f.change_pct >= 0 else '' }}{{ "{:.2f}".format(f.change_pct) }}%</span></p>
-      {% endfor %}
-      {% if snap.us_overnight.m7 or snap.us_overnight.etf %}
-      <ul class="watch-list">
-        {% for q in (snap.us_overnight.m7 + snap.us_overnight.etf) %}
-        <li>{{ q.name }} <span class="pick-ticker">{{ q.symbol }}{{ mk(q.symbol) }}</span>
-          <span class="{{ 'up-text' if q.change_pct >= 0 else 'down-text' }}">마감 {{ '+' if q.change_pct >= 0 else '' }}{{ "{:.1f}".format(q.change_pct) }}%</span>
-          {% if q.session_pct is not none and q.session_label %}· <span class="{{ 'up-text' if q.session_pct >= 0 else 'down-text' }}">{{ q.session_label }} {{ '+' if q.session_pct >= 0 else '' }}{{ "{:.1f}".format(q.session_pct) }}%</span>{% endif %}</li>
-        {% endfor %}
-      </ul>
-      {% endif %}
     </section>
     {% endif %}
 
@@ -990,8 +990,8 @@ ${{ "{:,.2f}".format(item.price) }} <span class="{{ 'up-text' if pct >= 0 else '
     </section>
     {% endif %}
 
-    {# 📐 F. 60일선 지지 마감 — 칸 항상 노출(없으면 '없음'), pre/post만 (사용자 2026-06-10: F가 빈 날 통째로 사라져 '누락'처럼 보이던 문제 → E와 동일 패턴) #}
-    {% if snap.mode in ['pre_close', 'post_close'] %}
+    {# 📐 F. 60일선 지지 마감 — 칸 항상 노출(없으면 '없음'), KR pre/post + US 전체(사용자 2026-06-10) #}
+    {% if snap.mode in ['pre_close', 'post_close', 'us_morning', 'us_afterhours', 'us_premarket', 'us_intraday'] %}
     <section>
       <h2><span class="icon">📐</span>F. 60일선 지지 <span style="color:var(--text-dim);font-size:0.8rem;">(60일선까지 눌렸다 지지 마감 · 참고용)</span></h2>
       {% if not snap.support_picks %}
@@ -1000,8 +1000,13 @@ ${{ "{:,.2f}".format(item.price) }} <span class="{{ 'up-text' if pct >= 0 else '
       <ul class="watch-list">
         {% for p in snap.support_picks %}
         <li>
+          {% if p.ticker %}
           <a href="https://finance.naver.com/item/main.naver?code={{ p.ticker }}" target="_blank" rel="noopener"><strong>{{ p.name }}</strong></a>
           <span class="pick-ticker">{{ p.ticker }}{{ mk(p.ticker) }}</span> · {{ "{:,.0f}".format(p.price) }}원
+          {% else %}
+          <a href="https://search.naver.com/search.naver?query={{ (p.name ~ ' 주가') | urlencode }}" target="_blank" rel="noopener"><strong>{{ p.name }}</strong></a>
+          <span class="pick-ticker">{{ p.symbol }}{{ mk(p.symbol) }}</span> · ${{ "{:,.2f}".format(p.price) }}
+          {% endif %}
           <span class="{{ 'up-text' if p.change_pct >= 0 else 'down-text' }}">{{ '+' if p.change_pct >= 0 else '' }}{{ "{:.2f}".format(p.change_pct) }}%</span>
           {% if p.reason %}<div class="theme-reason">{{ p.reason }}</div>{% endif %}
           {{ sec_detail(p) }}
@@ -1013,8 +1018,8 @@ ${{ "{:,.2f}".format(item.price) }} <span class="{{ 'up-text' if pct >= 0 else '
     </section>
     {% endif %}
 
-    {# 🧬 G. 삼각수렴(코일) 임박 — 칸 항상 노출(없으면 '없음'), pre/post만 (사용자 2026-06-10) #}
-    {% if snap.mode in ['pre_close', 'post_close'] %}
+    {# 🧬 G. 삼각수렴(코일) 임박 — 칸 항상 노출(없으면 '없음'), KR pre/post + US 전체(사용자 2026-06-10) #}
+    {% if snap.mode in ['pre_close', 'post_close', 'us_morning', 'us_afterhours', 'us_premarket', 'us_intraday'] %}
     <section>
       <h2><span class="icon">🧬</span>삼각수렴 임박 <span style="color:var(--text-dim);font-size:0.8rem;">(변동성 수축·돌파 직전 코일 · 참고용)</span></h2>
       {% if not snap.coil_picks %}
@@ -1024,12 +1029,16 @@ ${{ "{:,.2f}".format(item.price) }} <span class="{{ 'up-text' if pct >= 0 else '
       <div class="pick {{ 'has-chart' if p.chart_url else '' }}">
         <div class="pick-body">
           <div class="pick-head">
+            {% if p.ticker %}
             <a class="pick-name" href="https://finance.naver.com/item/main.naver?code={{ p.ticker }}" target="_blank" rel="noopener">{{ p.name }}</a>
+            {% else %}
+            <a class="pick-name" href="https://search.naver.com/search.naver?query={{ (p.name ~ ' 주가') | urlencode }}" target="_blank" rel="noopener">{{ p.name }}</a>
+            {% endif %}
             <span class="pick-meta-group">
-              <span class="pick-ticker">{{ p.ticker }}{{ mk(p.ticker) }}</span>
-              <button type="button" class="code-copy" data-code="{{ p.ticker }}" onclick="copyCode(this)" title="종목코드 복사 (MTS 검색창에 붙여넣기)">📋</button>
+              <span class="pick-ticker">{{ (p.ticker or p.symbol) }}{{ mk(p.ticker or p.symbol) }}</span>
+              {% if p.ticker %}<button type="button" class="code-copy" data-code="{{ p.ticker }}" onclick="copyCode(this)" title="종목코드 복사 (MTS 검색창에 붙여넣기)">📋</button>{% endif %}
               {% if p.shape %}<span class="strat-badge" style="background:var(--accent);">{{ '🔻' if p.shape == '대칭수렴' else '🟰' }} {{ p.shape }}</span>{% endif %}
-              {% if p.price %}<span class="px">{{ "{:,.0f}".format(p.price) }}원</span>
+              {% if p.price %}<span class="px">{% if p.ticker %}{{ "{:,.0f}".format(p.price) }}원{% else %}${{ "{:,.2f}".format(p.price) }}{% endif %}</span>
               <span class="{{ 'up-text' if p.change_pct >= 0 else 'down-text' }}">{{ '+' if p.change_pct >= 0 else '' }}{{ "{:.2f}".format(p.change_pct) }}%</span>{% endif %}
             </span>
           </div>
