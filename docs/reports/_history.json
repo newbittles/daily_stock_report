@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-06-10",
+    "time": "09:15",
+    "mode": "kr_open",
+    "url": "reports/2026-06-10-kr-open.html",
+    "summary": "코스피 7,971.1(-1.55%) · 코스닥 971.9(+0.42%). 강세 테마: 강관업체(Steel pipe), 태양광에너지, 백화점.",
+    "kospi_pct": -1.55,
+    "kosdaq_pct": 0.42
+  },
+  {
+    "date": "2026-06-10",
     "time": "08:05",
     "mode": "kr_premarket",
     "url": "reports/2026-06-10-kr-pre.html",
