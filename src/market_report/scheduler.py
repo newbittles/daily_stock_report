@@ -196,6 +196,20 @@ async def _coin_job() -> None:
         logger.exception("coin_job_failed error=%s", exc)
 
 
+async def _report_audit_job() -> None:
+    """리포트 일관성 점검 (평일 14:00 KST, 잡 없는 빈 시간) — 드리프트 발견 시 텔레그램 '확인 요청' 알림.
+
+    KR/US 리포트 간 '있어야 할 섹션 누락'을 매트릭스로 점검(의도된 시점별 차이는 오탐 제외).
+    자동 코드수정 X — 알림만(사용자 2026-06-10)."""
+    logger.info("report_audit_job_start now=%s", datetime.now().isoformat())
+    try:
+        from src.market_report.report_audit import run_report_audit
+        findings = await run_report_audit(always_notify=True)
+        logger.info("report_audit_job_done findings=%d", len(findings))
+    except Exception as exc:
+        logger.exception("report_audit_job_failed error=%s", exc)
+
+
 def build_scheduler() -> AsyncIOScheduler:
     """평일 14:40 / 16:30 트리거 등록."""
     scheduler = AsyncIOScheduler(timezone=KST)
@@ -290,6 +304,12 @@ def build_scheduler() -> AsyncIOScheduler:
         _coin_job, CronTrigger(hour=8, minute=30, timezone=KST),
         id="report_coin_am", replace_existing=True, misfire_grace_time=900,
     )
+    # 리포트 일관성 점검 — 평일 14:00 KST (잡 없는 빈 시간·새벽 회피, 사용자 2026-06-10).
+    # KR/US 리포트 섹션 드리프트 점검 → 발견 시 텔레그램 '확인 요청' 알림(자동수정 X).
+    scheduler.add_job(
+        _report_audit_job, CronTrigger(day_of_week="mon-fri", hour=14, minute=0, timezone=KST),
+        id="report_audit", replace_existing=True, misfire_grace_time=1800,
+    )
     return scheduler
 
 
@@ -325,11 +345,13 @@ def main() -> int:
     )
     parser = argparse.ArgumentParser(description="Daily report scheduler")
     parser.add_argument("--once", choices=["pre", "post", "us", "holdings", "dashboard",
-                                           "midday", "uspre", "usmid", "usafter", "coin"],
+                                           "midday", "uspre", "usmid", "usafter", "coin", "audit"],
                         help="등록된 잡 1회 즉시 실행 후 종료")
     args = parser.parse_args()
 
-    if args.once == "coin":
+    if args.once == "audit":
+        asyncio.run(_report_audit_job())
+    elif args.once == "coin":
         asyncio.run(_coin_job())
     elif args.once == "holdings":
         asyncio.run(_holdings_job())
