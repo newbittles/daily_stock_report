@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-06-10",
+    "time": "22:40",
+    "mode": "us_intraday",
+    "url": "reports/2026-06-10-us-mid.html",
+    "summary": "S&P500 7,357(-0.40%) · 나스닥 25,557(-0.47%). 강세 섹터: 에너지, 금융, 헬스케어/바이오.",
+    "kospi_pct": null,
+    "kosdaq_pct": null
+  },
+  {
+    "date": "2026-06-10",
     "time": "21:50",
     "mode": "us_premarket",
     "url": "reports/2026-06-10-us-pre.html",
