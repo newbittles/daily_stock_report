@@ -3,11 +3,37 @@ from __future__ import annotations
 
 import asyncio
 
+from datetime import datetime
+
 from src.market_report.kr_morning import last_session_pct
+from src.market_report.models import IndexQuote, MarketSnapshot
+from src.market_report.telegram_notify import _format_kr_morning_summary
 from src.market_report.top3_status import (
     compute_status, fetch_prev_top3_status, find_prev_candidates,
 )
 from src.trading.top3_bridge import persist_candidates
+
+
+def test_premarket_summary_new_sections_and_no_kr_index() -> None:
+    """프리장(08:05) 리포트 재구성(사용자 2026-06-10): 프리장 테마·NXT 상승/하락 Top5 노출,
+    한국지수(코스피/코스닥)·AI요약 미표시. 미국 야간(EWY 등)은 헤더 유지."""
+    s = MarketSnapshot(mode="kr_premarket", generated_at=datetime(2026, 6, 10, 8, 5))
+    s.kospi = IndexQuote(market="KOSPI", value=7800.0, change=0, change_pct=0.0,
+                         volume=0, trade_value=0.0, timestamp=datetime.now())
+    s.summary = "이건 표시되면 안 됨(프리장 AI요약 제거)"
+    s.premarket_themes = [{"name": "반도체 재료/부품", "count": 3, "avg_pct": 4.2,
+                           "stocks": ["후성", "타이거일렉"]}]
+    s.overtime_gainers = [{"ticker": "093370", "name": "후성", "overtime_pct": 2.07}]
+    s.overtime_losers = [{"ticker": "005930", "name": "삼성전자", "overtime_pct": -0.78}]
+    s.us_overnight = {"futures": [{"name": "나스닥 선물", "change_pct": 0.5}], "m7": [],
+                      "etf": [{"symbol": "EWY", "name": "한국 ETF(EWY)", "price": 70.0,
+                               "change_pct": 1.2, "session_pct": 0.3, "session_label": "애프터"}]}
+    txt = _format_kr_morning_summary(s)
+    assert "프리장 소속 테마" in txt and "반도체 재료/부품" in txt
+    assert "상승 Top5" in txt and "하락 Top5" in txt
+    assert "EWY" in txt
+    assert "코스피" not in txt and "코스닥" not in txt   # 한국지수 미표시
+    assert "프리장 AI요약 제거" not in txt              # AI요약 미표시
 
 
 def test_candidate_persist_and_find_prev(tmp_path) -> None:

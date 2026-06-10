@@ -52,6 +52,33 @@ async def _fill_prev_session_index(snap: MarketSnapshot, today: str) -> None:
             snap.index_pct_label = "전일"
 
 
+async def _premarket_themes(gainers: list[dict], top: int = 5) -> list[dict]:
+    """NXT 프리장 상승종목들이 속한 테마 집계 — judal 테마맵 재사용(일1회 캐시, 사용자 2026-06-10).
+
+    반환: [{name, count, avg_pct, stocks:[name..]}] (count→avg_pct 내림차순 top개).
+    judal 실패/상승종목 없음 시 빈 리스트(섹션 생략)."""
+    if not gainers:
+        return []
+    from collections import defaultdict
+
+    from src.market_report.scrapers.judal import _is_nontheme, build_judal_theme_map
+    jmap = await build_judal_theme_map(max_themes=200)
+    agg: dict[str, list[dict]] = defaultdict(list)
+    for g in gainers:
+        jv = jmap.get(str(g.get("ticker", "")))
+        th = jv.get("theme") if jv else None
+        if th and not _is_nontheme(th):
+            agg[th].append(g)
+    themes = [
+        {"name": th, "count": len(gs),
+         "avg_pct": round(sum(x.get("overtime_pct", 0) for x in gs) / len(gs), 2),
+         "stocks": [x.get("name", "") for x in gs][:4]}
+        for th, gs in agg.items()
+    ]
+    themes.sort(key=lambda t: (t["count"], t["avg_pct"]), reverse=True)
+    return themes[:top]
+
+
 async def run_kr_morning(
     mode: str, *, do_telegram: bool = True, do_publish: bool = True, force: bool = False,
 ) -> MarketSnapshot | None:
@@ -67,6 +94,7 @@ async def run_kr_morning(
     snap = await collect_snapshot("midday")  # 지수·수급·테마·정규장 gainers 베이스(가벼움)
     snap.mode = mode  # type: ignore[assignment]
     snap.generated_at = datetime.now()
+    use_nxt = mode == "kr_premarket"  # 프리장(08:05) — NXT 시세 기준(이후 try/요약 분기에 사용)
 
     try:
         from src.config.settings import get_settings
@@ -78,16 +106,22 @@ async def run_kr_morning(
         adapter = KisAdapter(s.kis_app_key, s.kis_app_secret, s.kis_account_no, s.kis_env)
         today = snap.generated_at.strftime("%Y-%m-%d")
 
-        # 프리(08:05): NXT 프리장 상승률 상위 — 정규장 gainers는 아직 의미없어 NXT로 대체
-        use_nxt = mode == "kr_premarket"
+        # 프리(08:05) 재구성(사용자 2026-06-10): NXT 프리장 상승·하락 Top + 소속 테마.
+        # 한국지수/AI요약 미표시 → _fill_prev_session_index·ma_gaps·summary 스킵(미국선물·M7·EWY·SOXL로 대체).
         if use_nxt:
-            try:
-                snap.overtime_gainers = await adapter.get_nxt_overtime_gainers(top=7)
+            try:  # 상승은 테마 집계용으로 넉넉히(top=15), 표시는 상위 5
+                snap.overtime_gainers = await adapter.get_nxt_overtime_gainers(top=15, scan=30)
             except Exception as exc:  # noqa: BLE001
-                logger.warning("kr_premarket_nxt_failed error=%s", exc)
+                logger.warning("kr_premarket_nxt_gainers_failed error=%s", exc)
+            try:
+                snap.overtime_losers = await adapter.get_nxt_overtime_losers(top=5, scan=30)
+            except Exception as exc:  # noqa: BLE001
+                logger.warning("kr_premarket_nxt_losers_failed error=%s", exc)
             snap.top_gainers = []  # 08:05 정규장 시초 없음 → 정규장 gainers 숨김
-            # 지수도 개장 전엔 0.00% 고정 → 전일 등락률로 대체 표기(#469)
-            await _fill_prev_session_index(snap, today)
+            try:  # 프리장 소속 테마 — NXT 상승종목 → judal 테마맵 집계
+                snap.premarket_themes = await _premarket_themes(snap.overtime_gainers)
+            except Exception as exc:  # noqa: BLE001
+                logger.warning("kr_premarket_themes_failed error=%s", exc)
 
         # 전일 추천 Top3 현황 (추천가 대비 + 오늘 등락) — 프리장은 NXT 시세(#469)
         prev = find_prev_top3(today)
@@ -112,13 +146,14 @@ async def run_kr_morning(
             except Exception as exc:  # noqa: BLE001
                 logger.warning("%s_intraday_flow_failed error=%s", mode, exc)
 
-        # 지수 신호등/이격도(고점·바닥 분위기)
-        try:
-            from src.market_report.pipeline import _fill_market_phase, _index_ma_gaps
-            snap.ma_gaps = {"코스피": await _index_ma_gaps("KS11"), "코스닥": await _index_ma_gaps("KQ11")}
-            _fill_market_phase(snap)
-        except Exception as exc:  # noqa: BLE001
-            logger.warning("%s_ma_gaps_failed error=%s", mode, exc)
+        # 지수 신호등/이격도(고점·바닥 분위기) — 장초(kr_open)만. 프리장은 한국지수 미표시라 스킵.
+        if not use_nxt:
+            try:
+                from src.market_report.pipeline import _fill_market_phase, _index_ma_gaps
+                snap.ma_gaps = {"코스피": await _index_ma_gaps("KS11"), "코스닥": await _index_ma_gaps("KQ11")}
+                _fill_market_phase(snap)
+            except Exception as exc:  # noqa: BLE001
+                logger.warning("%s_ma_gaps_failed error=%s", mode, exc)
     except Exception as exc:  # noqa: BLE001
         logger.warning("%s_kis_failed error=%s", mode, exc)
 
@@ -129,12 +164,13 @@ async def run_kr_morning(
     except Exception as exc:  # noqa: BLE001
         logger.warning("%s_overnight_failed error=%s", mode, exc)
 
-    # AI 시장 분위기 요약(전일 미국장·환율·수급·신호등 종합 → 오늘 시초 분위기)
-    try:
-        from src.market_report.analyzer import summarize_midday
-        snap.summary = await summarize_midday(snap)
-    except Exception as exc:  # noqa: BLE001
-        logger.warning("%s_summary_failed error=%s", mode, exc)
+    # AI 시장 분위기 요약 — 장초(kr_open)만. 프리장은 AI요약 미표시(사용자 2026-06-10).
+    if not use_nxt:
+        try:
+            from src.market_report.analyzer import summarize_midday
+            snap.summary = await summarize_midday(snap)
+        except Exception as exc:  # noqa: BLE001
+            logger.warning("%s_summary_failed error=%s", mode, exc)
 
     logger.info("%s_ready gainers=%d nxt=%d prev_top3=%d prev_cand=%d", mode,
                 len(snap.top_gainers or []), len(snap.overtime_gainers or []),

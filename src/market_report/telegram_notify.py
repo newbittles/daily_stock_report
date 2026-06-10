@@ -157,7 +157,9 @@ def _format_index_lines(snap: MarketSnapshot) -> list[str]:
     """주요 지수 4개 — 모바일 줄바꿈 자연스럽게 각각 한 줄씩. 지수 옆 신호등 병기(#426)."""
     lines: list[str] = []
     lbl = getattr(snap, "index_pct_label", "")  # 프리장=전일 등락 표기(#469)
-    for idx in (snap.kospi, snap.kosdaq):
+    # 프리장(08:05)은 한국지수가 의미없어 미표시 — 미국 야간(선물·M7·EWY·SOXL)으로 대체(사용자 2026-06-10)
+    kr_idx = () if snap.mode == "kr_premarket" else (snap.kospi, snap.kosdaq)
+    for idx in kr_idx:
         if idx:
             mk = "코스피" if idx.market == "KOSPI" else "코스닥"
             pct = f"{lbl} {idx.change_pct:+.2f}%" if lbl else f"{idx.change_pct:+.2f}%"
@@ -679,12 +681,30 @@ def _format_kr_morning_summary(snap: MarketSnapshot) -> str:
     lines: list[str] = [f"{title} — {snap.generated_at.strftime('%m-%d %H:%M')}", ""]
     lines.extend(_format_us_overnight(snap))  # 🇺🇸 미국 야간(나스닥선물+M7) 최상단(#476)
     lines.extend(_format_index_lines(snap))  # 지수·공포탐욕·신호등/이격
-    if snap.mode == "kr_premarket" and snap.overtime_gainers:
-        lines.append("🚀 *NXT 프리장 상승률 상위*")
-        for g in snap.overtime_gainers[:5]:
-            lines.append(f"  · {_naver_link(g.get('name', ''), g.get('ticker', ''))} "
-                         f"+{g.get('overtime_pct', 0):.1f}%")
-        lines.append("")
+    if snap.mode == "kr_premarket":
+        # 프리장 소속 테마 (NXT 상승종목이 속한 테마 집계, 사용자 2026-06-10)
+        if snap.premarket_themes:
+            lines.append("🔥 *프리장 소속 테마* (NXT 상승종목 기준)")
+            for t in snap.premarket_themes:
+                stocks = ", ".join(t.get("stocks", [])[:3])
+                avg = t.get("avg_pct", 0)
+                lines.append(f"  · {t['name']} ({t['count']}종목·평균 {avg:+.1f}%)"
+                             + (f" — {stocks}" if stocks else ""))
+            lines.append("")
+        # NXT 프리장 상승 Top5
+        if snap.overtime_gainers:
+            lines.append("🚀 *NXT 프리장 상승 Top5*")
+            for g in snap.overtime_gainers[:5]:
+                lines.append(f"  · {_naver_link(g.get('name', ''), g.get('ticker', ''))} "
+                             f"{g.get('overtime_pct', 0):+.1f}%")
+            lines.append("")
+        # NXT 프리장 하락 Top5
+        if snap.overtime_losers:
+            lines.append("📉 *NXT 프리장 하락 Top5*")
+            for g in snap.overtime_losers[:5]:
+                lines.append(f"  · {_naver_link(g.get('name', ''), g.get('ticker', ''))} "
+                             f"{g.get('overtime_pct', 0):+.1f}%")
+            lines.append("")
     elif snap.top_gainers:
         lines.append("🚀 *시초 상승률 상위*")
         for g in snap.top_gainers[:5]:
@@ -714,7 +734,7 @@ def _format_kr_morning_summary(snap: MarketSnapshot) -> str:
             if fl:
                 lines.append(fl)
         lines.append("")
-    if snap.summary:
+    if snap.summary and snap.mode != "kr_premarket":  # 프리장은 AI요약 미표시(사용자 2026-06-10)
         lines.append(f"🤖 {snap.summary}")
         lines.append("")
     lines.append(f"📄 [전체 리포트 보기]({report_url(snap)})")

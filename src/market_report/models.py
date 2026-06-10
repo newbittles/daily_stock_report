@@ -156,6 +156,10 @@ class MarketSnapshot:
 
     # 시간외(NXT 넥스트레이드) 상위 상승률 — 정규장 마감 후, post_close만 (정규장 종가 대비)
     overtime_gainers: list[dict] = field(default_factory=list)  # [{ticker,name,nxt_price,reg_close,overtime_pct}]
+    # 프리장(kr_premarket) — NXT 시간외 하락률 상위 (사용자 2026-06-10 장전 리포트)
+    overtime_losers: list[dict] = field(default_factory=list)   # [{ticker,name,nxt_price,reg_close,overtime_pct}]
+    # 프리장 소속 테마 — NXT 상승종목들이 속한 테마 집계(judal 맵). [{name,count,avg_pct,stocks:[name..]}]
+    premarket_themes: list[dict] = field(default_factory=list)
 
     # E전략: 과매도 반등 후보 — 최근 주도주(신고가 경신)였다가 일봉&4시간봉 RSI≤30. KR/US 공용(별도 섹션)
     e_picks: list[dict] = field(default_factory=list)  # [{ticker/symbol, name, price, change_pct, rsi, reason}]

@@ -715,7 +715,8 @@ ${{ "{:,.2f}".format(item.price) }} <span class="{{ 'up-text' if pct >= 0 else '
     <section>
       <h2><span class="icon">📈</span>주요 지수</h2>
       <div class="indexes">
-        {% for idx, ck in [(snap.kospi, 'KOSPI'), (snap.kosdaq, 'KOSDAQ')] %}
+        {# 프리장(08:05)은 한국지수 미표시 — 미국 야간(선물·M7·EWY·SOXL)으로 대체(사용자 2026-06-10) #}
+        {% for idx, ck in ([] if snap.mode == 'kr_premarket' else [(snap.kospi, 'KOSPI'), (snap.kosdaq, 'KOSDAQ')]) %}
           {% if idx %}
           <div class="index-card {{ 'up' if idx.change_pct >= 0 else 'down' }}">
             <div class="index-info">
@@ -821,7 +822,25 @@ ${{ "{:,.2f}".format(item.price) }} <span class="{{ 'up-text' if pct >= 0 else '
     </section>
     {% endif %}
 
-    {% if snap.top_themes %}
+    {# 🔥 프리장 소속 테마 (kr_premarket) — NXT 상승종목이 속한 테마 집계(사용자 2026-06-10) #}
+    {% if snap.mode == 'kr_premarket' and snap.premarket_themes %}
+    <section>
+      <h2><span class="icon">🔥</span>프리장 소속 테마 <span style="color:var(--text-dim);font-size:0.8rem;">(NXT 상승종목이 속한 테마)</span></h2>
+      <ul class="watch-list">
+        {% for t in snap.premarket_themes %}
+        <li>
+          <strong>{{ t.name }}</strong>
+          <span class="pick-ticker">{{ t.count }}종목</span>
+          <span class="{{ 'up-text' if t.avg_pct >= 0 else 'down-text' }}">평균 {{ '+' if t.avg_pct >= 0 else '' }}{{ "{:.1f}".format(t.avg_pct) }}%</span>
+          {% if t.stocks %}<div class="pick-sub">▸ {{ t.stocks[:4]|join(', ') }}</div>{% endif %}
+        </li>
+        {% endfor %}
+      </ul>
+      <p style="font-size:11px;color:var(--text-dim);margin-top:0.3rem;">프리장(NXT) 상승 종목들이 속한 테마를 묶어 표시. 오늘 자금 쏠림 선행 참고용.</p>
+    </section>
+    {% endif %}
+
+    {% if snap.top_themes and snap.mode != 'kr_premarket' %}
     <section>
       <h2><span class="icon">🔥</span>강세/약세 테마 Top {{ snap.top_themes|length }} <span style="color:var(--text-dim);font-size:0.8rem;">(🚀주도 = 오늘 상위종목이 속한 테마)</span></h2>
       {% for t in snap.top_themes %}
@@ -884,7 +903,7 @@ ${{ "{:,.2f}".format(item.price) }} <span class="{{ 'up-text' if pct >= 0 else '
     <section>
       <h2><span class="icon">{{ '🌅' if snap.mode == 'kr_premarket' else '🌙' }}</span>{{ 'NXT 프리장 상승률 상위' if snap.mode == 'kr_premarket' else '시간외(NXT) 상위 상승률' }} <span style="color:var(--text-dim);font-size:0.8rem;">({{ '08:00~ 프리장, 전일 종가 대비' if snap.mode == 'kr_premarket' else '정규장 종가 대비' }})</span></h2>
       <ul class="watch-list">
-        {% for g in snap.overtime_gainers %}
+        {% for g in (snap.overtime_gainers[:5] if snap.mode == 'kr_premarket' else snap.overtime_gainers) %}
         <li>
           <a href="https://finance.naver.com/item/main.naver?code={{ g.ticker }}" target="_blank" rel="noopener"><strong>{{ g.name }}</strong></a>
           <span class="pick-ticker">{{ g.ticker }}{{ mk(g.ticker) }}</span> · {{ "{:,.0f}".format(g.nxt_price) }}원
@@ -894,6 +913,24 @@ ${{ "{:,.2f}".format(item.price) }} <span class="{{ 'up-text' if pct >= 0 else '
         {% endfor %}
       </ul>
       <p style="font-size:11px;color:var(--text-dim);margin-top:0.3rem;">넥스트레이드(NXT) 시간외 거래 기준. 정규장 종가 대비 상승분.</p>
+    </section>
+    {% endif %}
+
+    {# 📉 NXT 프리장 하락 Top5 (kr_premarket, 사용자 2026-06-10) #}
+    {% if snap.mode == 'kr_premarket' and snap.overtime_losers %}
+    <section>
+      <h2><span class="icon">📉</span>NXT 프리장 하락 Top5 <span style="color:var(--text-dim);font-size:0.8rem;">(08:00~ 프리장, 전일 종가 대비)</span></h2>
+      <ul class="watch-list">
+        {% for g in snap.overtime_losers[:5] %}
+        <li>
+          <a href="https://finance.naver.com/item/main.naver?code={{ g.ticker }}" target="_blank" rel="noopener"><strong>{{ g.name }}</strong></a>
+          <span class="pick-ticker">{{ g.ticker }}{{ mk(g.ticker) }}</span> · {{ "{:,.0f}".format(g.nxt_price) }}원
+          <span class="down-text">{{ "{:.2f}".format(g.overtime_pct) }}%</span>
+          <span style="color:var(--text-dim);font-size:0.8rem;">(종가 {{ "{:,.0f}".format(g.reg_close) }})</span>
+        </li>
+        {% endfor %}
+      </ul>
+      <p style="font-size:11px;color:var(--text-dim);margin-top:0.3rem;">넥스트레이드(NXT) 시간외 거래 기준. 정규장 종가 대비 하락분.</p>
     </section>
     {% endif %}
 

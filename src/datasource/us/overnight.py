@@ -24,8 +24,10 @@ _M7 = {
     "AMZN": "아마존", "META": "메타", "TSLA": "테슬라",
 }
 
-# M7 아래 별도 표시 ETF (사용자 #485) — 반도체 3배 레버리지
-_ETF = {"SOXL": "SOXL(반도체 3X)"}
+# M7 아래 별도 표시 ETF — 한국 ETF(EWY, 한국시장 야간 프록시) + 반도체 3배(SOXL)
+# EWY: iShares MSCI South Korea ETF(미국 상장). 미국 마감+애프터 등락이 한국 개장 분위기 선행지표
+# (사용자 2026-06-10 장전 리포트). SOXL(#485): 반도체 3X — 삼성·하이닉스 선행.
+_ETF = {"EWY": "한국 ETF(EWY)", "SOXL": "SOXL(반도체 3X)"}
 
 
 def _fetch_one(sym: str) -> dict | None:
