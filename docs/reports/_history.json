@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-06-10",
+    "time": "19:00",
+    "mode": "us_premarket",
+    "url": "reports/2026-06-10-us-pre.html",
+    "summary": "현재 미국 프리장 시장은 전반적으로 약세를 보이고 있습니다. 특히 기술주와 반도체 섹터의 하락세가 두드러지며, 이는 AI 버블 우려와 같은 거시 경제적 불확실성이 반영된 것으로 해석됩니다. 다만, 필라델피아 반도체 지수는 예외적으로 강세를 나타내고 있",
+    "kospi_pct": null,
+    "kosdaq_pct": null
+  },
+  {
+    "date": "2026-06-10",
     "time": "18:17",
     "mode": "post_close",
     "url": "reports/2026-06-10-post.html",
