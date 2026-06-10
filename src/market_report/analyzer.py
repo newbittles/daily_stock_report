@@ -729,7 +729,8 @@ async def summarize_us_stocks(snap: MarketSnapshot) -> None:
         "호재인지 악재인지 톤 반영해 한 줄 / 뉴스가 '최근 종목 뉴스 없음'이면 '없음'}\n\n"
         f"[강세 섹터]\n{sec_blob}\n\n[미국 시장 뉴스]\n{news_blob}\n\n"
         f"[종목별 최근 뉴스]\n{stock_news_blob}\n\n[대상 종목]\n{blob}\n\n"
-        '반드시 JSON으로만 답하라(값은 위 형식의 줄바꿈 포함 문자열): '
+        '반드시 JSON 객체(딕셔너리) 하나로만 답하라. key=심볼 문자열, value=문자열 하나(아래 형식, '
+        '줄바꿈 \\n 포함). 배열·중첩객체 금지: '
         '{"심볼": "🏢 회사 주요사업 한 줄\\n왜 올랐는지/하락했는지 1~2문장\\n📰 호재/악재: …", ...}'
     )
 
@@ -741,16 +742,34 @@ async def summarize_us_stocks(snap: MarketSnapshot) -> None:
                 await asyncio.sleep(random.uniform(2 * (2 ** (attempt - 1)), 5 * (2 ** (attempt - 1))))
             response = client.models.generate_content(
                 model=MODEL_NAME, contents=prompt,
-                config=types.GenerateContentConfig(response_mime_type="application/json", temperature=0.3),
+                config=types.GenerateContentConfig(
+                    response_mime_type="application/json", temperature=0.3,
+                    max_output_tokens=16384),  # 종목多+뉴스로 출력이 길어 truncation 방지(사용자 2026-06-11)
             )
-            data = json.loads(response.text or "{}")
-            break
+            parsed = json.loads(response.text or "{}")
+            if isinstance(parsed, dict) and parsed:
+                data = parsed
+                break
+            # 모델이 가끔 배열·빈값 반환 → 배열이면 dict로 보정 시도, 아니면 재시도
+            if isinstance(parsed, list):
+                _coerced = {}
+                for it in parsed:
+                    if isinstance(it, dict):
+                        _sym = str(it.get("심볼") or it.get("symbol") or it.get("ticker") or "").strip()
+                        _val = it.get("요약") or it.get("summary") or it.get("value")
+                        if _sym and isinstance(_val, str):
+                            _coerced[_sym] = _val
+                if _coerced:
+                    data = _coerced
+                    break
+            logger.warning("us_stock_summary_nondict attempt=%d type=%s preview=%.180s",
+                           attempt, type(parsed).__name__, str(response.text))
         except Exception as exc:  # noqa: BLE001
             logger.warning("us_stock_summary_attempt_failed attempt=%d error=%s", attempt, exc)
             if _maybe_trip_quota(exc):
                 break
 
-    if not isinstance(data, dict):
+    if not isinstance(data, dict) or not data:
         logger.error("us_stock_summary_failed — 미국 종목 요약 생성 실패")
         return
 
