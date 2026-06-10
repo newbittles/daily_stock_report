@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-06-10",
+    "time": "16:00",
+    "mode": "post_close",
+    "url": "reports/2026-06-10-post.html",
+    "summary": "오늘 코스피와 코스닥 지수가 큰 폭으로 하락하며 마감했습니다. 특히 반도체 관련주들의 약세와 외국인/기관의 매도세가 시장을 끌어내렸습니다.",
+    "kospi_pct": -4.52,
+    "kosdaq_pct": -1.67
+  },
+  {
+    "date": "2026-06-10",
     "time": "14:26",
     "mode": "us_afterhours",
     "url": "reports/2026-06-10-us-after.html",
