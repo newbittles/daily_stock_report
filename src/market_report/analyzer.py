@@ -671,6 +671,8 @@ async def summarize_us_stocks(snap: MarketSnapshot) -> None:
     pools: list[list[dict]] = [
         snap.us_top3 or [], snap.us_theme_leaders or [], snap.us_sector_leaders or [],
         snap.e_picks or [], snap.surge_picks or [],
+        snap.support_picks or [], snap.coil_picks or [],          # F·G(미국, 사용자 2026-06-10)
+        getattr(snap, "us_premarket_top", None) or [],            # 프리장 급등 TOP5
     ]
     for g in (snap.us_screen_groups or []):
         pools.append(g.get("picks", []))
@@ -682,6 +684,29 @@ async def summarize_us_stocks(snap: MarketSnapshot) -> None:
                 targets[sym] = p
     if not targets:
         return
+
+    # 종목별 최근 뉴스(yfinance) — 호재/악재를 '사실 기반'으로(환각 방지). 동시성 제한으로 yfinance 스로틀 회피.
+    from src.datasource.us.fdr_source import fetch_us_stock_news
+    _sem = asyncio.Semaphore(8)
+
+    async def _news_ctx(sym: str) -> tuple[str, list]:
+        async with _sem:
+            try:
+                ns = await fetch_us_stock_news(sym, top=3)
+            except Exception:  # noqa: BLE001
+                ns = []
+            await asyncio.sleep(random.uniform(0.1, 0.3))  # 전역 §7 분산 딜레이
+            return sym, ns
+
+    _res = await asyncio.gather(*[_news_ctx(s) for s in targets], return_exceptions=True)
+    news_ctx: dict[str, list] = {r[0]: r[1] for r in _res if isinstance(r, tuple)}
+
+    def _stock_news_block(sym: str, name: str) -> str:
+        ns = news_ctx.get(sym) or []
+        nl = "; ".join(n.get("title", "") for n in ns[:3]) if ns else "최근 종목 뉴스 없음"
+        return f"{sym} {name}\n  뉴스: {nl}"
+
+    stock_news_blob = "\n".join(_stock_news_block(s, p.get("name", "")) for s, p in targets.items())
 
     sec_blob = "\n".join(f"- {s.get('name', '')} {s.get('change_pct', 0):+.1f}%"
                          for s in (snap.us_sectors or [])[:8])
@@ -698,9 +723,14 @@ async def summarize_us_stocks(snap: MarketSnapshot) -> None:
         "애플→'🏢 아이폰·맥 등 IT 기기 제조'). 잘 알려진 주요 사업/업종만 사실대로, 불확실하면 업종만(지어내기 금지).\n"
         "- ▲상승: 강세 이유. ▼하락: 하락/조정 사유(차익실현·과열·실적·매크로 등).\n"
         "근거는 ①주요 뉴스 ②소속 섹터/테마 중심. 진입가·손절·매수추천 언급 금지. "
-        "사실을 지어내지 말 것. 숫자(가격·금액)는 천단위 콤마로 표기(예: 1,200달러·66,000원).\n\n"
-        f"[강세 섹터]\n{sec_blob}\n\n[미국 시장 뉴스]\n{news_blob}\n\n[대상 종목]\n{blob}\n\n"
-        '반드시 JSON으로만 답하라: {"심볼": "🏢 회사 주요사업 한 줄\\n왜 올랐는지/하락했는지 1~2문장", ...}'
+        "사실을 지어내지 말 것. 숫자(가격·금액)는 천단위 콤마로 표기(예: 1,200달러·66,000원).\n"
+        "★요약 끝에 반드시 줄을 바꿔 한 항목을 덧붙여라(아래 [종목별 최근 뉴스]에 주어진 것만 사용, 지어내기 금지):\n"
+        "  📰 호재/악재: {해당 종목 뉴스에 호재(실적호조·신제품·수주 등)/악재(실적부진·소송·규제 등) 있으면 "
+        "호재인지 악재인지 톤 반영해 한 줄 / 뉴스가 '최근 종목 뉴스 없음'이면 '없음'}\n\n"
+        f"[강세 섹터]\n{sec_blob}\n\n[미국 시장 뉴스]\n{news_blob}\n\n"
+        f"[종목별 최근 뉴스]\n{stock_news_blob}\n\n[대상 종목]\n{blob}\n\n"
+        '반드시 JSON으로만 답하라(값은 위 형식의 줄바꿈 포함 문자열): '
+        '{"심볼": "🏢 회사 주요사업 한 줄\\n왜 올랐는지/하락했는지 1~2문장\\n📰 호재/악재: …", ...}'
     )
 
     client = genai.Client(api_key=settings.gemini_api_key)

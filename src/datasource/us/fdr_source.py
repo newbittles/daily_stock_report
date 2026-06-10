@@ -625,3 +625,28 @@ def _fetch_us_news_sync(top: int) -> list[dict]:
 async def fetch_us_news(top: int = 10) -> list[dict]:
     """미국 시장 뉴스 헤드라인 → [{title, source}]. 실패 시 빈 리스트."""
     return await asyncio.to_thread(_fetch_us_news_sync, top)
+
+
+def _fetch_us_stock_news_sync(symbol: str, top: int = 3) -> list[dict]:
+    """동기 — yfinance Ticker(symbol).news로 종목별 최근 헤드라인. [{title}] (사용자 2026-06-10)."""
+    import yfinance as yf
+
+    out: list[dict] = []
+    try:
+        news = yf.Ticker(symbol).news or []
+    except Exception as exc:  # noqa: BLE001
+        logger.debug("us_stock_news_failed symbol=%s error=%s", symbol, exc)
+        return out
+    for x in news[:top]:
+        if not isinstance(x, dict):
+            continue
+        c = x.get("content") if isinstance(x.get("content"), dict) else x
+        title = c.get("title") or x.get("title")
+        if title:
+            out.append({"title": str(title).strip()})
+    return out
+
+
+async def fetch_us_stock_news(symbol: str, top: int = 3) -> list[dict]:
+    """미국 종목별 최근 뉴스 헤드라인 → [{title}]. 실패/없음 시 빈 리스트."""
+    return await asyncio.to_thread(_fetch_us_stock_news_sync, symbol, top)

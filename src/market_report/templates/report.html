@@ -561,6 +561,7 @@ ${{ "{:,.2f}".format(item.price) }} <span class="{{ 'up-text' if pct >= 0 else '
           {% if t.sector %}<span style="color:var(--text-dim);font-size:0.82rem;"> · {{ t.sector }}</span>{% endif %}
           {% if t.strategies %}{{ strat_badge(t.strategies) }}{% endif %}
           {% if t.reason %}<div class="theme-reason">{{ t.reason }}</div>{% endif %}
+          {% if t.ai_summary %}<button type="button" class="ai-btn" onclick="showAI(this)" data-name="{{ t.name }}" data-summary="{{ t.ai_summary|e }}">🤖 AI요약</button>{% endif %}
         </li>
         {% endfor %}
       </ul>
@@ -1010,6 +1011,7 @@ ${{ "{:,.2f}".format(item.price) }} <span class="{{ 'up-text' if pct >= 0 else '
           <span class="{{ 'up-text' if p.change_pct >= 0 else 'down-text' }}">{{ '+' if p.change_pct >= 0 else '' }}{{ "{:.2f}".format(p.change_pct) }}%</span>
           {% if p.reason %}<div class="theme-reason">{{ p.reason }}</div>{% endif %}
           {{ sec_detail(p) }}
+          {% if p.ai_summary %}<button type="button" class="ai-btn" onclick="showAI(this)" data-name="{{ p.name }}" data-summary="{{ p.ai_summary|e }}">🤖 AI요약</button>{% endif %}
         </li>
         {% endfor %}
       </ul>
@@ -1044,6 +1046,7 @@ ${{ "{:,.2f}".format(item.price) }} <span class="{{ 'up-text' if pct >= 0 else '
           </div>
           {% if p.reason %}<div class="pick-rationale">{{ p.reason }}</div>{% endif %}
           {{ sec_detail(p) }}
+          {% if p.ai_summary %}<button type="button" class="ai-btn" onclick="showAI(this)" data-name="{{ p.name }}" data-summary="{{ p.ai_summary|e }}">🤖 AI요약</button>{% endif %}
         </div>
         {% if p.chart_url %}
         <div class="pick-chart">
