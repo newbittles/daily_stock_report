@@ -78,6 +78,9 @@ tests/
 5. **code + test = 1세트.** 모듈 구현 시 대응 테스트를 함께 작성한다. 테스트 없는 모듈은 "완료" 아님.
 6. **KIS 정확한 엔드포인트/TR_ID는 추측 금지.** 어댑터 구현 전 KIS 공식 문서로 경로·TR_ID·파라미터를 검증하고 반영한다. (실전/모의 환경 차이 주의)
 7. **완료 주장 전 검증.** "동작한다"고 말하기 전 실제 실행/테스트 결과를 확인한다. (전역 §4)
+8. **기능 완전성 전수 점검 (요청 누락 방지).** 종목/섹션 단위 기능(예: AI요약·배지·뉴스)을 추가할 때는 **영향받는 모든 경로·섹션을 한 번에 전수 확인**한다. 한 섹션만 고치고 끝내지 않는다.
+   - 체크: (a) 그 기능이 표시돼야 할 **모든 리포트 모드**(KR pre/post/midday/premarket/open, US morning/premarket/intraday/afterhours)에 들어갔는가? (b) 템플릿이 **렌더하는 모든 종목 리스트(snap.X)**가 데이터 생성 경로(예: `summarize_*_stocks` pools)에 포함됐는가? (렌더 리스트 ↔ 생성 pools 불일치 = 버그. 예: 스크리닝이 `us_screen_ranked`인데 pools엔 `us_screen_groups`만 → AI버튼 누락)
+   - 가드: `tests/test_report_ai_coverage.py`(렌더 종목리스트 ⊆ summarize pools 강제) + 일관성 점검 크론(`report_audit`, 평일 14:00). 큰 변경 후 `/code-review` 또는 code-analyzer로 전수 리뷰.
 
 ---
 

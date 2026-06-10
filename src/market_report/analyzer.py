@@ -673,6 +673,7 @@ async def summarize_us_stocks(snap: MarketSnapshot) -> None:
         snap.e_picks or [], snap.surge_picks or [],
         snap.support_picks or [], snap.coil_picks or [],          # F·G(미국, 사용자 2026-06-10)
         getattr(snap, "us_premarket_top", None) or [],            # 프리장 급등 TOP5
+        getattr(snap, "us_screen_ranked", None) or [],            # 🇺🇸미국 종목 스크리닝(템플릿 렌더 대상, 사용자 2026-06-11)
     ]
     for g in (snap.us_screen_groups or []):
         pools.append(g.get("picks", []))
