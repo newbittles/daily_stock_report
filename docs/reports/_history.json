@@ -9,6 +9,15 @@
     "kosdaq_pct": null
   },
   {
+    "date": "2026-06-11",
+    "time": "08:05",
+    "mode": "kr_premarket",
+    "url": "reports/2026-06-11-kr-pre.html",
+    "summary": "",
+    "kospi_pct": -0.0,
+    "kosdaq_pct": -0.0
+  },
+  {
     "date": "2026-06-10",
     "time": "22:40",
     "mode": "us_intraday",
