@@ -1134,6 +1134,7 @@ ${{ "{:,.2f}".format(item.price) }} <span class="{{ 'up-text' if pct >= 0 else '
           {% if h.cross_signal == 'PULLBACK' %}<span class="up-text" style="font-size:0.85rem;">🟢5&lt;10 단기눌림(홀드)</span>{% elif h.cross_signal == 'CORRECTION' %}<span class="down-text" style="font-size:0.85rem;">⚠️5&lt;10 조정시작(익절검토)</span>{% endif %}
           {% if h.flow_desc %}<div class="pick-sub" style="color:var(--text-dim);">📊 {{ h.flow_desc }}</div>{% endif %}
           <div class="theme-reason">{{ h.reason }}</div>
+          {% if h.ai_summary %}<button type="button" class="ai-btn" onclick="showAI(this)" data-name="{{ h.name }}" data-summary="{{ h.ai_summary|e }}">🤖 AI요약</button>{% endif %}
         </li>
         {% endfor %}
       </ul>
@@ -1161,6 +1162,7 @@ ${{ "{:,.2f}".format(item.price) }} <span class="{{ 'up-text' if pct >= 0 else '
           {% if h.flow_desc %}<div class="pick-sub" style="color:var(--text-dim);">📊 {{ h.flow_desc }}</div>{% endif %}
           {% if streak %}<div class="pick-sub">수급: {{ streak|join('·') }} 순매수</div>{% endif %}
           {% if h.theme %}<div class="pick-sub">테마: {{ h.theme }}</div>{% endif %}
+          {% if h.ai_summary %}<button type="button" class="ai-btn" onclick="showAI(this)" data-name="{{ h.name }}" data-summary="{{ h.ai_summary|e }}">🤖 AI요약</button>{% endif %}
         </li>
         {% endfor %}
       </ul>
@@ -1179,6 +1181,7 @@ ${{ "{:,.2f}".format(item.price) }} <span class="{{ 'up-text' if pct >= 0 else '
           <span class="{{ 'up-text' if t.return_pct >= 0 else 'down-text' }}">추천가대비 {{ '+' if t.return_pct >= 0 else '' }}{{ "{:.1f}".format(t.return_pct) }}%</span>
           {% if t.today_pct is not none %}<span class="pick-sub">(오늘 {{ '+' if t.today_pct >= 0 else '' }}{{ "{:.1f}".format(t.today_pct) }}%)</span>{% endif %}
           {% if t.flow_desc %}<div class="pick-sub" style="color:var(--text-dim);">📊 {{ t.flow_desc }}</div>{% endif %}
+          {% if t.ai_summary %}<button type="button" class="ai-btn" onclick="showAI(this)" data-name="{{ t.name }}" data-summary="{{ t.ai_summary|e }}">🤖 AI요약</button>{% endif %}
         </li>
         {% endfor %}
       </ul>
@@ -1196,6 +1199,7 @@ ${{ "{:,.2f}".format(item.price) }} <span class="{{ 'up-text' if pct >= 0 else '
           {% if mkt(t.ticker) %}<span class="pick-ticker">{{ mkt(t.ticker) }}</span>{% endif %}
           {% if t.today_pct is not none %}<span class="{{ 'up-text' if t.today_pct >= 0 else 'down-text' }}">시초 {{ '+' if t.today_pct >= 0 else '' }}{{ "{:.1f}".format(t.today_pct) }}%</span>{% else %}<span class="pick-sub">NXT 미체결</span>{% endif %}
           {% if t.flow_desc %}<div class="pick-sub" style="color:var(--text-dim);">📊 {{ t.flow_desc }}</div>{% endif %}
+          {% if t.ai_summary %}<button type="button" class="ai-btn" onclick="showAI(this)" data-name="{{ t.name }}" data-summary="{{ t.ai_summary|e }}">🤖 AI요약</button>{% endif %}
         </li>
         {% endfor %}
       </ul>

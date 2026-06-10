@@ -82,3 +82,15 @@ def test_summary_target_line_correction_stock() -> None:
     line = _summary_target_line("000660", {"name": "SK하이닉스", "change_pct": 0.5,
                                            "cross_signal": "CORRECTION"})
     assert "조정(상승 후 하락 전환)" in line
+
+
+def test_summary_target_line_today_pct_fallback() -> None:
+    """전날Top3·종가베팅은 change_pct가 없고 today_pct가 오늘 등락 → 폴백 사용(장중 #2026-06-10)."""
+    line = _summary_target_line("093370", {"name": "후성", "today_pct": -2.7})
+    assert "-2.7%" in line and "▼하락" in line and "후성" in line
+
+
+def test_summary_target_line_no_pct_defaults_zero() -> None:
+    """등락 키가 전혀 없으면(보유종목 등) 0% 보합으로 안전 처리(크래시 방지)."""
+    line = _summary_target_line("005930", {"name": "삼성전자"})
+    assert "+0.0%" in line and "보합" in line

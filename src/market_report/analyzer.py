@@ -462,20 +462,31 @@ def _move_label(change_pct: float, cross_signal: str | None = None) -> str:
 
 def _summary_target_line(tk: str, p: dict) -> str:
     """AI 종목요약 프롬프트용 한 줄(종목·등락·방향·테마·주도주). 순수 함수."""
-    chg = float(p.get("change_pct", 0) or 0)
+    # 전날 추천 Top3·종가베팅 후보는 change_pct가 없고 today_pct가 '오늘 등락'이다(폴백).
+    chg_raw = p.get("change_pct")
+    if chg_raw is None:
+        chg_raw = p.get("today_pct")
+    chg = float(chg_raw or 0)
     lead = "(테마 주도주)" if p.get("is_theme_leader") else ""
     move = _move_label(chg, p.get("cross_signal"))
     return (f"- {tk} {p.get('name', '')} | 오늘 {chg:+.1f}% {move} "
             f"| 테마 {p.get('theme', '-') or '-'}{lead}")
 
 
-async def summarize_stocks(snap: MarketSnapshot) -> None:
+async def summarize_stocks(
+    snap: MarketSnapshot, extra_pools: list[list[dict]] | None = None,
+) -> None:
     """Top3 + 전략스크린 종목별 AI 요약을 1회 배치 호출로 사전 생성.
 
     정적 리포트(GitHub Pages)에 임베드할 종목별 요약을 미리 만들어 각 dict에
     'ai_summary'를 추가한다. 클릭 시 실시간 호출(키 노출) 대신 사전 생성 방식.
     종목 수만큼 호출하지 않고 한 프롬프트에 모아 1회만 호출(한도·시간 절약).
     실패/키 없음/한도 시 빈 문자열 → 프론트에서 버튼 미표시.
+
+    extra_pools: 기본 풀(top3·screen·e·surge) 외에 추가로 요약을 붙일 종목 리스트들.
+    장중 리포트가 hot_stocks·전날Top3·종가베팅·보유종목에도 호재뉴스·공시를 달기 위해 사용
+    (사용자 2026-06-10). 각 리스트의 dict는 ticker·name 키를 가져야 하며, 결과는 동일 dict에
+    'ai_summary'로 주입된다. None이면 기존 동작(마감 리포트)과 동일.
     """
     import asyncio
     import random
@@ -484,9 +495,17 @@ async def summarize_stocks(snap: MarketSnapshot) -> None:
     if not settings.gemini_api_key:
         return
 
-    # 대상 종목 수집 (top3 ∪ screen_picks ∪ e/급등초입, ticker 중복 1회)
+    # 요약 대상 풀(기본 + 추가). put-back도 동일 풀을 재사용해 일관성 유지.
+    pools: list[list[dict]] = [
+        snap.top3 or [], snap.screen_picks or [], snap.e_picks or [], snap.surge_picks or [],
+    ]
+    for ep in (extra_pools or []):
+        if ep:
+            pools.append(ep)
+
+    # 대상 종목 수집 (ticker 중복 1회)
     targets: dict[str, dict] = {}
-    for src_list in ((snap.top3 or []), snap.screen_picks or [], snap.e_picks or [], snap.surge_picks or []):
+    for src_list in pools:
         for p in src_list:
             tk = str(p.get("ticker", "")).strip()
             if tk and tk not in targets:
@@ -589,7 +608,7 @@ async def summarize_stocks(snap: MarketSnapshot) -> None:
             s = json.dumps(s, ensure_ascii=False)
         p["ai_summary"] = str(s or "").strip()
 
-    for lst in ((snap.top3 or []), (snap.screen_picks or []), (snap.e_picks or []), (snap.surge_picks or [])):
+    for lst in pools:
         for p in lst:
             _put(p)
     logger.info("stock_summary_ok n=%d", len(targets))

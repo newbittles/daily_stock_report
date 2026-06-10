@@ -116,6 +116,18 @@ async def run_midday(
     except Exception as exc:  # noqa: BLE001
         logger.warning("midday_candles_failed error=%s", exc)
 
+    # 종목별 AI 요약(📰호재뉴스·📋공시 포함) — 장중 웹리포트 임베드용 (사용자 2026-06-10).
+    # 장중은 top3/screen_picks가 비어 있으므로 hot_stocks·전날Top3·종가베팅·보유종목을 extra_pools로 전달.
+    # 텔레그램 메시지엔 미적용(웹 '전체 리포트 보기'에서만 🤖AI요약 버튼으로 표시).
+    try:
+        from src.market_report.analyzer import summarize_stocks
+        await summarize_stocks(snap, extra_pools=[
+            snap.hot_stocks or [], snap.prev_top3_status or [],
+            snap.prev_candidates_status or [], snap.holdings_status or [],
+        ])
+    except Exception as exc:  # noqa: BLE001
+        logger.warning("midday_stock_summary_failed error=%s", exc)
+
     # 웹 렌더 + GitHub Pages 발행
     try:
         from src.market_report.render import render_report
