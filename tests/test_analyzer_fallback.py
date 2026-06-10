@@ -84,6 +84,23 @@ def test_summary_target_line_correction_stock() -> None:
     assert "조정(상승 후 하락 전환)" in line
 
 
+def test_supply_3d_line_streaks() -> None:
+    """종목 투자자 순매수 → 외인/기관/개인 연속 순매수·순매도일 한 줄(사용자 2026-06-11)."""
+    from src.market_report.analyzer import _supply_3d_line
+    rows = [
+        {"date": "20260611", "prsn": 0, "frgn": 0, "orgn": 0},      # 오늘 미체결(0) → 제외
+        {"date": "20260610", "prsn": 100, "frgn": 500, "orgn": -300},
+        {"date": "20260609", "prsn": -50, "frgn": 400, "orgn": -200},
+        {"date": "20260608", "prsn": 20, "frgn": 300, "orgn": 100},
+    ]
+    line = _supply_3d_line(rows)
+    assert "외인 ▲순매수3일" in line   # +,+,+ → 3일 연속
+    assert "기관 ▼순매도2일" in line   # -,-,+ → 2일
+    assert "개인 ▲순매수" in line       # +,-,+ → 1일(연속 표기 생략)
+    assert _supply_3d_line([]) == ""
+    assert _supply_3d_line([{"date": "x", "prsn": 0, "frgn": 0, "orgn": 0}]) == ""
+
+
 def test_quota_breaker_trips_on_429_and_resets() -> None:
     """Gemini 일일 한도(429) 차단기: 429 RESOURCE_EXHAUSTED만 트립, 일반오류는 무시, reset로 해제."""
     from src.market_report.analyzer import (

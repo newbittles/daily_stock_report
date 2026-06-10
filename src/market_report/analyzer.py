@@ -509,6 +509,39 @@ def _summary_target_line(tk: str, p: dict) -> str:
             f"| 테마 {p.get('theme', '-') or '-'}{lead}")
 
 
+def _supply_3d_line(rows: list[dict]) -> str:
+    """종목 일자별 투자자 순매수(수량) → '💰 수급: 외인 ▲3일·기관 ▼1일·개인 ▲2일' 한 줄. 순수 함수.
+
+    rows: [{date, prsn, frgn, orgn}] 최신순(KIS get_stock_investor_daily, 순매수 수량).
+    0인 날(미체결·휴장 등) 제외 후, 가장 최근 완료일 기준 같은 부호 연속일수(몇일 연속 순매수/매도)를
+    계산해 표기(사용자 2026-06-11). 데이터 없으면 빈 문자열.
+    """
+    valid = [r for r in rows if any(r.get(k) for k in ("prsn", "frgn", "orgn"))]
+    if not valid:
+        return ""
+
+    def _streak(key: str) -> str:
+        first = valid[0].get(key, 0) or 0
+        if first == 0:
+            return ""
+        pos = first > 0
+        n = 0
+        for r in valid:
+            v = r.get(key, 0) or 0
+            if v == 0 or (v > 0) != pos:
+                break
+            n += 1
+        arrow = "▲순매수" if pos else "▼순매도"
+        return f"{arrow}{n}일" if n >= 2 else arrow
+
+    parts = []
+    for key, label in (("frgn", "외인"), ("orgn", "기관"), ("prsn", "개인")):
+        s = _streak(key)
+        if s:
+            parts.append(f"{label} {s}")
+    return ("💰 수급(최근): " + " · ".join(parts)) if parts else ""
+
+
 async def summarize_stocks(
     snap: MarketSnapshot, extra_pools: list[list[dict]] | None = None,
 ) -> None:
@@ -571,6 +604,29 @@ async def summarize_stocks(
     _ctx_res = await asyncio.gather(
         *[_stock_ctx(tk, p.get("name", "")) for tk, p in targets.items()], return_exceptions=True)
     stock_ctx: dict[str, tuple] = {r[0]: (r[1], r[2]) for r in _ctx_res if isinstance(r, tuple)}
+
+    # 종목별 최근 수급(개인/외인/기관 순매수 연속일) — KIS inquire-investor(사실 데이터, AI 아님). 사용자 2026-06-11.
+    # ai_summary에 한 줄 덧붙임. 동시성 제한·실패 graceful(없으면 줄 생략, 리포트 안 깨짐).
+    supply_lines: dict[str, str] = {}
+    try:
+        from src.datasource.kis.adapter import KisAdapter
+        _adapter = KisAdapter(settings.kis_app_key, settings.kis_app_secret,
+                              settings.kis_account_no, settings.kis_env)
+        _sup_sem = asyncio.Semaphore(6)
+
+        async def _sup(tk: str) -> tuple[str, str]:
+            async with _sup_sem:
+                try:
+                    rows = await _adapter.get_stock_investor_daily(tk, days=10)
+                except Exception:  # noqa: BLE001
+                    rows = []
+                await asyncio.sleep(random.uniform(0.1, 0.3))  # 전역 §7 분산
+                return tk, _supply_3d_line(rows)
+
+        _sup_res = await asyncio.gather(*[_sup(tk) for tk in targets], return_exceptions=True)
+        supply_lines = {r[0]: r[1] for r in _sup_res if isinstance(r, tuple) and r[1]}
+    except Exception as exc:  # noqa: BLE001
+        logger.warning("supply_3d_fetch_failed error=%s", exc)
 
     def _ctx_block(tk: str, name: str) -> str:
         news, disc = stock_ctx.get(tk, ([], None))
@@ -647,12 +703,16 @@ async def summarize_stocks(
         s = data.get(tk, "")
         if isinstance(s, (dict, list)):
             s = json.dumps(s, ensure_ascii=False)
-        p["ai_summary"] = str(s or "").strip()
+        s = str(s or "").strip()
+        sup = supply_lines.get(tk)  # 최근 수급(개인/외인/기관 연속) 사실 한 줄 덧붙임(사용자 2026-06-11)
+        if s and sup:
+            s = f"{s}\n{sup}"
+        p["ai_summary"] = s
 
     for lst in pools:
         for p in lst:
             _put(p)
-    logger.info("stock_summary_ok n=%d", len(targets))
+    logger.info("stock_summary_ok n=%d supply=%d", len(targets), len(supply_lines))
 
 
 async def summarize_us_stocks(snap: MarketSnapshot) -> None:
