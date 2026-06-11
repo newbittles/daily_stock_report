@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-06-11",
+    "time": "09:15",
+    "mode": "kr_open",
+    "url": "reports/2026-06-11-kr-open.html",
+    "summary": "오늘 한국 증시는 전반적인 약세를 보이며 KOSPI와 KOSDAQ 지수가 하락 마감했습니다. 수급 측면에서는 명확한 우위를 보이는 업종은 없으나, 해운, 탈 플라스틱, 광통신 관련 테마가 상대적으로 강세를 나타냈습니다. 장중 흐름을 보면, SK네트웍스",
+    "kospi_pct": -3.61,
+    "kosdaq_pct": -2.61
+  },
+  {
+    "date": "2026-06-11",
     "time": "08:41",
     "mode": "us_morning",
     "url": "reports/2026-06-11-us.html",
