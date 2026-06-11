@@ -438,22 +438,41 @@ async def collect_supply_driven(adapter, top: int = 5, min_streak: int = 3,
         return []
     sem = asyncio.Semaphore(6)
 
+    from statistics import mean as _mean
+
     async def _one(m):
         async with sem:
             try:
                 rows = await adapter.get_stock_investor_daily(m.ticker, days=10)
             except Exception:  # noqa: BLE001
                 rows = []
+            od, fd = _supply_streak(rows, "orgn"), _supply_streak(rows, "frgn")
+            if od < min_streak and fd < min_streak:
+                await asyncio.sleep(random.uniform(0.1, 0.3))
+                return None
+            # 정배열/추세 필터 — 백테스트: 정배열 +0.2% vs 비정배열 -5.3%·MA60하락 -6.2% (사용자 2026-06-11).
+            # 추세 깨진 수급 급등(손실 주범) 제외. 정배열 OR (종가>MA60 AND MA60 우상향) 통과.
+            try:
+                import FinanceDataReader as _fdr
+                _df = await asyncio.to_thread(lambda: _fdr.DataReader(m.ticker).tail(130))
+                cl = [float(x) for x in _df["Close"].dropna()]
+            except Exception:  # noqa: BLE001
+                cl = []
             await asyncio.sleep(random.uniform(0.1, 0.3))  # 전역 §7 분산
-            return m, _supply_streak(rows, "orgn"), _supply_streak(rows, "frgn")
+            if len(cl) < 120:
+                return None
+            ma5, ma20, ma60, ma120 = _mean(cl[-5:]), _mean(cl[-20:]), _mean(cl[-60:]), _mean(cl[-120:])
+            align = ma5 > ma20 > ma60 > ma120
+            ma60_rising = ma60 > _mean(cl[-65:-5])
+            if not (align or (cl[-1] > ma60 and ma60_rising)):
+                return None
+            return m, od, fd, align
 
     out: list[dict] = []
     for r in await asyncio.gather(*[_one(m) for m in cands], return_exceptions=True):
         if not isinstance(r, tuple):
             continue
-        m, od, fd = r
-        if od < min_streak and fd < min_streak:
-            continue
+        m, od, fd, align = r
         parts = []
         if od >= 1:
             parts.append(f"기관 {od}일 연속 순매수" if od >= 2 else "기관 순매수")
@@ -462,7 +481,7 @@ async def collect_supply_driven(adapter, top: int = 5, min_streak: int = 3,
         sup = " · ".join(parts)
         out.append({"ticker": m.ticker, "name": m.name, "price": round(m.price, 1),
                     "change_pct": round(m.change_pct, 2), "supply_str": sup,
-                    "orgn_streak": od, "frgn_streak": fd,
+                    "orgn_streak": od, "frgn_streak": fd, "align": align,
                     "reason": f"{sup} + 당일 +{m.change_pct:.1f}% 급등"})
     out.sort(key=lambda x: (max(x["orgn_streak"], x["frgn_streak"]), x["change_pct"]), reverse=True)
     logger.info("supply_driven_ready n=%d", len(out[:top]))
@@ -1668,10 +1687,22 @@ async def run_full(
         except Exception as exc:
             logger.warning("top3_failed error=%s", exc)
 
-        # 🏦 H. 수급 주도 — 기관/외인 연속 순매수 + 급등 종목(패턴 무관·참고용, 사용자 2026-06-11).
-        # 미래에셋생명처럼 거래대금/패턴 컷 밖이어도 수급 급등주를 별도 리스팅(Top3 미반영, 백테스트 전).
+        # 🏦 H. 수급 주도 — 기관/외인 연속 순매수 + 급등(정배열 필터)·참고용(사용자 2026-06-11).
+        # 미래에셋생명류를 별도 리스팅(Top3 미반영, 백테스트 결론: 정배열만 본전·비정배열 손실).
         try:
             snap.supply_driven_picks = await collect_supply_driven(adapter)
+            # 주도테마 여부(당일/최근 한달) + 테마 부착 — jmap·leading_themes·이력로그 재사용
+            from src.market_report.theme_history import log_leading_themes, recent_leading_themes
+            log_leading_themes(snap.leading_themes)  # 오늘 주도테마 누적 기록(723)
+            _recent = recent_leading_themes(30)
+            _lead_now = {_norm_name(t) for t in (snap.leading_themes or [])}
+            for p in snap.supply_driven_picks:
+                jv = jmap.get(p["ticker"]) if jmap else None
+                th = jv.get("theme") if jv else ""
+                p["theme"] = th or ""
+                p["is_leading_theme"] = bool(th and _norm_name(th) in _lead_now)
+                p["recent_leader"] = bool(th and th in _recent)
+            # AI요약 대상에 H 포함 → 📰호재뉴스·📋공시 표시(사용자 722)
         except Exception as exc:  # noqa: BLE001
             logger.warning("supply_driven_failed error=%s", exc)
 

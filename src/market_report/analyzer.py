@@ -567,6 +567,7 @@ async def summarize_stocks(
     # 요약 대상 풀(기본 + 추가). put-back도 동일 풀을 재사용해 일관성 유지.
     pools: list[list[dict]] = [
         snap.top3 or [], snap.screen_picks or [], snap.e_picks or [], snap.surge_picks or [],
+        snap.supply_driven_picks or [],   # 🏦 H 수급 주도도 AI요약(📰호재뉴스·📋공시, 사용자 2026-06-11)
     ]
     for ep in (extra_pools or []):
         if ep:

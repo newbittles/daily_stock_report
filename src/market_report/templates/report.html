@@ -1074,12 +1074,16 @@ ${{ "{:,.2f}".format(item.price) }} <span class="{{ 'up-text' if pct >= 0 else '
           <a href="https://finance.naver.com/item/main.naver?code={{ p.ticker }}" target="_blank" rel="noopener"><strong>{{ p.name }}</strong></a>
           <span class="pick-ticker">{{ p.ticker }}{{ mk(p.ticker) }}</span> · {{ "{:,.0f}".format(p.price) }}원
           <span class="{{ 'up-text' if p.change_pct >= 0 else 'down-text' }}">{{ '+' if p.change_pct >= 0 else '' }}{{ "{:.1f}".format(p.change_pct) }}%</span>
+          {% if p.align %}<span class="strat-badge" style="background:var(--green);">📈정배열</span>{% endif %}
+          {% if p.is_leading_theme %}<span class="strat-badge" style="background:var(--accent);">🚀주도테마</span>{% elif p.recent_leader %}<span class="strat-badge" style="background:var(--text-mute);">🕒최근 주도테마</span>{% endif %}
           {% if p.supply_str %}<div class="pick-sub" style="color:var(--green);">💰 {{ p.supply_str }}</div>{% endif %}
+          {% if p.theme %}<div class="pick-sub">테마: {{ p.theme }}{% if p.is_leading_theme %} · 오늘 주도테마 O{% elif p.recent_leader %} · 최근 한달 주도테마 O{% else %} · 주도테마 X{% endif %}</div>{% endif %}
+          {% if p.ai_summary %}<button type="button" class="ai-btn" onclick="showAI(this)" data-name="{{ p.name }}" data-summary="{{ p.ai_summary|e }}">🤖 AI요약</button>{% endif %}
         </li>
         {% endfor %}
       </ul>
       {% endif %}
-      <p class="disclaimer" style="font-size:12px;">※ 기관/외인 연속 순매수 + 당일 급등 종목(A/B/C/D 패턴 무관, 거래대금 컷도 무시). <strong>백테스트 미검증 · 매수 추천 아님 · Top3 미반영</strong>. 수급 강한 급등주 참고용(사용자 요청, 미래에셋생명류 포착).</p>
+      <p class="disclaimer" style="font-size:12px;">※ 기관/외인 연속 순매수 + 당일 급등 + <strong>정배열/추세</strong> 종목(A/B/C/D 패턴 무관). 📈정배열·🚀주도테마(오늘)·🕒최근 한달 주도테마 표기. 🤖AI요약에 📰호재뉴스·📋공시. <strong>백테스트상 정배열만 본전·비정배열은 손실 → 매수 추천 아님·Top3 미반영</strong>. 참고용(미래에셋생명류 포착, 사용자 요청).</p>
     </section>
     {% endif %}
 
