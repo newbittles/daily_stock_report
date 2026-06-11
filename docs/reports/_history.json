@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-06-11",
+    "time": "19:00",
+    "mode": "us_premarket",
+    "url": "reports/2026-06-11-us-pre.html",
+    "summary": "현재 미국 프리장 시장은 혼조세를 보이고 있습니다. 반도체 섹터가 강세를 주도하고 있으나, 다우 지수 선물과 필라델피아 반도체 지수의 하락은 일부 불안 요인을 시사합니다. 지정학적 긴장 고조와 인플레이션 우려가 시장 전반의 변동성을 키우고 있습니다.",
+    "kospi_pct": null,
+    "kosdaq_pct": null
+  },
+  {
+    "date": "2026-06-11",
     "time": "17:55",
     "mode": "post_close",
     "url": "reports/2026-06-11-post.html",
