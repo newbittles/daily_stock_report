@@ -292,9 +292,14 @@ def _render_chart_safe(ticker: str, name: str, date: str) -> str | None:
 
 
 def _supply_streak(rows: list[dict], key: str) -> int:
-    """최신순 일별 순매수에서 연속 순매수일 수 (양수 연속)."""
+    """최신순 일별 순매수에서 연속 순매수일 수 (양수 연속).
+
+    오늘 장중 등 '개인/외인/기관 모두 0'인 미체결 날은 제외하고 완료된 일자 기준으로 계산한다
+    (안 그러면 장중에 오늘 0행 때문에 연속이 0으로 끊김 — 수급 주도 0개 버그, 사용자 2026-06-11)."""
     n = 0
     for r in rows:
+        if not any((r.get(k) or 0) for k in ("prsn", "frgn", "orgn")):
+            continue  # 미체결(전 항목 0) 날 스킵
         if (r.get(key) or 0) > 0:
             n += 1
         else:
@@ -465,9 +470,11 @@ async def collect_supply_driven(adapter, top: int = 5, min_streak: int = 3,
 
 
 def _supply_sell_streak(rows: list[dict], key: str) -> int:
-    """최신순 일별에서 연속 순매도일 수 (음수 연속)."""
+    """최신순 일별에서 연속 순매도일 수 (음수 연속). 미체결(전 항목 0) 날은 스킵(장중 0 방지)."""
     n = 0
     for r in rows:
+        if not any((r.get(k) or 0) for k in ("prsn", "frgn", "orgn")):
+            continue
         if (r.get(key) or 0) < 0:
             n += 1
         else:

@@ -25,3 +25,16 @@ def test_supply_streak_optional_backcompat() -> None:
     """supply_streaks 미전달 시 기존 동작(연속 가산 0, 에러 없음)."""
     out = select_top3([_pick("A")], inst_buy={"A"}, return_all=True)
     assert out and out[0]["ticker"] == "A"
+
+
+def test_supply_streak_skips_intraday_zero_row() -> None:
+    """장중 오늘 미체결(전 항목 0) 행은 건너뛰고 완료일 기준 연속일 계산(사용자 2026-06-11 버그)."""
+    from src.market_report.pipeline import _supply_streak
+    rows = [
+        {"prsn": 0, "frgn": 0, "orgn": 0},        # 오늘 장중 미체결 → 스킵
+        {"prsn": 1, "frgn": -1, "orgn": 100},
+        {"prsn": 1, "frgn": -1, "orgn": 50},
+        {"prsn": 1, "frgn": -1, "orgn": -10},     # 기관 음수 → 끊김
+    ]
+    assert _supply_streak(rows, "orgn") == 2   # 오늘 0 스킵, 기관 100·50 연속 후 끊김
+    assert _supply_streak(rows, "frgn") == 0   # 외인 음수 → 연속 0
