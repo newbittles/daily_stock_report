@@ -177,6 +177,10 @@ async def generate_report(mode: ReportMode) -> MarketSnapshot:
     if snap.mode == "pre_close" and snap.candidate_picks:
         _inject_candidate_quotes(snap)  # 현재가·등락률 + 관련주 등락률 보정
         await _inject_candidate_strategies(snap)  # 종가베팅 후보에 ABCD 전략 매칭 라벨(사용자 2026-06-05)
+        # 상한가(+30% 근접)는 매수 불가 → 종가베팅에서 제외하고 별도 표시(사용자 2026-06-11 #735)
+        _norm = [p for p in snap.candidate_picks if p.get("change_pct", 0) < 29.5]
+        snap.candidates_excluded_limitup = [p for p in snap.candidate_picks if p.get("change_pct", 0) >= 29.5]
+        snap.candidate_picks = _norm
         await _render_pick_charts(snap)
 
     return snap
@@ -1682,10 +1686,23 @@ async def run_full(
             _kr_fb, _kr_ib = fb, ib
             # 연속 순매수일 — 가산 대상(screen_picks ∩ 수급상위)만 조회(부하 절감, 사용자 2026-06-11)
             _kr_streaks = await _collect_supply_streaks_for(adapter, snap.screen_picks, fb, ib)
-            snap.top3 = select_top3(snap.screen_picks, foreign_buy=fb, inst_buy=ib,
-                                    supply_streaks=_kr_streaks)
+            # 전체 랭킹 산출 후 상한가 분리 — 상한가는 매수 불가(잠김)라 Top3 제외, 별도 표시(사용자 2026-06-11 #735)
+            _ranked_all = select_top3(snap.screen_picks, foreign_buy=fb, inst_buy=ib,
+                                      supply_streaks=_kr_streaks, return_all=True)
+            _LIMITUP = 29.5  # 상한가(+30%) 근접 — 호가 반올림 감안
+            snap.top3 = [r for r in _ranked_all if r.get("change_pct", 0) < _LIMITUP][:3]
+            snap.top3_excluded_limitup = [r for r in _ranked_all if r.get("change_pct", 0) >= _LIMITUP][:5]
             await _inject_supply_streak(snap, adapter)  # Top3 표시용 연속 순매수일(supply_str)
-            logger.info("pipeline_top3_ready top3=%s streaks=%d", [t["name"] for t in snap.top3], len(_kr_streaks))
+            for _t in snap.top3_excluded_limitup:  # 상한가 제외 종목도 동일 지표(연속 순매수일) 표기
+                _s = _kr_streaks.get(_t["ticker"]) or {}
+                _ps = []
+                if _s.get("orgn"):
+                    _ps.append(f"기관 순매수({_s['orgn']}일)")
+                if _s.get("frgn"):
+                    _ps.append(f"외국인 순매수({_s['frgn']}일)")
+                _t["supply_str"] = " · ".join(_ps)
+            logger.info("pipeline_top3_ready top3=%s excl_limitup=%d streaks=%d",
+                        [t["name"] for t in snap.top3], len(snap.top3_excluded_limitup), len(_kr_streaks))
         except Exception as exc:
             logger.warning("top3_failed error=%s", exc)
 

@@ -139,9 +139,11 @@ class MarketSnapshot:
     why_moved: str = ""         # 왜 올랐나/내렸나
     theme_commentary: str = ""  # 강세 테마 해설
     candidate_picks: list[dict] = field(default_factory=list)  # 종가베팅 후보 (pre_close용)
+    candidates_excluded_limitup: list[dict] = field(default_factory=list)  # 상한가로 제외된 종가베팅(2026-06-11 #735)
 
     # Top3 종합 추천 (A/B/C/D + 주도주·거래량·수급 종합 → 딱 3종목, pipeline이 채움)
     top3: list[dict] = field(default_factory=list)           # {ticker, name, price, change_pct, score, reason, ...}
+    top3_excluded_limitup: list[dict] = field(default_factory=list)  # 상한가로 Top3 제외(기준부합·매수불가, #735)
     # 전략 스크린 결과 (A/B/C — 오늘 포착, pipeline이 KIS로 채움)
     screen_picks: list[dict] = field(default_factory=list)   # {strategy, ticker, name, price, reason, endstage}
     # 전략 스크린 표시용 — 종목당 1개로 중복제거+점수순 정렬(매칭전략 다 표기, 사용자 2026-06-05)

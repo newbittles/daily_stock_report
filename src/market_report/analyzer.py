@@ -568,6 +568,7 @@ async def summarize_stocks(
     pools: list[list[dict]] = [
         snap.top3 or [], snap.screen_picks or [], snap.e_picks or [], snap.surge_picks or [],
         snap.supply_driven_picks or [],   # 🏦 H 수급 주도도 AI요약(📰호재뉴스·📋공시, 사용자 2026-06-11)
+        snap.top3_excluded_limitup or [],  # 상한가 제외 종목도 동일 지표(AI요약) 표기(#735)
     ]
     for ep in (extra_pools or []):
         if ep:
