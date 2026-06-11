@@ -92,7 +92,7 @@ def _fetch_quotes_sync(symbols: dict[str, str]) -> list[USQuote]:
 
 # 각 섹터(US_SECTORS 한국어 테마명)의 대장주 — 시총 1등(사용자 2026-06-04). FDR 심볼.
 US_SECTOR_LEADER: dict[str, str] = {
-    "반도체": "NVDA", "기술/IT": "MSFT", "에너지": "XOM", "금융": "JPM",
+    "반도체": "MU", "기술/IT": "MSFT", "에너지": "XOM", "금융": "JPM",  # 반도체 대장주 MU(마이크론, 사용자 2026-06-11)
     "헬스케어/바이오": "LLY", "경기소비재": "AMZN", "방산/우주항공": "GE",
     "태양광/신재생": "FSLR", "2차전지/리튬": "ALB",
 }

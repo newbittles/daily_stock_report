@@ -423,6 +423,37 @@ async def _collect_supply_streaks_for(
     return out
 
 
+async def _tag_macd_warn(picks: list[dict], key: str = "ticker") -> None:
+    """픽 리스트에 MACD 고점 다이버전스 경고 부착 — p['macd_warn']=True(약신호 참고, 사용자 2026-06-11).
+
+    KR(ticker)·US(symbol) 공통, FDR 일봉으로 macd_bearish_divergence 판정. 실패 무시.
+    """
+    import FinanceDataReader as fdr
+
+    from src.datasource.base import Candle
+    from src.patterns.core import macd_bearish_divergence
+    sem = asyncio.Semaphore(6)
+
+    async def _one(p: dict) -> None:
+        tk = p.get(key) or p.get("symbol") or p.get("ticker")
+        if not tk:
+            return
+        async with sem:
+            try:
+                df = await asyncio.to_thread(lambda: fdr.DataReader(tk).tail(90))
+                if df is None or len(df) < 60:
+                    return
+                cs = [Candle(date=str(i.date()), open=float(r.Open), high=float(r.High),
+                             low=float(r.Low), close=float(r.Close), volume=int(r.Volume))
+                      for i, r in df.iterrows()]
+                if macd_bearish_divergence(cs).matched:
+                    p["macd_warn"] = True
+            except Exception:  # noqa: BLE001
+                return
+
+    await asyncio.gather(*[_one(p) for p in (picks or [])], return_exceptions=True)
+
+
 async def collect_supply_driven(adapter, top: int = 5, min_streak: int = 3,
                                 min_change: float = 5.0, scan: int = 30) -> list[dict]:
     """🏦 수급 주도 — 기관/외인 연속 순매수 + 당일 급등 종목(A/B/C/D 패턴 무관·참고용, 사용자 2026-06-11).
@@ -1333,15 +1364,20 @@ async def _collect_us_screening(snap: MarketSnapshot, *, per_group: int = 5) -> 
             snap.surge_picks = sorted(surge, key=lambda x: x["change_pct"], reverse=True)[:7]
             snap.support_picks = sorted(support, key=lambda x: x["change_pct"], reverse=True)[:10]  # F(미국)
             snap.coil_picks = coil[:10]  # G(미국)
-            # US 장기 삼각수렴 차트(추세선) — 상위 5개(사용자 2026-06-11, HOOD·TSLA류)
-            from src.market_report.chart import long_triangle_chart_url_rel, render_long_triangle_chart
+            # US 코일 차트 — 단기(render_coil_chart, FDR폴백)·장기(render_long_triangle_chart) 둘 다(사용자 2026-06-11)
+            from src.market_report.chart import (
+                coil_chart_url_rel, long_triangle_chart_url_rel,
+                render_coil_chart, render_long_triangle_chart)
             _du = snap.generated_at.strftime("%Y-%m-%d")
-            for p in [c for c in snap.coil_picks if c.get("mode") == "장기"][:5]:
+            for p in snap.coil_picks[:6]:
                 try:
-                    if await asyncio.to_thread(render_long_triangle_chart, p["symbol"], p["name"], _du):
-                        p["chart_url"] = long_triangle_chart_url_rel(p["symbol"], _du)
+                    if p.get("mode") == "장기":
+                        if await asyncio.to_thread(render_long_triangle_chart, p["symbol"], p["name"], _du):
+                            p["chart_url"] = long_triangle_chart_url_rel(p["symbol"], _du)
+                    elif await asyncio.to_thread(render_coil_chart, p["symbol"], p["name"], p.get("shape", ""), _du):
+                        p["chart_url"] = coil_chart_url_rel(p["symbol"], _du)
                 except Exception as exc:  # noqa: BLE001
-                    logger.warning("us_ltri_chart_failed symbol=%s error=%s", p.get("symbol"), exc)
+                    logger.warning("us_coil_chart_failed symbol=%s error=%s", p.get("symbol"), exc)
             logger.info("us_e_picks_ready daily=%d final=%d surge=%d support=%d coil=%d",
                         len(e_cand), len(snap.e_picks), len(snap.surge_picks),
                         len(snap.support_picks), len(snap.coil_picks))
@@ -1370,6 +1406,11 @@ async def _collect_us_screening(snap: MarketSnapshot, *, per_group: int = 5) -> 
                     await ensure_names(list(_ko_nm), _ko_nm)
             except Exception as exc:  # noqa: BLE001
                 logger.warning("us_names_ensure_all_failed error=%s", exc)
+            try:  # US 대장주/Top3 MACD 고점 다이버전스 '고점주의' 약신호(사용자 2026-06-11)
+                for _lst in (snap.us_top3, snap.us_sector_leaders, snap.us_bigtech):
+                    await _tag_macd_warn(_lst, key="symbol")
+            except Exception as exc:  # noqa: BLE001
+                logger.warning("us_macd_warn_failed error=%s", exc)
     except Exception as exc:  # noqa: BLE001
         logger.warning("us_e_picks_failed error=%s", exc)
 
@@ -1742,6 +1783,7 @@ async def run_full(
             snap.top3 = [r for r in _ranked_all if r.get("change_pct", 0) < _LIMITUP][:3]
             snap.top3_excluded_limitup = [r for r in _ranked_all if r.get("change_pct", 0) >= _LIMITUP][:5]
             await _inject_supply_streak(snap, adapter)  # Top3 표시용 연속 순매수일(supply_str)
+            await _tag_macd_warn(snap.top3)  # MACD 고점 다이버전스 '고점주의' 약신호(사용자 2026-06-11)
             for _t in snap.top3_excluded_limitup:  # 상한가 제외 종목도 동일 지표(연속 순매수일) 표기
                 _s = _kr_streaks.get(_t["ticker"]) or {}
                 _ps = []

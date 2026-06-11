@@ -73,7 +73,20 @@ STYLE = mpf.make_mpf_style(
 
 
 def _fetch_ohlcv(ticker: str, days: int = 220) -> pd.DataFrame | None:
-    """pykrx 일봉 OHLCV (인증 없이 동작). 컬럼: Open/High/Low/Close/Volume."""
+    """일봉 OHLCV. KR(6자리)=pykrx, US(알파 심볼)=FDR 폴백(코일 차트 US 지원, 사용자 2026-06-11)."""
+    if not ticker.isdigit():  # 미국 심볼 → FDR
+        try:
+            import FinanceDataReader as fdr
+            df = fdr.DataReader(ticker).tail(days)
+            if df is None or df.empty:
+                return None
+            df = df[["Open", "High", "Low", "Close", "Volume"]].copy()
+            df.index = pd.to_datetime(df.index)
+            df.index.name = "Date"
+            return df
+        except Exception as exc:  # noqa: BLE001
+            logger.warning("ohlcv_fetch_failed(us) ticker=%s error=%s", ticker, exc)
+            return None
     end = datetime.now().strftime("%Y%m%d")
     start = (datetime.now() - timedelta(days=days)).strftime("%Y%m%d")
     try:
