@@ -1333,6 +1333,15 @@ async def _collect_us_screening(snap: MarketSnapshot, *, per_group: int = 5) -> 
             snap.surge_picks = sorted(surge, key=lambda x: x["change_pct"], reverse=True)[:7]
             snap.support_picks = sorted(support, key=lambda x: x["change_pct"], reverse=True)[:10]  # F(미국)
             snap.coil_picks = coil[:10]  # G(미국)
+            # US 장기 삼각수렴 차트(추세선) — 상위 5개(사용자 2026-06-11, HOOD·TSLA류)
+            from src.market_report.chart import long_triangle_chart_url_rel, render_long_triangle_chart
+            _du = snap.generated_at.strftime("%Y-%m-%d")
+            for p in [c for c in snap.coil_picks if c.get("mode") == "장기"][:5]:
+                try:
+                    if await asyncio.to_thread(render_long_triangle_chart, p["symbol"], p["name"], _du):
+                        p["chart_url"] = long_triangle_chart_url_rel(p["symbol"], _du)
+                except Exception as exc:  # noqa: BLE001
+                    logger.warning("us_ltri_chart_failed symbol=%s error=%s", p.get("symbol"), exc)
             logger.info("us_e_picks_ready daily=%d final=%d surge=%d support=%d coil=%d",
                         len(e_cand), len(snap.e_picks), len(snap.surge_picks),
                         len(snap.support_picks), len(snap.coil_picks))
@@ -1591,11 +1600,16 @@ async def run_full(
         snap.coil_picks = sorted(_coil, key=lambda p: p.get("bb_width", 99))[:8]
         # 코일 차트(삼각수렴선) 렌더 — 상위 5개만(부하), chart_url 부착
         if snap.coil_picks:
-            from src.market_report.chart import coil_chart_url_rel, render_coil_chart
+            from src.market_report.chart import (
+                coil_chart_url_rel, long_triangle_chart_url_rel,
+                render_coil_chart, render_long_triangle_chart)
             _d = snap.generated_at.strftime("%Y-%m-%d")
             for p in snap.coil_picks[:5]:
                 try:
-                    if await asyncio.to_thread(render_coil_chart, p["ticker"], p["name"], p.get("shape", ""), _d):
+                    if p.get("mode") == "장기":  # G 장기 삼각수렴 차트(추세선, 사용자 2026-06-11)
+                        if await asyncio.to_thread(render_long_triangle_chart, p["ticker"], p["name"], _d):
+                            p["chart_url"] = long_triangle_chart_url_rel(p["ticker"], _d)
+                    elif await asyncio.to_thread(render_coil_chart, p["ticker"], p["name"], p.get("shape", ""), _d):
                         p["chart_url"] = coil_chart_url_rel(p["ticker"], _d)
                 except Exception as exc:  # noqa: BLE001
                     logger.warning("coil_chart_render_failed ticker=%s error=%s", p.get("ticker"), exc)

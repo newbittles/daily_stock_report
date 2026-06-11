@@ -284,6 +284,58 @@ def render_coil_chart(ticker: str, name: str, shape: str = "", date: str | None 
     return out_path
 
 
+def long_triangle_chart_url_rel(ticker: str, date: str | None = None) -> str:
+    """리포트 HTML에서 장기 삼각수렴 차트 상대경로 참조."""
+    date_str = date or datetime.now().strftime("%Y-%m-%d")
+    return f"charts/{date_str}-{ticker}-ltri.png"
+
+
+def render_long_triangle_chart(ticker: str, name: str, date: str | None = None) -> Path | None:
+    """G 장기 모드 — 대형 삼각수렴 차트(캔들+날짜축+저항/지지 추세선). KR·US 공통(FDR), 사용자 2026-06-11.
+
+    is_long_triangle의 _lines(추세선 절편·기울기·극점 인덱스)로 🔴저항선(최고점→낮아지는 고점)·
+    🟢지지선(최저점→높아지는 저점)을 작도. 폰트는 프로젝트 STYLE(한글 OK). 미매칭/실패 시 None.
+    """
+    import FinanceDataReader as fdr
+
+    from src.datasource.base import Candle
+    from src.patterns.core import is_long_triangle
+    try:
+        df = fdr.DataReader(ticker).tail(230)
+    except Exception as exc:  # noqa: BLE001
+        logger.warning("ltri_chart_fetch_failed ticker=%s error=%s", ticker, exc)
+        return None
+    if df is None or len(df) < 160:
+        return None
+    cs = [Candle(date=str(i.date()), open=float(r.Open), high=float(r.High), low=float(r.Low),
+                 close=float(r.Close), volume=int(r.Volume)) for i, r in df.iterrows()]
+    win = 150
+    r = is_long_triangle(cs, win=win)
+    ln = r.metrics.get("_lines")
+    if not ln:
+        return None
+    ih, sh, il, sl, pk, bt, rn, sn = ln
+    sub = df.tail(win)
+    idx = list(sub.index)
+    res = [(idx[pk], sh * pk + ih), (idx[-1], rn)]   # 저항선: 최고점 → 현재
+    sup = [(idx[bt], sl * bt + il), (idx[-1], sn)]   # 지지선: 최저점 → 현재
+    alines = dict(alines=[res, sup], colors=["#ff5b5b", "#22c55e"], linewidths=[1.8, 1.8])
+    CHARTS_DIR.mkdir(parents=True, exist_ok=True)
+    date_str = date or datetime.now().strftime("%Y-%m-%d")
+    out_path = CHARTS_DIR / f"{date_str}-{ticker}-ltri.png"
+    try:
+        # 제목은 ASCII만(서버에 한글 폰트 없어 깨짐 — 한글 종목명/설명은 리포트 HTML 텍스트에 표기)
+        mpf.plot(sub, type="candle", style=STYLE, mav=(20, 60), volume=False, alines=alines,
+                 title=f"{ticker}  Long-Triangle", datetime_format="%y/%m",
+                 figratio=(16, 9), figscale=1.0, tight_layout=True,
+                 savefig=dict(fname=str(out_path), dpi=110, bbox_inches="tight", facecolor="#0f172a"))
+    except Exception as exc:  # noqa: BLE001
+        logger.warning("ltri_chart_failed ticker=%s error=%s", ticker, exc)
+        return None
+    logger.info("ltri_chart_rendered ticker=%s path=%s", ticker, out_path)
+    return out_path
+
+
 def _render_df(
     df: "pd.DataFrame", ticker: str, name: str, date: str | None = None,
     signal_dates: list[str] | None = None, buy_dates: list[str] | None = None,
