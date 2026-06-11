@@ -381,6 +381,37 @@ async def _inject_supply_streak(snap: MarketSnapshot, adapter) -> None:
             t["supply_str"] = ""
 
 
+async def _collect_supply_streaks_for(
+    adapter, picks: list[dict], fb: set, ib: set, cap: int = 30,
+) -> dict[str, dict]:
+    """Top3 점수 가산용 연속 순매수일 — screen_picks ∩ 수급상위(fb∪ib) 종목만 조회(부하 절감).
+
+    반환: {ticker: {"orgn": 기관연속일, "frgn": 외인연속일}}. 사용자 2026-06-11.
+    """
+    import random
+    targets = [p["ticker"] for p in picks
+               if p.get("ticker") and (p["ticker"] in fb or p["ticker"] in ib)]
+    targets = list(dict.fromkeys(targets))[:cap]
+    if not targets:
+        return {}
+    sem = asyncio.Semaphore(6)
+
+    async def _one(tk: str) -> tuple[str, dict]:
+        async with sem:
+            try:
+                rows = await adapter.get_stock_investor_daily(tk, days=10)
+            except Exception:  # noqa: BLE001
+                rows = []
+            await asyncio.sleep(random.uniform(0.1, 0.3))  # 전역 §7 분산
+            return tk, {"orgn": _supply_streak(rows, "orgn"), "frgn": _supply_streak(rows, "frgn")}
+
+    out: dict[str, dict] = {}
+    for r in await asyncio.gather(*[_one(tk) for tk in targets], return_exceptions=True):
+        if isinstance(r, tuple):
+            out[r[0]] = r[1]
+    return out
+
+
 def _supply_sell_streak(rows: list[dict], key: str) -> int:
     """최신순 일별에서 연속 순매도일 수 (음수 연속)."""
     n = 0
@@ -1449,8 +1480,17 @@ async def run_full(
         _surge: list[dict] = []
         _support: list[dict] = []  # F. 60일선 지지(참고용) — 가중치 0, Top3 미반영
         _coil: list[dict] = []     # G. 삼각수렴 코일(참고용) — 가중치 0, Top3 미반영
+        # 수급 상위(외인/기관 순매수) — 유니버스 확장 + 연속일 가산용(사용자 2026-06-11). 실패해도 빈 리스트.
+        _nb_f, _nb_i = [], []
+        try:
+            _nb_f = await adapter.get_investor_net_buy("foreign", "buy")
+            _nb_i = await adapter.get_investor_net_buy("inst", "buy")
+        except Exception as exc:  # noqa: BLE001
+            logger.warning("kr_netbuy_fetch_failed error=%s", exc)
+        _extra_uni = [(x["ticker"], x.get("name", "")) for x in (_nb_f + _nb_i) if x.get("ticker")]
         snap.screen_picks = await collect_screen_picks(
-            adapter, e_out=_e_cand, surge_out=_surge, support_out=_support, coil_out=_coil)
+            adapter, e_out=_e_cand, surge_out=_surge, support_out=_support, coil_out=_coil,
+            extra_universe=_extra_uni)
         snap.surge_picks = sorted(_surge, key=lambda p: p.get("change_pct", 0), reverse=True)[:7]
         snap.support_picks = sorted(_support, key=lambda p: p.get("change_pct", 0), reverse=True)[:10]
         # 코일: 더 조여진 것(BB폭 작은 순) 우선 — 임박도 높음
@@ -1552,16 +1592,20 @@ async def run_full(
         except Exception as exc:
             logger.warning("kr_4h_overheat_failed error=%s", exc)
 
-        # Top3 종합추천 — 수급(외인/기관 순매수) 수집 후 P4 점수로 3종목 선정
+        # Top3 종합추천 — 수급(외인/기관 순매수) + 연속일 가산 P4 점수로 3종목 선정
         _kr_fb, _kr_ib = set(), set()
+        _kr_streaks: dict[str, dict] = {}
         try:
             from src.market_report.top3 import select_top3
-            fb = {x["ticker"] for x in await adapter.get_investor_net_buy("foreign", "buy")}
-            ib = {x["ticker"] for x in await adapter.get_investor_net_buy("inst", "buy")}
+            fb = {x["ticker"] for x in _nb_f}   # 위에서 받은 수급 상위 재사용(중복 호출 방지)
+            ib = {x["ticker"] for x in _nb_i}
             _kr_fb, _kr_ib = fb, ib
-            snap.top3 = select_top3(snap.screen_picks, foreign_buy=fb, inst_buy=ib)
-            await _inject_supply_streak(snap, adapter)  # 연속 순매수일
-            logger.info("pipeline_top3_ready top3=%s", [t["name"] for t in snap.top3])
+            # 연속 순매수일 — 가산 대상(screen_picks ∩ 수급상위)만 조회(부하 절감, 사용자 2026-06-11)
+            _kr_streaks = await _collect_supply_streaks_for(adapter, snap.screen_picks, fb, ib)
+            snap.top3 = select_top3(snap.screen_picks, foreign_buy=fb, inst_buy=ib,
+                                    supply_streaks=_kr_streaks)
+            await _inject_supply_streak(snap, adapter)  # Top3 표시용 연속 순매수일(supply_str)
+            logger.info("pipeline_top3_ready top3=%s streaks=%d", [t["name"] for t in snap.top3], len(_kr_streaks))
         except Exception as exc:
             logger.warning("top3_failed error=%s", exc)
 
@@ -1634,7 +1678,8 @@ async def run_full(
     # marcap/ai 주입 후 빌드(screen_picks가 enrich된 상태). select_top3 재사용(return_all).
     try:
         from src.market_report.top3 import select_top3 as _sel
-        snap.screen_ranked = _sel(snap.screen_picks, foreign_buy=_kr_fb, inst_buy=_kr_ib, return_all=True)
+        snap.screen_ranked = _sel(snap.screen_picks, foreign_buy=_kr_fb, inst_buy=_kr_ib,
+                                  supply_streaks=_kr_streaks, return_all=True)
     except Exception as exc:
         logger.warning("screen_ranked_failed error=%s", exc)
 

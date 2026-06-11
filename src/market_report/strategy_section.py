@@ -63,7 +63,8 @@ async def collect_screen_picks(adapter, per_strategy: int = 8,
                                e_out: list[dict] | None = None,
                                surge_out: list[dict] | None = None,
                                support_out: list[dict] | None = None,
-                               coil_out: list[dict] | None = None) -> list[dict]:
+                               coil_out: list[dict] | None = None,
+                               extra_universe: list[tuple[str, str]] | None = None) -> list[dict]:
     """오늘 A/B/C 전략 포착 종목 (유니버스: 주도주 + 핫종목).
 
     drop_today: 마지막 봉이 '오늘'(장전 미완성 봉)이면 제외하고 전일 마감 기준 평가.
@@ -102,6 +103,12 @@ async def collect_screen_picks(adapter, per_strategy: int = 8,
     # 관심종목(watchlist) 추가 — B(급등후 눌림)는 당일 핫종목보다 관심종목에서 잘 잡힘
     for tk, nm in _watchlist_tickers():
         if tk not in universe:
+            universe[tk] = nm
+
+    # 수급 주도 유니버스 확장 — 외인/기관 순매수 상위 종목 추가(거래대금 컷 밖이어도 A/B/C/D 평가
+    # 받게 함. 미래에셋생명처럼 수급 급등주를 Top3 후보로 포착, 사용자 2026-06-11)
+    for tk, nm in (extra_universe or []):
+        if tk and tk not in universe:
             universe[tk] = nm
 
     # 시총 상위 풀 (HTS식 디텍팅) — config market_cap: true
