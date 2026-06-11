@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-06-11",
+    "time": "14:50",
+    "mode": "pre_close",
+    "url": "reports/2026-06-11-pre.html",
+    "summary": "코스닥 지수가 4% 급등하며 강세를 보인 가운데, 반도체 관련주와 육계 테마주가 시장을 주도하고 있습니다.",
+    "kospi_pct": 0.31,
+    "kosdaq_pct": 4.0
+  },
+  {
+    "date": "2026-06-11",
     "time": "13:00",
     "mode": "us_afterhours",
     "url": "reports/2026-06-11-us-after.html",
