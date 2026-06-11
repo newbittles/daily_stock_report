@@ -153,6 +153,8 @@ class MarketSnapshot:
     # 기관+외인 연속 순매수/순매도 Top — 시총 상위 중(사용자 #393, post_close)
     supply_buy_streaks: list[dict] = field(default_factory=list)   # [{ticker,name,orgn,frgn,score}]
     supply_sell_streaks: list[dict] = field(default_factory=list)
+    # 🏦 H. 수급 주도 — 기관/외인 연속 순매수 + 급등(패턴 무관·참고용, 사용자 2026-06-11)
+    supply_driven_picks: list[dict] = field(default_factory=list)  # [{ticker,name,price,change_pct,supply_str,...}]
 
     # 시간외(NXT 넥스트레이드) 상위 상승률 — 정규장 마감 후, post_close만 (정규장 종가 대비)
     overtime_gainers: list[dict] = field(default_factory=list)  # [{ticker,name,nxt_price,reg_close,overtime_pct}]

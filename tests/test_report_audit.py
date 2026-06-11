@@ -12,7 +12,7 @@ def test_flags_missing_required_section() -> None:
 
 
 def test_passes_when_all_required_present() -> None:
-    html = ("E 투매 바닥 반등 F. 60일선 지지 삼각수렴 임박 AI 시장 요약 "
+    html = ("E 투매 바닥 반등 F. 60일선 지지 삼각수렴 임박 수급 주도 AI 시장 요약 "
             "책임은 본인에게 있습니다")
     assert audit_html("post_close", html) == []
 

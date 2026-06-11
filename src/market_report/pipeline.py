@@ -412,6 +412,58 @@ async def _collect_supply_streaks_for(
     return out
 
 
+async def collect_supply_driven(adapter, top: int = 5, min_streak: int = 3,
+                                min_change: float = 5.0, scan: int = 30) -> list[dict]:
+    """🏦 수급 주도 — 기관/외인 연속 순매수 + 당일 급등 종목(A/B/C/D 패턴 무관·참고용, 사용자 2026-06-11).
+
+    등락률 상위(급등) 종목 중 기관 or 외인이 min_streak일↑ 연속 순매수인 것을 별도 포착.
+    미래에셋생명처럼 거래대금/패턴 컷 밖이어도 '수급 급등주'를 리스팅(Top3 미반영 — 백테스트 전이라 참고용).
+    반환: [{ticker,name,price,change_pct,supply_str,orgn_streak,frgn_streak,reason}] 수급강도·등락순 top개.
+    """
+    import random
+
+    from src.datasource.base import RankingKind
+    try:
+        movers = await adapter.get_ranking(RankingKind.CHANGE_PCT, top=scan)
+    except Exception as exc:  # noqa: BLE001
+        logger.warning("supply_driven_ranking_failed error=%s", exc)
+        return []
+    cands = [m for m in movers if getattr(m, "change_pct", 0) >= min_change][:20]
+    if not cands:
+        return []
+    sem = asyncio.Semaphore(6)
+
+    async def _one(m):
+        async with sem:
+            try:
+                rows = await adapter.get_stock_investor_daily(m.ticker, days=10)
+            except Exception:  # noqa: BLE001
+                rows = []
+            await asyncio.sleep(random.uniform(0.1, 0.3))  # 전역 §7 분산
+            return m, _supply_streak(rows, "orgn"), _supply_streak(rows, "frgn")
+
+    out: list[dict] = []
+    for r in await asyncio.gather(*[_one(m) for m in cands], return_exceptions=True):
+        if not isinstance(r, tuple):
+            continue
+        m, od, fd = r
+        if od < min_streak and fd < min_streak:
+            continue
+        parts = []
+        if od >= 1:
+            parts.append(f"기관 {od}일 연속 순매수" if od >= 2 else "기관 순매수")
+        if fd >= 1:
+            parts.append(f"외인 {fd}일 연속 순매수" if fd >= 2 else "외인 순매수")
+        sup = " · ".join(parts)
+        out.append({"ticker": m.ticker, "name": m.name, "price": round(m.price, 1),
+                    "change_pct": round(m.change_pct, 2), "supply_str": sup,
+                    "orgn_streak": od, "frgn_streak": fd,
+                    "reason": f"{sup} + 당일 +{m.change_pct:.1f}% 급등"})
+    out.sort(key=lambda x: (max(x["orgn_streak"], x["frgn_streak"]), x["change_pct"]), reverse=True)
+    logger.info("supply_driven_ready n=%d", len(out[:top]))
+    return out[:top]
+
+
 def _supply_sell_streak(rows: list[dict], key: str) -> int:
     """최신순 일별에서 연속 순매도일 수 (음수 연속)."""
     n = 0
@@ -1608,6 +1660,13 @@ async def run_full(
             logger.info("pipeline_top3_ready top3=%s streaks=%d", [t["name"] for t in snap.top3], len(_kr_streaks))
         except Exception as exc:
             logger.warning("top3_failed error=%s", exc)
+
+        # 🏦 H. 수급 주도 — 기관/외인 연속 순매수 + 급등 종목(패턴 무관·참고용, 사용자 2026-06-11).
+        # 미래에셋생명처럼 거래대금/패턴 컷 밖이어도 수급 급등주를 별도 리스팅(Top3 미반영, 백테스트 전).
+        try:
+            snap.supply_driven_picks = await collect_supply_driven(adapter)
+        except Exception as exc:  # noqa: BLE001
+            logger.warning("supply_driven_failed error=%s", exc)
 
         # 🌙 시간외(NXT) 상위 상승률 — 마감 후(post_close)만. 정규장 종가 대비 NXT 변동(사용자 2026-06-05).
         if snap.mode == "post_close":

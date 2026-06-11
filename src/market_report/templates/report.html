@@ -1061,6 +1061,28 @@ ${{ "{:,.2f}".format(item.price) }} <span class="{{ 'up-text' if pct >= 0 else '
     </section>
     {% endif %}
 
+    {# 🏦 H. 수급 주도 — 기관/외인 연속 순매수 + 급등(패턴 무관·참고용·항상노출, 사용자 2026-06-11) #}
+    {% if snap.mode in ['pre_close', 'post_close'] %}
+    <section>
+      <h2><span class="icon">🏦</span>수급 주도 <span style="color:var(--text-dim);font-size:0.8rem;">(기관·외인 연속 순매수 + 급등 · 참고용)</span></h2>
+      {% if not snap.supply_driven_picks %}
+      <p style="color:var(--text-dim);font-size:0.9rem;margin:0.4rem 0;">오늘 수급 주도 종목 없음 — 기관/외인이 연속 순매수하며 급등한 종목이 있을 때만 표시됩니다(참고용).</p>
+      {% else %}
+      <ul class="watch-list">
+        {% for p in snap.supply_driven_picks %}
+        <li>
+          <a href="https://finance.naver.com/item/main.naver?code={{ p.ticker }}" target="_blank" rel="noopener"><strong>{{ p.name }}</strong></a>
+          <span class="pick-ticker">{{ p.ticker }}{{ mk(p.ticker) }}</span> · {{ "{:,.0f}".format(p.price) }}원
+          <span class="{{ 'up-text' if p.change_pct >= 0 else 'down-text' }}">{{ '+' if p.change_pct >= 0 else '' }}{{ "{:.1f}".format(p.change_pct) }}%</span>
+          {% if p.supply_str %}<div class="pick-sub" style="color:var(--green);">💰 {{ p.supply_str }}</div>{% endif %}
+        </li>
+        {% endfor %}
+      </ul>
+      {% endif %}
+      <p class="disclaimer" style="font-size:12px;">※ 기관/외인 연속 순매수 + 당일 급등 종목(A/B/C/D 패턴 무관, 거래대금 컷도 무시). <strong>백테스트 미검증 · 매수 추천 아님 · Top3 미반영</strong>. 수급 강한 급등주 참고용(사용자 요청, 미래에셋생명류 포착).</p>
+    </section>
+    {% endif %}
+
     {# 🏦 기관·외인 연속 순매수/매도 (시총 상위, 스마트머니 선행, 사용자 #393) #}
     {% if snap.supply_buy_streaks or snap.supply_sell_streaks %}
     <section>
