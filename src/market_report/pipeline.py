@@ -1263,9 +1263,10 @@ async def _collect_us_screening(snap: MarketSnapshot, *, per_group: int = 5) -> 
         from src.patterns.core import oversold_leader
         uni_syms = [u.symbol for u in (universe or [])]
         if uni_syms:
-            ohlcv = await fetch_us_ohlcv_batch(uni_syms, days=120)  # 캐시 히트(스크리닝과 동일)
+            ohlcv = await fetch_us_ohlcv_batch(uni_syms, days=200)  # 200일(장기 삼각수렴 win=150 필요, 2026-06-11)
             meta2 = {u.symbol: u for u in (universe or [])}
-            from src.patterns.core import is_coil_squeeze, is_ma60_support, is_surge_start
+            from src.patterns.core import (
+                is_coil_squeeze, is_long_triangle, is_ma60_support, is_surge_start)
             e_cand: list[dict] = []
             surge: list[dict] = []
             support: list[dict] = []  # F. 60일선 지지(참고용·미국, 사용자 2026-06-10)
@@ -1307,8 +1308,17 @@ async def _collect_us_screening(snap: MarketSnapshot, *, per_group: int = 5) -> 
                     _shape = {1: "대칭수렴", 2: "바닥지지수렴"}.get(int(cr.metrics.get("shape", 0)), "")
                     coil.append({"symbol": sym, "name": korean_name(sym, u.name if u else sym),
                                  "price": round(cs[-1].close, 2), "change_pct": round(ch, 2),
-                                 "shape": _shape, "bb_width": cr.metrics.get("bb_width"),
+                                 "shape": _shape, "mode": "단기", "bb_width": cr.metrics.get("bb_width"),
                                  "ma_conv": cr.metrics.get("ma_conv"), "reason": cr.reason, **_extra})
+                else:
+                    # G 장기 모드(미국) — 수개월 대형 삼각수렴(백테스트 66%·+8.7%/20일, HOOD·TSLA류)
+                    lt = is_long_triangle(cs, win=150)
+                    if lt.matched:
+                        coil.append({"symbol": sym, "name": korean_name(sym, u.name if u else sym),
+                                     "price": round(cs[-1].close, 2), "change_pct": round(ch, 2),
+                                     "shape": "장기 대칭수렴", "mode": "장기",
+                                     "bb_width": lt.metrics.get("band_now_pct"), "ma_conv": None,
+                                     "reason": lt.reason, **_extra})
             e_cand.sort(key=lambda x: x["rsi"])  # 가장 과매도부터 4H 확인
             e_cand = e_cand[:12]
             from src.datasource.kr_4h import fetch_4h_rsi_oversold

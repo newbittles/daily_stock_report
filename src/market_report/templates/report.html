@@ -1064,6 +1064,7 @@ ${{ "{:,.2f}".format(item.price) }} <span class="{{ 'up-text' if pct >= 0 else '
             <span class="pick-meta-group">
               <span class="pick-ticker">{{ (p.ticker or p.symbol) }}{{ mk(p.ticker or p.symbol) }}</span>
               {% if p.ticker %}<button type="button" class="code-copy" data-code="{{ p.ticker }}" onclick="copyCode(this)" title="종목코드 복사 (MTS 검색창에 붙여넣기)">📋</button>{% endif %}
+              {% if p.mode == '장기' %}<span class="strat-badge" style="background:var(--green);">📐 장기 삼각수렴</span>{% elif p.mode %}<span class="strat-badge" style="background:var(--text-mute);">단기 코일</span>{% endif %}
               {% if p.shape %}<span class="strat-badge" style="background:var(--accent);">{{ '🔻' if p.shape == '대칭수렴' else '🟰' }} {{ p.shape }}</span>{% endif %}
               {% if p.price %}<span class="px">{% if p.ticker %}{{ "{:,.0f}".format(p.price) }}원{% else %}${{ "{:,.2f}".format(p.price) }}{% endif %}</span>
               <span class="{{ 'up-text' if p.change_pct >= 0 else 'down-text' }}">{{ '+' if p.change_pct >= 0 else '' }}{{ "{:.2f}".format(p.change_pct) }}%</span>{% endif %}
@@ -1082,7 +1083,7 @@ ${{ "{:,.2f}".format(item.price) }} <span class="{{ 'up-text' if pct >= 0 else '
       </div>
       {% endfor %}
       {% endif %}
-      <p class="disclaimer" style="font-size:12px;">※ 삼각수렴(변동성 축소→이평 수렴) 돌파 <strong>임박</strong> 종목. 🔻대칭=고점↓·저점↑ / 🟰바닥지지=저점 평평+상단 눌림. 차트 🔴상단선=고점 저항·🟢하단선=저점 지지(꼭짓점 수렴). <strong>백테스트 엣지 약함(첫코일 5일 +2.7%·승률60%, 베타 소폭상회)·매수추천 아님·종합점수/Top3 미반영</strong>. 돌파 실패(하락 이탈)도 ~40%. 단순 참고용.</p>
+      <p class="disclaimer" style="font-size:12px;">※ 삼각수렴 돌파 <strong>임박</strong> 종목. <strong>📐장기 삼각수렴</strong>(수개월 대형 삼각형, 볼록껍질 추세선+실수축) = 백테스트 491건 <strong>승률 66%·평균 +8.7%/20일</strong>로 엣지 확인(HOOD·TSLA류 대박 초입). <strong>단기 코일</strong> = 엣지 약함(승률 ~60% 베타 수준). 🔻대칭=고점↓·저점↑ / 🟰바닥지지=저점 평평. 매수추천 아님·종합점수/Top3 미반영(관찰용).</p>
     </section>
     {% endif %}
 

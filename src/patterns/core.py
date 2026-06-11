@@ -1281,3 +1281,133 @@ def is_coil_squeeze(
         True,
         f"삼각수렴 {shape_name} (BB폭 {bb_width:.1f}%·이격 {ma_conv:.1f}%·고점{slope_high:+.2f}/저점{slope_low:+.2f}%일)",
         metrics)
+
+
+def _pivots(vals: list[float], k: int, kind: str) -> list[tuple[int, float]]:
+    """국소 고점/저점(스윙 피벗) — i가 좌우 k봉 중 최대(high)/최소(low)면 피벗. [(idx, val)]."""
+    out: list[tuple[int, float]] = []
+    for i in range(k, len(vals) - k):
+        seg = vals[i - k:i + k + 1]
+        if kind == "high" and vals[i] >= max(seg):
+            out.append((i, vals[i]))
+        elif kind == "low" and vals[i] <= min(seg):
+            out.append((i, vals[i]))
+    return out
+
+
+def _xy_slope_intercept(pts: list[tuple[int, float]]) -> tuple[float, float]:
+    """(x,y) 점들의 최소제곱 직선 (기울기, 절편). 점 1개면 기울기 0."""
+    n = len(pts)
+    if n < 2:
+        return 0.0, (pts[0][1] if pts else 0.0)
+    sx = sum(p[0] for p in pts); sy = sum(p[1] for p in pts)
+    sxx = sum(p[0] * p[0] for p in pts); sxy = sum(p[0] * p[1] for p in pts)
+    denom = n * sxx - sx * sx
+    if denom == 0:
+        return 0.0, sy / n
+    slope = (n * sxy - sx * sy) / denom
+    intercept = (sy - slope * sx) / n
+    return slope, intercept
+
+
+def is_long_triangle(
+    candles: list[Candle], win: int = 180, pivot_k: int = 5, slope_eps: float = 0.01,
+    conv_ratio: float = 0.62, apex_max: float = 0.30, ma_rising_lookback: int = 5,
+) -> PatternResult:
+    """G 장기 모드 — 수개월(win일) 대형 삼각수렴(스윙 고점 하락추세선 + 스윙 저점 상승/평평추세선).
+
+    단기 코일(is_coil_squeeze, 20일 좁은 응축)이 못 잡는 '큰 삼각형'(HOOD류 — 고점 ↓ + 저점 ↑가
+    한 점으로 수렴, 수개월 스케일)을 포착(사용자 2026-06-11 HOOD 삼각수렴 사례). 단순 회귀는 최근
+    추세에 휘둘려 스윙 피벗(국소 고/저점) 기반 추세선으로 작도.
+
+    조건(모두 충족):
+      T0 추세 게이트 — 60일선 우상향(장기 하락 중 일시 수렴=falling-knife 제외)
+      T1 고점 추세선 — 스윙 고점 회귀 기울기 < -slope_eps (%/일)  (저항선 하락)
+      T2 저점 추세선 — 스윙 저점 회귀 기울기 > -slope_eps          (지지선 상승/평평)
+      T3 수렴 — 현재 밴드폭 ≤ 시작 밴드폭 × conv_ratio
+      T4 꼭짓점 임박 — 현재 밴드폭/현재가 ≤ apex_max
+    metrics: win, slope_high, slope_low(%/일), conv, band_now_pct, n_piv_h, n_piv_l.
+    """
+    from statistics import mean
+
+    if len(candles) < win + ma_rising_lookback + 1:
+        return PatternResult(False, f"데이터 부족({win + ma_rising_lookback + 1}봉)")
+    closes = _closes(candles)
+    seg = candles[-win:]
+    highs = [c.high for c in seg]
+    lows = [c.low for c in seg]
+    price = closes[-1]
+    ma60 = mean(closes[-60:]) if len(closes) >= 60 else None
+    ma60_prev = mean(closes[-65:-5]) if len(closes) >= 65 else None
+    if ma60 is None or ma60_prev is None or price <= 0:
+        return PatternResult(False, "이평/가격 계산 불가")
+    metrics: dict[str, float] = {"price": round(price, 1), "win": win}
+    if ma60 <= ma60_prev:
+        return PatternResult(False, "60선 우상향 아님(falling-knife 제외)", metrics)
+
+    # 추세선 — 시각적 삼각형과 일치하게 '극점 2점'으로 작도(사람이 긋듯):
+    #   저항선 = 최고점(peak) → 최근 rec일 최고가(낮아진 고점)
+    #   지지선 = 최저점(bottom) → 최근 rec일 최저가(높아진 저점, 폭락 저점은 자동 제외)
+    rec = 30
+    peak_idx = max(range(win), key=lambda i: highs[i]); peak = highs[peak_idx]
+    bot_idx = min(range(win), key=lambda i: lows[i]); bot = lows[bot_idx]
+    rh_i = (win - rec) + max(range(rec), key=lambda i: highs[win - rec + i]); rh = highs[rh_i]
+    rl_i = (win - rec) + min(range(rec), key=lambda i: lows[win - rec + i]); rl = lows[rl_i]
+    if rh_i <= peak_idx or rl_i <= bot_idx:
+        return PatternResult(False, "극점 시점 역전(고점/저점이 최근 = 추세선 작도 불가)", metrics)
+    sh = (rh - peak) / (rh_i - peak_idx)   # 저항선 기울기(원/일)
+    sl = (rl - bot) / (rl_i - bot_idx)     # 지지선 기울기
+    ih = peak - sh * peak_idx
+    il = bot - sl * bot_idx
+    sh_pct, sl_pct = sh / price * 100, sl / price * 100
+    metrics["slope_high"] = round(sh_pct, 3)
+    metrics["slope_low"] = round(sl_pct, 3)
+    # T1 저항선 하락(낮아지는 고점) / T2 지지선 비하락(저점 상승·평평)
+    if sh_pct >= -slope_eps:
+        return PatternResult(False, f"고점 저항선 하락 아님({sh_pct:+.2f}%/일)", metrics)
+    if sl_pct <= -slope_eps:
+        return PatternResult(False, f"저점 지지선 하락(수렴 아님, {sl_pct:+.2f}%/일)", metrics)
+    # 현재 시점 추세선 값 + 밴드폭 수렴/꼭짓점 임박
+    resist_now = sh * (win - 1) + ih
+    support_now = sl * (win - 1) + il
+    # 차트 작도용 — 저항선(절편ih·기울기sh, peak_idx부터), 지지선(il·sl, bot_idx부터), 현재 추세선값
+    metrics["_lines"] = (round(ih, 2), round(sh, 4), round(il, 2), round(sl, 4),
+                         peak_idx, bot_idx, round(resist_now, 2), round(support_now, 2))
+    band_now = resist_now - support_now
+    if band_now <= 0:
+        return PatternResult(False, "추세선 교차(이미 꼭짓점 지남)", metrics)
+    metrics["band_now_pct"] = round(band_now / price * 100, 1)
+    metrics["resist_gap_pct"] = round((resist_now - price) / price * 100, 1)
+    # 실제 변동성 수축 — 최근 20일 고저 범위가 윈도 초기(앞 1/3) 범위 대비 충분히 좁아짐(진짜 수렴).
+    # (외삽 밴드폭은 늘 작게 나와 선별력이 없어 실측 범위비로 교체, 사용자 2026-06-11)
+    early_range = max(highs[:win // 3]) - min(lows[:win // 3])
+    recent_range = max(highs[-20:]) - min(lows[-20:])
+    contraction = recent_range / early_range if early_range > 0 else 9.9
+    metrics["contraction"] = round(contraction, 2)
+    if contraction > conv_ratio:
+        return PatternResult(False, f"변동성 수축 부족(최근범위 {contraction * 100:.0f}% 잔존, ≤{conv_ratio * 100:.0f}% 필요)", metrics)
+    if band_now / price > apex_max:
+        return PatternResult(False, f"꼭짓점 멂(밴드 {band_now / price * 100:.0f}%>{apex_max * 100:.0f}%)", metrics)
+    # 현재가가 밴드 안(지지~저항)에 있어야 '수렴 중'(이미 위/아래로 이탈하면 제외)
+    if not (support_now * 0.97 <= price <= resist_now * 1.03):
+        return PatternResult(False, f"밴드 이탈(가격 {price:.0f} vs 지지 {support_now:.0f}~저항 {resist_now:.0f})", metrics)
+    shape = "대칭수렴" if sl_pct > slope_eps else "상승삼각형(저점 평평)"
+    return PatternResult(
+        True,
+        f"장기 삼각수렴 {shape} ({win}일·저항{sh_pct:+.2f}/지지{sl_pct:+.2f}%일·밴드 {band_now / price * 100:.0f}%·수축 {contraction * 100:.0f}%)",
+        metrics)
+
+
+def _hull(pts: list[tuple[int, float]], upper: bool) -> list[tuple[int, float]]:
+    """볼록껍질 상단(upper=고점 추세선용)/하단(저점 추세선용) — 단조 체인. pts는 x오름차순."""
+    h: list[tuple[int, float]] = []
+    for p in pts:
+        while len(h) >= 2:
+            o, a = h[-2], h[-1]
+            cross = (a[0] - o[0]) * (p[1] - o[1]) - (a[1] - o[1]) * (p[0] - o[0])
+            if (upper and cross >= 0) or (not upper and cross <= 0):
+                h.pop()
+            else:
+                break
+        h.append(p)
+    return h
