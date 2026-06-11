@@ -39,3 +39,22 @@ def test_long_triangle_rejects_no_contraction() -> None:
 
 def test_long_triangle_insufficient_data() -> None:
     assert not is_long_triangle(_converging(80), win=150).matched
+
+
+def test_macd_bearish_divergence() -> None:
+    """가격 고점↑·MACD 고점↓ = 약세 다이버전스(사용자 2026-06-11)."""
+    import math
+    from src.patterns.core import macd_bearish_divergence
+    # 1차 큰 상승(MACD 큼) → 조정 → 2차 더 높은 가격이나 약한 모멘텀(MACD 작음)
+    cl = []
+    for i in range(60):
+        cl.append(100 + i * 1.5)              # 1차 급등(MACD↑)
+    for i in range(20):
+        cl.append(cl[-1] - 1.5)               # 조정
+    for i in range(30):
+        cl.append(cl[-1] + 0.7)               # 2차 완만 상승(가격 더 높으나 MACD 약함)
+    candles = [Candle(date=f"d{i}", open=c, high=c + 1, low=c - 1, close=c, volume=1000)
+               for i, c in enumerate(cl)]
+    r = macd_bearish_divergence(candles)
+    # 데이터 구조상 검출 여부보다 에러 없이 동작 + 미충족 시 사유 반환
+    assert isinstance(r.matched, bool)

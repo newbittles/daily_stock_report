@@ -1345,6 +1345,31 @@ async def _collect_us_screening(snap: MarketSnapshot, *, per_group: int = 5) -> 
             logger.info("us_e_picks_ready daily=%d final=%d surge=%d support=%d coil=%d",
                         len(e_cand), len(snap.e_picks), len(snap.surge_picks),
                         len(snap.support_picks), len(snap.coil_picks))
+            # 모든 US 표시 종목 한글명 보장 — picks 외 섹터/M7/E/F/G/스크리닝/프리장까지 전수
+            # (기존 ensure_names는 screening picks만 커버 → 나머지 영문 잔존, 사용자 2026-06-11 지적)
+            try:
+                from src.datasource.us.names_db import ensure_names
+                _ko_nm: dict[str, str] = {}
+
+                def _gko(items) -> None:
+                    for it in (items or []):
+                        s = it.get("symbol") if isinstance(it, dict) else getattr(it, "symbol", None)
+                        n = (it.get("name", "") if isinstance(it, dict) else getattr(it, "name", "")) or ""
+                        if s:
+                            _ko_nm.setdefault(s, n)
+
+                for _fld in (snap.us_top3, snap.us_theme_leaders, snap.us_sector_leaders,
+                             snap.e_picks, snap.surge_picks, snap.support_picks, snap.coil_picks,
+                             getattr(snap, "us_premarket_top", None), getattr(snap, "us_screen_ranked", None),
+                             snap.us_bigtech):
+                    _gko(_fld)
+                if snap.us_overnight:
+                    _gko(getattr(snap.us_overnight, "m7", None))
+                    _gko(getattr(snap.us_overnight, "etf", None))
+                if _ko_nm:
+                    await ensure_names(list(_ko_nm), _ko_nm)
+            except Exception as exc:  # noqa: BLE001
+                logger.warning("us_names_ensure_all_failed error=%s", exc)
     except Exception as exc:  # noqa: BLE001
         logger.warning("us_e_picks_failed error=%s", exc)
 

@@ -1411,3 +1411,39 @@ def _hull(pts: list[tuple[int, float]], upper: bool) -> list[tuple[int, float]]:
                 break
         h.append(p)
     return h
+
+
+def macd_bearish_divergence(
+    candles: list[Candle], lookback: int = 55, pivot_k: int = 4, min_gap: int = 6,
+) -> PatternResult:
+    """MACD 고점(약세) 다이버전스 — 가격 고점은 높아지는데 MACD 고점은 낮아짐(상승 동력 약화).
+
+    '고점 주의'(조정 경고) 신호. 사용자 2026-06-11(AVGO 고점 495→조정 사례). KR·US 공통.
+    최근 lookback일에서 가격 스윙 고점 2개를 찾아, 나중 고점의 가격 > 이전 고점이지만
+    그 시점 MACD선 값은 나중 < 이전이면 약세 다이버전스. metrics: div(MACD 고점 낙차).
+    """
+    closes = _closes(candles)
+    if len(closes) < 60:
+        return PatternResult(False, "데이터 부족(60봉)")
+    macd_line, _sig, _hist = macd(closes)
+    seg = closes[-lookback:]
+    seg_m = macd_line[-lookback:]
+    ph = [k for k in range(pivot_k, len(seg) - pivot_k)
+          if seg_m[k] is not None and seg[k] >= max(seg[k - pivot_k:k + pivot_k + 1])]
+    if len(ph) < 2:
+        return PatternResult(False, "가격 고점 피벗 부족")
+    # 가장 최근 고점(p2)과, 그로부터 min_gap 이상 떨어진 직전 고점(p1)
+    p2 = ph[-1]
+    prior = [k for k in ph[:-1] if p2 - k >= min_gap]
+    if not prior:
+        return PatternResult(False, "비교할 직전 고점 부족")
+    p1 = prior[-1]
+    price_hh = seg[p2] > seg[p1] * 1.005          # 가격 고점 높아짐(최소 0.5%)
+    macd_lh = seg_m[p2] < seg_m[p1]               # MACD 고점 낮아짐
+    metrics = {"price_p1": round(seg[p1], 2), "price_p2": round(seg[p2], 2),
+               "macd_p1": round(seg_m[p1], 3), "macd_p2": round(seg_m[p2], 3),
+               "div": round(seg_m[p1] - seg_m[p2], 3)}
+    if price_hh and macd_lh:
+        return PatternResult(
+            True, "MACD 고점 다이버전스 — 가격 고점↑·MACD 고점↓(상승 동력 약화, 고점 주의)", metrics)
+    return PatternResult(False, "다이버전스 없음", metrics)
