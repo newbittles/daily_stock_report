@@ -27,6 +27,27 @@ def test_supply_streak_optional_backcompat() -> None:
     assert out and out[0]["ticker"] == "A"
 
 
+def test_supply_sell_streak_penalizes_score() -> None:
+    """기관/외인 연속 순매도 종목은 점수 강등(삼성전기 사례, 사용자 2026-06-11)."""
+    picks = [_pick("A"), _pick("B")]
+    out = select_top3(
+        picks, foreign_buy=set(), inst_buy=set(),
+        supply_streaks={"A": {"orgn_sell": 3, "frgn_sell": 2}, "B": {}},
+        return_all=True,
+    )
+    assert out[0]["ticker"] == "B"        # 연속 매도 없는 B가 위
+    assert out[-1]["ticker"] == "A"       # 연속 매도 A는 강등
+    assert "수급 이탈" in out[-1].get("reason", "")
+
+
+def test_lead_theme_bonus_score() -> None:
+    """주도테마 소속 종목 가산(사용자 2026-06-11)."""
+    a = _pick("A"); a["is_leading_theme"] = True
+    out = select_top3([a, _pick("B")], return_all=True)
+    assert out[0]["ticker"] == "A"
+    assert out[0]["score"] > out[1]["score"]
+
+
 def test_supply_streak_skips_intraday_zero_row() -> None:
     """장중 오늘 미체결(전 항목 0) 행은 건너뛰고 완료일 기준 연속일 계산(사용자 2026-06-11 버그)."""
     from src.market_report.pipeline import _supply_streak

@@ -387,16 +387,16 @@ async def _inject_supply_streak(snap: MarketSnapshot, adapter) -> None:
 
 
 async def _collect_supply_streaks_for(
-    adapter, picks: list[dict], fb: set, ib: set, cap: int = 30,
+    adapter, picks: list[dict], fb: set, ib: set, cap: int = 45,
 ) -> dict[str, dict]:
-    """Top3 점수 가산용 연속 순매수일 — screen_picks ∩ 수급상위(fb∪ib) 종목만 조회(부하 절감).
+    """Top3 점수 가감용 연속 순매수/순매도일 — 전 후보(screen_picks) 종목 조회(사용자 2026-06-11).
 
-    반환: {ticker: {"orgn": 기관연속일, "frgn": 외인연속일}}. 사용자 2026-06-11.
+    순매수 연속은 가산, 순매도 연속은 패널티(삼성전기처럼 기관/외인 연속 매도=스마트머니 이탈 강등).
+    ⚠️ 기존엔 수급상위(fb∪ib)만 조회해 '순매도 종목'이 빠졌음(연속매도 강등 누락 버그). 전 후보로 확대.
+    반환: {ticker: {"orgn","frgn"(매수연속), "orgn_sell","frgn_sell"(매도연속)}}.
     """
     import random
-    targets = [p["ticker"] for p in picks
-               if p.get("ticker") and (p["ticker"] in fb or p["ticker"] in ib)]
-    targets = list(dict.fromkeys(targets))[:cap]
+    targets = list(dict.fromkeys(p["ticker"] for p in picks if p.get("ticker")))[:cap]
     if not targets:
         return {}
     sem = asyncio.Semaphore(6)
@@ -408,7 +408,9 @@ async def _collect_supply_streaks_for(
             except Exception:  # noqa: BLE001
                 rows = []
             await asyncio.sleep(random.uniform(0.1, 0.3))  # 전역 §7 분산
-            return tk, {"orgn": _supply_streak(rows, "orgn"), "frgn": _supply_streak(rows, "frgn")}
+            return tk, {"orgn": _supply_streak(rows, "orgn"), "frgn": _supply_streak(rows, "frgn"),
+                        "orgn_sell": _supply_sell_streak(rows, "orgn"),
+                        "frgn_sell": _supply_sell_streak(rows, "frgn")}
 
     out: dict[str, dict] = {}
     for r in await asyncio.gather(*[_one(tk) for tk in targets], return_exceptions=True):
