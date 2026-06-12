@@ -48,6 +48,65 @@ ${{ "{:,.2f}".format(item.price) }} <span class="{{ 'up-text' if pct >= 0 else '
 {%- set m = mkt(code) -%}
 {%- if m %}·{{ m }}{% endif -%}
 {%- endmacro -%}
+{# ★ 오늘의 추천 Top3 섹션 — 배치 위치가 모드별로 달라 매크로화(사용자 2026-06-12:
+   마감전 리포트는 지수·수급 바로 뒤, 그 외 모드는 기존 위치). #}
+{%- macro top3_section(snap) -%}
+{% if snap.top3 or snap.top3_excluded_limitup %}
+    <section class="top3-sec">
+      <h2><span class="icon">🏆</span>오늘의 추천 Top 3</h2>
+      {% for t in snap.top3 %}
+      <div class="top3-card">
+        <div class="top3-head">
+          <span class="top3-rank">{{ loop.index }}</span>
+          <a href="https://finance.naver.com/item/main.naver?code={{ t.ticker }}" target="_blank" rel="noopener"><strong>{{ t.name }}</strong></a>
+          {% if mkt(t.ticker) %}<span class="pick-ticker">{{ mkt(t.ticker) }}</span>{% endif %}
+          <button type="button" class="code-copy" data-code="{{ t.ticker }}" onclick="copyCode(this)" title="종목코드 복사 (MTS 검색창에 붙여넣기)">📋</button>
+          <span class="px">{{ "{:,.0f}".format(t.price) }}원</span>
+          <span class="{{ 'up-text' if t.change_pct >= 0 else 'down-text' }}">{{ '+' if t.change_pct >= 0 else '' }}{{ "{:.1f}".format(t.change_pct) }}%</span>
+          {% if t.endstage %}<span class="down-text" style="cursor:pointer;" onclick="showFlag(this)" data-flag="endstage">⚠️끝물ⓘ</span>{% endif %}
+        </div>
+        <div class="top3-meta">
+          {% if t.ai_summary %}<button type="button" class="ai-btn" onclick="showAI(this)" data-name="{{ t.name }}" data-summary="{{ t.ai_summary|e }}">🤖 AI요약</button>{% endif %}
+          {% if t.marcap_str %}<span class="code">시총 {{ t.marcap_str }}</span>{% endif %}
+          {{ cond_badges(t) }}{# #}
+        </div>
+        <div class="top3-reason">{{ t.reason }}</div>
+        {% if t.supply_str %}<div class="top3-reason" style="color:var(--green);">💰 {{ t.supply_str }}</div>{% endif %}
+        {% if t.theme %}
+        <div class="top3-reason">{{ '업종' if t.theme_kind == 'sector' else '테마' }}: {{ t.theme }} · 주도테마여부: <strong style="color:{{ 'var(--green)' if t.is_leading_theme else 'var(--text-mute)' }};">{{ 'O' if t.is_leading_theme else 'X' }}</strong></div>
+        {% endif %}
+      </div>
+      {% endfor %}
+      {% if snap.top3_excluded_limitup %}
+      <div style="margin-top:0.8rem;padding-top:0.6rem;border-top:1px dashed var(--border);">
+        <div style="font-size:0.82rem;color:var(--red);margin-bottom:0.4rem;">🚫 상한가로 제외 <span style="color:var(--text-dim);font-size:0.75rem;">(점수 기준은 부합했으나 매수 불가)</span></div>
+        {% for t in snap.top3_excluded_limitup %}
+        <div class="top3-card" style="opacity:0.78;">
+          <div class="top3-head">
+            <a href="https://finance.naver.com/item/main.naver?code={{ t.ticker }}" target="_blank" rel="noopener"><strong>{{ t.name }}</strong></a>
+            {% if mkt(t.ticker) %}<span class="pick-ticker">{{ mkt(t.ticker) }}</span>{% endif %}
+            <span class="px">{{ "{:,.0f}".format(t.price) }}원</span>
+            <span class="up-text">+{{ "{:.1f}".format(t.change_pct) }}%</span>
+            <span class="strat-badge" style="background:var(--red);">🚫상한가</span>
+          </div>
+          <div class="top3-meta">
+            {% if t.ai_summary %}<button type="button" class="ai-btn" onclick="showAI(this)" data-name="{{ t.name }}" data-summary="{{ t.ai_summary|e }}">🤖 AI요약</button>{% endif %}
+            {% if t.marcap_str %}<span class="code">시총 {{ t.marcap_str }}</span>{% endif %}
+            {{ cond_badges(t) }}{# #}
+          </div>
+          <div class="top3-reason">{{ t.reason }}</div>
+          {% if t.supply_str %}<div class="top3-reason" style="color:var(--green);">💰 {{ t.supply_str }}</div>{% endif %}
+          {% if t.theme %}<div class="top3-reason">{{ '업종' if t.theme_kind == 'sector' else '테마' }}: {{ t.theme }} · 주도테마여부: <strong style="color:{{ 'var(--green)' if t.is_leading_theme else 'var(--text-mute)' }};">{{ 'O' if t.is_leading_theme else 'X' }}</strong></div>{% endif %}
+          <div class="top3-reason" style="color:var(--red);">⚠️ 기준 부합했으나 <strong>상한가(+30%)로 Top3 제외</strong> — 매수 불가(잠김). 지표는 참고용.</div>
+        </div>
+        {% endfor %}
+      </div>
+      {% endif %}
+      <p style="font-size:12px;color:var(--text-dim);margin-top:0.5rem;">📊 20일선 이격도 = 현재가가 20일 이동평균선보다 얼마나 높은지. <span style="color:var(--red);">+25% 이상이면 과열</span>(단기 조정 위험)으로 표시합니다.</p>
+      <p class="disclaimer" style="font-size:12px;">※ A/B/C/D 시그널 + 주도주·거래량·수급(외국인/기관) 종합 점수 상위 3종목(기준 P4). 상한가 종목은 매수 불가라 제외(별도 표시). 참고용이며 매수 추천 아님, 판단·책임은 본인.</p>
+    </section>
+{% endif %}
+{%- endmacro -%}
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -792,6 +851,79 @@ ${{ "{:,.2f}".format(item.price) }} <span class="{{ 'up-text' if pct >= 0 else '
     </section>
     {% endif %}
 
+    {# ★ 마감전(pre_close): 탑3 + 종가베팅을 지수·수급 바로 뒤로 배치(사용자 2026-06-12) #}
+    {% if snap.mode == 'pre_close' %}{{ top3_section(snap) }}{% endif %}
+
+    {# 3a. 종가베팅 후보 (마감 전) — 점수기반 5선(B 눌림목 가산·4H 볼밴상단 패널티), AI는 사후 주석만 #}
+    {% if snap.mode == 'pre_close' and (snap.candidate_picks or snap.candidates_excluded_limitup) %}
+    <section>
+      <h2><span class="icon">🎯</span>종가베팅 후보 {{ snap.candidate_picks|length }}선 <span style="color:var(--text-dim);font-size:0.8rem;">(점수기반 · B눌림목 우대·4H 볼밴상단 패널티 · Top3 중복제외)</span></h2>
+      {% for p in snap.candidate_picks %}
+      <div class="pick {{ 'has-chart' if p.chart_url else '' }}">
+        <div class="pick-body">
+          <div class="pick-head">
+            <a class="pick-name" href="https://finance.naver.com/item/main.naver?code={{ p.ticker }}" target="_blank" rel="noopener">{{ p.name }}</a>
+            <span class="pick-meta-group">
+              <span class="pick-ticker">{{ p.ticker }}{{ mk(p.ticker) }}</span>
+              <button type="button" class="code-copy" data-code="{{ p.ticker }}" onclick="copyCode(this)" title="종목코드 복사 (MTS 검색창에 붙여넣기)">📋</button>
+              {% if p.strategies %}{{ strat_badge(p.strategies) }}{% endif %}
+              {% if p.price %}
+              <span class="px">{{ "{:,.0f}".format(p.price) }}원</span>
+              <span class="{{ 'up-text' if p.change_pct >= 0 else 'down-text' }}">{{ '+' if p.change_pct >= 0 else '' }}{{ "{:.2f}".format(p.change_pct) }}%</span>
+              {% endif %}
+              {{ cond_badges(p) }}{# 20일이격·과열·크로스 배지(Top3와 동일) #}
+            </span>
+          </div>
+          {% if p.theme %}
+          <div class="pick-theme">
+            <div class="pick-theme-name">{{ p.theme }}</div>
+            {% if p.theme_peers %}
+            <div class="peer-list">
+              {% for peer in p.theme_peers %}
+              <span class="peer-chip">
+                {% if peer.ticker %}<a href="https://finance.naver.com/item/main.naver?code={{ peer.ticker }}" target="_blank" rel="noopener">{{ peer.name }}</a>{% else %}<a href="https://search.naver.com/search.naver?query={{ peer.name|urlencode }}+주가" target="_blank" rel="noopener">{{ peer.name }}</a>{% endif %}
+                <span class="pct {{ 'up-text' if peer.change_pct >= 0 else 'down-text' }}">
+                  {{ '+' if peer.change_pct >= 0 else '' }}{{ "%.2f"|format(peer.change_pct) }}%
+                </span>
+              </span>
+              {% endfor %}
+            </div>
+            {% endif %}
+          </div>
+          {% endif %}
+          <div class="pick-rationale">{{ p.rationale }}</div>
+          {% if p.reason and p.reason != p.rationale %}<div class="pick-sub" style="color:var(--text-dim);font-size:0.8rem;">📊 점수근거: {{ p.reason }}</div>{% endif %}
+          {% if p.risk %}<div class="pick-risk">{{ p.risk }}</div>{% endif %}
+        </div>
+        {% if p.chart_url %}
+        <div class="pick-chart">
+          <img src="{{ p.chart_url }}" alt="{{ p.name }} 차트" loading="lazy"
+               onclick="document.getElementById('lightbox-img').src=this.src;document.getElementById('lightbox').classList.add('active');">
+        </div>
+        {% endif %}
+      </div>
+      {% endfor %}
+      {% if snap.candidates_excluded_limitup %}
+      <div style="margin-top:0.6rem;padding-top:0.5rem;border-top:1px dashed var(--border);">
+        <div style="font-size:0.82rem;color:var(--red);margin-bottom:0.3rem;">🚫 상한가로 제외 <span style="color:var(--text-dim);font-size:0.75rem;">(기준은 부합했으나 매수 불가)</span></div>
+        {% for p in snap.candidates_excluded_limitup %}
+        <div style="font-size:0.85rem;padding:0.35rem 0;border-bottom:1px dashed var(--border);opacity:0.8;">
+          <a href="https://finance.naver.com/item/main.naver?code={{ p.ticker }}" target="_blank" rel="noopener"><strong>{{ p.name }}</strong></a>
+          <span class="pick-ticker">{{ p.ticker }}{{ mk(p.ticker) }}</span>
+          {% if p.strategies is defined and p.strategies %}{{ strat_badge(p.strategies) }}{% endif %}
+          {% if p.price %}<span class="px">{{ "{:,.0f}".format(p.price) }}원</span> <span class="up-text">+{{ "{:.1f}".format(p.change_pct) }}%</span>{% endif %}
+          <span class="strat-badge" style="background:var(--red);">🚫상한가</span>
+          {% if p.theme %}<div style="color:var(--text-dim);font-size:0.8rem;">테마: {{ p.theme }}</div>{% endif %}
+          {% if p.rationale %}<div style="color:var(--sub,var(--muted));font-size:0.8rem;">{{ p.rationale }}</div>{% endif %}
+          <div style="color:var(--red);font-size:0.78rem;">⚠️ 기준 부합했으나 상한가(+30%)로 제외 — 매수 불가(잠김). 참고용.</div>
+        </div>
+        {% endfor %}
+      </div>
+      {% endif %}
+      <p class="disclaimer" style="font-size:12px;">※ A/B/C/D 점수 상위에서 B(주도주 20일선 눌림목) 가산·4시간봉 볼밴상단 강등을 적용한 5종목(Top3 제외). 참고용 시그널이며 매수 추천 아님, 판단·책임은 본인.</p>
+    </section>
+    {% endif %}
+
     {# 2. AI 요약 (us_morning/us_premarket은 지수 아래에서 이미 표시 → 여기선 KR만) #}
     {% if snap.summary and snap.mode not in ['us_morning', 'us_premarket', 'us_intraday', 'us_afterhours'] %}
     <section>
@@ -871,62 +1003,8 @@ ${{ "{:,.2f}".format(item.price) }} <span class="{{ 'up-text' if pct >= 0 else '
     </section>
     {% endif %}
 
-    {# ★ 오늘의 추천 Top3 (A/B/C/D + 주도주·거래량·수급 종합) #}
-    {% if snap.top3 or snap.top3_excluded_limitup %}
-    <section class="top3-sec">
-      <h2><span class="icon">🏆</span>오늘의 추천 Top 3</h2>
-      {% for t in snap.top3 %}
-      <div class="top3-card">
-        <div class="top3-head">
-          <span class="top3-rank">{{ loop.index }}</span>
-          <a href="https://finance.naver.com/item/main.naver?code={{ t.ticker }}" target="_blank" rel="noopener"><strong>{{ t.name }}</strong></a>
-          {% if mkt(t.ticker) %}<span class="pick-ticker">{{ mkt(t.ticker) }}</span>{% endif %}
-          <button type="button" class="code-copy" data-code="{{ t.ticker }}" onclick="copyCode(this)" title="종목코드 복사 (MTS 검색창에 붙여넣기)">📋</button>
-          <span class="px">{{ "{:,.0f}".format(t.price) }}원</span>
-          <span class="{{ 'up-text' if t.change_pct >= 0 else 'down-text' }}">{{ '+' if t.change_pct >= 0 else '' }}{{ "{:.1f}".format(t.change_pct) }}%</span>
-          {% if t.endstage %}<span class="down-text" style="cursor:pointer;" onclick="showFlag(this)" data-flag="endstage">⚠️끝물ⓘ</span>{% endif %}
-        </div>
-        <div class="top3-meta">
-          {% if t.ai_summary %}<button type="button" class="ai-btn" onclick="showAI(this)" data-name="{{ t.name }}" data-summary="{{ t.ai_summary|e }}">🤖 AI요약</button>{% endif %}
-          {% if t.marcap_str %}<span class="code">시총 {{ t.marcap_str }}</span>{% endif %}
-          {{ cond_badges(t) }}{# #}
-        </div>
-        <div class="top3-reason">{{ t.reason }}</div>
-        {% if t.supply_str %}<div class="top3-reason" style="color:var(--green);">💰 {{ t.supply_str }}</div>{% endif %}
-        {% if t.theme %}
-        <div class="top3-reason">{{ '업종' if t.theme_kind == 'sector' else '테마' }}: {{ t.theme }} · 주도테마여부: <strong style="color:{{ 'var(--green)' if t.is_leading_theme else 'var(--text-mute)' }};">{{ 'O' if t.is_leading_theme else 'X' }}</strong></div>
-        {% endif %}
-      </div>
-      {% endfor %}
-      {% if snap.top3_excluded_limitup %}
-      <div style="margin-top:0.8rem;padding-top:0.6rem;border-top:1px dashed var(--border);">
-        <div style="font-size:0.82rem;color:var(--red);margin-bottom:0.4rem;">🚫 상한가로 제외 <span style="color:var(--text-dim);font-size:0.75rem;">(점수 기준은 부합했으나 매수 불가)</span></div>
-        {% for t in snap.top3_excluded_limitup %}
-        <div class="top3-card" style="opacity:0.78;">
-          <div class="top3-head">
-            <a href="https://finance.naver.com/item/main.naver?code={{ t.ticker }}" target="_blank" rel="noopener"><strong>{{ t.name }}</strong></a>
-            {% if mkt(t.ticker) %}<span class="pick-ticker">{{ mkt(t.ticker) }}</span>{% endif %}
-            <span class="px">{{ "{:,.0f}".format(t.price) }}원</span>
-            <span class="up-text">+{{ "{:.1f}".format(t.change_pct) }}%</span>
-            <span class="strat-badge" style="background:var(--red);">🚫상한가</span>
-          </div>
-          <div class="top3-meta">
-            {% if t.ai_summary %}<button type="button" class="ai-btn" onclick="showAI(this)" data-name="{{ t.name }}" data-summary="{{ t.ai_summary|e }}">🤖 AI요약</button>{% endif %}
-            {% if t.marcap_str %}<span class="code">시총 {{ t.marcap_str }}</span>{% endif %}
-            {{ cond_badges(t) }}{# #}
-          </div>
-          <div class="top3-reason">{{ t.reason }}</div>
-          {% if t.supply_str %}<div class="top3-reason" style="color:var(--green);">💰 {{ t.supply_str }}</div>{% endif %}
-          {% if t.theme %}<div class="top3-reason">{{ '업종' if t.theme_kind == 'sector' else '테마' }}: {{ t.theme }} · 주도테마여부: <strong style="color:{{ 'var(--green)' if t.is_leading_theme else 'var(--text-mute)' }};">{{ 'O' if t.is_leading_theme else 'X' }}</strong></div>{% endif %}
-          <div class="top3-reason" style="color:var(--red);">⚠️ 기준 부합했으나 <strong>상한가(+30%)로 Top3 제외</strong> — 매수 불가(잠김). 지표는 참고용.</div>
-        </div>
-        {% endfor %}
-      </div>
-      {% endif %}
-      <p style="font-size:12px;color:var(--text-dim);margin-top:0.5rem;">📊 20일선 이격도 = 현재가가 20일 이동평균선보다 얼마나 높은지. <span style="color:var(--red);">+25% 이상이면 과열</span>(단기 조정 위험)으로 표시합니다.</p>
-      <p class="disclaimer" style="font-size:12px;">※ A/B/C/D 시그널 + 주도주·거래량·수급(외국인/기관) 종합 점수 상위 3종목(기준 P4). 상한가 종목은 매수 불가라 제외(별도 표시). 참고용이며 매수 추천 아님, 판단·책임은 본인.</p>
-    </section>
-    {% endif %}
+    {# ★ 오늘의 추천 Top3 — 마감전(pre_close)은 지수·수급 바로 뒤로 이동(상단 매크로). 그 외 모드는 여기. (사용자 2026-06-12) #}
+    {% if snap.mode != 'pre_close' %}{{ top3_section(snap) }}{% endif %}
 
     {# 🌙 시간외(NXT) 상위 상승률 — 정규장 마감 후(post_close, 정규장 종가 대비 NXT 변동) #}
     {% if snap.overtime_gainers %}
@@ -1141,72 +1219,7 @@ ${{ "{:,.2f}".format(item.price) }} <span class="{{ 'up-text' if pct >= 0 else '
     </section>
     {% endif %}
 
-    {# 3a. 종가베팅 후보 (마감 전) #}
-    {% if snap.mode == 'pre_close' and (snap.candidate_picks or snap.candidates_excluded_limitup) %}
-    <section>
-      <h2><span class="icon">🎯</span>종가베팅 후보 {{ snap.candidate_picks|length }}선</h2>
-      {% for p in snap.candidate_picks %}
-      <div class="pick {{ 'has-chart' if p.chart_url else '' }}">
-        <div class="pick-body">
-          <div class="pick-head">
-            <a class="pick-name" href="https://finance.naver.com/item/main.naver?code={{ p.ticker }}" target="_blank" rel="noopener">{{ p.name }}</a>
-            <span class="pick-meta-group">
-              <span class="pick-ticker">{{ p.ticker }}{{ mk(p.ticker) }}</span>
-              <button type="button" class="code-copy" data-code="{{ p.ticker }}" onclick="copyCode(this)" title="종목코드 복사 (MTS 검색창에 붙여넣기)">📋</button>
-              {% if p.strategies is defined %}{% if p.strategies %}{{ strat_badge(p.strategies) }}{% else %}<span class="strat-badge" style="background:var(--text-dim);">ABCD 미해당(AI선정)</span>{% endif %}{% endif %}
-              {% if p.price %}
-              <span class="px">{{ "{:,.0f}".format(p.price) }}원</span>
-              <span class="{{ 'up-text' if p.change_pct >= 0 else 'down-text' }}">{{ '+' if p.change_pct >= 0 else '' }}{{ "{:.2f}".format(p.change_pct) }}%</span>
-              {% endif %}
-            </span>
-          </div>
-          {% if p.theme %}
-          <div class="pick-theme">
-            <div class="pick-theme-name">{{ p.theme }}</div>
-            {% if p.theme_peers %}
-            <div class="peer-list">
-              {% for peer in p.theme_peers %}
-              <span class="peer-chip">
-                {% if peer.ticker %}<a href="https://finance.naver.com/item/main.naver?code={{ peer.ticker }}" target="_blank" rel="noopener">{{ peer.name }}</a>{% else %}<a href="https://search.naver.com/search.naver?query={{ peer.name|urlencode }}+주가" target="_blank" rel="noopener">{{ peer.name }}</a>{% endif %}
-                <span class="pct {{ 'up-text' if peer.change_pct >= 0 else 'down-text' }}">
-                  {{ '+' if peer.change_pct >= 0 else '' }}{{ "%.2f"|format(peer.change_pct) }}%
-                </span>
-              </span>
-              {% endfor %}
-            </div>
-            {% endif %}
-          </div>
-          {% endif %}
-          <div class="pick-rationale">{{ p.rationale }}</div>
-          {% if p.risk %}<div class="pick-risk">{{ p.risk }}</div>{% endif %}
-        </div>
-        {% if p.chart_url %}
-        <div class="pick-chart">
-          <img src="{{ p.chart_url }}" alt="{{ p.name }} 차트" loading="lazy"
-               onclick="document.getElementById('lightbox-img').src=this.src;document.getElementById('lightbox').classList.add('active');">
-        </div>
-        {% endif %}
-      </div>
-      {% endfor %}
-      {% if snap.candidates_excluded_limitup %}
-      <div style="margin-top:0.6rem;padding-top:0.5rem;border-top:1px dashed var(--border);">
-        <div style="font-size:0.82rem;color:var(--red);margin-bottom:0.3rem;">🚫 상한가로 제외 <span style="color:var(--text-dim);font-size:0.75rem;">(기준은 부합했으나 매수 불가)</span></div>
-        {% for p in snap.candidates_excluded_limitup %}
-        <div style="font-size:0.85rem;padding:0.35rem 0;border-bottom:1px dashed var(--border);opacity:0.8;">
-          <a href="https://finance.naver.com/item/main.naver?code={{ p.ticker }}" target="_blank" rel="noopener"><strong>{{ p.name }}</strong></a>
-          <span class="pick-ticker">{{ p.ticker }}{{ mk(p.ticker) }}</span>
-          {% if p.strategies is defined and p.strategies %}{{ strat_badge(p.strategies) }}{% endif %}
-          {% if p.price %}<span class="px">{{ "{:,.0f}".format(p.price) }}원</span> <span class="up-text">+{{ "{:.1f}".format(p.change_pct) }}%</span>{% endif %}
-          <span class="strat-badge" style="background:var(--red);">🚫상한가</span>
-          {% if p.theme %}<div style="color:var(--text-dim);font-size:0.8rem;">테마: {{ p.theme }}</div>{% endif %}
-          {% if p.rationale %}<div style="color:var(--sub,var(--muted));font-size:0.8rem;">{{ p.rationale }}</div>{% endif %}
-          <div style="color:var(--red);font-size:0.78rem;">⚠️ 기준 부합했으나 상한가(+30%)로 제외 — 매수 불가(잠김). 참고용.</div>
-        </div>
-        {% endfor %}
-      </div>
-      {% endif %}
-    </section>
-    {% endif %}
+    {# 3a. 종가베팅 후보 — pre_close는 지수·수급 바로 뒤로 이동(상단). 여기서는 렌더하지 않음. (사용자 2026-06-12) #}
 
     {# 3c. 전략 스크린 — 종목당 1줄(중복제거)·종합점수순·매칭전략 다 표기 (사용자 2026-06-05) #}
     {% if snap.screen_ranked %}

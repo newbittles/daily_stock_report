@@ -47,12 +47,20 @@ def select_top3(screen_picks: list[dict], foreign_buy: set[str] | None = None,
                 inst_buy: set[str] | None = None, w: dict | None = None,
                 us_keywords: set[str] | None = None, w_us: float = 0.0,
                 us_sectors: list[dict] | None = None, return_all: bool = False,
-                supply_streaks: dict[str, dict] | None = None) -> list[dict]:
-    """A/B/C/D 스크린 결과 → 종합점수 상위 3종목. 추천 이유 동반.
+                supply_streaks: dict[str, dict] | None = None,
+                b_pullback_bonus: float = 0.0, overheat_4h_penalty: float = 0.0,
+                exclude_tickers: set[str] | None = None, limit: int = 3,
+                diversity_max: int = 2, min_b: int = 0) -> list[dict]:
+    """A/B/C/D 스크린 결과 → 종합점수 상위 N종목(기본 3). 추천 이유 동반.
 
     foreign_buy/inst_buy: 외국인/기관 순매수 상위 종목코드 집합(수급 가산).
     us_keywords/w_us: 미국 강세테마 연동 가중(us_morning 시초 Top3 전용. 국장은 w_us=0).
     us_sectors: 추천이유에 연결된 미국 섹터명 표기용.
+    b_pullback_bonus: B(주도주 20일선 눌림목) 종목 추가 가산 — 종가베팅 5선 전용(기본 0=Top3 무변경).
+    overheat_4h_penalty: 4시간봉 볼밴 상단(overheat_4h) 종목 추가 강등 — 종가베팅 5선 전용(기본 0).
+    exclude_tickers: 최종 선정에서 제외할 종목코드(예: Top3와 중복 제거). return_all에는 미적용.
+    limit/diversity_max: 최종 선정 개수·동일전략 최대 개수(기본 3·2 = 기존 Top3 동작).
+    min_b: B(주도주 20일선 눌림목) 매칭 종목 의무 포함 최소 개수(가능한 만큼) — 종가베팅 5선 전용(기본 0).
     """
     w = w or WEIGHTS
     fb, ib = foreign_buy or set(), inst_buy or set()
@@ -105,6 +113,9 @@ def select_top3(screen_picks: list[dict], foreign_buy: set[str] | None = None,
             + w_us * (1 if us_hit else 0)
             - w["end"] * (1 if p.get("endstage") else 0)
             - w["overheat"] * (1 if is_overheat else 0)  # 과열 강등
+            # 종가베팅 5선 전용 가감(사용자 2026-06-12) — Top3는 두 값 0이라 무영향
+            + b_pullback_bonus * (1 if "B" in p["_strats"] else 0)        # B 눌림목 가산
+            - overheat_4h_penalty * (1 if p.get("overheat_4h") else 0)    # 4H 볼밴상단 추가 강등
         )
         # 추천 이유 구성
         why = []
@@ -112,6 +123,10 @@ def select_top3(screen_picks: list[dict], foreign_buy: set[str] | None = None,
         why.append(f"{strats} 시그널")
         if "B" in p["_strats"] and p.get("high_dd") is not None:  # B 설명에 고점대비 낙폭(사용자 2026-06-05)
             why.append(f"고점대비 {p.get('high_dd', 0):+.1f}%")
+        if b_pullback_bonus and "B" in p["_strats"]:  # 종가베팅 5선 B 눌림목 우대(사용자 2026-06-12)
+            why.append("🅱️눌림목 우대(+가산)")
+        if overheat_4h_penalty and p.get("overheat_4h"):  # 4H 볼밴상단 추가 강등(사용자 2026-06-12)
+            why.append("🔻4시간봉 볼밴상단(−패널티)")
         if us_hit:
             sec = matched_us_sector(p.get("theme", ""), us_sectors or [])
             why.append(f"미국 {sec} 강세 연동" if sec else "미국 강세테마 연동")
@@ -153,15 +168,64 @@ def select_top3(screen_picks: list[dict], foreign_buy: set[str] | None = None,
     ranked.sort(key=lambda x: x["score"], reverse=True)
     if return_all:  # 전략 스크린용 — 종목당 1개(중복제거)·점수순 전체(사용자 2026-06-05)
         return ranked
-    # 전략 다양성 — 같은 전략 최대 2개 (C 독점 방지 → 주도주+눌림목 균형)
+    _excl = exclude_tickers or set()
+    # 전략 다양성 — 같은 전략 최대 diversity_max개 (C 독점 방지 → 주도주+눌림목 균형)
     out: list[dict] = []
+    chosen: set[str] = set()
     strat_cnt: dict[str, int] = {}
-    for r in ranked:
+
+    def _try_add(r: dict) -> bool:
+        if r["ticker"] in _excl or r["ticker"] in chosen or len(out) >= limit:
+            return False
         st = r["lead_strat"]
-        if strat_cnt.get(st, 0) >= 2:
-            continue
+        if strat_cnt.get(st, 0) >= diversity_max:
+            return False
         out.append(r)
+        chosen.add(r["ticker"])
         strat_cnt[st] = strat_cnt.get(st, 0) + 1
-        if len(out) >= 3:
+        return True
+
+    # 1) B 눌림목 의무 포함 — 점수순 B(매칭전략에 B 포함)를 min_b개까지 먼저(사용자 2026-06-12)
+    if min_b > 0:
+        b_added = 0
+        for r in ranked:
+            if b_added >= min_b or len(out) >= limit:
+                break
+            if "B" in (r.get("strategies") or []) and _try_add(r):
+                b_added += 1
+    # 2) 나머지 점수순 채우기
+    for r in ranked:
+        if len(out) >= limit:
             break
+        _try_add(r)
     return out
+
+
+# ── 종가베팅 5선 (사용자 2026-06-12) ──────────────────────────────────────────
+# Top3와 별개로, '마감 직전 매수' 관점에 맞춰 B(주도주 20일선 눌림목)를 추가 가산하고
+# 4시간봉 볼밴 상단(overheat_4h, 단기 고점)을 추가 강등해 과열 추격을 피한다.
+# ⚠️ 두 값은 백테스트 미검증(사용자 요청 반영) — 추후 backtest_top3로 튜닝 권장.
+CB_B_PULLBACK_BONUS = 3.0      # B 눌림목 가산(점수). 참고: 기존 B strat 점수 = 2.8×3.0 = 8.4
+CB_OVERHEAT_4H_PENALTY = 4.0   # 4H 볼밴상단 추가 강등(점수). 기존 통합 overheat 강등(5.0)에 더해짐
+
+
+CB_MIN_B = 2  # 종가베팅 5선에 B 눌림목 의무 포함 최소 개수(사용자 2026-06-12). 풀에 B가 부족하면 가능한 만큼.
+
+
+def select_closing_bets(screen_picks: list[dict], foreign_buy: set[str] | None = None,
+                        inst_buy: set[str] | None = None,
+                        supply_streaks: dict[str, dict] | None = None,
+                        exclude_tickers: set[str] | None = None,
+                        limit: int = 5, min_b: int = CB_MIN_B) -> list[dict]:
+    """종가베팅 5선 — Top3와 동일 점수 체계 + B 눌림목 가산 + 4H 볼밴상단 패널티.
+
+    B(주도주 20일선 눌림목)는 최소 min_b종목 의무 포함(가능한 만큼). Top3와 중복을
+    피하려면 exclude_tickers에 Top3 종목코드를 넘긴다. 결과 dict는 select_top3와 동일 스키마.
+    diversity_max=3 — '2 이상' 요구에 맞춰 B가 최대 3까지 들어올 수 있게 허용(사용자 2026-06-12)."""
+    return select_top3(
+        screen_picks, foreign_buy=foreign_buy, inst_buy=inst_buy,
+        supply_streaks=supply_streaks,
+        b_pullback_bonus=CB_B_PULLBACK_BONUS,
+        overheat_4h_penalty=CB_OVERHEAT_4H_PENALTY,
+        exclude_tickers=exclude_tickers, limit=limit, diversity_max=3, min_b=min_b,
+    )

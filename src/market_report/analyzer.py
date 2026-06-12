@@ -180,6 +180,9 @@ JSON만 출력하고 다른 설명은 추가하지 마세요."""
 
 
 def _pre_close_prompt(snap: MarketSnapshot, context: str) -> str:
+    # 종가베팅 5선 '선정'은 점수기반(top3.select_closing_bets)으로 분리됨(사용자 2026-06-12).
+    # AI는 시장요약·테마근거만 담당하고, 선정된 5선의 '주석(rationale/risk/theme_peers)'은
+    # 별도 annotate_closing_bets()에서 처리한다(수치 1차·AI 보조 원칙).
     theme_names = [t.name for t in snap.top_themes[:10]]
     return f"""당신은 한국 주식 시장 전문 애널리스트입니다. 지금 시각은 장 마감 40분 전 (14:50).
 사용자는 종가베팅 전략을 사용합니다: 마감 직전 거래량이 쏠리거나, 과매도 후 반등 신호가 보이는 종목을 매수.
@@ -194,21 +197,7 @@ def _pre_close_prompt(snap: MarketSnapshot, context: str) -> str:
     "테마명1": "이 테마가 왜 오늘 강한지/약한지 — 뉴스·매크로 이슈·실적·정책 근거 (1-2문장, 구체적이고 사실 기반)",
     "테마명2": "...",
     "...": "..."
-  }},
-  "candidate_picks": [
-    {{
-      "ticker": "6자리 종목코드",
-      "name": "종목명",
-      "theme": "이 종목이 속한 테마명 (위 강세 테마 Top 10 중 하나)",
-      "theme_peers": [
-        {{"name": "동반 상승 중인 같은 테마 종목명", "change_pct": 등락률_숫자}}
-        // 같은 테마의 동반 종목 2~4개 (위 데이터의 상승률 상위에서 찾기, 등락률 정확히)
-      ],
-      "rationale": "왜 종가베팅 후보인지 — 거래량/등락/테마/뉴스 근거 (2-3문장)",
-      "risk": "주의할 위험 요인 (1문장)"
-    }}
-    // 정확히 5개
-  ]
+  }}
 }}
 
 theme_reasons 작성 규칙:
@@ -217,14 +206,50 @@ theme_reasons 작성 규칙:
 - 시장 뉴스에서 단서를 적극 활용 (예: "AI 반도체 사이클 기대감", "전기차 보조금 정책")
 - 추측보다는 데이터 기반 추론
 
-선정 기준 (candidate_picks):
-- 거래량 상위 또는 상승률 상위에 있으면서 강세 테마에 속한 종목
-- 또는 과매도(-3%~-10%)인데 거래량 급증 + 강세 테마 → 반등 후보
-- ETF·인버스·레버리지는 제외 (실제 종목만)
-- 5개 모두 서로 다른 테마/특성에서 선정 (다양성)
-- ticker는 반드시 데이터에 등장한 6자리 코드만 사용 (창작 금지)
-- theme는 정확히 다음 중에서 선택: {theme_names}
-- theme_peers의 등락률은 데이터에 명시된 값만 사용 (창작 금지, 없으면 빈 배열)
+데이터:
+{context}
+
+JSON만 출력하고 다른 설명은 추가하지 마세요."""
+
+
+def _closing_bet_annotate_prompt(picks: list[dict], context: str) -> str:
+    """이미 점수로 선정된 종가베팅 5선에 종목별 주석을 다는 프롬프트(선정 아님)."""
+    import json as _json
+    lines = []
+    for p in picks:
+        lines.append(
+            f'- {p.get("name","")}({p.get("ticker","")}): '
+            f'전략 {"/".join(p.get("strategies", []) or [])} · '
+            f'현재가 {p.get("price",0):,.0f} · 당일 {p.get("change_pct",0):+.2f}% · '
+            f'테마 {p.get("theme","") or "미상"} · 고점대비 {p.get("high_dd",0):+.1f}% · '
+            f'20일이격 {p.get("gap20",0):+.1f}%'
+        )
+    picks_block = "\n".join(lines)
+    tickers = [p.get("ticker", "") for p in picks]
+    return f"""당신은 한국 주식 시장 전문 애널리스트입니다. 지금은 장 마감 40분 전 (14:50).
+아래 '종가베팅 5선'은 이미 **점수 기반으로 선정**된 종목입니다(B 눌림목 가산·4시간봉 볼밴상단 패널티 반영).
+당신의 임무는 종목을 새로 고르는 것이 아니라, **선정된 각 종목에 주석을 다는 것**입니다.
+
+[선정된 종가베팅 5선]
+{picks_block}
+
+각 종목에 대해 아래를 작성하세요. **반드시 JSON 형식**으로(종목코드를 키로):
+
+{{
+  "{tickers[0] if tickers else '000000'}": {{
+    "rationale": "왜 종가베팅에 적합한지 — 거래량/눌림/테마/뉴스 근거 (2-3문장)",
+    "risk": "주의할 위험 요인 (1문장)",
+    "theme_peers": [
+      {{"name": "같은 테마 동반 종목명", "change_pct": 등락률_숫자}}
+    ]
+  }}
+  // 위 5선의 모든 종목코드에 대해 반복
+}}
+
+작성 규칙:
+- 위 5선에 있는 종목코드만 키로 사용 (새 종목 창작 금지)
+- theme_peers는 같은 테마 동반 종목 2~4개, 등락률은 아래 데이터에 명시된 값만 (없으면 빈 배열)
+- 사실을 지어내지 말 것. 매수 단정·목표가 금지(참고용 표현)
 
 데이터:
 {context}
@@ -434,38 +459,9 @@ async def analyze(snap: MarketSnapshot) -> MarketSnapshot:
             t.reason = _to_text(reason) if reason else ""
 
     if snap.mode == "pre_close":
-        picks_raw = data.get("candidate_picks", [])
-        valid_picks = []
-        for p in picks_raw:
-            if not isinstance(p, dict):
-                continue
-            if not all(k in p for k in ("ticker", "name", "rationale")):
-                continue
-
-            # theme_peers 정규화: [{"name", "change_pct"}, ...]
-            peers_raw = p.get("theme_peers", [])
-            peers = []
-            if isinstance(peers_raw, list):
-                for peer in peers_raw[:5]:
-                    if not isinstance(peer, dict):
-                        continue
-                    pname = str(peer.get("name", "")).strip()
-                    try:
-                        pct = float(peer.get("change_pct", 0))
-                    except (TypeError, ValueError):
-                        pct = 0.0
-                    if pname:
-                        peers.append({"name": pname, "change_pct": pct})
-
-            valid_picks.append({
-                "ticker": str(p["ticker"]).strip(),
-                "name": str(p["name"]).strip(),
-                "theme": str(p.get("theme", "")).strip(),
-                "theme_peers": peers,
-                "rationale": str(p["rationale"]).strip(),
-                "risk": str(p.get("risk", "")).strip(),
-            })
-        snap.candidate_picks = valid_picks
+        # 종가베팅 5선 '선정'은 점수기반(파이프라인 select_closing_bets)으로 분리됨(사용자 2026-06-12).
+        # 여기서는 비워두고, 선정 후 annotate_closing_bets()가 주석을 채운다.
+        snap.candidate_picks = []
     elif snap.mode == "post_close":
         # 마감 후: tomorrow_watchpoints를 candidate_picks 자리에 보관 (재사용)
         snap.candidate_picks = [
@@ -479,6 +475,69 @@ async def analyze(snap: MarketSnapshot) -> MarketSnapshot:
         snap.mode, len(snap.candidate_picks), len(snap.summary)
     )
     return snap
+
+
+async def annotate_closing_bets(snap: MarketSnapshot) -> None:
+    """점수로 선정된 종가베팅 5선(snap.candidate_picks)에 AI 주석을 부착(사용자 2026-06-12).
+
+    선정은 파이프라인의 select_closing_bets(점수기반)에서 끝났고, 여기서는 종목별
+    rationale/risk/theme_peers만 채운다. 키없음·한도·실패 시 결정론 폴백(점수 reason 사용)."""
+    picks = snap.candidate_picks or []
+    if not picks:
+        return
+    # 폴백 주석 — AI 실패해도 카드가 비지 않도록 점수 'reason'을 rationale로
+    for p in picks:
+        if not p.get("rationale"):
+            p["rationale"] = p.get("reason", "") or ""
+        p.setdefault("risk", "")
+        p.setdefault("theme_peers", [])
+
+    settings = get_settings()
+    if not settings.gemini_api_key or quota_blocked():
+        return  # 폴백 주석 유지
+
+    context = _build_snapshot_context(snap)
+    prompt = _closing_bet_annotate_prompt(picks, context)
+    try:
+        client = genai.Client(api_key=settings.gemini_api_key)
+        resp = client.models.generate_content(
+            model=MODEL_NAME, contents=prompt,
+            config=types.GenerateContentConfig(
+                response_mime_type="application/json", temperature=0.3),
+        )
+        data = json.loads(resp.text or "{}")
+    except Exception as exc:  # noqa: BLE001
+        _maybe_trip_quota(exc)
+        logger.warning("closing_bet_annotate_failed error=%s", exc)
+        return
+    if not isinstance(data, dict):
+        return
+    for p in picks:
+        ann = data.get(p.get("ticker", ""))
+        if not isinstance(ann, dict):
+            continue
+        rat = str(ann.get("rationale", "")).strip()
+        if rat:
+            p["rationale"] = rat
+        risk = str(ann.get("risk", "")).strip()
+        if risk:
+            p["risk"] = risk
+        peers_raw = ann.get("theme_peers", [])
+        peers = []
+        if isinstance(peers_raw, list):
+            for peer in peers_raw[:5]:
+                if not isinstance(peer, dict):
+                    continue
+                pname = str(peer.get("name", "")).strip()
+                try:
+                    pct = float(peer.get("change_pct", 0))
+                except (TypeError, ValueError):
+                    pct = 0.0
+                if pname:
+                    peers.append({"name": pname, "change_pct": pct})
+        if peers:
+            p["theme_peers"] = peers
+    logger.info("closing_bets_annotated total=%d", len(picks))
 
 
 def _move_label(change_pct: float, cross_signal: str | None = None) -> str:

@@ -1758,7 +1758,8 @@ async def run_full(
         # best-effort: 실패해도 일봉 과열만으로 진행. 전체 유니버스 조회는 부하 커서 상위만.
         try:
             from src.datasource.kr_4h import fetch_4h_overheat
-            _cand = sorted(snap.screen_picks, key=lambda p: p.get("_liq", 0), reverse=True)[:12]
+            # 종가베팅 5선 4H 볼밴상단 패널티 커버리지 위해 상위 15로 확대(사용자 2026-06-12)
+            _cand = sorted(snap.screen_picks, key=lambda p: p.get("_liq", 0), reverse=True)[:15]
             _o4 = await fetch_4h_overheat([p["ticker"] for p in _cand])
             for p in snap.screen_picks:
                 if _o4.get(p["ticker"]):
@@ -1796,6 +1797,39 @@ async def run_full(
                         [t["name"] for t in snap.top3], len(snap.top3_excluded_limitup), len(_kr_streaks))
         except Exception as exc:
             logger.warning("top3_failed error=%s", exc)
+
+        # 🎯 종가베팅 5선 — 점수기반 선정(B 눌림목 가산 + 4H 볼밴상단 패널티), Top3와 중복 제외.
+        # 선정은 결정론(select_closing_bets), AI는 사후 주석만(rationale/risk/theme_peers). 사용자 2026-06-12.
+        if snap.mode == "pre_close":
+            try:
+                from src.market_report.analyzer import annotate_closing_bets
+                from src.market_report.top3 import select_closing_bets
+                from src.market_report.top3 import select_top3 as _sel_t3
+                _LIMITUP_CB = 29.5  # 상한가(+30%) 근접 — 매수 불가(잠김)
+                _t3 = {t["ticker"] for t in (snap.top3 or [])}
+                _lim = {p["ticker"] for p in snap.screen_picks
+                        if p.get("change_pct", 0) >= _LIMITUP_CB}
+                # 5선: Top3·상한가를 '선정 전' 제외 → 항상 매수가능 5종목으로 충원(상한가가 슬롯 잠식 방지)
+                snap.candidate_picks = select_closing_bets(
+                    snap.screen_picks, foreign_buy=_kr_fb, inst_buy=_kr_ib,
+                    supply_streaks=_kr_streaks, exclude_tickers=_t3 | _lim, limit=5)
+                # 상한가 제외 종목(점수순·표시용) — Top3 중복 제외
+                _excl_pool = [p for p in snap.screen_picks
+                              if p.get("change_pct", 0) >= _LIMITUP_CB and p["ticker"] not in _t3]
+                snap.candidates_excluded_limitup = _sel_t3(
+                    _excl_pool, foreign_buy=_kr_fb, inst_buy=_kr_ib,
+                    supply_streaks=_kr_streaks, return_all=True)[:5]
+                for p in snap.candidate_picks + snap.candidates_excluded_limitup:  # 템플릿 호환 필드
+                    p["rationale"] = p.get("reason", "")
+                    p.setdefault("risk", "")
+                    p.setdefault("theme_peers", [])
+                await annotate_closing_bets(snap)            # AI 사후 주석(키없음/한도 시 폴백)
+                await _render_pick_charts(snap)              # 후보 차트(2달·전략마커·MACD)
+                logger.info("closing_bets_ready picks=%s excl_limitup=%d",
+                            [p["name"] for p in snap.candidate_picks],
+                            len(snap.candidates_excluded_limitup))
+            except Exception as exc:  # noqa: BLE001
+                logger.warning("closing_bets_failed error=%s", exc)
 
         # 🏦 H. 수급 주도 — 기관/외인 연속 순매수 + 급등(정배열 필터)·참고용(사용자 2026-06-11).
         # 미래에셋생명류를 별도 리스팅(Top3 미반영, 백테스트 결론: 정배열만 본전·비정배열 손실).
