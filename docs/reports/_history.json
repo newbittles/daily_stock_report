@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-06-12",
+    "time": "09:15",
+    "mode": "kr_open",
+    "url": "reports/2026-06-12-kr-open.html",
+    "summary": "오늘 한국 증시는 건설, 자동차, IT/반도체 등 주요 업종의 강세에 힘입어 코스피와 코스닥 모두 상승 흐름을 보이고 있습니다. 특히 중동 지역 긴장 완화 기대감과 함께 전후 재건 관련 테마가 주목받고 있습니다. 장중 흐름에서는 SK네트웍스와 삼성전자",
+    "kospi_pct": 7.59,
+    "kosdaq_pct": 3.01
+  },
+  {
+    "date": "2026-06-12",
     "time": "06:30",
     "mode": "us_morning",
     "url": "reports/2026-06-12-us.html",
@@ -526,15 +535,6 @@
     "time": "00:45",
     "mode": "pre_close",
     "url": "reports/2026-05-29-pre.html",
-    "summary": "AI 분석을 일시적으로 사용할 수 없습니다. 아래 데이터를 직접 참고하세요.",
-    "kospi_pct": -0.53,
-    "kosdaq_pct": -2.54
-  },
-  {
-    "date": "2026-05-29",
-    "time": "00:37",
-    "mode": "post_close",
-    "url": "reports/2026-05-29-post.html",
     "summary": "AI 분석을 일시적으로 사용할 수 없습니다. 아래 데이터를 직접 참고하세요.",
     "kospi_pct": -0.53,
     "kosdaq_pct": -2.54
