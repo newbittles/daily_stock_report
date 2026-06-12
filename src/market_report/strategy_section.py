@@ -14,7 +14,7 @@ import yaml
 
 from src.alerts.holdings_report import diagnose_holdings
 from src.indicators.core import average_true_range, moving_average, round_to_tick
-from src.patterns.core import gave_back_recent_gain, ma_cross_signal
+from src.patterns.core import bullish_divergence, gave_back_recent_gain, ma_cross_signal
 from src.screener.config import load_screener_config
 from src.screener.engine import evaluate_strategy
 from src.screener.pipeline import _is_etf, _is_pref
@@ -159,6 +159,8 @@ async def collect_screen_picks(adapter, per_strategy: int = 8,
         # 5·10 단기 데드크로스 + 20일이격 → 단기눌림(🟢)/조정시작(⚠️) 신호 (domain SSOT)
         # CROSS_PULLBACK/CORRECTION/None — 보유 종목 홀드·익절 판단 + 리포트 표시용
         _cross = ma_cross_signal(_closes)
+        # 강세 다이버전스(가격 신저점 + RSI 저점↑) — 참고 태그용(가중치 0). 백테스트 OOS 미통과(사용자 2026-06-12).
+        _bdiv = bullish_divergence(c, mode="rsi")
         # 🔥 과열 판정(사용자 2026-06-05 수정): 일봉 BB(20,2) 상단 종가돌파 = 과열.
         # 기존엔 이격≥30%·거래량≥1.8배 AND 게이트라 대형 우량주(BB는 넘어도 이격 작음)가
         # 과열로 안 잡혀 추천됨(삼성화재·신세계 사례). → BB돌파 단독으로 완화, 이격·거래량은 보조.
@@ -204,6 +206,8 @@ async def collect_screen_picks(adapter, per_strategy: int = 8,
                     "stop_pct": round(_stop_pct, 1),
                     "overheat": _overheat, "vol_x": round(_volx, 1),
                     "cross_signal": _cross,  # PULLBACK(🟢 단기눌림)/CORRECTION(⚠️ 조정시작)/None
+                    "bull_div": bool(_bdiv.matched),  # 🔀 강세 다이버전스(참고 태그·가중치0, D에 표시)
+                    "bull_div_rsidiv": round(_bdiv.metrics.get("rsi_div") or 0, 1) if _bdiv.matched else 0,
                     "theme": "",            # pipeline에서 judal 테마/업종 폴백으로 채움
                     "theme_kind": "",       # "theme"(judal 테마) | "sector"(네이버 세분업종)
                     "theme_idx": "",        # judal themeIdx (테마 링크용)

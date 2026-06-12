@@ -161,6 +161,8 @@ def select_top3(screen_picks: list[dict], foreign_buy: set[str] | None = None,
             "overheat_4h": bool(p.get("overheat_4h")),
             "vol_x": p.get("vol_x", 0),
             "cross_signal": p.get("cross_signal", ""),  # 5<10 데드+이격 (pullback/correction)
+            "bull_div": bool(p.get("bull_div")),  # 🔀 강세 다이버전스 참고 태그(가중치0·D 표시)
+            "bull_div_rsidiv": p.get("bull_div_rsidiv", 0),
             "lead_strat": p["strategy"].split(".")[0].strip(),  # 대표전략 A/B/C/D
             "strategies": sorted(p["_strats"]),         # 매칭된 전략 전부(중복표기, 사용자 2026-06-05)
             "ai_summary": p.get("ai_summary", ""), "marcap_str": p.get("marcap_str", ""),

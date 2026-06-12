@@ -86,6 +86,17 @@ def test_min_b_mandatory_inclusion() -> None:
     assert len(forced) == 5
 
 
+def test_bull_div_tag_propagates() -> None:
+    """🔀 강세 다이버전스 참고 태그(가중치0)가 select_top3 결과로 전파됨(사용자 2026-06-12)."""
+    picks = [_pick("X", "엑스", _D, bull_div=True, bull_div_rsidiv=3.0)]
+    out = select_top3(picks, return_all=True)
+    assert out[0]["bull_div"] is True
+    assert out[0]["bull_div_rsidiv"] == 3.0
+    # 가중치 0 — bull_div가 점수에 영향 없어야(태그 전용)
+    base = select_top3([_pick("Y", "와이", _D)], return_all=True)
+    assert out[0]["score"] == base[0]["score"]
+
+
 def test_bonus_constant_sane() -> None:
     """가산 상수는 양수(튜닝 가능). 0이면 의미 없음."""
     assert CB_B_PULLBACK_BONUS > 0

@@ -1447,3 +1447,64 @@ def macd_bearish_divergence(
         return PatternResult(
             True, "MACD 고점 다이버전스 — 가격 고점↑·MACD 고점↓(상승 동력 약화, 고점 주의)", metrics)
     return PatternResult(False, "다이버전스 없음", metrics)
+
+
+def bullish_divergence(
+    candles: list[Candle], lookback: int = 55, pivot_k: int = 4, min_gap: int = 6,
+    mode: str = "rsi", recent_within: int = 10, rsi_period: int = 14,
+) -> PatternResult:
+    """강세(매수) 다이버전스 — 가격 저점은 낮아지는데 RSI/MACD 저점은 높아짐(하락 동력 약화→반등).
+
+    W반등(쌍바닥) 계열 신호. 사용자 2026-06-12(NAVER 4/2·5/20 사례). KR·US 공통.
+    최근 lookback일에서 가격 스윙 저점 2개를 찾아, 나중 저점의 가격 < 이전 저점이지만
+    그 시점 RSI(또는 MACD선)는 나중 > 이전이면 강세 다이버전스.
+    mode: "rsi"(가격 LL + RSI HL) | "macd"(가격 LL + MACD HL) | "both"(둘 다 AND).
+    recent_within: 나중 저점(p2)이 구간 끝에서 이 봉수 이내여야 함(반등 임박 한정).
+    metrics: price_p1/p2, rsi_p1/p2, macd_p1/p2, rsi_div, macd_div, p2_age.
+    """
+    closes = _closes(candles)
+    if len(closes) < 60:
+        return PatternResult(False, "데이터 부족(60봉)")
+    rsi_v = rsi(closes, rsi_period)
+    macd_line, _sig, _hist = macd(closes)
+    seg = closes[-lookback:]
+    seg_r = rsi_v[-lookback:]
+    seg_m = macd_line[-lookback:]
+    # 가격 스윙 저점 피벗 (창 내 최소값)
+    pl = [k for k in range(pivot_k, len(seg) - pivot_k)
+          if seg[k] <= min(seg[k - pivot_k:k + pivot_k + 1])]
+    if len(pl) < 2:
+        return PatternResult(False, "가격 저점 피벗 부족")
+    p2 = pl[-1]
+    p2_age = len(seg) - 1 - p2
+    if p2_age > recent_within + pivot_k:  # 나중 저점이 과거면 신호 만료(반등 임박 아님)
+        return PatternResult(False, "최근 저점 아님", {"p2_age": p2_age})
+    prior = [k for k in pl[:-1] if p2 - k >= min_gap]
+    if not prior:
+        return PatternResult(False, "비교할 직전 저점 부족")
+    p1 = prior[-1]
+    price_ll = seg[p2] < seg[p1] * 0.995  # 가격 저점 낮아짐(최소 0.5%)
+    rsi_ok = seg_r[p1] is not None and seg_r[p2] is not None
+    macd_ok = seg_m[p1] is not None and seg_m[p2] is not None
+    rsi_hl = rsi_ok and seg_r[p2] > seg_r[p1]      # RSI 저점 높아짐
+    macd_hl = macd_ok and seg_m[p2] > seg_m[p1]    # MACD 저점 높아짐
+    metrics = {
+        "price_p1": round(seg[p1], 2), "price_p2": round(seg[p2], 2),
+        "rsi_p1": round(seg_r[p1], 1) if rsi_ok else None,
+        "rsi_p2": round(seg_r[p2], 1) if rsi_ok else None,
+        "macd_p1": round(seg_m[p1], 4) if macd_ok else None,
+        "macd_p2": round(seg_m[p2], 4) if macd_ok else None,
+        "rsi_div": round(seg_r[p2] - seg_r[p1], 1) if rsi_ok else None,
+        "macd_div": round(seg_m[p2] - seg_m[p1], 4) if macd_ok else None,
+        "p2_age": p2_age,
+    }
+    if mode == "rsi":
+        ok = price_ll and rsi_hl
+    elif mode == "macd":
+        ok = price_ll and macd_hl
+    else:  # "both" — RSI·MACD 동시 다이버전스(가장 보수적)
+        ok = price_ll and rsi_hl and macd_hl
+    if ok:
+        return PatternResult(
+            True, f"강세 다이버전스({mode}) — 가격 저점↓·지표 저점↑(하락 동력 약화, 반등 신호)", metrics)
+    return PatternResult(False, "다이버전스 없음", metrics)
