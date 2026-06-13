@@ -18,7 +18,9 @@ from src.market_report.analyzer import summarize_us_stocks
 _TEMPLATE = Path("src/market_report/templates/report.html")
 
 # 종목이 아닌 리스트(지수·뉴스·야간M7·섹터등락률) — 종목별 AI요약 대상이 아님(정당한 제외)
-_NON_STOCK = {"us_indices", "us_news", "us_overnight", "us_sectors"}
+# us_turnover_top10: 거래대금 순위(정량 랭킹) 참고 섹션 — 상위 종목은 스크리닝/Top3와 중복돼
+#   거기서 AI요약 제공, 랭킹 자체엔 AI버튼 미부착(정보 다이어트, 사용자 2026-06-14).
+_NON_STOCK = {"us_indices", "us_news", "us_overnight", "us_sectors", "us_turnover_top10"}
 
 
 def _rendered_us_stock_lists() -> set[str]:

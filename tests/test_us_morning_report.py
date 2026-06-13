@@ -4,7 +4,7 @@ from __future__ import annotations
 from datetime import datetime
 
 from src.market_report.models import MarketSnapshot
-from src.market_report.render import report_path
+from src.market_report.render import render_report, report_path
 from src.market_report.telegram_notify import _format_us_morning_summary
 
 
@@ -37,6 +37,31 @@ def _us_snap() -> MarketSnapshot:
              "sector": "IT", "reason": "추세", "cross_signal": None}]},
     ]
     return snap
+
+
+def test_us_morning_web_diet_sections() -> None:
+    """웹 정보 다이어트(2026-06-14): 거래대금 TOP10 신규, 강세/약세 섹터에 대장주 통합,
+    '섹터별 대장주' 칸 폐지, 한국인 자금흐름에 시총·거래대금 표시."""
+    s = MarketSnapshot(mode="us_morning", generated_at=datetime(2026, 6, 14, 7, 30))
+    s.us_indices = [{"name": "S&P500", "price": 5300.0, "change_pct": 1.2},
+                    {"name": "나스닥", "price": 17000.0, "change_pct": 1.5}]
+    s.us_sectors = [
+        {"name": "반도체", "change_pct": 2.1,
+         "leader": {"symbol": "NVDA", "name": "엔비디아", "change_pct": 3.2, "week_pct": 8.1}},
+        {"name": "에너지", "change_pct": -1.5,
+         "leader": {"symbol": "XOM", "name": "엑손", "change_pct": -2.0, "week_pct": -3.3}}]
+    s.us_turnover_top10 = [{"symbol": "NVDA", "name": "엔비디아", "price": 1200.0, "change_pct": 3.2,
+                            "yf_symbol": "NVDA", "turnover_str": "12조", "marcap_str": "3000조"}]
+    s.kr_us_netbuy = [{"ticker": "NVDA", "name": "엔비디아", "net_buy_eok": 120, "is_etf": False,
+                       "marcap_str": "3000조", "turnover_str": "12조"}]
+    html = render_report(s).read_text(encoding="utf-8")
+    assert "거래대금 순위 TOP10" in html          # W3 신규 섹션
+    assert "섹터별 대장주" not in html             # W4a 칸 폐지
+    assert "↳ 대표" in html                        # W4a 섹터에 대장주 통합
+    assert "엔비디아" in html and "엑손" in html
+    # W5: 자금흐름 종목에 시총 표시(자금흐름 섹션 안)
+    assert "한국인 자금흐름" in html
+    assert html.count("시총") >= 2                 # top10 + 자금흐름 등
 
 
 def test_us_morning_telegram_info_diet() -> None:

@@ -132,6 +132,13 @@ def _build_us_context(snap: MarketSnapshot) -> str:
         lines.append("\n[섹터 ETF 등락]")
         for q in snap.us_sectors:
             lines.append(f"  {q['name']} {q['change_pct']:+.2f}%")
+    _macro: list[str] = []  # 금·유가 — 요약 코멘트 근거(사용자 2026-06-14)
+    if snap.gold:
+        _macro.append(f"금 ${snap.gold['value']:,.0f} ({snap.gold['change_pct']:+.2f}%)")
+    if snap.wti:
+        _macro.append(f"WTI(유가) ${snap.wti['value']:,.1f} ({snap.wti['change_pct']:+.2f}%)")
+    if _macro:
+        lines.append("\n[원자재]\n  " + " · ".join(_macro))
     if getattr(snap, "us_news", None):
         lines.append("\n[미국 시장 뉴스 헤드라인]")
         for n in snap.us_news[:10]:
@@ -145,7 +152,7 @@ def _us_morning_prompt(snap: MarketSnapshot, context: str) -> str:
 아침 요약을 작성합니다. 아래 데이터로 다음을 **반드시 JSON 형식**으로 출력하세요:
 
 {{
-  "summary": "미국장 시장 전반 종합 요약 2-3문장 (지수 등락 + 주도 섹터/업종 + 핵심 이슈·키워드). 전략 나열이 아닌 '시황 종합 의견'으로.",
+  "summary": "미국장 시장 전반 종합 요약 2-3문장 (지수 등락 + 주도 섹터/업종 + 핵심 이슈·키워드) + 금·유가(WTI) 변동에 대한 코멘트 1문장(데이터에 있을 때만). 전략 나열이 아닌 '시황 종합 의견'으로.",
   "why_moved": "미국장이 왜 이렇게 움직였나 3-4문장 (강세/약세 섹터·빅테크·매크로·금리·뉴스 근거)",
   "theme_commentary": "오늘 미국 강세/약세 섹터·업종 흐름 종합 해설 + 뉴스 맥락 3-4문장, 마지막에 한국장 시사점 1문장(예: 미국 반도체 강세 → 한국 반도체 주목)"
 }}

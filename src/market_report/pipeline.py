@@ -815,6 +815,30 @@ async def _collect_kr_us_netbuy(snap: MarketSnapshot) -> None:
         d.pop("_en", None)
         d.pop("isin", None)
 
+    # 각 종목에 시총 + 달러 거래대금(현재가×거래량) 부착 — 표시용(사용자 2026-06-14).
+    # 표시되는 상위만(개별 TOP5·ETF TOP5·순매도 TOP3 ≈ 13종목) 조회해 비용 제한.
+    try:
+        from src.datasource.market_cap import format_marcap
+        from src.datasource.us.fdr_source import (
+            fetch_us_market_caps, fetch_us_ohlcv_batch)
+        _stocks = [d for d in out if not d["is_etf"]][:6]
+        _etfs = [d for d in out if d["is_etf"]][:6]
+        _disp = _stocks + _etfs + sell_out
+        _syms = list(dict.fromkeys(d["ticker"] for d in _disp if d.get("ticker")))
+        if _syms and rate:
+            mcaps = await fetch_us_market_caps(_syms)
+            ohlcv = await fetch_us_ohlcv_batch(_syms, days=2)
+            for d in _disp:
+                tk = d.get("ticker")
+                mc = mcaps.get(tk, 0) if tk else 0
+                if mc:
+                    d["marcap_str"] = format_marcap(mc * rate)
+                cs = ohlcv.get(tk) if tk else None
+                if cs:  # 달러 거래대금 = 최근 종가 × 거래량
+                    d["turnover_str"] = format_marcap(cs[-1].close * cs[-1].volume * rate)
+    except Exception as exc:  # noqa: BLE001
+        logger.warning("kr_us_netbuy_marcap_failed error=%s", exc)
+
     # 한국인 자금흐름 총액(TOP50 순매수 합) — 이번주 일평균 vs 전주 일평균(사용자 #377)
     # 올해 초 코스피→나스닥(SOXL 등) 자금이동 추세를 총액으로 추산.
     try:
@@ -1093,7 +1117,7 @@ async def _collect_us_screening(snap: MarketSnapshot, *, per_group: int = 5) -> 
     from src.screener.us_pipeline import run_us_screening
     from src.screener.us_report import STRATEGY_ORDER, _turnover
 
-    _MARCAP_FLOOR_WON = 4e11   # 시총 하한 4천억 — 전 종목 고정(워치리스트 면제 폐지, 사용자 2026-06-04)
+    _MARCAP_FLOOR_USD = 4e8    # 시총 하한 $4억 USD 고정 — 전 종목(환율 무관, 사용자 2026-06-14)
     _PRICE_CAP_WON = 5e6       # 주가 상한 500만원/주
     _PRICE_FLOOR_USD = 1.5     # 페니주 제외 — $1.5 미만 컷(전 종목, 사용자 2026-06-04)
     _MARCAP_TOPN = 50          # 시총 조회는 거래대금 상위 N개만(속도)
@@ -1130,10 +1154,10 @@ async def _collect_us_screening(snap: MarketSnapshot, *, per_group: int = 5) -> 
     # 시총 조회 = top50 ∪ 테마대장 후보 (양자 대장도 시총 조회 보장)
     marcaps = await fetch_us_market_caps(
         list({p.symbol for p in top50} | {p.symbol for p in theme_cands}))
-    if rate:  # 시총 하한 필터 — 전 종목 4천억 고정(워치리스트도 동일, 사용자 2026-06-04)
-        picks = [p for p in top50 if marcaps.get(p.symbol, 0) * rate >= _MARCAP_FLOOR_WON]
-        theme_cands = [p for p in theme_cands if marcaps.get(p.symbol, 0) * rate >= _MARCAP_FLOOR_WON]
-    else:
+    if marcaps:  # 시총 하한 필터 — 전 종목 $4억 USD 고정(환율 무관, 사용자 2026-06-14)
+        picks = [p for p in top50 if marcaps.get(p.symbol, 0) >= _MARCAP_FLOOR_USD]
+        theme_cands = [p for p in theme_cands if marcaps.get(p.symbol, 0) >= _MARCAP_FLOOR_USD]
+    else:  # 시총 조회 실패 시 필터 스킵(리포트는 발송 — best-effort)
         picks = top50
     if not picks:
         logger.info("us_screening_all_filtered")
@@ -1267,17 +1291,29 @@ async def _collect_us_screening(snap: MarketSnapshot, *, per_group: int = 5) -> 
         ranked.append(_to_dict(p))  # initial 없음 → 매칭 전략 전체 표기
     snap.us_screen_ranked = ranked[:12]
 
-    # 미국 Top3 — 전체 매칭 종목 중 거래대금 상위 3 (심볼 중복 제거)
-    seen: set[str] = set()
-    top: list = []
+    # 거래대금순 종목 유니크 리스트(심볼 중복 제거) — Top3·거래대금 TOP10 공용
+    _u_seen: set[str] = set()
+    _u_uniq: list = []
     for p in sorted(picks, key=_turnover, reverse=True):
-        if p.symbol in seen:
+        if p.symbol in _u_seen:
             continue
-        seen.add(p.symbol)
-        top.append(p)
-        if len(top) >= 3:
-            break
+        _u_seen.add(p.symbol)
+        _u_uniq.append(p)
+
+    # 미국 Top3 — 눌림목(PULLBACK) 1순위 · 단기과열주의(BB상단돌파) 패널티/강등 후
+    # 거래대금순(사용자 2026-06-14). tier: 0=눌림목 / 1=일반 / 2=과열(맨 뒤로 강등)
+    def _top3_tier(p) -> int:
+        cs = _eff_cross(p.cross_signal, set(_strategies(p)))
+        if cs == "PULLBACK":
+            return 0
+        ov, _vx = _overheat_volx(p)
+        return 2 if ov else 1
+
+    top = sorted(_u_uniq, key=lambda p: (_top3_tier(p), -_turnover(p)))[:3]
     snap.us_top3 = [_to_dict(p) for p in top]
+
+    # 미국장 거래대금 순위 TOP10 — S&P500 유니버스(시총 $4억 필터 통과) 거래대금 상위(사용자 2026-06-14)
+    snap.us_turnover_top10 = [_to_dict(p) for p in _u_uniq[:10]]
 
     # 관심 테마 대장 = 큐레이션 테마(양자·우주·AI·원자력 등)만, 별도 노출(사용자 162).
     # (섹터 대장은 별도 — us_sector_leaders. 양자는 ETF 섹터에 없어 여기 둠.)
@@ -1350,8 +1386,28 @@ async def _collect_us_screening(snap: MarketSnapshot, *, per_group: int = 5) -> 
                                      "shape": "장기 대칭수렴", "mode": "장기",
                                      "bb_width": lt.metrics.get("band_now_pct"), "ma_conv": None,
                                      "reason": lt.reason, **_extra})
+            async def _apply_marcap_floor(items: list[dict], headn: int) -> list[dict]:
+                """후보 시총($4억 USD) 필터 + marcap_str 채움 — 잡주 컷·시총 의무표기(사용자 2026-06-14).
+                marcaps엔 top50만 있어 미조회 종목 시총=0(빈칸) → 상위 headn개만 추가조회 후 필터."""
+                items = items[:headn]
+                need = [it["symbol"] for it in items if it["symbol"] not in marcaps]
+                if need:
+                    try:
+                        marcaps.update(await fetch_us_market_caps(need))
+                    except Exception as exc:  # noqa: BLE001
+                        logger.warning("us_extra_marcap_failed n=%d error=%s", len(need), exc)
+                out: list[dict] = []
+                for it in items:
+                    mc = marcaps.get(it["symbol"], 0)
+                    if mc < _MARCAP_FLOOR_USD:
+                        continue
+                    it["marcap"] = mc
+                    it["marcap_str"] = _won(mc)
+                    out.append(it)
+                return out
+
             e_cand.sort(key=lambda x: x["rsi"])  # 가장 과매도부터 4H 확인
-            e_cand = e_cand[:12]
+            e_cand = (await _apply_marcap_floor(e_cand, 20))[:12]  # 잡주 컷(사용자 2026-06-14)
             from src.datasource.kr_4h import fetch_4h_rsi_oversold
             _ok = await fetch_4h_rsi_oversold([p["symbol"] for p in e_cand], market="US")
             snap.e_picks = [p for p in e_cand if p["symbol"] in _ok][:7]
@@ -1361,9 +1417,12 @@ async def _collect_us_screening(snap: MarketSnapshot, *, per_group: int = 5) -> 
             _tag_bigtech_strategies(snap, ohlcv)  # 대장주 전략·E바닥 태깅(#345)
             _tag_market_bottom([b for b in (snap.us_bigtech or []) if b.get("e_bottom")],
                                _us_mr, fg_score=_fg_us)
-            snap.surge_picks = sorted(surge, key=lambda x: x["change_pct"], reverse=True)[:7]
-            snap.support_picks = sorted(support, key=lambda x: x["change_pct"], reverse=True)[:10]  # F(미국)
-            snap.coil_picks = coil[:10]  # G(미국)
+            # 시총 $4억 필터 적용(잡주 컷·시총 의무표기, 사용자 2026-06-14) 후 슬라이스
+            snap.surge_picks = (await _apply_marcap_floor(
+                sorted(surge, key=lambda x: x["change_pct"], reverse=True), 20))[:7]
+            snap.support_picks = (await _apply_marcap_floor(
+                sorted(support, key=lambda x: x["change_pct"], reverse=True), 20))[:10]  # F(미국)
+            snap.coil_picks = (await _apply_marcap_floor(coil, 20))[:10]  # G(미국)
             # US 코일 차트 — 단기(render_coil_chart, FDR폴백)·장기(render_long_triangle_chart) 둘 다(사용자 2026-06-11)
             from src.market_report.chart import (
                 coil_chart_url_rel, long_triangle_chart_url_rel,
@@ -1527,6 +1586,13 @@ async def _collect_sector_leaders(snap: MarketSnapshot) -> None:
                     d["premkt"] = True
         except Exception as exc:  # noqa: BLE001
             logger.warning("us_sector_leaders_premarket_failed error=%s", exc)
+    # 강세/약세 섹터 줄에 대장주 1종목 통합 표시용 — 섹터명으로 조인(사용자 2026-06-14:
+    # '섹터별 대장주' 칸 폐지 → 강세/약세 섹터 하위에 대표종목 상승률 통합).
+    by_sec = {ld.get("sector"): ld for ld in leaders}
+    for s in secs:
+        ld = by_sec.get(s.get("name"))
+        if ld:
+            s["leader"] = ld
     snap.us_sector_leaders = leaders
     logger.info("us_sector_leaders=%d", len(leaders))
 
