@@ -50,7 +50,8 @@ async def diagnose_holdings(adapter, holdings: list[dict] | None = None) -> list
     profit_rate 없고 avg_price 있으면 현재가 대비 수익률을 계산한다.
     """
     if holdings is None:
-        holdings = await adapter.get_balance()
+        # prefer_nxt=True: 보유종목 평가손익을 증권사 MTS와 일치(NXT 시간외 종가 반영)
+        holdings = await adapter.get_balance(prefer_nxt=True)
     if not holdings:
         return []
 

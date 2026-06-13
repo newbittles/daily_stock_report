@@ -279,7 +279,8 @@ async def collect_screen_picks(adapter, per_strategy: int = 8,
 async def collect_holdings_status(adapter) -> list[dict]:
     """보유종목 상태 — KIS 잔고 우선, 비면 config 수동 보유종목."""
     try:
-        balance = await adapter.get_balance()
+        # prefer_nxt=True: 보유종목 평가손익을 증권사 MTS와 일치(NXT 시간외 종가 반영)
+        balance = await adapter.get_balance(prefer_nxt=True)
     except Exception as exc:
         logger.warning("holdings_balance_failed error=%s", exc)
         balance = []

@@ -573,10 +573,17 @@ class KisAdapter:
         return rows
 
     # ── 확장: 잔고 / 체결내역 ─────────────────────────────────────────────────
-    async def get_balance(self) -> list[dict[str, Any]]:
+    async def get_balance(self, *, prefer_nxt: bool = False) -> list[dict[str, Any]]:
         """주식 잔고 조회 — 보유 종목 리스트.
 
         계좌번호는 'CANO(8자리)-ACNT_PRDT_CD(2자리)' 형식으로 분리.
+
+        prefer_nxt=True: 종목별 현재가를 NXT(넥스트레이드) 시세로 덮어쓰고 평가손익·
+          수익률을 재계산한다. KIS 잔고 API의 ``prpr``은 **KRX 정규장 종가**만 반영하나,
+          증권사 MTS는 NXT 시간외(15:30~20:00)·프리장 체결까지 포함한 최신가로 평가하므로
+          (2026-06-13 실측: 후성 KRX종가 19,010 vs NXT종가 18,400), 리포트를 MTS와
+          일치시키려면 True를 준다. NXT 미거래 종목(price=0)·조회 실패는 KRX prpr 유지.
+          자동매매 손절(stoploss)은 KRX 기준 유지를 위해 기본 False.
         """
         cano, prdt = self._split_account()
         tr_id = _TR_ENV["balance"][self._env]
@@ -612,7 +619,39 @@ class KisAdapter:
                 "eval_profit": _f(h.get("evlu_pfls_amt")),
                 "profit_rate": _f(h.get("evlu_pfls_rt")),
             })
+        if prefer_nxt:
+            await self._apply_nxt_prices(result)
         return result
+
+    async def _apply_nxt_prices(self, holdings: list[dict[str, Any]]) -> None:
+        """보유종목 현재가를 NXT 시세로 덮어쓰고 평가손익·수익률 재계산(MTS 일치용).
+
+        best-effort: NXT 미거래(price<=0)·평단 0·조회 실패 종목은 KRX prpr 그대로 둔다.
+        429 등 HARD STOP 시에는 추가 호출 없이 즉시 중단하고 남은 종목은 KRX 종가 유지
+        (전역 §7: 429 후 자동 재시도/추가 호출 금지). 잔고 자체는 이미 조회됐으므로 살린다.
+        """
+        for h in holdings:
+            await asyncio.sleep(random.uniform(0.2, 0.6))  # 전역 §7 종목간 분산 딜레이
+            try:
+                q = await self.get_nxt_quote(h["ticker"])
+            except KisHardStop as exc:
+                logger.warning(
+                    "nxt_price_hardstop ticker=%s error=%s — 남은 종목 KRX 종가 유지",
+                    h.get("ticker"), exc,
+                )
+                break
+            except Exception as exc:  # noqa: BLE001 — 개별 종목 실패는 KRX 폴백
+                logger.warning("nxt_price_failed ticker=%s error=%s", h.get("ticker"), exc)
+                continue
+            nxt = q.price
+            if not nxt or nxt <= 0:
+                continue  # NXT 미거래 종목 → KRX prpr 유지
+            avg = h.get("avg_price") or 0.0
+            qty = h.get("quantity") or 0
+            h["current_price"] = nxt
+            if avg:
+                h["eval_profit"] = (nxt - avg) * qty
+                h["profit_rate"] = round((nxt - avg) / avg * 100, 2)
 
     async def get_trade_history(self, start: str, end: str) -> list[dict[str, Any]]:
         """체결내역 조회. 날짜 형식: YYYYMMDD.
