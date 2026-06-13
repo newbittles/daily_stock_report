@@ -39,6 +39,29 @@ def _us_snap() -> MarketSnapshot:
     return snap
 
 
+def test_us_morning_telegram_info_diet() -> None:
+    """정보 다이어트(2026-06-14): 결제일줄·ABCD면책·AI증시요약(summary) 제거,
+    리포트열기 하이퍼링크는 다음 줄로 분리. 💡왜올랐나·🌏시사점은 유지."""
+    snap = _us_snap()
+    snap.summary = "S&P500과 나스닥이 반도체 강세로 동반 상승 마감했다."
+    snap.why_moved = "엔비디아 실적 기대가 반도체 전반을 끌어올렸다."
+    snap.kr_us_netbuy_total = {"daily_avg_eok": 1200, "total_eok": 6000,
+                               "prev_daily_avg_eok": 1000, "change_pct": 20.0}
+    snap.kr_us_netbuy_dates = {"range": "06-09~06-13", "trading_days": 5,
+                               "today": "06-13", "delay_days": 2}
+    msg = _format_us_morning_summary(snap)
+    # 제거된 항목
+    assert "결제일" not in msg and "T+2" not in msg
+    assert "A/B/C/D" not in msg and "참고용 시그널" not in msg
+    assert snap.summary not in msg                     # AI 증시요약(1번째) 제거
+    # 유지된 항목
+    assert "💡" in msg and snap.why_moved in msg
+    assert "🌏" in msg                                  # 한국 시사점(theme_commentary)
+    # 리포트 열기 = 하이퍼링크를 다음 줄로 분리
+    assert "📄 *종목·추천·스크리닝 전체 보기*" in msg
+    assert "\n→ [리포트 열기](" in msg
+
+
 def test_us_morning_telegram_is_overview_only() -> None:
     """텔레그램 = 시황(지수)+주도섹터까지만, 종목 상세는 웹 링크로(사용자 2026-06-04)."""
     msg = _format_us_morning_summary(_us_snap())

@@ -629,15 +629,10 @@ def _format_us_morning_summary(snap: MarketSnapshot) -> str:
         chg = (f" (전주 {t['prev_daily_avg_eok']:+,}억 대비 {t['change_pct']:+.1f}%)"
                if t.get("change_pct") is not None else "")
         lines.append(f"💸 한국인 순매수 일평균 {t['daily_avg_eok']:+,}억{chg} · 5일총액 {t['total_eok']:+,}억")
-        d = getattr(snap, "kr_us_netbuy_dates", None)  # 결제일 기준 명시(T+2, 사용자 2026-06-09)
-        if d:
-            delay = f" · 오늘 {d['today']} 기준 약 {d['delay_days']}일 전" if d.get("delay_days") else ""
-            lines.append(f"  📅 결제일 {d['range']}({d['trading_days']}거래일) 기준{delay} · T+2 결제(실제 매매는 약 2거래일 전)")
         lines.append("")
 
-    if snap.summary:
-        lines.append(snap.summary)
-        lines.append("")
+    # 🤖 AI 증시요약(snap.summary)은 텔레그램에서 제외 — 💡왜올랐나·🌏시사점만(사용자 2026-06-14).
+    # 웹 리포트에는 AI 증시요약 그대로 유지(거기에 금·유가 코멘트 추가).
     if snap.why_moved:
         lines.append(f"💡 {snap.why_moved}")
         lines.append("")
@@ -672,9 +667,10 @@ def _format_us_morning_summary(snap: MarketSnapshot) -> str:
 
     # 종목 상세(주요종목·관심테마·Top3·스크리닝)는 텔레그램에서 생략 → 웹 링크로(사용자 2026-06-04).
     # 텔레그램은 '시황(지수·AI요약·뉴스) + 주도섹터'까지만. 웹 report.html은 전체 섹션 유지.
-    lines.append(f"📄 *종목·추천·스크리닝 전체 보기* → [리포트 열기]({url})")
-    lines.append("")
-    lines.append("_※ 미국 A/B/C/D는 참고용 시그널(백테스트 엣지 약함). 매수 추천 아님, 판단·책임은 본인._")
+    # 하이퍼링크는 다음 줄로 분리 — 한 줄에 붙으면 링크 글자가 잘림(사용자 2026-06-14).
+    # ABCD 참고용 면책 줄은 제거(사용자 2026-06-14).
+    lines.append("📄 *종목·추천·스크리닝 전체 보기*")
+    lines.append(f"→ [리포트 열기]({url})")
     return "\n".join(lines)
 
 
