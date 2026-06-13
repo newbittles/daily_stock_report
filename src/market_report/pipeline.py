@@ -963,6 +963,14 @@ def _market_phase(label: str, gaps: dict) -> tuple[str, str]:
     rv = gaps.get("rsi")
     if g120 is None or g60 is None:
         return ("⚪", "판단불가")
+    # 방향성 기준(사용자 2026-06-14): 직전 5일 수익률(ret5)+5MA 기울기로 '진짜 방향' 판정.
+    # 60선 아래=하락전환 단정 대신 방향(상승/하락)으로 전환 표기. 데이터 없으면 기존 동작 유지.
+    g240 = gaps.get(240)
+    ret5 = gaps.get("ret5")
+    ma5_up = gaps.get("ma5_up")
+    aligned = gaps.get("aligned")
+    rising = ret5 is not None and (ret5 >= 1.5 or (ret5 >= 0.5 and ma5_up is True))
+    near240 = g240 is not None and abs(g240) <= 3.0  # 240선 ±3% 부근
     # 바닥 3단계 게이지(백테스트 #371/#419/#422/#424). 코스닥 주봉신호는 노이즈라 제외.
     rsi_w, rsi_m = gaps.get("rsi_w"), gaps.get("rsi_m")
     cci_d, cci_w = gaps.get("cci"), gaps.get("cci_w")
@@ -976,16 +984,28 @@ def _market_phase(label: str, gaps: dict) -> tuple[str, str]:
         return ("🔵🔵", "강한 바닥")
     # 🔵 바닥권(1차) — 일봉 RSI≤30 OR 60일이격≤-7% OR 일봉 CCI≤-200 (검증 #371/#424)
     if (rv is not None and rv <= 30) or g60 <= -7 or (cci_d is not None and cci_d <= -200):
-        return ("🔵", "바닥권")
+        # 바닥권에서 직전 5일 상승 회복이면 '바닥권 반등'으로 세분(바닥 지지 후 상승, 사용자 2026-06-14)
+        return ("🔵", "바닥권 반등" if rising else "바닥권")
     # 🔴 과열(고점권 경계·정보용) = 이격 임계 AND RSI≥70. ⚠️타이밍 신뢰 낮음(#363) — 매도 트리거 아님.
     if (g120 >= _OVERHEAT_120.get(label, 12.0) or g60 >= _OVERHEAT_60.get(label, 9.0)) \
             and (rv is None or rv >= 70):
         return ("🔴", "과열")
+    # 🟦 강한 지지/240선 반등 — 240선 부근에서 하락 멈춤·반등(바닥에서 올라오는 국면, 사용자 2026-06-14)
+    if near240 and ret5 is not None and ret5 >= -0.5:
+        return ("🟦", "240선 지지 반등" if rising else "강한 지지(240선)")
+
     # 🔼 상승전환 — 5일선 음→양 회복 + 20일선 위(진짜 반등, 백테스트 #379: 미국 69% vs 가짜 46%)
+    #    정배열이면 '상승추세'로 세분(정배열 상승 vs 바닥 반등 구분, 사용자 2026-06-14).
     g5_prev = gaps.get("g5_prev")
     if g5_prev is not None and g5_prev < 0 and g5 is not None and g5 >= 0 \
             and g20 is not None and g20 >= 0:
-        return ("🔼", "상승전환")
+        return ("🔼", "상승추세(정배열)" if aligned else "상승전환")
+
+    # 🔼 바닥 반등(상승전환) — 60선 아래여도 직전 5일 상승+5MA 우상향이면 하락전환 아님(사용자 2026-06-14)
+    if rising and g60 < 0:
+        return ("🔼", "바닥 반등(상승전환)")
+
+    # 🔻 하락전환 — 60선 아래 + (실제 상승반등 아님). 상승 중이면 위에서 이미 분기됨.
     if g60 < 0:
         return ("🔻", "하락전환")
     if g20 is not None and g20 < 0:
@@ -1021,13 +1041,25 @@ async def _index_ma_gaps(symbol: str) -> dict:
             return {}
         out: dict = {}
         ma5_series = moving_average(c, 5)
-        for k in (5, 10, 20, 60, 120):
+        ma20_series = moving_average(c, 20)
+        ma60_series = moving_average(c, 60)
+        ma120_series = moving_average(c, 120)
+        for k in (5, 10, 20, 60, 120, 240):  # 240선=장기 지지 판단(사용자 2026-06-14)
             ma = moving_average(c, k)[-1]
             if ma:
                 out[k] = round((c[-1] - ma) / ma * 100, 1)
         # 전일 5일선 이격(상승전환 전환 감지용, #379)
         if len(c) >= 2 and ma5_series[-2]:
             out["g5_prev"] = round((c[-2] - ma5_series[-2]) / ma5_series[-2] * 100, 1)
+        # 방향성 기준점(사용자 2026-06-14): 직전 5거래일 수익률 + 5MA 기울기 + 정배열 여부.
+        # '60선 아래=하락전환' 단정 대신 진짜 방향(상승/하락)으로 전환 판정하기 위함.
+        if len(c) >= 6 and c[-6]:
+            out["ret5"] = round((c[-1] / c[-6] - 1) * 100, 1)
+        if len(ma5_series) >= 4 and ma5_series[-1] and ma5_series[-4]:
+            out["ma5_up"] = bool(ma5_series[-1] > ma5_series[-4])  # 5MA 우상향(최근 3봉)
+        _mv = [ma5_series[-1], ma20_series[-1], ma60_series[-1], ma120_series[-1]]
+        if all(_mv):  # 정배열(5>20>60>120) — 정배열 상승 vs 바닥 반등 구분용
+            out["aligned"] = bool(_mv[0] > _mv[1] > _mv[2] > _mv[3])
         rv = rsi(c, 14)[-1]
         if rv is not None:
             out["rsi"] = round(rv)

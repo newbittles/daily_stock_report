@@ -144,3 +144,31 @@ def test_market_phase_bottom_tiers() -> None:
     assert _market_phase("S&P500", {**base, "cci_w": -210})[1] == "강한 바닥"     # 주봉 CCI≤-200
     assert _market_phase("코스닥", {**base, "rsi_w": 28})[1] == "정상"            # 코스닥 주봉 제외
     assert _market_phase("나스닥", {**base, "cci": -220})[1] == "바닥권"          # 일봉 CCI≤-200
+
+
+def test_market_phase_reversal_direction() -> None:
+    """방향성 기준 신호(사용자 2026-06-14): 60선 아래여도 직전5일 상승+5MA우상향이면
+    '하락전환'이 아니라 '바닥 반등'. 240선 지지 반등·정배열 상승추세 세분."""
+    from src.market_report.pipeline import _market_phase
+    # 코스닥: 60선 아래(-3)지만 240선 위 +13% 반등(ret5 큰 +, 5MA 우상향) → 바닥 반등(상승전환)
+    kosdaq = {5: 2, 20: -4, 60: -3, 120: 5, 240: 12, "rsi": 52, "ret5": 13.0, "ma5_up": True}
+    assert _market_phase("코스닥", kosdaq)[1] == "바닥 반등(상승전환)"
+    # 바닥권(60일≤-7) + 직전5일 상승 → '바닥권 반등'(바닥 지지 후 상승 세분)
+    botrev = {5: 1, 20: -5, 60: -9, 120: -4, 240: 5, "rsi": 42, "ret5": 3.0, "ma5_up": True}
+    assert _market_phase("코스닥", botrev)[1] == "바닥권 반등"
+    # 바닥권 + 방향데이터 없으면 기존대로 '바닥권'
+    assert _market_phase("코스닥", {5: -1, 20: -5, 60: -9, 120: -4, "rsi": 42})[1] == "바닥권"
+    # 240선 ±3% 부근 + 상승 → 240선 지지 반등
+    near = {5: 1, 20: -2, 60: -4, 120: -1, 240: 1.5, "rsi": 48, "ret5": 2.0, "ma5_up": True}
+    assert _market_phase("코스피", near)[1] == "240선 지지 반등"
+    # 240선 부근 보합(상승 아님) → 강한 지지(240선)
+    flat = {5: -1, 20: -3, 60: -5, 120: -2, 240: -1.0, "rsi": 45, "ret5": 0.2, "ma5_up": False}
+    assert _market_phase("코스피", flat)[1] == "강한 지지(240선)"
+    # 정배열 + 5일선 음→양 → 상승추세(정배열)
+    al = {5: 1, 20: 2, 60: 3, 120: 5, "rsi": 55, "g5_prev": -2, "aligned": True}
+    assert _market_phase("나스닥", al)[1] == "상승추세(정배열)"
+    # 60선 아래 + 실제 하락(상승 아님) → 하락전환 유지(방향 데이터 있어도 하락이면)
+    down = {5: -3, 20: -4, 60: -5, 120: -2, "rsi": 40, "ret5": -3.0, "ma5_up": False}
+    assert _market_phase("나스닥", down)[1] == "하락전환"
+    # 방향 데이터 없으면 기존 동작 보존: 60선 아래 → 하락전환
+    assert _market_phase("나스닥", {5: -3, 20: -3, 60: -3, 120: 2, "rsi": 45})[1] == "하락전환"
