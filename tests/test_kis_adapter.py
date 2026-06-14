@@ -195,3 +195,24 @@ async def test_get_balance_prefer_nxt_matches_mts(adapter):
     # 테크윙: NXT 미거래(price=0) → KRX 종가 유지
     assert techwing["current_price"] == 65300.0
     assert techwing["eval_profit"] == -675500.0
+
+
+def test_token_cache_separated_by_env(tmp_path, monkeypatch):
+    """실전/모의 토큰 캐시가 환경별 파일로 분리 — 서로 덮어쓰지 않음(2026-06-14 403 회귀 방지).
+
+    한 파일을 공유하면 real↔paper가 캐시를 클로버 → 매 호출 재발급 → KIS 분당1회 제한 위반 → 403."""
+    import src.datasource.kis.token as token_mod
+    monkeypatch.setattr(token_mod, "TOKEN_CACHE", tmp_path / "kis_token.json")
+    real = token_mod.KisTokenManager("RK", "RS", env="real")
+    paper = token_mod.KisTokenManager("PK", "PS", env="paper")
+    # 서로 다른 캐시 파일 경로
+    assert real._cache_file() != paper._cache_file()
+    assert real._cache_file().name == "kis_token_real.json"
+    assert paper._cache_file().name == "kis_token_paper.json"
+    # paper가 캐시를 저장해도 real 캐시는 영향 없음(클로버 방지)
+    paper._token = "ptok"
+    from datetime import datetime, timedelta
+    paper._expires_at = datetime.now() + timedelta(hours=10)
+    paper._save_cache()
+    real2 = token_mod.KisTokenManager("RK", "RS", env="real")
+    assert real2._token is None   # real 캐시 파일 없음 → paper 저장이 real을 오염시키지 않음

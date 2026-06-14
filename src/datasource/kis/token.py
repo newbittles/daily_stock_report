@@ -1,7 +1,8 @@
 """KIS 접근토큰 관리 — 자동 발급·갱신·캐시.
 
 - access_token 유효기간 24시간 → 만료 전 자동 갱신
-- 토큰은 gitignore된 런타임 캐시 파일에 보관 (data/kis_token.json)
+- 토큰은 gitignore된 런타임 캐시 파일에 보관 — **환경별 분리**(data/kis_token_{real,paper}.json).
+  (실전·모의를 한 파일에 캐시하면 서로 덮어써 매번 재발급→분당1회 제한 위반→403, 2026-06-14 자동매매 버그)
 - KIS는 토큰 재발급을 분당 1회로 제한 → 캐시 필수 (잦은 발급 금지)
 
 엔드포인트: POST /oauth2/tokenP  (grant_type=client_credentials)
@@ -42,16 +43,23 @@ class KisTokenManager:
         self._expires_at: datetime | None = None
         self._load_cache()
 
+    def _cache_file(self) -> Path:
+        """환경별 토큰 캐시 파일 — 실전/모의가 서로 캐시를 덮어쓰지 않도록 분리(2026-06-14).
+
+        모듈 전역 TOKEN_CACHE(테스트가 monkeypatch)의 디렉터리에 env 접미사 파일로 둔다."""
+        return TOKEN_CACHE.parent / f"kis_token_{self._env}.json"
+
     @property
     def base_url(self) -> str:
         return self._base
 
     def _load_cache(self) -> None:
         """캐시 파일에서 토큰 복원 (환경·만료 검증)."""
-        if not TOKEN_CACHE.exists():
+        cache = self._cache_file()
+        if not cache.exists():
             return
         try:
-            data = json.loads(TOKEN_CACHE.read_text(encoding="utf-8"))
+            data = json.loads(cache.read_text(encoding="utf-8"))
             if data.get("env") != self._env:
                 return  # 환경 바뀌면 무효
             expires_at = datetime.fromisoformat(data["expires_at"])
@@ -63,9 +71,10 @@ class KisTokenManager:
             logger.warning("kis_token_cache_load_failed error=%s", exc)
 
     def _save_cache(self) -> None:
-        TOKEN_CACHE.parent.mkdir(parents=True, exist_ok=True)
+        cache = self._cache_file()
+        cache.parent.mkdir(parents=True, exist_ok=True)
         try:
-            TOKEN_CACHE.write_text(
+            cache.write_text(
                 json.dumps({
                     "env": self._env,
                     "token": self._token,

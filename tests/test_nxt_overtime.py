@@ -39,6 +39,7 @@ def test_post_summary_shows_overtime_section() -> None:
         {"ticker": "111111", "name": "에이", "nxt_price": 11000, "reg_close": 10000, "overtime_pct": 10.0},
     ]
     msg = _format_post_summary(snap)
+    assert "🔵 *한국장 마감 리포트*" in msg   # 제목 변경(사용자 2026-06-14)
     assert "시간외(NXT) 상위 상승률" in msg
     assert "에이" in msg and "+10.0%" in msg
     # MC1(2026-06-14): 종목명/시세 줄바꿈 분리 — 시세는 들여쓰기된 별도 줄

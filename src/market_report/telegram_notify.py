@@ -98,17 +98,26 @@ def _format_strategy_holdings(snap: MarketSnapshot) -> list[str]:
             lines.append(f"   📊 20일선 {'+' if g >= 0 else ''}{g:.1f}%"
                          + (" 🔥단기과열주의" if _oh else ""))
         lines.append("")
-    if snap.holdings_status:
-        lines.append("📋 *보유종목 상태*")
-        if getattr(snap, "holdings_summary", ""):
-            lines.append(f"🤖 {snap.holdings_summary}")
-        for h in snap.holdings_status:
-            em = _STATE_EMOJI.get(h.get("state", "UNKNOWN"), "•")
-            sign = "+" if h.get("profit_rate", 0) >= 0 else ""
-            badge = cross_badge(h.get("cross_signal"))
-            lines.append(f"  {em} {_naver_link(h['name'], h['ticker'])} "
-                         f"({sign}{h.get('profit_rate', 0):.1f}%){badge} — {h['reason']}")
-        lines.append("")
+    lines.extend(_format_holdings(snap))
+    return lines
+
+
+def _format_holdings(snap: MarketSnapshot) -> list[str]:
+    """📋 보유종목 상태 — 종목명·평가손익·손절상태. KR/US 리포트 공용(사용자 2026-06-14).
+
+    보유종목은 KIS 한국 계좌 잔고 → 미국장 리포트에도 표시(참고). 없으면 []."""
+    if not getattr(snap, "holdings_status", None):
+        return []
+    lines = ["📋 *보유종목 상태*"]
+    if getattr(snap, "holdings_summary", ""):
+        lines.append(f"🤖 {snap.holdings_summary}")
+    for h in snap.holdings_status:
+        em = _STATE_EMOJI.get(h.get("state", "UNKNOWN"), "•")
+        sign = "+" if h.get("profit_rate", 0) >= 0 else ""
+        badge = cross_badge(h.get("cross_signal"))
+        lines.append(f"  {em} {_naver_link(h['name'], h['ticker'])} "
+                     f"({sign}{h.get('profit_rate', 0):.1f}%){badge} — {h['reason']}")
+    lines.append("")
     return lines
 
 
@@ -428,7 +437,7 @@ def _format_post_summary(snap: MarketSnapshot) -> str:
     date = snap.generated_at.strftime("%Y-%m-%d %H:%M")
 
     lines: list[str] = []
-    lines.append(f"🔵 *마감 후 리포트* — {date}")
+    lines.append(f"🔵 *한국장 마감 리포트* — {date}")   # 제목 변경(사용자 2026-06-14)
     lines.append("")
 
     # 웹과 동일 순서(#447/#449): 지수→AI요약→수급→관전포인트→테마→종목
@@ -638,7 +647,7 @@ def _format_us_morning_summary(snap: MarketSnapshot) -> str:
         lines = [f"🌃 *미국 애프터장 리뷰* (한국 오후) — {date}",
                  "_직전 미국 정규장 마감 + 애프터장(시간외) 등락 · ABCD는 마감 일봉_", ""]
     else:
-        lines = [f"🌎 *미국 증시 마감 요약* — {date}", ""]
+        lines = [f"🌎 *미국장 마감 리포트* — {date}", ""]   # 제목 변경(사용자 2026-06-14)
 
     if snap.us_indices:
         mp = getattr(snap, "market_phase", None) or {}  # 지수 옆 신호등 병기(한국과 동일, #450)

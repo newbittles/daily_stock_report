@@ -73,8 +73,8 @@ def render_report(snap: MarketSnapshot) -> Path:
 
     title = {
         "pre_close": "마감 전 시장 리포트 (종가베팅)",
-        "post_close": "마감 후 시장 리포트",
-        "us_morning": "미국 증시 아침 요약",
+        "post_close": "한국장 마감 리포트",
+        "us_morning": "미국장 마감 리포트",
         "midday": "장중 시장 리포트",
         "us_premarket": "미국장 장전(프리장) 리포트",
         "us_intraday": "미국장 장중 리포트 (잠정)",

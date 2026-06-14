@@ -116,6 +116,12 @@ def test_us_premarket_telegram_diet_up1_up2() -> None:
     assert "T+2" not in msg and "결제일" not in msg
 
 
+def test_us_morning_title_renamed() -> None:
+    """제목 변경(사용자 2026-06-14): '미국 증시 마감 요약' → '미국장 마감 리포트'."""
+    msg = _format_us_morning_summary(_us_snap())
+    assert "🌎 *미국장 마감 리포트*" in msg
+
+
 def test_us_morning_telegram_is_overview_only() -> None:
     """텔레그램 = 시황(지수)+주도섹터까지만, 종목 상세는 웹 링크로(사용자 2026-06-04)."""
     msg = _format_us_morning_summary(_us_snap())
