@@ -102,12 +102,20 @@ def test_format_us_overnight_empty() -> None:
 def test_midday_shows_overnight_at_top() -> None:
     snap = MarketSnapshot(mode="midday", generated_at=datetime(2026, 6, 8, 11, 40))
     snap.kospi = _idx("KOSPI", 8160.5, -2.0)
-    snap.us_overnight = {"futures": [{"symbol": "NQ=F", "name": "나스닥 선물",
-                                      "price": 1.0, "change_pct": 0.65}], "m7": []}
-    msg = _format_us_morning_idx = _format_midday_summary(snap)
+    # KM2(2026-06-14): 선물·기타 M7 제외, 테슬라·마이크론·SOXL·EWY만
+    snap.us_overnight = {
+        "futures": [{"symbol": "NQ=F", "name": "나스닥 선물", "price": 1.0, "change_pct": 0.65}],
+        "m7": [{"symbol": "TSLA", "name": "테슬라", "change_pct": 2.1}],
+        "etf": [{"symbol": "EWY", "name": "한국 ETF(EWY)", "change_pct": 1.2}],
+        "extra": [{"symbol": "MU", "name": "마이크론", "change_pct": 1.5}],
+    }
+    msg = _format_midday_summary(snap)
     assert "미국 야간" in msg
     # 미국 야간이 코스피(지수)보다 위
     assert msg.index("미국 야간") < msg.index("코스피")
+    # 선물은 제외, 테슬라·마이크론·EWY만
+    assert "나스닥 선물" not in msg
+    assert "테슬라" in msg and "마이크론" in msg and "EWY" in msg
 
 
 def test_us_morning_shows_ewy() -> None:

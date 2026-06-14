@@ -107,6 +107,69 @@ ${{ "{:,.2f}".format(item.price) }} <span class="{{ 'up-text' if pct >= 0 else '
     </section>
 {% endif %}
 {%- endmacro -%}
+{# AI 시장 요약 섹션 — 마감전(pre_close)은 지수·수급 바로 뒤로 이동(MB5, 2026-06-14) → 매크로화. #}
+{%- macro ai_summary_section(snap) -%}
+{% if snap.summary %}
+    <section>
+      <h2><span class="icon">🤖</span>AI 시장 요약</h2>
+      <div class="summary-box">
+        <div class="label">한 줄 요약</div>
+        <p>{{ snap.summary }}</p>
+      </div>
+      {% if snap.why_moved %}
+      <div class="summary-box">
+        <div class="label">왜 움직였나</div>
+        <p>{{ snap.why_moved }}</p>
+      </div>
+      {% endif %}
+      {% if snap.theme_commentary %}
+      <div class="summary-box">
+        <div class="label">테마 해설</div>
+        <p>{{ snap.theme_commentary }}</p>
+      </div>
+      {% endif %}
+    </section>
+{% endif %}
+{%- endmacro -%}
+{# 전략 스크린 섹션 — 마감전(pre_close)은 강세/약세 테마 바로 뒤로 이동(MB7, 2026-06-14) → 매크로화. #}
+{%- macro strategy_screen_section(snap) -%}
+{% if snap.screen_ranked %}
+    <section>
+      <h2><span class="icon">🎯</span>전략 스크린 <span style="color:var(--text-dim);font-size:0.8rem;">(종합점수순 · 매칭전략 표기)</span>
+        <button class="copy-btn" data-codes="{{ snap.screen_ranked|map(attribute='ticker')|join(' ') }}" onclick="copyWatch(this)">📋 관심등록 복사</button>
+      </h2>
+      <ul class="watch-list">
+        {% for p in snap.screen_ranked %}
+        <li>
+          <a href="https://finance.naver.com/item/main.naver?code={{ p.ticker }}" target="_blank" rel="noopener"><strong>{{ p.name }}</strong></a>
+          {% if mkt(p.ticker) %}<span class="pick-ticker">{{ mkt(p.ticker) }}</span>{% endif %}
+          <button type="button" class="code-copy" data-code="{{ p.ticker }}" onclick="copyCode(this)" title="종목코드 복사 (MTS 검색창에 붙여넣기)">📋</button>
+          {{ strat_badge(p.strategies) }}
+          <span class="px">{{ "{:,.0f}".format(p.price) }}원</span>
+          <span class="{{ 'up-text' if p.change_pct >= 0 else 'down-text' }}">{{ '+' if p.change_pct >= 0 else '' }}{{ "{:.1f}".format(p.change_pct) }}%</span>
+          {% if p.endstage %}<span class="down-text" style="cursor:pointer;" onclick="showFlag(this)" data-flag="endstage">⚠️끝물ⓘ</span>{% endif %}
+          {% if p.ai_summary or p.marcap_str %}
+          <div class="pick-line">
+            {% if p.ai_summary %}<button type="button" class="ai-btn" onclick="showAI(this)" data-name="{{ p.name }}" data-summary="{{ p.ai_summary|e }}">🤖 AI요약</button>{% endif %}
+            {% if p.marcap_str %}<span class="code">시총 {{ p.marcap_str }}</span>{% endif %}
+          </div>
+          {% endif %}
+          <div class="theme-reason">{{ p.reason }}</div>
+          {% set _phoh = p.overheat and 'C' in p.strategies %}
+          <div class="pick-meta" style="color:{{ 'var(--red)' if _phoh else 'var(--text-dim)' }};">📊 20일선 이격 {% if 'B' in p.strategies and p.gap20 >= -5 and p.gap20 <= 5 %}<strong style="color:var(--red);">{{ '+' if p.gap20 >= 0 else '' }}{{ "{:.1f}".format(p.gap20) }}%</strong>{% else %}{{ '+' if p.gap20 >= 0 else '' }}{{ "{:.1f}".format(p.gap20) }}%{% endif %}{% if _phoh %} <span onclick="showFlag(this)" data-flag="overheat" style="cursor:pointer;">🔥단기과열주의(BB돌파·거래량{{ "{:.1f}".format(p.vol_x) }}x)ⓘ</span>{% endif %}{% if p.cross_signal == 'PULLBACK' %} <span class="up-text" style="cursor:pointer;" onclick="showFlag(this)" data-flag="pullback">· 🟢5&lt;10 단기눌림ⓘ</span>{% elif p.cross_signal == 'CORRECTION' %} <span class="down-text" style="cursor:pointer;" onclick="showFlag(this)" data-flag="correction">· ⚠️5&lt;10 조정시작ⓘ</span>{% endif %}</div>
+          <div class="pick-meta">
+            {{ '업종' if p.theme_kind == 'sector' else '테마' }}:
+            {% if p.theme and p.theme_kind == 'theme' and p.theme_idx %}<a href="https://judal.co.kr/?view=stockList&themeIdx={{ p.theme_idx }}" target="_blank" rel="noopener">{{ p.theme }}</a>
+            {% elif p.theme %}<a href="https://search.naver.com/search.naver?query={{ p.theme|urlencode }}+관련주" target="_blank" rel="noopener">{{ p.theme }}</a>{% else %}-{% endif %}
+            · 주도테마: {{ 'O' if p.is_leading_theme else 'X' }}
+          </div>
+        </li>
+        {% endfor %}
+      </ul>
+      <p class="disclaimer" style="font-size:12px;">※ 종목당 1줄·종합점수순. 같은 종목이 여러 전략에 잡히면 'A·C·D 시그널'처럼 묶어 표기. 참고용이며 매수 추천 아님. · 📋 일괄 관심등록.</p>
+    </section>
+{% endif %}
+{%- endmacro -%}
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -859,8 +922,8 @@ ${{ "{:,.2f}".format(item.price) }} <span class="{{ 'up-text' if pct >= 0 else '
     </section>
     {% endif %}
 
-    {# ★ 마감전(pre_close): 탑3 + 종가베팅을 지수·수급 바로 뒤로 배치(사용자 2026-06-12) #}
-    {% if snap.mode == 'pre_close' %}{{ top3_section(snap) }}{% endif %}
+    {# ★ 마감전(pre_close, MB5 2026-06-14): AI 시황요약 → Top3 → 종가베팅 순으로 지수·수급 바로 뒤 배치 #}
+    {% if snap.mode == 'pre_close' %}{{ ai_summary_section(snap) }}{{ top3_section(snap) }}{% endif %}
 
     {# 3a. 종가베팅 후보 (마감 전) — 점수기반 5선(B 눌림목 가산·4H 볼밴상단 패널티), AI는 사후 주석만 #}
     {% if snap.mode == 'pre_close' and (snap.candidate_picks or snap.candidates_excluded_limitup) %}
@@ -932,28 +995,8 @@ ${{ "{:,.2f}".format(item.price) }} <span class="{{ 'up-text' if pct >= 0 else '
     </section>
     {% endif %}
 
-    {# 2. AI 요약 (us_morning/us_premarket은 지수 아래에서 이미 표시 → 여기선 KR만) #}
-    {% if snap.summary and snap.mode not in ['us_morning', 'us_premarket', 'us_intraday', 'us_afterhours'] %}
-    <section>
-      <h2><span class="icon">🤖</span>AI 시장 요약</h2>
-      <div class="summary-box">
-        <div class="label">한 줄 요약</div>
-        <p>{{ snap.summary }}</p>
-      </div>
-      {% if snap.why_moved %}
-      <div class="summary-box">
-        <div class="label">왜 움직였나</div>
-        <p>{{ snap.why_moved }}</p>
-      </div>
-      {% endif %}
-      {% if snap.theme_commentary %}
-      <div class="summary-box">
-        <div class="label">테마 해설</div>
-        <p>{{ snap.theme_commentary }}</p>
-      </div>
-      {% endif %}
-    </section>
-    {% endif %}
+    {# 2. AI 요약 — us_*는 지수 아래 표시, pre_close는 상단(MB5)으로 이동 → 여기선 그 외 KR만 #}
+    {% if snap.mode not in ['us_morning', 'us_premarket', 'us_intraday', 'us_afterhours', 'pre_close'] %}{{ ai_summary_section(snap) }}{% endif %}
 
     {# 3b. 내일 관전 포인트 (마감 후) #}
     {% if snap.mode == 'post_close' and snap.candidate_picks %}
@@ -1010,6 +1053,9 @@ ${{ "{:,.2f}".format(item.price) }} <span class="{{ 'up-text' if pct >= 0 else '
       {% endfor %}
     </section>
     {% endif %}
+
+    {# ★ 마감전(pre_close, MB7 2026-06-14): 강세/약세 테마 바로 뒤에 전략 스크린 배치 #}
+    {% if snap.mode == 'pre_close' %}{{ strategy_screen_section(snap) }}{% endif %}
 
     {# ★ 오늘의 추천 Top3 — 마감전(pre_close)은 지수·수급 바로 뒤로 이동(상단 매크로). 그 외 모드는 여기. (사용자 2026-06-12) #}
     {% if snap.mode != 'pre_close' %}{{ top3_section(snap) }}{% endif %}
@@ -1229,43 +1275,8 @@ ${{ "{:,.2f}".format(item.price) }} <span class="{{ 'up-text' if pct >= 0 else '
 
     {# 3a. 종가베팅 후보 — pre_close는 지수·수급 바로 뒤로 이동(상단). 여기서는 렌더하지 않음. (사용자 2026-06-12) #}
 
-    {# 3c. 전략 스크린 — 종목당 1줄(중복제거)·종합점수순·매칭전략 다 표기 (사용자 2026-06-05) #}
-    {% if snap.screen_ranked %}
-    <section>
-      <h2><span class="icon">🎯</span>전략 스크린 <span style="color:var(--text-dim);font-size:0.8rem;">(종합점수순 · 매칭전략 표기)</span>
-        <button class="copy-btn" data-codes="{{ snap.screen_ranked|map(attribute='ticker')|join(' ') }}" onclick="copyWatch(this)">📋 관심등록 복사</button>
-      </h2>
-      <ul class="watch-list">
-        {% for p in snap.screen_ranked %}
-        <li>
-          <a href="https://finance.naver.com/item/main.naver?code={{ p.ticker }}" target="_blank" rel="noopener"><strong>{{ p.name }}</strong></a>
-          {% if mkt(p.ticker) %}<span class="pick-ticker">{{ mkt(p.ticker) }}</span>{% endif %}
-          <button type="button" class="code-copy" data-code="{{ p.ticker }}" onclick="copyCode(this)" title="종목코드 복사 (MTS 검색창에 붙여넣기)">📋</button>
-          {{ strat_badge(p.strategies) }}
-          <span class="px">{{ "{:,.0f}".format(p.price) }}원</span>
-          <span class="{{ 'up-text' if p.change_pct >= 0 else 'down-text' }}">{{ '+' if p.change_pct >= 0 else '' }}{{ "{:.1f}".format(p.change_pct) }}%</span>
-          {% if p.endstage %}<span class="down-text" style="cursor:pointer;" onclick="showFlag(this)" data-flag="endstage">⚠️끝물ⓘ</span>{% endif %}
-          {% if p.ai_summary or p.marcap_str %}
-          <div class="pick-line">
-            {% if p.ai_summary %}<button type="button" class="ai-btn" onclick="showAI(this)" data-name="{{ p.name }}" data-summary="{{ p.ai_summary|e }}">🤖 AI요약</button>{% endif %}
-            {% if p.marcap_str %}<span class="code">시총 {{ p.marcap_str }}</span>{% endif %}
-          </div>
-          {% endif %}
-          <div class="theme-reason">{{ p.reason }}</div>
-          {% set _phoh = p.overheat and 'C' in p.strategies %}
-          <div class="pick-meta" style="color:{{ 'var(--red)' if _phoh else 'var(--text-dim)' }};">📊 20일선 이격 {% if 'B' in p.strategies and p.gap20 >= -5 and p.gap20 <= 5 %}<strong style="color:var(--red);">{{ '+' if p.gap20 >= 0 else '' }}{{ "{:.1f}".format(p.gap20) }}%</strong>{% else %}{{ '+' if p.gap20 >= 0 else '' }}{{ "{:.1f}".format(p.gap20) }}%{% endif %}{% if _phoh %} <span onclick="showFlag(this)" data-flag="overheat" style="cursor:pointer;">🔥단기과열주의(BB돌파·거래량{{ "{:.1f}".format(p.vol_x) }}x)ⓘ</span>{% endif %}{% if p.cross_signal == 'PULLBACK' %} <span class="up-text" style="cursor:pointer;" onclick="showFlag(this)" data-flag="pullback">· 🟢5&lt;10 단기눌림ⓘ</span>{% elif p.cross_signal == 'CORRECTION' %} <span class="down-text" style="cursor:pointer;" onclick="showFlag(this)" data-flag="correction">· ⚠️5&lt;10 조정시작ⓘ</span>{% endif %}</div>
-          <div class="pick-meta">
-            {{ '업종' if p.theme_kind == 'sector' else '테마' }}:
-            {% if p.theme and p.theme_kind == 'theme' and p.theme_idx %}<a href="https://judal.co.kr/?view=stockList&themeIdx={{ p.theme_idx }}" target="_blank" rel="noopener">{{ p.theme }}</a>
-            {% elif p.theme %}<a href="https://search.naver.com/search.naver?query={{ p.theme|urlencode }}+관련주" target="_blank" rel="noopener">{{ p.theme }}</a>{% else %}-{% endif %}
-            · 주도테마: {{ 'O' if p.is_leading_theme else 'X' }}
-          </div>
-        </li>
-        {% endfor %}
-      </ul>
-      <p class="disclaimer" style="font-size:12px;">※ 종목당 1줄·종합점수순. 같은 종목이 여러 전략에 잡히면 'A·C·D 시그널'처럼 묶어 표기. 참고용이며 매수 추천 아님. · 📋 일괄 관심등록.</p>
-    </section>
-    {% endif %}
+    {# 3c. 전략 스크린 — pre_close는 강세/약세 테마 뒤(MB7 상단)로 이동. 그 외 모드는 여기. #}
+    {% if snap.mode != 'pre_close' %}{{ strategy_screen_section(snap) }}{% endif %}
 
     {# 3d. 보유종목 상태 #}
     {% if snap.holdings_status %}

@@ -375,24 +375,47 @@ def _format_themes_merged(snap: MarketSnapshot) -> list[str]:
     return lines
 
 
+def _format_candidate_picks(snap: MarketSnapshot) -> list[str]:
+    """🎯 종가베팅 후보 5선(점수기반·Top3 제외) — 마감전 텔레그램 핵심 정보(MB4, 2026-06-14).
+
+    종목명/시세 한 줄 + 전략배지 + 근거 한 줄. 없으면 []."""
+    picks = getattr(snap, "candidate_picks", None) or []
+    if not picks:
+        return []
+    lines = ["🎯 *종가베팅 후보 5선* (점수기반·Top3 제외)"]
+    for i, p in enumerate(picks, 1):
+        chg = p.get("change_pct", 0) or 0
+        sign = "+" if chg >= 0 else ""
+        strat = f" [{'·'.join(p.get('strategies') or [])}]" if p.get("strategies") else ""
+        lines.append(f"{i}. {_naver_link(p.get('name', ''), str(p.get('ticker', '')))} "
+                     f"{p.get('price', 0):,.0f}원 ({sign}{chg:.1f}%){strat}")
+        rat = p.get("rationale") or p.get("reason")
+        if rat:
+            lines.append(f"   └ {rat}")
+        if p.get("theme"):
+            lines.append(f"   테마: {p['theme']}")
+    lines.append("")
+    return lines
+
+
 def _format_pre_summary(snap: MarketSnapshot) -> str:
-    """마감 전 텔레그램 요약 — 웹과 동일 순서: 지수→AI요약→수급→테마→종목(#447/#449)."""
+    """마감 전 텔레그램 요약 — 지수→수급→AI요약→추천Top3+종가베팅5선(정보 다이어트, MB1~MB4).
+
+    강세/약세 테마·E·급등초입 등 시장분석 섹션은 제거(사용자 2026-06-14). 보유종목은 유지."""
     url = report_url(snap)
     date = snap.generated_at.strftime("%Y-%m-%d %H:%M")
 
     lines: list[str] = []
-    lines.append(f"🟡 *마감 전 리포트* — {date}")
+    lines.append(f"🟡 *한국장 마감전* — {date}")   # MB1: 제목 변경
     lines.append("")
     lines.extend(_format_index_lines(snap))      # 📊 지수 + 신호등 병기
-    lines.extend(_format_market_flows(snap))      # 💰 수급
-    lines.extend(_format_flows_summary(snap))     # 🔎 AI 수급 요약
-    if snap.summary:                              # 🤖 AI 시장요약 (수급 아래로, #453)
+    lines.extend(_format_market_flows(snap))      # 💰 수급(KM3 줄바꿈 공통)
+    # MB3: 🔎 AI 수급 요약 제거. MB4: 강세/약세 테마·E·급등초입 제거 → Top3 + 종가베팅 5선만.
+    if snap.summary:                              # 🤖 AI 시장요약(수급 아래)
         lines.append(snap.summary)
         lines.append("")
-    lines.extend(_format_themes_merged(snap))     # 🔥 강세/주도 테마 통합
-    lines.extend(_format_strategy_holdings(snap))
-    lines.extend(_format_e_picks(snap))       # 🩹 E 과매도 반등 후보
-    lines.extend(_format_surge_picks(snap))   # 🚀 급등 초입
+    lines.extend(_format_strategy_holdings(snap))  # 🏆 추천 Top3 + 📋 보유종목
+    lines.extend(_format_candidate_picks(snap))    # 🎯 종가베팅 후보 5선
     lines.append(f"📄 [전체 리포트 보기]({url})")
     lines.append("")
     lines.append("_※ 참고용 정보. 투자 판단·책임은 본인._")
