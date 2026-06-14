@@ -200,12 +200,14 @@ ${{ "{:,.2f}".format(item.price) }} <span class="{{ 'up-text' if pct >= 0 else '
       width: 100%;
     }
     .index-spark img { width: 100%; height: auto; object-fit: contain; border-radius: 4px; cursor: zoom-in; display: block; }
-    .supply-table { width: 100%; border-collapse: collapse; font-size: 0.95rem; }
-    .supply-table th, .supply-table td { padding: 0.5rem 0.4rem; text-align: right; border-bottom: 1px solid var(--border); }
-    .supply-table th { color: var(--text-dim); font-weight: 600; font-size: 0.85rem; }
+    /* KM6(2026-06-14): 코스피/코스닥 라벨이 칸 안에서 줄바꿈돼 가시성 저하 → nowrap + 폰트·패딩 축소로 한 줄 고정 */
+    .supply-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; table-layout: fixed; }
+    .supply-table th, .supply-table td { padding: 0.45rem 0.25rem; text-align: right; border-bottom: 1px solid var(--border); white-space: nowrap; }
+    .supply-table th { color: var(--text-dim); font-weight: 600; font-size: 0.8rem; }
     .supply-table th:first-child, .supply-table td.sup-mk { text-align: left; color: var(--text); font-weight: 700; }
     .supply-table td { font-variant-numeric: tabular-nums; }
-    .supply-table td.sup-date { text-align: left; color: var(--text-dim); font-size: 0.85rem; }
+    .supply-table td.sup-date { text-align: left; color: var(--text-dim); font-size: 0.8rem; }
+    @media (max-width: 380px) { .supply-table { font-size: 0.78rem; } .supply-table th, .supply-table td { padding: 0.4rem 0.15rem; } }
     .supply-table tr.sup-daysep td { border-top: 2px solid var(--border); }
     .lead-themes { margin-bottom: 0.75rem; line-height: 1.9; }
     .lead-theme-chip { display: inline-block; background: #f59e0b22; color: #fbbf24; border: 1px solid #f59e0b55;

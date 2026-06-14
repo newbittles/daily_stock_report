@@ -97,6 +97,38 @@ def test_format_midday_has_all_sections():
     assert "추천가대비 -1.0%" in msg and "오늘 -0.5%" in msg
 
 
+def test_format_midday_info_diet_km1_km3():
+    """#4 장중 정보 다이어트(2026-06-14): KM1 제목 '한국장 장중 리포트',
+    KM3 투자자수급 개인·외인·기관 각 줄 분리."""
+    msg = _format_midday_summary(_midday_snap())
+    # KM1: 제목
+    assert "🟢 *한국장 장중 리포트*" in msg
+    # KM3: 코스피/코스닥 라벨 + 개인·외인·기관 각 줄
+    assert "📈 *코스피*" in msg and "📈 *코스닥*" in msg
+    assert "개인 -100(+200)" in msg
+    assert "외인 +1,200(-300)" in msg
+    assert "기관 -300(+100)" in msg
+
+
+def test_format_midday_info_diet_km2_overnight():
+    """KM2: 미국 야간 = 선물·기타 M7 빼고 테슬라·마이크론·SOXL·EWY만(#3과 동일)."""
+    snap = _midday_snap()
+    snap.us_overnight = {
+        "futures": [{"name": "나스닥 선물", "change_pct": 0.5}],
+        "m7": [{"symbol": "TSLA", "name": "테슬라", "change_pct": 2.1,
+                "session_pct": None, "session_label": ""},
+               {"symbol": "AAPL", "name": "애플", "change_pct": -0.4,
+                "session_pct": None, "session_label": ""}],
+        "etf": [{"symbol": "SOXL", "name": "SOXL(반도체 3X)", "change_pct": 3.4,
+                 "session_pct": None, "session_label": ""}],
+        "extra": [{"symbol": "MU", "name": "마이크론", "change_pct": 1.5,
+                   "session_pct": None, "session_label": ""}],
+    }
+    msg = _format_midday_summary(snap)
+    assert "나스닥 선물" not in msg and "애플" not in msg
+    assert "테슬라" in msg and "마이크론" in msg and "SOXL" in msg
+
+
 def test_format_midday_has_web_link():
     """장중 리포트도 웹 발행(마감전/후 포맷) — '전체 리포트 보기' 링크 포함."""
     msg = _format_midday_summary(_midday_snap())

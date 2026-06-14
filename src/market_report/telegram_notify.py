@@ -216,6 +216,7 @@ def _format_market_flows(snap: MarketSnapshot) -> list[str]:
     head = f"💰 *투자자 수급* ({d[4:6]}/{d[6:8]} · 억"
     head += " · 괄호=전일)" if prev else ")"
     lines = [head]
+    # KM3(2026-06-14, ★모든 한국장 리포트 공통): 개인·외국인·기관을 각 줄로 분리(모바일 가시성).
     for mk, label in (("kospi", "코스피"), ("kosdaq", "코스닥")):
         f = today.get(mk) or {}
         if not f:
@@ -228,7 +229,10 @@ def _format_market_flows(snap: MarketSnapshot) -> list[str]:
                 s += f"({int(prev[mk].get(key, 0)):+,})"
             return s
 
-        lines.append(f"  {label} 개인 {_cell('personal')} · 외인 {_cell('foreign')} · 기관 {_cell('institution')}")
+        lines.append(f"  📈 *{label}*")
+        lines.append(f"    개인 {_cell('personal')}")
+        lines.append(f"    외인 {_cell('foreign')}")
+        lines.append(f"    기관 {_cell('institution')}")
     lines.append("")
     return lines
 
@@ -463,8 +467,9 @@ def _format_hot_stocks(hot: list[dict]) -> list[str]:
     lines: list[str] = ["🔥 *핫 종목* (상승률 상위)"]
     for h in hot:
         sign = "+" if h.get("change_pct", 0) >= 0 else ""
-        lines.append(f"  · {_naver_link(h['name'], h['ticker'])} "
-                     f"{h['price']:,.0f}원 ({sign}{h.get('change_pct', 0):.1f}%)")
+        # KM4(2026-06-14): 모바일 가시성 — 종목명/시세를 줄바꿈 분리(이름 옆 시장라벨로 길어짐 방지).
+        lines.append(f"  · {_naver_link(h['name'], h['ticker'])}")
+        lines.append(f"    {h['price']:,.0f}원 ({sign}{h.get('change_pct', 0):.1f}%)")
         # 거래대금 금액 (전일대비:%)
         amt = h.get("tv_today")
         if amt:
@@ -494,9 +499,12 @@ def _format_midday_summary(snap: MarketSnapshot) -> str:
     텔레그램 전용(웹 없음). 모바일 가독성 위해 항목마다 줄바꿈.
     """
     date = snap.generated_at.strftime("%Y-%m-%d %H:%M")
-    lines: list[str] = [f"🟢 *장중 리포트* — {date}", ""]
+    # KM1(2026-06-14): 제목 '장중 리포트' → '한국장 장중 리포트'
+    lines: list[str] = [f"🟢 *한국장 장중 리포트* — {date}", ""]
 
-    lines.extend(_format_us_overnight(snap))  # 🇺🇸 미국 야간(나스닥선물+M7) 최상단(#476)
+    # KM2(2026-06-14): 미국 야간 정보 #3과 동일 — 선물·기타 M7 빼고 테슬라·마이크론·SOXL·EWY만.
+    lines.extend(_format_us_overnight(
+        snap, include_futures=False, m7_symbols={"TSLA"}, include_etf=True, include_extra=True))
 
     # 지수 (코스피·코스닥·환율·유가 각 1줄)
     lines.extend(_format_index_lines(snap))
@@ -565,7 +573,9 @@ def _format_midday_summary(snap: MarketSnapshot) -> str:
         for t in snap.prev_candidates_status:
             tp = t.get("today_pct")
             ts = f"오늘 {tp:+.1f}%" if tp is not None else "—"
-            lines.append(f"  · {_naver_link(t['name'], t['ticker'])} {ts}")
+            # KM5(2026-06-14): 종목명/등락을 줄바꿈 분리(모바일 가시성).
+            lines.append(f"  · {_naver_link(t['name'], t['ticker'])}")
+            lines.append(f"    {ts}")
             fl = _flow_line(t)
             if fl:
                 lines.append(fl)
