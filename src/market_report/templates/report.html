@@ -1060,6 +1060,9 @@ ${{ "{:,.2f}".format(item.price) }} <span class="{{ 'up-text' if pct >= 0 else '
     {# ★ 오늘의 추천 Top3 — 마감전(pre_close)은 지수·수급 바로 뒤로 이동(상단 매크로). 그 외 모드는 여기. (사용자 2026-06-12) #}
     {% if snap.mode != 'pre_close' %}{{ top3_section(snap) }}{% endif %}
 
+    {# ★ 마감후(post_close, MC2 2026-06-14): 전략 스크린을 Top3 바로 아래 배치 #}
+    {% if snap.mode == 'post_close' %}{{ strategy_screen_section(snap) }}{% endif %}
+
     {# 🌙 시간외(NXT) 상위 상승률 — 정규장 마감 후(post_close, 정규장 종가 대비 NXT 변동) #}
     {% if snap.overtime_gainers %}
     <section>
@@ -1275,8 +1278,8 @@ ${{ "{:,.2f}".format(item.price) }} <span class="{{ 'up-text' if pct >= 0 else '
 
     {# 3a. 종가베팅 후보 — pre_close는 지수·수급 바로 뒤로 이동(상단). 여기서는 렌더하지 않음. (사용자 2026-06-12) #}
 
-    {# 3c. 전략 스크린 — pre_close는 강세/약세 테마 뒤(MB7 상단)로 이동. 그 외 모드는 여기. #}
-    {% if snap.mode != 'pre_close' %}{{ strategy_screen_section(snap) }}{% endif %}
+    {# 3c. 전략 스크린 — pre_close는 테마 뒤(MB7), post_close는 Top3 아래(MC2)로 이동. 그 외 모드는 여기. #}
+    {% if snap.mode not in ['pre_close', 'post_close'] %}{{ strategy_screen_section(snap) }}{% endif %}
 
     {# 3d. 보유종목 상태 #}
     {% if snap.holdings_status %}

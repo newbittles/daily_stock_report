@@ -457,8 +457,9 @@ def _format_post_summary(snap: MarketSnapshot) -> str:
     if ot:
         lines.append("🌙 *시간외(NXT) 상위 상승률* (정규장 종가 대비)")
         for g in ot[:7]:
-            lines.append(f"  · {_naver_link(g['name'], g['ticker'])} "
-                         f"{g.get('nxt_price', 0):,.0f}원 (+{g.get('overtime_pct', 0):.1f}%)")
+            # MC1(2026-06-14): 모바일 가시성 — 종목명/시세 줄바꿈 분리(앞 요구와 동일)
+            lines.append(f"  · {_naver_link(g['name'], g['ticker'])}")
+            lines.append(f"    {g.get('nxt_price', 0):,.0f}원 (+{g.get('overtime_pct', 0):.1f}%)")
         lines.append("")
 
     lines.extend(_format_e_picks(snap))       # 🩹 E 과매도 반등 후보
