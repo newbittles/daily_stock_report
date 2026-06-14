@@ -19,9 +19,10 @@ from src.market_report.coin_report import (
 
 
 def test_coin_universe_shape():
-    """유니버스 6개 고정(사용자 2026-06-07 축소): USDT 최상단 + BTC·ETH·XRP·SOL·DOGE."""
+    """유니버스 5개 고정: USDT 최상단 + BTC·ETH·XRP·SOL (DOGE 제외, 사용자 2026-06-14)."""
     syms = [c["sym"] for c in COIN_UNIVERSE]
-    assert syms == ["USDT", "BTC", "ETH", "XRP", "SOL", "DOGE"]
+    assert syms == ["USDT", "BTC", "ETH", "XRP", "SOL"]
+    assert "DOGE" not in syms   # 사용자 요청으로 도지코인 제외(2026-06-14)
     # 스테이블 — 지표(이격·RSI)는 표시하되 ABCDE/E 전략만 제외(평탄차트 오탐, 2026-06-08)
     assert COIN_UNIVERSE[0].get("strategies") is False
     for c in COIN_UNIVERSE:
@@ -285,8 +286,9 @@ def test_format_telegram_with_analysis():
     text = format_coin_telegram(rows, fng=None, glob=None, fx=1450.0,
                                 now=datetime(2026, 6, 7, 17, 0))
     assert "1. 비트코인" in text and "2. 이더리움" in text   # 번호 매김
-    # 신호등 + 전략 여부(없으면 '없음' 명시, 사용자 2026-06-07)만 한 줄
-    assert "ㄴ일봉 🟢정상 · 4시간봉 🟡단기눌림 · 전략 B·E 🔥시장동반바닥" in text
+    # 신호등은 한 줄, 전략은 한 줄 아래로 분리(사용자 2026-06-14)
+    assert "ㄴ일봉 🟢정상 · 4시간봉 🟡단기눌림" in text
+    assert "ㄴ전략 B·E 🔥시장동반바닥" in text
     # 상세 지표는 텔레그램에서 제외(웹 전용)
     assert "MACD" not in text
     assert "20일 +3.1%" not in text
@@ -305,7 +307,9 @@ def test_format_telegram_no_strategy_shows_none():
     rows[0]["analysis"] = a
     text = format_coin_telegram(rows, fng=None, glob=None, fx=1450.0,
                                 now=datetime(2026, 6, 7, 17, 0))
-    assert "ㄴ일봉 🟢정상 · 4시간봉 🟡단기눌림 · 전략 없음" in text
+    # 전략은 한 줄 아래로 분리(사용자 2026-06-14) — 미매칭이어도 '없음' 명시
+    assert "ㄴ일봉 🟢정상 · 4시간봉 🟡단기눌림" in text
+    assert "ㄴ전략 없음" in text
 
 
 def test_scheduler_registers_coin_job():

@@ -24,8 +24,8 @@ _FNG_URL = "https://api.alternative.me/fng/"
 _HEADERS = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"}
 _FNG_CACHE = Path(__file__).resolve().parents[3] / "data" / "coin_fng_cache.json"
 
-# 유니버스 — 6개 고정(사용자 2026-06-07 정보과다 축소): USDT(달러 프리미엄, 최상단)
-# + BTC·ETH·XRP·SOL·DOGE. 업비트 KRW 마켓 기준.
+# 유니버스 — 5개 고정: USDT(달러 프리미엄, 최상단) + BTC·ETH·XRP·SOL.
+# 업비트 KRW 마켓 기준. DOGE는 사용자 요청(2026-06-14)으로 제외.
 COIN_UNIVERSE: list[dict] = [
     # USDT: 지표(이격·RSI·신호등=달러 프리미엄 추세)는 표시, ABCDE/E 전략만 제외
     # (스테이블 평탄차트가 A/C/D를 오탐, 2026-06-08)
@@ -35,7 +35,6 @@ COIN_UNIVERSE: list[dict] = [
     {"sym": "ETH", "name_ko": "이더리움", "upbit": "KRW-ETH", "gecko": "ethereum"},
     {"sym": "XRP", "name_ko": "리플", "upbit": "KRW-XRP", "gecko": "ripple"},
     {"sym": "SOL", "name_ko": "솔라나", "upbit": "KRW-SOL", "gecko": "solana"},
-    {"sym": "DOGE", "name_ko": "도지코인", "upbit": "KRW-DOGE", "gecko": "dogecoin"},
 ]
 
 FNG_RATING_KO = {

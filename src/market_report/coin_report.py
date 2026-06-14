@@ -279,15 +279,15 @@ def format_coin_telegram(
             if h.get("phase_name"):
                 sig.append(f"4시간봉 {h.get('phase_emoji', '')}{h['phase_name']}")
             if sig:
-                # 전략(일봉 기준): 미매칭이면 '없음' 명시 — 누락 오인 방지(사용자 2026-06-07)
+                lines.append("   ㄴ" + " · ".join(sig))  # 신호등(일봉·4시간봉)
+                # 전략은 한 줄 아래로 분리(사용자 2026-06-14). 미매칭이면 '없음' 명시.
                 if d.get("strats"):
                     s = "전략 " + "·".join(d["strats"])
                     if a.get("e_bottom"):
                         s += " 🔥시장동반바닥"
                 else:
                     s = "전략 없음"
-                sig.append(s)
-                lines.append("   ㄴ" + " · ".join(sig))
+                lines.append("   ㄴ" + s)
     lines.append("")
     lines.append(DISCLAIMER)
     if url:
