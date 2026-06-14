@@ -1347,7 +1347,8 @@ ${{ "{:,.2f}".format(item.price) }} <span class="{{ 'up-text' if pct >= 0 else '
           <a href="https://finance.naver.com/item/main.naver?code={{ t.ticker }}" target="_blank" rel="noopener"><strong>{{ t.name }}</strong></a>
           {% if mkt(t.ticker) %}<span class="pick-ticker">{{ mkt(t.ticker) }}</span>{% endif %}
           {% if t.today_pct is not none %}<span class="{{ 'up-text' if t.today_pct >= 0 else 'down-text' }}">시초 {{ '+' if t.today_pct >= 0 else '' }}{{ "{:.1f}".format(t.today_pct) }}%</span>{% else %}<span class="pick-sub">NXT 미체결</span>{% endif %}
-          {% if t.flow_desc %}<div class="pick-sub" style="color:var(--text-dim);">📊 {{ t.flow_desc }}</div>{% endif %}
+          {# KO4(2026-06-14): '현재'부분부터 줄바꿈 — 모바일 글자 잘림 방지 #}
+          {% if t.flow_desc %}<div class="pick-sub" style="color:var(--text-dim);">📊 {{ t.flow_desc|replace('현재', '<br>현재')|safe }}</div>{% endif %}
           {% if t.ai_summary %}<button type="button" class="ai-btn" onclick="showAI(this)" data-name="{{ t.name }}" data-summary="{{ t.ai_summary|e }}">🤖 AI요약</button>{% endif %}
         </li>
         {% endfor %}

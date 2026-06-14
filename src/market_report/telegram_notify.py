@@ -129,17 +129,27 @@ def _overnight_quote_line(q: dict) -> str:
     return s
 
 
-def _format_us_overnight(snap: MarketSnapshot, *, include_futures: bool = True) -> list[str]:
-    """🇺🇸 미국 야간 — 선물 + M7 + SOXL (마감·프리장 병기, #476/#485/#503).
+def _format_us_overnight(
+    snap: MarketSnapshot, *, include_futures: bool = True,
+    m7_symbols: set[str] | None = None, include_etf: bool = True,
+    include_extra: bool = False,
+) -> list[str]:
+    """🇺🇸 미국 야간 — 선물 + M7 + SOXL/EWY + 추가종목(마감·프리장 병기, #476/#485/#503).
 
     include_futures=False: 선물 생략(us_premarket은 지수 카드에 선물이 이미 있어 중복 방지).
+    m7_symbols=None: M7 전체. set 지정: 해당 심볼만(빈 set=M7 전부 생략).
+    include_etf=False: SOXL/EWY 생략.  include_extra=True: 마이크론 등 추가종목 표시.
+    한국장 장초·장중 정보 다이어트(2026-06-14): 선물·기타 M7 빼고 테슬라·마이크론·SOXL·EWY만.
     없으면 [].
     """
     ov = getattr(snap, "us_overnight", None) or {}
     fut = ov.get("futures") or []
     m7 = ov.get("m7") or []
-    etf = ov.get("etf") or []
-    if not (fut and include_futures) and not m7 and not etf:
+    etf = (ov.get("etf") or []) if include_etf else []
+    extra = (ov.get("extra") or []) if include_extra else []
+    if m7_symbols is not None:  # 화이트리스트 — 지정 심볼만(빈 set이면 전부 생략)
+        m7 = [q for q in m7 if q.get("symbol") in m7_symbols]
+    if not (fut and include_futures) and not m7 and not etf and not extra:
         return []
     lines: list[str] = ["🇺🇸 *미국 야간* (마감·프리장)"]
     if include_futures:
@@ -147,7 +157,9 @@ def _format_us_overnight(snap: MarketSnapshot, *, include_futures: bool = True) 
             lines.append(f"  {f['name']} {f['change_pct']:+.2f}%")
     for q in m7:
         lines.append(f"  {_overnight_quote_line(q)}")
-    for e in etf:  # SOXL 등 — M7 아래 별도(#485)
+    for q in extra:  # 마이크론 등 — 개별종목(M7 외, 2026-06-14)
+        lines.append(f"  {_overnight_quote_line(q)}")
+    for e in etf:  # SOXL/EWY — M7 아래 별도(#485)
         lines.append(f"  {_overnight_quote_line(e)}")
     lines.append("")
     return lines
@@ -678,7 +690,9 @@ def _format_kr_morning_summary(snap: MarketSnapshot) -> str:
     """한국장 프리(08:05)/장초(09:15) 요약 — 지수·신호등 + 시초 상승률 + 전일 Top3·종가베팅 시초 + AI(#404)."""
     title = "🌅 *한국장 프리 리포트* (NXT 프리장)" if snap.mode == "kr_premarket" else "🏁 *한국장 장초 리포트*"
     lines: list[str] = [f"{title} — {snap.generated_at.strftime('%m-%d %H:%M')}", ""]
-    lines.extend(_format_us_overnight(snap))  # 🇺🇸 미국 야간(나스닥선물+M7) 최상단(#476)
+    # 미국 야간 정보 다이어트(KO1, 2026-06-14): 나스닥·S&P500 선물 빼고 테슬라·마이크론·SOXL·EWY만.
+    lines.extend(_format_us_overnight(
+        snap, include_futures=False, m7_symbols={"TSLA"}, include_etf=True, include_extra=True))
     lines.extend(_format_index_lines(snap))  # 지수·공포탐욕·신호등/이격
     if snap.mode == "kr_premarket":
         # 프리장 소속 테마 (NXT 상승종목이 속한 테마 집계, 사용자 2026-06-10)
@@ -719,7 +733,9 @@ def _format_kr_morning_summary(snap: MarketSnapshot) -> str:
     if snap.prev_top3_status:
         lines.append(f"🏆 *전일 추천 Top3 {px_label}* ({snap.prev_top3_date[5:]})")
         for t in snap.prev_top3_status:
-            lines.append(f"  · {_naver_link(t['name'], t['ticker'])} {px_label} {_tp(t)} "
+            # KO2(2026-06-14): 종목명 한 줄, 시초·추천가대비는 한 줄 아래 '상승률:' 접두로(가시성).
+            lines.append(f"  · {_naver_link(t['name'], t['ticker'])}")
+            lines.append(f"    상승률: {px_label} {_tp(t)} "
                          f"(추천가대비 {t.get('return_pct', 0):+.1f}%)")
             fl = _flow_line(t)  # 장초(09:15) 분봉 추세(#473) — 프리장은 흐름 없어 미표기
             if fl:
@@ -728,7 +744,9 @@ def _format_kr_morning_summary(snap: MarketSnapshot) -> str:
     if snap.prev_candidates_status:
         lines.append(f"🎯 *전일 종가베팅 {px_label}* ({snap.prev_candidates_date[5:]})")
         for t in snap.prev_candidates_status:
-            lines.append(f"  · {_naver_link(t['name'], t['ticker'])} {px_label} {_tp(t)}")
+            # KO3(2026-06-14): 글자 안 잘리게 종목명/시초를 줄바꿈 분리.
+            lines.append(f"  · {_naver_link(t['name'], t['ticker'])}")
+            lines.append(f"    {px_label} {_tp(t)}")
             fl = _flow_line(t)
             if fl:
                 lines.append(fl)

@@ -36,6 +36,45 @@ def test_premarket_summary_new_sections_and_no_kr_index() -> None:
     assert "프리장 AI요약 제거" not in txt              # AI요약 미표시
 
 
+def test_kr_open_info_diet_overnight_and_linebreaks() -> None:
+    """장초(09:15) 정보 다이어트(2026-06-14):
+    KO1 미국 야간 = 선물·기타 M7 빼고 테슬라·마이크론·SOXL·EWY만,
+    KO2 전일 Top3 시초/추천가대비는 종목명 아래 '상승률:' 줄, KO3 종가베팅도 줄바꿈."""
+    s = MarketSnapshot(mode="kr_open", generated_at=datetime(2026, 6, 14, 9, 15))
+    s.kospi = IndexQuote(market="KOSPI", value=7800.0, change=0, change_pct=0.5,
+                         volume=0, trade_value=0.0, timestamp=datetime.now())
+    s.us_overnight = {
+        "futures": [{"name": "나스닥 선물", "change_pct": 0.5},
+                    {"name": "S&P500 선물", "change_pct": 0.3}],
+        "m7": [{"symbol": "TSLA", "name": "테슬라", "change_pct": 2.1,
+                "session_pct": 0.5, "session_label": "애프터"},
+               {"symbol": "AAPL", "name": "애플", "change_pct": -0.4,
+                "session_pct": None, "session_label": ""}],
+        "etf": [{"symbol": "EWY", "name": "한국 ETF(EWY)", "change_pct": 1.2,
+                 "session_pct": 0.3, "session_label": "애프터"},
+                {"symbol": "SOXL", "name": "SOXL(반도체 3X)", "change_pct": 3.4,
+                 "session_pct": None, "session_label": ""}],
+        "extra": [{"symbol": "MU", "name": "마이크론", "change_pct": 1.5,
+                   "session_pct": 0.2, "session_label": "애프터"}],
+    }
+    s.prev_top3_status = [{"ticker": "005930", "name": "삼성전자",
+                           "today_pct": 1.3, "return_pct": 4.2}]
+    s.prev_top3_date = "2026-06-13"
+    s.prev_candidates_status = [{"ticker": "000660", "name": "SK하이닉스", "today_pct": 2.0}]
+    s.prev_candidates_date = "2026-06-13"
+    txt = _format_kr_morning_summary(s)
+    # KO1: 선물 제외, 기타 M7(애플) 제외, 테슬라·마이크론·SOXL·EWY만
+    assert "나스닥 선물" not in txt and "S&P500 선물" not in txt
+    assert "애플" not in txt
+    assert "테슬라" in txt and "마이크론" in txt
+    assert "SOXL" in txt and "EWY" in txt
+    # KO2: 전일 Top3 — 종목명 아래 줄에 '상승률:' 접두
+    assert "상승률: 시초 +1.3% (추천가대비 +4.2%)" in txt
+    # KO3: 종가베팅 — 종목명/시초 줄바꿈 분리
+    assert "🎯 *전일 종가베팅 시초*" in txt
+    assert "    시초 +2.0%" in txt
+
+
 def test_candidate_persist_and_find_prev(tmp_path) -> None:
     picks = [
         {"ticker": "055550", "name": "신한지주", "theme": "금융", "rationale": "외인매수", "risk": "금리"},

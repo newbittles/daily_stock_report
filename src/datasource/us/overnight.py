@@ -29,6 +29,10 @@ _M7 = {
 # (사용자 2026-06-10 장전 리포트). SOXL(#485): 반도체 3X — 삼성·하이닉스 선행.
 _ETF = {"EWY": "한국 ETF(EWY)", "SOXL": "SOXL(반도체 3X)"}
 
+# 추가 개별종목 — M7 외 사용자 지정(2026-06-14): 마이크론(MU, 메모리반도체, 하이닉스 선행).
+# M7 리스트엔 넣지 않고 별도 'extra'로 분리 → 정보 다이어트한 리포트에서만 선택 표시.
+_EXTRA = {"MU": "마이크론"}
+
 
 def _fetch_one(sym: str) -> dict | None:
     """단일 심볼 fast_info → {price, change_pct}. 전일종가≤0/실패 시 None. 선물용(연속)."""
@@ -101,8 +105,20 @@ def _fetch_sync() -> dict:
         except Exception as exc:  # noqa: BLE001
             logger.warning("overnight_etf_failed sym=%s error=%s", sym, exc)
         time.sleep(random.uniform(0.2, 0.5))
-    logger.info("us_overnight collected futures=%d m7=%d etf=%d", len(fut), len(m7), len(etf))
-    return {"futures": fut, "m7": m7, "etf": etf}
+
+    extra: list[dict] = []  # 마이크론 등 — M7 외 사용자 지정 개별종목(2026-06-14)
+    for sym, name in _EXTRA.items():
+        try:
+            q = _fetch_detail(sym) or _fetch_one(sym)
+            if q:
+                extra.append({"symbol": sym, "name": name, **q})
+        except Exception as exc:  # noqa: BLE001
+            logger.warning("overnight_extra_failed sym=%s error=%s", sym, exc)
+        time.sleep(random.uniform(0.2, 0.5))
+
+    logger.info("us_overnight collected futures=%d m7=%d etf=%d extra=%d",
+                len(fut), len(m7), len(etf), len(extra))
+    return {"futures": fut, "m7": m7, "etf": etf, "extra": extra}
 
 
 async def fetch_us_overnight() -> dict:
