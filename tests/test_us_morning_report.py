@@ -87,6 +87,35 @@ def test_us_morning_telegram_info_diet() -> None:
     assert "\n→ [리포트 열기](" in msg
 
 
+def test_us_premarket_telegram_diet_up1_up2() -> None:
+    """#8 미국장 장전 정보 다이어트(2026-06-14): UP1 미국 야간 M7 제외(SOXL/EWY만),
+    UP2 한국인 순매수 줄바꿈."""
+    snap = MarketSnapshot(mode="us_premarket", generated_at=datetime(2026, 6, 14, 19, 0))
+    snap.us_indices = [{"name": "나스닥", "price": 17000.0, "change_pct": 0.5}]
+    snap.us_overnight = {
+        "futures": [{"symbol": "NQ=F", "name": "나스닥 선물", "change_pct": 0.5}],
+        "m7": [{"symbol": "NVDA", "name": "엔비디아", "change_pct": 1.0,
+                "session_pct": None, "session_label": ""},
+               {"symbol": "TSLA", "name": "테슬라", "change_pct": 2.1,
+                "session_pct": None, "session_label": ""}],
+        "etf": [{"symbol": "SOXL", "name": "SOXL(반도체 3X)", "change_pct": 3.4,
+                 "session_pct": None, "session_label": ""}],
+        "extra": [{"symbol": "MU", "name": "마이크론", "change_pct": 1.5,
+                   "session_pct": None, "session_label": ""}],
+    }
+    snap.kr_us_netbuy_total = {"daily_avg_eok": 1200, "total_eok": 6000,
+                               "prev_daily_avg_eok": 1000, "change_pct": 20.0}
+    msg = _format_us_morning_summary(snap)
+    # UP1: M7(엔비디아·테슬라)·선물 제외, ETF(SOXL)만
+    assert "엔비디아" not in msg and "테슬라" not in msg
+    assert "SOXL" in msg
+    # UP2: 한국인 순매수 줄바꿈(항목별 분리) + T+2 없음
+    assert "💸 *한국인 순매수*" in msg
+    assert "  일평균 +1,200억" in msg
+    assert "  5일총액 +6,000억" in msg
+    assert "T+2" not in msg and "결제일" not in msg
+
+
 def test_us_morning_telegram_is_overview_only() -> None:
     """텔레그램 = 시황(지수)+주도섹터까지만, 종목 상세는 웹 링크로(사용자 2026-06-04)."""
     msg = _format_us_morning_summary(_us_snap())

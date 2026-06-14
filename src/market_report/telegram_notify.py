@@ -659,10 +659,11 @@ def _format_us_morning_summary(snap: MarketSnapshot) -> str:
             lines.append(el)
         lines.append("")
 
-    # 🇺🇸 미국 야간(M7+SOXL, 마감·프리장 병기) — 프리장 리포트에도 표시(#503 B).
-    # 선물은 이미 지수 카드(나스닥/S&P 선물)에 있어 제외(include_futures=False).
+    # 🇺🇸 미국 야간 — 프리장 리포트(#503 B). 선물은 지수 카드에 이미 있어 제외(include_futures=False).
+    # UP1(2026-06-14): M7 종목은 리포트에서 제외(m7_symbols=set()) → SOXL/EWY ETF만 표시.
     if snap.mode == "us_premarket":
-        lines.extend(_format_us_overnight(snap, include_futures=False))
+        lines.extend(_format_us_overnight(
+            snap, include_futures=False, m7_symbols=set(), include_etf=True))
 
     fg = getattr(snap, "fear_greed", None)
     if fg and fg.get("score") is not None:
@@ -672,9 +673,12 @@ def _format_us_morning_summary(snap: MarketSnapshot) -> str:
 
     t = getattr(snap, "kr_us_netbuy_total", None)  # 💸 한국인 순매수 일평균(#377/#398)
     if t:
-        chg = (f" (전주 {t['prev_daily_avg_eok']:+,}억 대비 {t['change_pct']:+.1f}%)"
-               if t.get("change_pct") is not None else "")
-        lines.append(f"💸 한국인 순매수 일평균 {t['daily_avg_eok']:+,}억{chg} · 5일총액 {t['total_eok']:+,}억")
+        # UP2(2026-06-14): 모바일 가시성 — 항목별 줄바꿈 분리. (T+2 결제일 줄은 T1에서 이미 제거됨)
+        lines.append("💸 *한국인 순매수* (최근 5거래일)")
+        lines.append(f"  일평균 {t['daily_avg_eok']:+,}억")
+        if t.get("change_pct") is not None:
+            lines.append(f"  전주 {t['prev_daily_avg_eok']:+,}억 대비 {t['change_pct']:+.1f}%")
+        lines.append(f"  5일총액 {t['total_eok']:+,}억")
         lines.append("")
 
     # 🤖 AI 증시요약(snap.summary)은 텔레그램에서 제외 — 💡왜올랐나·🌏시사점만(사용자 2026-06-14).
