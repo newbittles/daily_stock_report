@@ -33,3 +33,31 @@ def test_settings_krx_optional_defaults_empty() -> None:
     )
     assert s.krx_id == ""
     assert s.krx_pw == ""
+
+
+def test_owner_chat_ids_explicit() -> None:
+    """TELEGRAM_OWNER_CHAT_IDS 지정 시 그 집합이 오너(보유종목·자동매수 수신)."""
+    s = Settings(
+        _env_file=None, telegram_bot_token="t",
+        telegram_allowed_chat_ids="111,222,333", gemini_api_key="g",
+        telegram_owner_chat_ids="111",
+    )
+    assert s.owner_chat_ids() == {111}
+
+
+def test_owner_chat_ids_defaults_to_first_allowed() -> None:
+    """미지정 시 allowed의 첫 계정이 오너(맨 첫번째 텔레그램 계정, 사용자 2026-06-14)."""
+    s = Settings(
+        _env_file=None, telegram_bot_token="t",
+        telegram_allowed_chat_ids="999,222,333", gemini_api_key="g",
+    )
+    assert s.owner_chat_ids() == {999}
+
+
+def test_owner_web_suffix_default_and_token() -> None:
+    s = Settings(_env_file=None, telegram_bot_token="t",
+                 telegram_allowed_chat_ids="1", gemini_api_key="g")
+    assert s.owner_web_suffix() == "owner"
+    s2 = Settings(_env_file=None, telegram_bot_token="t", telegram_allowed_chat_ids="1",
+                  gemini_api_key="g", owner_web_token="x9q2")
+    assert s2.owner_web_suffix() == "x9q2"

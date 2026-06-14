@@ -25,6 +25,11 @@ class Settings(BaseSettings):
     # Telegram
     telegram_bot_token: str
     telegram_allowed_chat_ids: str  # comma-separated
+    # 오너(본인) 계정 — 보유종목·자동매수결과는 이 계정에만 발송, 나머지는 제외(사용자 2026-06-14).
+    # 비우면 allowed_chat_ids의 '첫 번째' 계정을 오너로 간주(맨 첫번째 텔레그램 계정).
+    telegram_owner_chat_ids: str = ""  # comma-separated
+    # 오너 전용 웹리포트 URL 토큰 — 파일명 obscurity(공개 Pages라 추측 방지). 비우면 'owner' 사용.
+    owner_web_token: str = ""
 
     # Google Gemini
     gemini_api_key: str
@@ -59,6 +64,22 @@ class Settings(BaseSettings):
             for cid in self.telegram_allowed_chat_ids.split(",")
             if cid.strip()
         ]
+
+    def owner_chat_ids(self) -> set[int]:
+        """오너 계정 집합 — 보유종목·자동매수 수신 대상. 비우면 첫 allowed 계정(사용자 2026-06-14)."""
+        explicit = [
+            int(cid.strip())
+            for cid in self.telegram_owner_chat_ids.split(",")
+            if cid.strip()
+        ]
+        if explicit:
+            return set(explicit)
+        allowed = self.allowed_chat_ids()
+        return {allowed[0]} if allowed else set()
+
+    def owner_web_suffix(self) -> str:
+        """오너 전용 웹리포트 파일명 접미사 — 추측 방지 토큰(없으면 'owner')."""
+        return self.owner_web_token.strip() or "owner"
 
 
 _settings: Settings | None = None

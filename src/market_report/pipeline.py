@@ -1715,6 +1715,11 @@ async def run_full(
             await translate_us_news(snap)  # 뉴스 헤드라인 한국어 번역(사용자 #394)
         except Exception as exc:
             logger.warning("us_morning_news_translate_failed error=%s", exc)
+        try:
+            from src.market_report.strategy_section import attach_holdings
+            await attach_holdings(snap)  # 📋 보유종목(오너 전용 게이트, 2026-06-14)
+        except Exception as exc:
+            logger.warning("us_morning_holdings_failed error=%s", exc)
 
         try:
             render_report(snap)

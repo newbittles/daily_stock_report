@@ -133,7 +133,7 @@ def _build_clients():
 
 
 def _build_notify():
-    """텔레그램 알림 클로저 (allowed_chat_ids로 전송). 실패는 best-effort."""
+    """텔레그램 알림 클로저 — 자동매수 결과는 오너(본인)에게만 발송(사용자 2026-06-14). best-effort."""
     try:
         from telegram import Bot
         from src.config.settings import get_settings
@@ -141,7 +141,8 @@ def _build_notify():
         if not s.telegram_bot_token:
             return None
         bot = Bot(token=s.telegram_bot_token)
-        chat_ids = s.allowed_chat_ids()
+        # 자동매수 결과는 다른 유저에게 노출 X → 오너 계정에만(없으면 첫 allowed)
+        chat_ids = sorted(s.owner_chat_ids())
 
         async def _notify(msg: str) -> None:
             for cid in chat_ids:

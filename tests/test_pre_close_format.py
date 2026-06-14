@@ -56,3 +56,19 @@ def test_pre_close_no_candidates_section_omitted() -> None:
     msg = _format_pre_summary(s)
     assert "종가베팅 후보 5선" not in msg
     assert "오늘의 추천 Top 3" in msg   # Top3는 그대로
+
+
+def test_pre_close_holdings_owner_only() -> None:
+    """보유종목은 오너판(private=True)에만, 공개판(private=False)에는 제외(2026-06-14 유저별 분리)."""
+    s = _pre_snap()
+    s.holdings_status = [{"ticker": "042660", "name": "한화오션", "price": 112000,
+                          "profit_rate": 8.5, "state": "HOLD", "reason": "20MA 위 홀드"}]
+    owner = _format_pre_summary(s, private=True)
+    public = _format_pre_summary(s, private=False)
+    assert "📋 *보유종목 상태*" in owner and "한화오션" in owner
+    assert "📋 *보유종목 상태*" not in public and "한화오션" not in public
+    # Top3·종가베팅은 둘 다 표시(공개 정보)
+    assert "오늘의 추천 Top 3" in owner and "오늘의 추천 Top 3" in public
+    # 웹 링크: 오너판은 -owner URL, 공개판은 일반 URL
+    assert "-owner.html" in owner
+    assert "-owner.html" not in public

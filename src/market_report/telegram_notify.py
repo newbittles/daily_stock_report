@@ -76,8 +76,8 @@ def _us_name(name: str, symbol: str) -> str:
     return f"{name}({symbol}·{mk})" if mk else f"{name}({symbol})"
 
 
-def _format_strategy_holdings(snap: MarketSnapshot) -> list[str]:
-    """Top3 + 보유종목 상태 요약 (종목명=네이버링크, 상승률·손절 병기).
+def _format_strategy_holdings(snap: MarketSnapshot, *, private: bool = False) -> list[str]:
+    """Top3 (+ private=True면 보유종목) 요약. 보유종목은 오너 전용(사용자 2026-06-14).
 
     A/B/C/D 전략 스크린은 텔레그램에서 제외 — 웹 '전체 리포트 보기'에서만 표시(메시지 간결화).
     """
@@ -98,7 +98,8 @@ def _format_strategy_holdings(snap: MarketSnapshot) -> list[str]:
             lines.append(f"   📊 20일선 {'+' if g >= 0 else ''}{g:.1f}%"
                          + (" 🔥단기과열주의" if _oh else ""))
         lines.append("")
-    lines.extend(_format_holdings(snap))
+    if private:  # 보유종목은 오너 전용(2026-06-14 유저별 분리)
+        lines.extend(_format_holdings(snap))
     return lines
 
 
@@ -407,11 +408,11 @@ def _format_candidate_picks(snap: MarketSnapshot) -> list[str]:
     return lines
 
 
-def _format_pre_summary(snap: MarketSnapshot) -> str:
+def _format_pre_summary(snap: MarketSnapshot, *, private: bool = False) -> str:
     """마감 전 텔레그램 요약 — 지수→수급→AI요약→추천Top3+종가베팅5선(정보 다이어트, MB1~MB4).
 
-    강세/약세 테마·E·급등초입 등 시장분석 섹션은 제거(사용자 2026-06-14). 보유종목은 유지."""
-    url = report_url(snap)
+    강세/약세 테마·E·급등초입 등 시장분석 섹션은 제거(사용자 2026-06-14). 보유종목은 오너 전용."""
+    url = report_url(snap, owner=private)
     date = snap.generated_at.strftime("%Y-%m-%d %H:%M")
 
     lines: list[str] = []
@@ -423,7 +424,7 @@ def _format_pre_summary(snap: MarketSnapshot) -> str:
     if snap.summary:                              # 🤖 AI 시장요약(수급 아래)
         lines.append(snap.summary)
         lines.append("")
-    lines.extend(_format_strategy_holdings(snap))  # 🏆 추천 Top3 + 📋 보유종목
+    lines.extend(_format_strategy_holdings(snap, private=private))  # 🏆 Top3 (+오너=📋보유종목)
     lines.extend(_format_candidate_picks(snap))    # 🎯 종가베팅 후보 5선
     lines.append(f"📄 [전체 리포트 보기]({url})")
     lines.append("")
@@ -431,9 +432,9 @@ def _format_pre_summary(snap: MarketSnapshot) -> str:
     return "\n".join(lines)
 
 
-def _format_post_summary(snap: MarketSnapshot) -> str:
-    """마감 후 텔레그램 요약 메시지."""
-    url = report_url(snap)
+def _format_post_summary(snap: MarketSnapshot, *, private: bool = False) -> str:
+    """마감 후 텔레그램 요약 메시지. 보유종목은 오너 전용(private=True)."""
+    url = report_url(snap, owner=private)
     date = snap.generated_at.strftime("%Y-%m-%d %H:%M")
 
     lines: list[str] = []
@@ -459,7 +460,7 @@ def _format_post_summary(snap: MarketSnapshot) -> str:
         lines.append("")
     lines.extend(_format_themes_merged(snap))     # 🔥 강세/주도 테마 통합
 
-    lines.extend(_format_strategy_holdings(snap))
+    lines.extend(_format_strategy_holdings(snap, private=private))  # 🏆 Top3 (+오너=📋보유종목)
 
     # 🌙 시간외(NXT) 상위 상승률 — 정규장 마감 후 넥스트레이드 변동(정규장 종가 대비)
     ot = getattr(snap, "overtime_gainers", None) or []
@@ -526,10 +527,10 @@ def _format_hot_stocks(hot: list[dict]) -> list[str]:
     return lines
 
 
-def _format_midday_summary(snap: MarketSnapshot) -> str:
+def _format_midday_summary(snap: MarketSnapshot, *, private: bool = False) -> str:
     """장중 리포트(정오) — 지수·수급(전일대비)·강세테마·핫종목·전날 추천 Top3 현황.
 
-    텔레그램 전용(웹 없음). 모바일 가독성 위해 항목마다 줄바꿈.
+    모바일 가독성 위해 항목마다 줄바꿈. 보유종목 장중 추세는 오너 전용(private=True).
     """
     date = snap.generated_at.strftime("%Y-%m-%d %H:%M")
     # KM1(2026-06-14): 제목 '장중 리포트' → '한국장 장중 리포트'
@@ -614,8 +615,8 @@ def _format_midday_summary(snap: MarketSnapshot) -> str:
                 lines.append(fl)
         lines.append("")
 
-    # 보유종목 장중 추세 (#474)
-    if getattr(snap, "holdings_status", None):
+    # 보유종목 장중 추세 (#474) — 오너 전용(2026-06-14 유저별 분리)
+    if private and getattr(snap, "holdings_status", None):
         lines.append("📋 *보유종목 장중 추세*")
         for h in snap.holdings_status:
             pr = h.get("profit_rate", 0.0)
@@ -627,15 +628,17 @@ def _format_midday_summary(snap: MarketSnapshot) -> str:
                 lines.append(fl)
         lines.append("")
 
-    lines.append(f"📄 [전체 리포트 보기]({report_url(snap)})")
+    lines.append(f"📄 [전체 리포트 보기]({report_url(snap, owner=private)})")
     lines.append("")
     lines.append("_※ 참고용 정보. 투자 판단·책임은 본인._")
     return "\n".join(lines)
 
 
-def _format_us_morning_summary(snap: MarketSnapshot) -> str:
-    """미국장 요약 메시지 (us_morning=마감 / us_premarket=프리장) — 지수·AI·섹터·종목·시사점."""
-    url = report_url(snap)
+def _format_us_morning_summary(snap: MarketSnapshot, *, private: bool = False) -> str:
+    """미국장 요약 메시지 (us_morning=마감 / us_premarket=프리장) — 지수·AI·섹터·종목·시사점.
+
+    보유종목은 오너 전용(private=True, 사용자 2026-06-14 한국·미국장 모두 표시)."""
+    url = report_url(snap, owner=private)
     date = snap.generated_at.strftime("%Y-%m-%d %H:%M")
     if snap.mode == "us_premarket":
         lines: list[str] = [f"🌅 *미국장 장전(프리장) 리포트* — {date}",
@@ -728,13 +731,19 @@ def _format_us_morning_summary(snap: MarketSnapshot) -> str:
     # 텔레그램은 '시황(지수·AI요약·뉴스) + 주도섹터'까지만. 웹 report.html은 전체 섹션 유지.
     # 하이퍼링크는 다음 줄로 분리 — 한 줄에 붙으면 링크 글자가 잘림(사용자 2026-06-14).
     # ABCD 참고용 면책 줄은 제거(사용자 2026-06-14).
+    # 📋 보유종목(KIS 한국 계좌) — 미국장 리포트에도, 오너 전용(사용자 2026-06-14)
+    if private:
+        lines.extend(_format_holdings(snap))
+
     lines.append("📄 *종목·추천·스크리닝 전체 보기*")
     lines.append(f"→ [리포트 열기]({url})")
     return "\n".join(lines)
 
 
-def _format_kr_morning_summary(snap: MarketSnapshot) -> str:
-    """한국장 프리(08:05)/장초(09:15) 요약 — 지수·신호등 + 시초 상승률 + 전일 Top3·종가베팅 시초 + AI(#404)."""
+def _format_kr_morning_summary(snap: MarketSnapshot, *, private: bool = False) -> str:
+    """한국장 프리(08:05)/장초(09:15) 요약 — 지수·신호등 + 시초 + 전일 Top3·종가베팅 + AI(#404).
+
+    보유종목은 오너 전용(private=True, 사용자 2026-06-14)."""
     title = "🌅 *한국장 프리 리포트* (NXT 프리장)" if snap.mode == "kr_premarket" else "🏁 *한국장 장초 리포트*"
     lines: list[str] = [f"{title} — {snap.generated_at.strftime('%m-%d %H:%M')}", ""]
     # 미국 야간 정보 다이어트(KO1, 2026-06-14): 나스닥·S&P500 선물 빼고 테슬라·마이크론·SOXL·EWY만.
@@ -801,7 +810,9 @@ def _format_kr_morning_summary(snap: MarketSnapshot) -> str:
     if snap.summary and snap.mode != "kr_premarket":  # 프리장은 AI요약 미표시(사용자 2026-06-10)
         lines.append(f"🤖 {snap.summary}")
         lines.append("")
-    lines.append(f"📄 [전체 리포트 보기]({report_url(snap)})")
+    if private:  # 📋 보유종목 — 오너 전용(2026-06-14)
+        lines.extend(_format_holdings(snap))
+    lines.append(f"📄 [전체 리포트 보기]({report_url(snap, owner=private)})")
     return "\n".join(lines)
 
 
@@ -852,30 +863,41 @@ async def send_report(snap: MarketSnapshot) -> bool:
     except Exception as exc:  # noqa: BLE001
         logger.warning("wait_pages_failed error=%s", exc)
 
-    if snap.mode in ("us_morning", "us_premarket", "us_intraday", "us_afterhours"):
-        text = _format_us_morning_summary(snap)
-    elif snap.mode in ("midday", "kr_premarket", "kr_open"):
-        text = _format_kr_morning_summary(snap) if snap.mode in ("kr_premarket", "kr_open") \
-            else _format_midday_summary(snap)
-    elif snap.mode == "pre_close":
-        text = _format_pre_summary(snap)
-    else:
-        text = _format_post_summary(snap)
+    # 오너(본인)는 보유종목 포함(private=True)판, 나머지 유저는 제외판(사용자 2026-06-14 유저별 분리).
+    owner_ids = settings.owner_chat_ids()
+    has_owner = any(c in owner_ids for c in chat_ids)
+    has_public = any(c not in owner_ids for c in chat_ids)
+    text_owner = _build_report_text(snap, private=True) if has_owner else ""
+    text_public = _build_report_text(snap, private=False) if has_public else ""
 
     bot = Bot(token=settings.telegram_bot_token)
     notifier = TelegramNotifier(bot=bot)
 
-    # 4096 한도 초과 시 섹션 경계로 분할 발송 (관심테마/섹터대장 추가로 장전 메시지가 길어짐)
-    parts = _split_for_telegram(text)
-    # 화이트리스트 전체 수신자에게 발송 (여러 명 가능)
+    parts_owner = _split_for_telegram(text_owner) if text_owner else []
+    parts_public = _split_for_telegram(text_public) if text_public else []
     ok_any = False
     for cid in chat_ids:
-        cid = str(cid)
+        parts = parts_owner if cid in owner_ids else parts_public
+        scid = str(cid)
         try:
             for part in parts:
-                await notifier.send(cid, part)
-            logger.info("telegram_sent mode=%s chat_id=%s parts=%d", snap.mode, cid, len(parts))
+                await notifier.send(scid, part)
+            logger.info("telegram_sent mode=%s chat_id=%s owner=%s parts=%d",
+                        snap.mode, scid, cid in owner_ids, len(parts))
             ok_any = True
         except Exception as exc:
-            logger.error("telegram_send_failed mode=%s chat_id=%s error=%s", snap.mode, cid, exc)
+            logger.error("telegram_send_failed mode=%s chat_id=%s error=%s", snap.mode, scid, exc)
     return ok_any
+
+
+def _build_report_text(snap: MarketSnapshot, *, private: bool) -> str:
+    """모드별 텔레그램 본문 생성. private=True(오너)면 보유종목 포함·오너 웹 URL."""
+    if snap.mode in ("us_morning", "us_premarket", "us_intraday", "us_afterhours"):
+        return _format_us_morning_summary(snap, private=private)
+    if snap.mode in ("kr_premarket", "kr_open"):
+        return _format_kr_morning_summary(snap, private=private)
+    if snap.mode == "midday":
+        return _format_midday_summary(snap, private=private)
+    if snap.mode == "pre_close":
+        return _format_pre_summary(snap, private=private)
+    return _format_post_summary(snap, private=private)

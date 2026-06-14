@@ -41,22 +41,30 @@ def _env() -> Environment:
     return env
 
 
-def report_path(snap: MarketSnapshot) -> Path:
-    """리포트 출력 경로."""
+_MODE_SUFFIX = {"pre_close": "pre", "post_close": "post", "us_morning": "us",
+                "midday": "midday", "us_premarket": "us-pre", "us_afterhours": "us-after",
+                "us_intraday": "us-mid", "kr_premarket": "kr-pre", "kr_open": "kr-open"}
+
+
+def _suffix(snap: MarketSnapshot, owner: bool = False) -> str:
+    """모드별 파일 접미사. owner=True면 오너 전용 토큰 접미사 추가(보유종목 포함 비공개판)."""
+    sfx = _MODE_SUFFIX.get(snap.mode, "post")
+    if owner:
+        from src.config.settings import get_settings
+        sfx = f"{sfx}-{get_settings().owner_web_suffix()}"
+    return sfx
+
+
+def report_path(snap: MarketSnapshot, owner: bool = False) -> Path:
+    """리포트 출력 경로. owner=True면 오너 전용(보유종목 포함) 파일."""
     date_str = snap.generated_at.strftime("%Y-%m-%d")
-    suffix = {"pre_close": "pre", "post_close": "post", "us_morning": "us",
-              "midday": "midday", "us_premarket": "us-pre", "us_afterhours": "us-after",
-              "us_intraday": "us-mid", "kr_premarket": "kr-pre", "kr_open": "kr-open"}.get(snap.mode, "post")
-    return REPORTS_DIR / f"{date_str}-{suffix}.html"
+    return REPORTS_DIR / f"{date_str}-{_suffix(snap, owner)}.html"
 
 
-def report_url_rel(snap: MarketSnapshot) -> str:
+def report_url_rel(snap: MarketSnapshot, owner: bool = False) -> str:
     """index.html → 리포트 상대 URL."""
     date_str = snap.generated_at.strftime("%Y-%m-%d")
-    suffix = {"pre_close": "pre", "post_close": "post", "us_morning": "us",
-              "midday": "midday", "us_premarket": "us-pre", "us_afterhours": "us-after",
-              "us_intraday": "us-mid", "kr_premarket": "kr-pre", "kr_open": "kr-open"}.get(snap.mode, "post")
-    return f"reports/{date_str}-{suffix}.html"
+    return f"reports/{date_str}-{_suffix(snap, owner)}.html"
 
 
 def render_report(snap: MarketSnapshot) -> Path:
@@ -82,13 +90,20 @@ def render_report(snap: MarketSnapshot) -> Path:
         "kr_premarket": "한국장 프리 리포트 (NXT 프리장)",
         "kr_open": "한국장 장초 리포트",
     }.get(snap.mode, "시장 리포트")
-    html = template.render(title=title, snap=snap)
-
+    # 공개판 — 보유종목 제외(audience=public). 모든 유저가 받는 공개 URL.
     out = report_path(snap)
-    out.write_text(html, encoding="utf-8")
+    out.write_text(template.render(title=title, snap=snap, audience="public"), encoding="utf-8")
     logger.info("report_rendered path=%s mode=%s", out, snap.mode)
 
-    _update_history(snap)
+    # 오너판 — 보유종목 포함(audience=owner). 보유종목 있을 때만 별도 파일 생성(사용자 2026-06-14 웹분리).
+    if getattr(snap, "holdings_status", None):
+        owner_out = report_path(snap, owner=True)
+        owner_out.write_text(
+            template.render(title=f"{title} (보유종목 포함)", snap=snap, audience="owner"),
+            encoding="utf-8")
+        logger.info("report_rendered_owner path=%s", owner_out)
+
+    _update_history(snap)  # 공개 index에는 공개판만 등재(오너 URL 미노출)
     _render_index()
     return out
 

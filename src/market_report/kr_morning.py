@@ -154,6 +154,12 @@ async def run_kr_morning(
                 _fill_market_phase(snap)
             except Exception as exc:  # noqa: BLE001
                 logger.warning("%s_ma_gaps_failed error=%s", mode, exc)
+        # 📋 보유종목 — 오너 전용 게이트로 표시(사용자 2026-06-14 한국·미국장 모두)
+        try:
+            from src.market_report.strategy_section import collect_holdings_status
+            snap.holdings_status = await collect_holdings_status(adapter)
+        except Exception as exc:  # noqa: BLE001
+            logger.warning("%s_holdings_failed error=%s", mode, exc)
     except Exception as exc:  # noqa: BLE001
         logger.warning("%s_kis_failed error=%s", mode, exc)
 

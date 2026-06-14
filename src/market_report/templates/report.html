@@ -1281,8 +1281,8 @@ ${{ "{:,.2f}".format(item.price) }} <span class="{{ 'up-text' if pct >= 0 else '
     {# 3c. 전략 스크린 — pre_close는 테마 뒤(MB7), post_close는 Top3 아래(MC2)로 이동. 그 외 모드는 여기. #}
     {% if snap.mode not in ['pre_close', 'post_close'] %}{{ strategy_screen_section(snap) }}{% endif %}
 
-    {# 3d. 보유종목 상태 #}
-    {% if snap.holdings_status %}
+    {# 3d. 보유종목 상태 — 오너 전용판(audience=owner)에서만 노출(사용자 2026-06-14 웹분리). 공개판 제외. #}
+    {% if audience|default('public') == 'owner' and snap.holdings_status %}
     <section>
       <h2><span class="icon">📋</span>보유종목 상태 (홀딩/손절/추가매수)</h2>
       {% if snap.holdings_summary %}

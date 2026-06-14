@@ -18,12 +18,15 @@ PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
 GITHUB_PAGES_BASE = "https://newbittles.github.io/daily_stock_report"
 
 
-def report_url(snap: MarketSnapshot) -> str:
-    """배포된 리포트의 절대 URL."""
+def report_url(snap: MarketSnapshot, owner: bool = False) -> str:
+    """배포된 리포트의 절대 URL. owner=True면 오너 전용(보유종목 포함) URL(사용자 2026-06-14)."""
     date = snap.generated_at.strftime("%Y-%m-%d")
     suffix = {"pre_close": "pre", "post_close": "post", "us_morning": "us",
               "midday": "midday", "us_premarket": "us-pre", "us_afterhours": "us-after",
               "us_intraday": "us-mid", "kr_premarket": "kr-pre", "kr_open": "kr-open"}.get(snap.mode, "post")
+    if owner:
+        from src.config.settings import get_settings
+        suffix = f"{suffix}-{get_settings().owner_web_suffix()}"
     return f"{GITHUB_PAGES_BASE}/reports/{date}-{suffix}.html"
 
 

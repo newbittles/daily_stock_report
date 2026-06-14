@@ -214,12 +214,14 @@ def test_format_midday_shows_intraday_flow_and_new_sections():
          "flow_desc": "장중 +5.0%까지 올랐다 밀림, 현재 +1.2%(고점대비 -3.8%p)",
          "flow_shape": "PEAK_FADE"},
     ]
-    msg = _format_midday_summary(snap)
+    msg = _format_midday_summary(snap, private=True)   # 보유종목은 오너 전용(2026-06-14)
     assert "밀렸다 반등 양봉" in msg                       # 전일Top3 흐름 줄
     assert "🎯 *전일 종가베팅 후보 현황*" in msg           # 신규 섹션
     assert "약세 지속" in msg
-    assert "📋 *보유종목 장중 추세*" in msg                # 신규 섹션
+    assert "📋 *보유종목 장중 추세*" in msg                # 신규 섹션(오너)
     assert "한화오션" in msg and "올랐다 밀림" in msg
+    # 공개판(private=False)에는 보유종목 미노출
+    assert "📋 *보유종목 장중 추세*" not in _format_midday_summary(snap, private=False)
 
 
 def test_format_midday_flow_omitted_when_absent():

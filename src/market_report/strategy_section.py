@@ -276,6 +276,22 @@ async def collect_screen_picks(adapter, per_strategy: int = 8,
     return picks
 
 
+async def attach_holdings(snap) -> None:
+    """리포트 snap에 보유종목(KIS 한국 계좌 잔고) 부착 — 미국 리포트에도 표시(사용자 2026-06-14).
+
+    KR 리포트는 pipeline에서 이미 채우므로 US 러너에서만 호출. 표시는 오너 전용(텔레그램 private/
+    웹 audience=owner)으로 게이트됨. settings 실전(kis_env) 어댑터 = KR 리포트와 동일 계좌. best-effort."""
+    try:
+        from src.config.settings import get_settings
+        from src.datasource.kis.adapter import KisAdapter
+        s = get_settings()
+        adapter = KisAdapter(s.kis_app_key, s.kis_app_secret, s.kis_account_no, s.kis_env)
+        snap.holdings_status = await collect_holdings_status(adapter)
+        logger.info("us_holdings_attached count=%d", len(snap.holdings_status or []))
+    except Exception as exc:  # noqa: BLE001
+        logger.warning("us_holdings_attach_failed error=%s", exc)
+
+
 async def collect_holdings_status(adapter) -> list[dict]:
     """보유종목 상태 — KIS 잔고 우선, 비면 config 수동 보유종목."""
     try:
