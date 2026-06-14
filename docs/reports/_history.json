@@ -1,5 +1,14 @@
 [
   {
+    "date": "2026-06-15",
+    "time": "08:05",
+    "mode": "kr_premarket",
+    "url": "reports/2026-06-15-kr-pre.html",
+    "summary": "",
+    "kospi_pct": -0.0,
+    "kosdaq_pct": -0.0
+  },
+  {
     "date": "2026-06-13",
     "time": "06:30",
     "mode": "us_morning",
@@ -529,14 +538,5 @@
     "summary": "AI 분석을 일시적으로 사용할 수 없습니다. 아래 데이터를 직접 참고하세요.",
     "kospi_pct": 0.15,
     "kosdaq_pct": -2.29
-  },
-  {
-    "date": "2026-06-02",
-    "time": "23:21",
-    "mode": "us_morning",
-    "url": "reports/2026-06-02-us.html",
-    "summary": "미국 증시는 혼조세로 마감했습니다. S&P500은 보합세를 보인 반면, 나스닥은 소폭 상승했으나 다우 지수는 하락했습니다. 필라델피아 반도체 지수의 강세가 두드러졌습니다.",
-    "kospi_pct": null,
-    "kosdaq_pct": null
   }
 ]
