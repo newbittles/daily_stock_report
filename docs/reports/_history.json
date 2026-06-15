@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-06-16",
+    "time": "08:05",
+    "mode": "kr_premarket",
+    "url": "reports/2026-06-16-kr-pre.html",
+    "summary": "",
+    "kospi_pct": -0.0,
+    "kosdaq_pct": -0.0
+  },
+  {
+    "date": "2026-06-16",
     "time": "06:30",
     "mode": "us_morning",
     "url": "reports/2026-06-16-us.html",
@@ -529,14 +538,5 @@
     "summary": "오늘 한국 증시는 전반적으로 하락세를 보이며, 특히 반도체 관련주들의 약세가 지수 하락을 주도하고 있습니다. 다만, 은행, SPAC, 항공/저가 항공사(LCC) 등 일부 테마는 상대적으로 강세를 나타내고 있습니다.",
     "kospi_pct": -3.36,
     "kosdaq_pct": -2.93
-  },
-  {
-    "date": "2026-06-05",
-    "time": "07:00",
-    "mode": "us_morning",
-    "url": "reports/2026-06-05-us.html",
-    "summary": "미국 증시는 다우 지수가 사상 최고치를 경신하며 강세를 보였으나, 나스닥은 반도체 섹터 약세로 소폭 하락 마감했습니다. 빅테크는 혼조세를 보였으며, 특히 브로드컴의 급락이 시장에 영향을 미쳤습니다.",
-    "kospi_pct": null,
-    "kosdaq_pct": null
   }
 ]
