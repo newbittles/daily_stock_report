@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-06-15",
+    "time": "09:15",
+    "mode": "kr_open",
+    "url": "reports/2026-06-15-kr-open.html",
+    "summary": "오늘 한국 증시는 코스피와 코스닥 모두 강세를 보이며 전반적으로 상승 흐름을 이어가고 있습니다. 항공, 자동차, IT 관련주들이 강세를 보이며 시장을 견인하는 가운데, 특히 한온시스템은 장중 꾸준한 강세를 유지하며 높은 상승률을 기록하고 있습니다. 반",
+    "kospi_pct": 5.11,
+    "kosdaq_pct": 1.29
+  },
+  {
+    "date": "2026-06-15",
     "time": "08:05",
     "mode": "kr_premarket",
     "url": "reports/2026-06-15-kr-pre.html",
@@ -526,15 +535,6 @@
     "time": "23:55",
     "mode": "post_close",
     "url": "reports/2026-06-03-post.html",
-    "summary": "AI 분석을 일시적으로 사용할 수 없습니다. 아래 데이터를 직접 참고하세요.",
-    "kospi_pct": 0.15,
-    "kosdaq_pct": -2.29
-  },
-  {
-    "date": "2026-06-03",
-    "time": "23:50",
-    "mode": "pre_close",
-    "url": "reports/2026-06-03-pre.html",
     "summary": "AI 분석을 일시적으로 사용할 수 없습니다. 아래 데이터를 직접 참고하세요.",
     "kospi_pct": 0.15,
     "kosdaq_pct": -2.29
