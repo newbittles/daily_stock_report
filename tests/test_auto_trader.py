@@ -107,6 +107,61 @@ class FakeOrder:
         return {"output": {"ODNO": "1"}, "msg1": "정상"}
 
 
+async def test_buy_sets_initial_stop_and_pyramids(tmp_path):
+    """매수 시 하드스톱(−8%) 설정 + 다른 날 재추천이면 추가매수(피라미딩 가중평균)."""
+    store = PositionStore(tmp_path / "p.db")
+    order = FakeOrder()
+    picks = [{"ticker": "005930", "name": "삼성전자", "price": 100000, "strategies": ["B"]}]
+    # 1일차 매수 → 신규 진입, 하드스톱 92,000(−8%, ATR 없음)
+    await buy_top3(picks, FakeAdapter(100000, []), order, store, send=True, today="2026-06-12")
+    pos = store.get_open()[0]
+    assert pos.qty == 10 and pos.initial_stop == 92000.0
+    # 같은 날 재실행 → 중복매수 금지
+    await buy_top3(picks, FakeAdapter(100000, []), order, store, send=True, today="2026-06-12")
+    assert store.get_open()[0].qty == 10
+    # 다른 날 재추천 → 추가매수(피라미딩): 10주@100k + qty@120k 가중평균
+    picks2 = [{"ticker": "005930", "name": "삼성전자", "price": 120000, "strategies": ["B"]}]
+    await buy_top3(picks2, FakeAdapter(120000, []), order, store, send=True, today="2026-06-15")
+    assert store.get_open()[0].qty == 18  # 10 + 8(120k 예산 8주)
+
+
+class FakeBalanceOrder(FakeOrder):
+    """실전 잔고조회(inquire_balance) 흉내 — 계좌 보유 2종목."""
+    async def inquire_balance(self):
+        return {"output1": [
+            {"pdno": "005930", "prdt_name": "삼성전자", "hldg_qty": "20", "pchs_avg_pric": "70000"},
+            {"pdno": "000660", "prdt_name": "SK하이닉스", "hldg_qty": "5", "pchs_avg_pric": "180000"},
+        ]}
+
+
+async def test_sync_account_bootstraps_external_holdings(tmp_path):
+    """scope-B: 봇이 안 산 실전계좌 보유도 store에 부트스트랩(평단·하드스톱 산정)."""
+    from src.trading.auto_trader import sync_account_to_store
+
+    store = PositionStore(tmp_path / "p.db")
+    store.open_position("000660", "SK하이닉스", "2026-06-01", 180000.0, 5)  # 이미 추적 중
+    order = FakeBalanceOrder()
+    await sync_account_to_store(order, FakeAdapter(0, []), store, "2026-06-15")
+    held = {p.ticker: p for p in store.get_open()}
+    assert "005930" in held                       # 외부 보유 신규 편입
+    assert held["005930"].qty == 20
+    assert held["005930"].entry_price == 70000.0
+    assert held["005930"].initial_stop == 64400.0  # 70000×0.92 (ATR 없음 → 퍼센트 손절)
+
+
+async def test_run_sell_risk_hard_stop_fires(tmp_path):
+    """리스크 레이어: 하드스톱(초기 −8%) 이탈 시 MA가 HOLD여도 전량 매도."""
+    store = PositionStore(tmp_path / "p.db")
+    # 진입 100, 하드스톱 92. 종가가 91로 떨어지나 MA추세는 HOLD인 시계열
+    store.open_position("005930", "삼성전자", "2026-06-01", 100.0, 10,
+                        strategy="C", initial_stop=92.0, highest=100.0)
+    order = FakeOrder()
+    adapter = FakeAdapter(price=0, closes=[float(i) for i in range(1, 79)] + [91.0])
+    await run_sell(adapter, order, store, send=True)
+    assert order.calls == [("sell", "005930", 10)]
+    assert not store.is_held("005930")
+
+
 async def test_buy_top3_sizes_and_skips_held(tmp_path):
     store = PositionStore(tmp_path / "p.db")
     store.open_position("000660", "SK하이닉스", "2026-06-04", 180000.0, 5)  # 이미 보유
@@ -133,7 +188,7 @@ async def test_buy_emits_notify(tmp_path):
     picks = [{"ticker": "005930", "name": "삼성전자", "price": 82500}]
     await buy_top3(picks, FakeAdapter(82500, []), order, store,
                    send=True, today="2026-06-04", notify=notify)
-    assert any("모의매수" in m for m in msgs)
+    assert any("신규매수" in m and "삼성전자" in m for m in msgs)
 
 
 async def test_buy_dry_run_no_order(tmp_path):

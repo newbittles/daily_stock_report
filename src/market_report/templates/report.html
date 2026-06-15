@@ -1441,13 +1441,33 @@ ${{ "{:,.2f}".format(item.price) }} <span class="{{ 'up-text' if pct >= 0 else '
     </section>
     {% endif %}
 
+    {# 📋 미국 보유종목 상태 — 오너 전용(audience=owner). 라이브 시세(USD, #971/item③) #}
+    {% if audience|default('public') == 'owner' and snap.us_holdings_status %}
+    <section>
+      <h2><span class="icon">📋</span>미국 보유종목 상태 (홀딩/손절/추가매수)</h2>
+      <ul class="watch-list">
+        {% for h in snap.us_holdings_status %}
+        <li>
+          <a href="https://finance.yahoo.com/quote/{{ h.ticker }}" target="_blank" rel="noopener"><strong>{{ h.name }}</strong></a> ({{ h.ticker }}) · ${{ "{:,.2f}".format(h.price) }}
+          <span class="{{ 'up-text' if h.profit_rate >= 0 else 'down-text' }}">({{ '+' if h.profit_rate >= 0 else '' }}{{ "{:.1f}".format(h.profit_rate) }}%)</span>
+          {% if h.endstage %}<span class="down-text" style="font-size:0.85rem;">⚠️끝물</span>{% endif %}
+          {% if h.cross_signal == 'PULLBACK' %}<span class="up-text" style="font-size:0.85rem;">🟢단기눌림(홀드)</span>{% elif h.cross_signal == 'CORRECTION' %}<span class="down-text" style="font-size:0.85rem;">⚠️조정시작(익절검토)</span>{% endif %}
+          {% if h.avg_price and h.quantity %}<div class="pick-sub">평단 ${{ "{:,.2f}".format(h.avg_price) }} × {{ h.quantity }}주{% if h.eval_pl is not none %} · 평가손익 ${{ "{:+,.2f}".format(h.eval_pl) }}{% endif %}</div>{% endif %}
+          <div class="theme-reason">{{ h.reason }}</div>
+        </li>
+        {% endfor %}
+      </ul>
+      <p class="disclaimer" style="font-size:12px;">※ 라이브 시세(yfinance) 기준 · 손절선은 알림용이며 실제 매도 판단·책임은 본인에게 있습니다.</p>
+    </section>
+    {% endif %}
+
     {# 📰 미국 시장 뉴스 (us_morning/us_premarket) — 리포트 최하단(사용자 2026-06-05) #}
     {% if snap.us_news %}
     <section>
       <h2><span class="icon">📰</span>미국 시장 뉴스</h2>
       {% for n in snap.us_news[:8] %}
       <div class="news-item">
-        <span class="news-title">{{ n.title_ko or n.title }}</span>
+        <a href="{{ n.url }}" target="_blank" rel="noopener" class="news-title">{{ n.title_ko or n.title }}</a>
         {% if n.title_ko %}<div class="news-meta" style="color:var(--text-dim);font-size:0.78rem;">{{ n.title }}</div>{% endif %}
         {% if n.source %}<div class="news-meta"><span class="news-source">{{ n.source }}</span></div>{% endif %}
       </div>

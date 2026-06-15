@@ -101,6 +101,34 @@ async def test_order_cash_buy_body(client):
 
 
 @respx.mock
+async def test_order_cash_no_retry_idempotent(client):
+    """실전 안전: 주문 POST는 재시도 금지(중복주문 방지). 500이어도 1회만 시도 후 실패."""
+    _mock_token()
+    respx.post(f"{PAPER}/uapi/hashkey").mock(return_value=httpx.Response(200, json={"HASH": "H"}))
+    route = respx.post(f"{PAPER}/uapi/domestic-stock/v1/trading/order-cash").mock(
+        return_value=httpx.Response(500, text="server error")
+    )
+    with pytest.raises(KisOrderError):
+        await client.order_cash("buy", "005930", qty=1)
+    assert route.call_count == 1   # 재시도 없이 단 1회 (멱등 보장)
+
+
+@respx.mock
+async def test_inquire_psbl_order_retries(client):
+    """조회는 기존대로 재시도(주문前 단계라 멱등). 일시 500 → 재시도 후 성공."""
+    _mock_token()
+    route = respx.get(f"{PAPER}/uapi/domestic-stock/v1/trading/inquire-psbl-order").mock(
+        side_effect=[
+            httpx.Response(500, text="err"),
+            httpx.Response(200, json={"rt_cd": "0", "output": {"nrcvb_buy_qty": "12"}}),
+        ]
+    )
+    res = await client.inquire_psbl_order("005930", price=82500)
+    assert res["output"]["nrcvb_buy_qty"] == "12"
+    assert route.call_count == 2   # 1회 실패 후 재시도 성공
+
+
+@respx.mock
 async def test_order_cash_sell_tr(client):
     _mock_token()
     respx.post(f"{PAPER}/uapi/hashkey").mock(return_value=httpx.Response(200, json={"HASH": "H"}))

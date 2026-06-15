@@ -152,6 +152,7 @@ class MarketSnapshot:
     # 보유종목 상태 (홀딩/손절/추가매수 — pipeline이 채움)
     holdings_status: list[dict] = field(default_factory=list)  # {name, ticker, state, reason, profit_rate, ...}
     holdings_summary: str = ""  # 보유종목 전체에 대한 AI 종합 코멘트 (analyzer.summarize_holdings)
+    us_holdings_status: list[dict] = field(default_factory=list)  # 미국 보유종목 상태(USD, 라이브 시세)
 
     # 기관+외인 연속 순매수/순매도 Top — 시총 상위 중(사용자 #393, post_close)
     supply_buy_streaks: list[dict] = field(default_factory=list)   # [{ticker,name,orgn,frgn,score}]

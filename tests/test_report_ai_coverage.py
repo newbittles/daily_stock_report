@@ -20,7 +20,12 @@ _TEMPLATE = Path("src/market_report/templates/report.html")
 # 종목이 아닌 리스트(지수·뉴스·야간M7·섹터등락률) — 종목별 AI요약 대상이 아님(정당한 제외)
 # us_turnover_top10: 거래대금 순위(정량 랭킹) 참고 섹션 — 상위 종목은 스크리닝/Top3와 중복돼
 #   거기서 AI요약 제공, 랭킹 자체엔 AI버튼 미부착(정보 다이어트, 사용자 2026-06-14).
-_NON_STOCK = {"us_indices", "us_news", "us_overnight", "us_sectors", "us_turnover_top10"}
+# us_holdings_status: 본인 미국 보유종목 상태(라이브 시세·평가손익·손절상태) 섹션 — 라이브 시세
+#   연동만 요청(item③, 2026-06-15), 종목별 AI요약은 대상 아님(정당한 제외).
+_NON_STOCK = {
+    "us_indices", "us_news", "us_overnight", "us_sectors", "us_turnover_top10",
+    "us_holdings_status",
+}
 
 
 def _rendered_us_stock_lists() -> set[str]:

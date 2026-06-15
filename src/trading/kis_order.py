@@ -18,6 +18,7 @@ from src.datasource.kis.token import KisTokenManager
 logger = logging.getLogger(__name__)
 
 MAX_RETRY = 3
+ORDER_TIMEOUT = 30.0  # 주문은 응답 지연 가능 → 읽기(10s)보다 길게
 Side = Literal["buy", "sell"]
 
 
@@ -72,13 +73,17 @@ class KisOrderClient:
             return resp.json()["HASH"]
 
     async def _post(
-        self, path: str, tr_id: str, body: dict[str, Any], *, use_hash: bool = True
+        self, path: str, tr_id: str, body: dict[str, Any], *, use_hash: bool = True,
+        retries: int = MAX_RETRY, timeout: float = 10.0,
     ) -> dict[str, Any]:
-        """주문 POST + (선택)hashkey + 재시도·백오프·HARD STOP·rt_cd 검증."""
+        """POST + (선택)hashkey + 재시도·백오프·HARD STOP·rt_cd 검증.
+
+        ⚠️ 실주문은 retries=1(멱등)로 호출 — 응답유실 후 재시도가 중복주문이 되는 걸 방지.
+        """
         await self._token_mgr.get_token()
         url = f"{self._base}{path}"
         last_exc: Exception | None = None
-        for attempt in range(MAX_RETRY):
+        for attempt in range(retries):
             if attempt > 0:
                 wait = random.uniform(2 * (2 ** (attempt - 1)), 5 * (2 ** (attempt - 1)))
                 logger.info("kis_order_retry path=%s attempt=%d wait=%.1fs", path, attempt, wait)
@@ -90,7 +95,7 @@ class KisOrderClient:
             if use_hash:
                 headers["hashkey"] = await self.hashkey(body)
             try:
-                async with httpx.AsyncClient(timeout=10.0) as http:
+                async with httpx.AsyncClient(timeout=timeout) as http:
                     resp = await http.post(url, headers=headers, json=body)
                 if resp.status_code in (429, 401, 403):
                     raise KisOrderHardStop(f"HTTP {resp.status_code}: {resp.text[:200]}")
@@ -105,7 +110,7 @@ class KisOrderClient:
             except Exception as exc:
                 last_exc = exc
                 logger.warning("kis_order_post_error path=%s attempt=%d error=%s", path, attempt, exc)
-        raise KisOrderError(f"{path} failed after {MAX_RETRY} attempts") from last_exc
+        raise KisOrderError(f"{path} failed after {retries} attempts") from last_exc
 
     async def _get(self, path: str, tr_id: str, params: dict[str, Any]) -> dict[str, Any]:
         """조회 GET + 재시도·백오프·HARD STOP·rt_cd 검증 (주문용 _post의 GET 버전)."""
@@ -153,7 +158,11 @@ class KisOrderClient:
             "SLL_TYPE": "01" if side == "sell" else "",
             "CNDT_PRIC": "",
         }
-        return await self._post("/uapi/domestic-stock/v1/trading/order-cash", tr_id, body)
+        # retries=1: 주문은 멱등 보장을 위해 재시도 금지(응답유실 후 중복주문 방지). 타임아웃은 길게.
+        return await self._post(
+            "/uapi/domestic-stock/v1/trading/order-cash", tr_id, body,
+            retries=1, timeout=ORDER_TIMEOUT,
+        )
 
     async def inquire_psbl_order(self, ticker: str, price: int = 0, ord_dvsn: str = "01") -> dict[str, Any]:
         """매수가능조회. 응답 output.nrcvb_buy_qty(미수없는 매수가능수량)/max_buy_qty."""

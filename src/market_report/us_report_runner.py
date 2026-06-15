@@ -119,8 +119,9 @@ async def run_us_report(
     await _step(_collect_sector_leaders(snap), "sector_leaders")        # 주요종목 = 강세4+약세4 섹터 대장
     await _step(_attach_kr_netbuy_to_picks(snap), "kr_netbuy")          # 픽별 서학개미 순매수금액(전일+5일)
     await _step(_collect_kr_us_netbuy(snap), "kr_netflow")              # 한국인 자금흐름 매수TOP5+매도TOP3(#318)
-    from src.market_report.strategy_section import attach_holdings
-    await _step(attach_holdings(snap), "holdings")                      # 📋 보유종목(오너 전용 게이트, 2026-06-14)
+    # 보유종목: US 리포트엔 '미국' 보유종목을 라이브 시세로 표시(#971/item③ — KR종목 노출 버그 수정).
+    from src.market_report.us_holdings import attach_us_holdings
+    await _step(attach_us_holdings(snap), "us_holdings")                # 📋 미국 보유종목(오너 전용 게이트)
     if extra_steps is not None:
         try:
             extra_steps(snap)
