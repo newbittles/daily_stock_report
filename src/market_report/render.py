@@ -96,7 +96,8 @@ def render_report(snap: MarketSnapshot) -> Path:
     logger.info("report_rendered path=%s mode=%s", out, snap.mode)
 
     # 오너판 — 보유종목 포함(audience=owner). 보유종목 있을 때만 별도 파일 생성(사용자 2026-06-14 웹분리).
-    if getattr(snap, "holdings_status", None):
+    # 이 조건은 report_url(오너 링크 선택)과 반드시 일치해야 함 → snap.has_owner_view 단일 출처.
+    if snap.has_owner_view:
         owner_out = report_path(snap, owner=True)
         owner_out.write_text(
             template.render(title=f"{title} (보유종목 포함)", snap=snap, audience="owner"),

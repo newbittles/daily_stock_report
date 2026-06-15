@@ -24,7 +24,10 @@ def report_url(snap: MarketSnapshot, owner: bool = False) -> str:
     suffix = {"pre_close": "pre", "post_close": "post", "us_morning": "us",
               "midday": "midday", "us_premarket": "us-pre", "us_afterhours": "us-after",
               "us_intraday": "us-mid", "kr_premarket": "kr-pre", "kr_open": "kr-open"}.get(snap.mode, "post")
-    if owner:
+    # 오너 토큰 접미사는 오너판 파일이 '실제 생성될 때'(보유종목 있음)만 붙인다.
+    # 보유종목이 없으면 render가 오너판을 만들지 않으므로(render_report) 공개 URL로
+    # 폴백해야 404가 안 난다. (2026-06-15 오너 midday 링크 404 수정)
+    if owner and snap.has_owner_view:
         from src.config.settings import get_settings
         suffix = f"{suffix}-{get_settings().owner_web_suffix()}"
     return f"{GITHUB_PAGES_BASE}/reports/{date}-{suffix}.html"

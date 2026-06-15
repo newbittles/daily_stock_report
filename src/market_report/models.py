@@ -192,3 +192,12 @@ class MarketSnapshot:
     # 차트 URL (renderer가 채움, 상대 경로 — docs/reports/ 기준)
     kospi_spark_url: str = ""
     kosdaq_spark_url: str = ""
+
+    @property
+    def has_owner_view(self) -> bool:
+        """오너 전용 웹파일(보유종목 포함, audience=owner)이 생성되는지 여부.
+
+        render(파일 생성)와 report_url(오너 링크 선택)이 '공유'하는 단일 조건.
+        둘이 어긋나면 오너 링크가 존재하지 않는 파일을 가리켜 404가 난다
+        (2026-06-15: 보유종목 비었을 때 오너 midday 링크 404 버그)."""
+        return bool(self.holdings_status)
