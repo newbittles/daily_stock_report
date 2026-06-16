@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-06-16",
+    "time": "16:00",
+    "mode": "post_close",
+    "url": "reports/2026-06-16-post.html",
+    "summary": "코스피는 2.11% 상승하며 강세를 보인 반면, 코스닥은 1.48% 하락하며 차별화된 장세를 보였습니다. 건설, 풍력에너지, 방위산업 등 특정 테마가 시장을 주도했습니다.",
+    "kospi_pct": 2.11,
+    "kosdaq_pct": -1.48
+  },
+  {
+    "date": "2026-06-16",
     "time": "14:50",
     "mode": "pre_close",
     "url": "reports/2026-06-16-pre.html",
@@ -527,15 +536,6 @@
     "mode": "us_intraday",
     "url": "reports/2026-06-05-us-mid.html",
     "summary": "오늘 코스피는 외국인 순매수세에 힘입어 상승 마감했으나, 코스닥은 차익실현 매물과 일부 기술주 약세로 하락했습니다. 반도체와 이차전지 관련주가 시장을 주도했습니다.",
-    "kospi_pct": null,
-    "kosdaq_pct": null
-  },
-  {
-    "date": "2026-06-05",
-    "time": "21:50",
-    "mode": "us_premarket",
-    "url": "reports/2026-06-05-us-pre.html",
-    "summary": "프리장에서 혼조세를 보이며 기술주 중심의 약세와 헬스케어 등 일부 섹터의 강세가 혼재된 흐름입니다.",
     "kospi_pct": null,
     "kosdaq_pct": null
   }
