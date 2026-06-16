@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-06-16",
+    "time": "19:00",
+    "mode": "us_premarket",
+    "url": "reports/2026-06-16-us-pre.html",
+    "summary": "프리장에서 미국 증시는 혼조세를 보이고 있습니다. 나스닥 선물과 필라델피아 반도체 지수는 상승세를 보이며 기술주 및 반도체 섹터의 강세를 이끌고 있으나, S&P 500 선물은 소폭 하락하며 전반적인 상승 동력은 제한적인 모습입니다. 지정학적 긴장 완화",
+    "kospi_pct": null,
+    "kosdaq_pct": null
+  },
+  {
+    "date": "2026-06-16",
     "time": "16:00",
     "mode": "post_close",
     "url": "reports/2026-06-16-post.html",
@@ -527,15 +536,6 @@
     "mode": "us_premarket",
     "url": "reports/2026-06-06-us-pre.html",
     "summary": "S&P500 7,384(-2.64%) · 나스닥 25,709(-4.18%). 강세 섹터: 헬스케어/바이오, 금융, 방산/우주항공.",
-    "kospi_pct": null,
-    "kosdaq_pct": null
-  },
-  {
-    "date": "2026-06-05",
-    "time": "22:40",
-    "mode": "us_intraday",
-    "url": "reports/2026-06-05-us-mid.html",
-    "summary": "오늘 코스피는 외국인 순매수세에 힘입어 상승 마감했으나, 코스닥은 차익실현 매물과 일부 기술주 약세로 하락했습니다. 반도체와 이차전지 관련주가 시장을 주도했습니다.",
     "kospi_pct": null,
     "kosdaq_pct": null
   }
