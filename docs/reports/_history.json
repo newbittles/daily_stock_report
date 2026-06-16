@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-06-16",
+    "time": "14:50",
+    "mode": "pre_close",
+    "url": "reports/2026-06-16-pre.html",
+    "summary": "코스피는 상승세를 이어가고 있으나 코스닥은 약세를 보이며 차별화된 장세를 나타내고 있습니다.",
+    "kospi_pct": 1.59,
+    "kosdaq_pct": -1.68
+  },
+  {
+    "date": "2026-06-16",
     "time": "11:40",
     "mode": "midday",
     "url": "reports/2026-06-16-midday.html",
@@ -529,14 +538,5 @@
     "summary": "프리장에서 혼조세를 보이며 기술주 중심의 약세와 헬스케어 등 일부 섹터의 강세가 혼재된 흐름입니다.",
     "kospi_pct": null,
     "kosdaq_pct": null
-  },
-  {
-    "date": "2026-06-05",
-    "time": "16:30",
-    "mode": "post_close",
-    "url": "reports/2026-06-05-post.html",
-    "summary": "오늘 코스피와 코스닥 지수가 각각 5.54%, 4.50% 급락하며 큰 폭의 하락세를 보였습니다. 미국 반도체 업종의 부진과 외국인의 매도세가 시장을 끌어내린 주요 원인으로 작용했습니다.",
-    "kospi_pct": -5.54,
-    "kosdaq_pct": -4.5
   }
 ]
