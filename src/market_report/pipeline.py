@@ -1884,7 +1884,13 @@ async def run_full(
             _ranked_all = select_top3(snap.screen_picks, foreign_buy=fb, inst_buy=ib,
                                       supply_streaks=_kr_streaks, return_all=True)
             _LIMITUP = 29.5  # 상한가(+30%) 근접 — 호가 반올림 감안
-            snap.top3 = [r for r in _ranked_all if r.get("change_pct", 0) < _LIMITUP][:3]
+            _lim_tk = {r["ticker"] for r in _ranked_all if r.get("change_pct", 0) >= _LIMITUP}
+            # B(주도주 20일선 눌림목) ≥1 의무 포함(사용자 2026-06-16) — min_b=1로 selection path 사용.
+            # diversity_max=3(=limit) → 기존 점수순 [:3] 무(無)전략캡 동작 보존, 상한가는 exclude로 제외.
+            # 풀에 B가 없거나 B가 전부 상한가면 가능한 만큼(0) → 기존과 동일하게 점수순으로 채움.
+            snap.top3 = select_top3(snap.screen_picks, foreign_buy=fb, inst_buy=ib,
+                                    supply_streaks=_kr_streaks, exclude_tickers=_lim_tk,
+                                    limit=3, diversity_max=3, min_b=1)
             snap.top3_excluded_limitup = [r for r in _ranked_all if r.get("change_pct", 0) >= _LIMITUP][:5]
             await _inject_supply_streak(snap, adapter)  # Top3 표시용 연속 순매수일(supply_str)
             await _tag_macd_warn(snap.top3)  # MACD 고점 다이버전스 '고점주의' 약신호(사용자 2026-06-11)

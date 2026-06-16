@@ -9,6 +9,7 @@ from __future__ import annotations
 import asyncio
 import logging
 import random
+from datetime import datetime
 from typing import Any, Literal
 
 import httpx
@@ -39,12 +40,51 @@ _ORDER_TR: dict[tuple[str, str], str] = {
 }
 _PSBL_TR = {"paper": "VTTC8908R", "real": "TTTC8908R"}
 _BALANCE_TR = {"paper": "VTTC8434R", "real": "TTTC8434R"}
+# 주식일별주문체결조회 TR_ID (NXT 개편 반영, 공식 examples_llm 2026-06 검증).
+# 옛 8001R 아님 — 주문 TR(0802U→0012U)처럼 8001R→0081R로 재번호됨.
+# 당일 조회만 사용하므로 3개월내 코드만 둔다(>3개월 CTSC9215R/VTSC9215R 미사용).
+_CCLD_TR = {"paper": "VTTC0081R", "real": "TTTC0081R"}
 
 
 def _split_account(account_no: str) -> tuple[str, str]:
     """'50123456-01' 또는 '5012345601' → (CANO, ACNT_PRDT_CD)."""
     s = account_no.replace("-", "").strip()
     return s[:8], (s[8:10] if len(s) >= 10 else "01")
+
+
+def _norm_odno(x: Any) -> str:
+    """주문번호 정규화 — 접수응답 ODNO('0001')와 체결조회 odno(zero-pad) 비교용."""
+    return str(x or "").strip().lstrip("0") or "0"
+
+
+def parse_ccld_fill(data: dict[str, Any], odno: str) -> dict[str, Any] | None:
+    """체결조회 output1에서 특정 주문번호(odno)의 체결결과 집계 (순수 함수, 테스트 가능).
+
+    같은 주문이 분할체결로 여러 행일 수 있어 수량가중 평균가로 합산한다.
+    반환: {filled_qty, avg_price, ord_qty, rmn_qty}. 주문 미발견 시 None
+    (None=조회 시점 미반영/오류와 구분 → 호출측이 '확인불가'로 처리).
+    filled_qty==0 이면 '확인됐으나 미체결'을 의미한다.
+    """
+    target = _norm_odno(odno)
+    rows = [
+        r for r in (data.get("output1") or [])
+        if _norm_odno(r.get("odno")) == target
+    ]
+    if not rows:
+        return None
+    filled = 0
+    amt = 0.0
+    ord_qty = 0
+    rmn = 0
+    for r in rows:
+        q = int(float(r.get("tot_ccld_qty", "0") or 0))
+        avg = float(r.get("avg_prvs", "0") or 0)
+        filled += q
+        amt += q * avg
+        ord_qty = max(ord_qty, int(float(r.get("ord_qty", "0") or 0)))
+        rmn = int(float(r.get("rmn_qty", "0") or 0))  # 마지막 행의 잔여수량
+    avg_price = (amt / filled) if filled else 0.0
+    return {"filled_qty": filled, "avg_price": avg_price, "ord_qty": ord_qty, "rmn_qty": rmn}
 
 
 class KisOrderClient:
@@ -197,3 +237,53 @@ class KisOrderClient:
         return await self._get(
             "/uapi/domestic-stock/v1/trading/inquire-balance", _BALANCE_TR[self._env], params
         )
+
+    async def inquire_daily_ccld(
+        self, *, ticker: str = "", odno: str = "", today: str = "",
+        sll_buy: str = "00", ccld_dvsn: str = "00",
+    ) -> dict[str, Any]:
+        """주식일별주문체결조회(당일). odno/ticker로 필터해 체결결과 확인.
+
+        sll_buy: 00 전체 / 01 매도 / 02 매수.  ccld_dvsn: 00 전체 / 01 체결 / 02 미체결.
+        today: 'YYYYMMDD'(미지정 시 오늘). output1=주문/체결 행 리스트.
+        """
+        d = today or datetime.now().strftime("%Y%m%d")
+        params = {
+            "CANO": self._cano,
+            "ACNT_PRDT_CD": self._acnt,
+            "INQR_STRT_DT": d,
+            "INQR_END_DT": d,
+            "SLL_BUY_DVSN_CD": sll_buy,
+            "PDNO": ticker,
+            "CCLD_DVSN": ccld_dvsn,
+            "INQR_DVSN": "00",
+            "INQR_DVSN_3": "00",
+            "ORD_GNO_BRNO": "",
+            "ODNO": odno,
+            "INQR_DVSN_1": "",
+            "EXCG_ID_DVSN_CD": "KRX",
+            "CTX_AREA_FK100": "",
+            "CTX_AREA_NK100": "",
+        }
+        return await self._get(
+            "/uapi/domestic-stock/v1/trading/inquire-daily-ccld", _CCLD_TR[self._env], params
+        )
+
+    async def confirm_fill(
+        self, ticker: str, odno: str, *, today: str = "",
+        attempts: int = 3, wait: tuple[float, float] = (1.0, 2.0),
+    ) -> dict[str, Any] | None:
+        """주문 직후 실제 체결수량·평균가 확인. 체결 반영 지연 대비 짧게 재조회.
+
+        반환: parse_ccld_fill 결과({filled_qty>0}면 즉시 반환). 끝까지 미체결이면
+        마지막 결과(filled_qty=0 또는 None)를 반환 → 호출측이 미체결/확인불가 판정.
+        """
+        last: dict[str, Any] | None = None
+        for i in range(attempts):
+            if i > 0:
+                await asyncio.sleep(random.uniform(*wait))
+            data = await self.inquire_daily_ccld(ticker=ticker, odno=odno, today=today)
+            last = parse_ccld_fill(data, odno)
+            if last and last["filled_qty"] > 0:
+                return last
+        return last

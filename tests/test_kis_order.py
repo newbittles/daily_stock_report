@@ -12,8 +12,10 @@ from src.trading.kis_order import (
     KisOrderClient,
     KisOrderError,
     KisOrderHardStop,
+    _CCLD_TR,
     _ORDER_TR,
     _split_account,
+    parse_ccld_fill,
 )
 
 PAPER = BASE_URL["paper"]
@@ -29,6 +31,79 @@ def test_order_tr_mapping():
     assert _ORDER_TR[("paper", "sell")] == "VTTC0011U"
     assert _ORDER_TR[("real", "buy")] == "TTTC0012U"
     assert _ORDER_TR[("real", "sell")] == "TTTC0011U"
+
+
+def test_ccld_tr_mapping():
+    # NXT 개편 반영 — 옛 8001R 아님(주문 0012U처럼 0081R로 재번호, examples_llm 2026-06)
+    assert _CCLD_TR["paper"] == "VTTC0081R"
+    assert _CCLD_TR["real"] == "TTTC0081R"
+
+
+def test_parse_ccld_fill_basic():
+    data = {"output1": [
+        {"odno": "0000000001", "pdno": "005930", "ord_qty": "12",
+         "tot_ccld_qty": "5", "avg_prvs": "83000", "rmn_qty": "7"},
+    ]}
+    fill = parse_ccld_fill(data, "0001")   # 접수 ODNO는 zero-pad 안 됨 → 정규화 비교
+    assert fill == {"filled_qty": 5, "avg_price": 83000.0, "ord_qty": 12, "rmn_qty": 7}
+
+
+def test_parse_ccld_fill_partial_rows_weighted_avg():
+    # 같은 주문이 분할체결 2행 → 수량가중 평균가
+    data = {"output1": [
+        {"odno": "10", "tot_ccld_qty": "2", "avg_prvs": "100", "ord_qty": "10", "rmn_qty": "8"},
+        {"odno": "10", "tot_ccld_qty": "3", "avg_prvs": "110", "ord_qty": "10", "rmn_qty": "5"},
+        {"odno": "99", "tot_ccld_qty": "9", "avg_prvs": "999", "ord_qty": "9", "rmn_qty": "0"},
+    ]}
+    fill = parse_ccld_fill(data, "10")
+    assert fill["filled_qty"] == 5
+    assert fill["avg_price"] == (2 * 100 + 3 * 110) / 5   # 106.0
+    assert fill["rmn_qty"] == 5
+
+
+def test_parse_ccld_fill_not_found_is_none():
+    assert parse_ccld_fill({"output1": []}, "0001") is None
+    assert parse_ccld_fill({"output1": [{"odno": "7", "tot_ccld_qty": "1"}]}, "0001") is None
+
+
+def test_parse_ccld_fill_unfilled_zero():
+    data = {"output1": [{"odno": "1", "tot_ccld_qty": "0", "avg_prvs": "0",
+                         "ord_qty": "12", "rmn_qty": "12"}]}
+    fill = parse_ccld_fill(data, "1")
+    assert fill["filled_qty"] == 0 and fill["avg_price"] == 0.0
+
+
+@respx.mock
+async def test_inquire_daily_ccld(client):
+    _mock_token()
+    route = respx.get(f"{PAPER}/uapi/domestic-stock/v1/trading/inquire-daily-ccld").mock(
+        return_value=httpx.Response(200, json={
+            "rt_cd": "0", "msg1": "정상",
+            "output1": [{"odno": "0000000001", "pdno": "005930",
+                         "tot_ccld_qty": "5", "avg_prvs": "83000", "rmn_qty": "7"}],
+        })
+    )
+    res = await client.inquire_daily_ccld(ticker="005930", odno="0001", today="20260616")
+    assert res["output1"][0]["tot_ccld_qty"] == "5"
+    req = route.calls.last.request
+    assert req.headers["tr_id"] == "VTTC0081R"
+    assert dict(req.url.params)["INQR_STRT_DT"] == "20260616"
+    assert dict(req.url.params)["ODNO"] == "0001"
+    assert dict(req.url.params)["PDNO"] == "005930"
+
+
+@respx.mock
+async def test_confirm_fill_returns_parsed(client):
+    _mock_token()
+    respx.get(f"{PAPER}/uapi/domestic-stock/v1/trading/inquire-daily-ccld").mock(
+        return_value=httpx.Response(200, json={
+            "rt_cd": "0",
+            "output1": [{"odno": "1", "tot_ccld_qty": "5", "avg_prvs": "83000",
+                         "ord_qty": "12", "rmn_qty": "7"}],
+        })
+    )
+    fill = await client.confirm_fill("005930", "1", today="20260616")
+    assert fill["filled_qty"] == 5 and fill["avg_price"] == 83000.0
 
 
 @pytest.fixture

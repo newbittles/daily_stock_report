@@ -59,6 +59,14 @@ async def run(ticker: str, qty: int, price: int, send: bool) -> int:
     print(f"    → 접수 odno={odno} msg={buy.get('msg1')}")
     await asyncio.sleep(random.uniform(1.5, 3.0))
 
+    # 3.5) 체결확인 (inquire-daily-ccld) — 접수≠체결 검증
+    fill = await client.confirm_fill(ticker, odno)
+    if fill is None:
+        print("[3.5] 체결확인: 당일 체결내역에서 주문 미발견(조회 시점 미반영 가능)")
+    else:
+        print(f"[3.5] 체결확인: 체결 {fill['filled_qty']}주 @평균 {fill['avg_price']:,.0f} "
+              f"(주문 {fill['ord_qty']}주, 잔여 {fill['rmn_qty']}주)")
+
     # 4) 잔고 확인
     bal = await client.inquire_balance()
     held = [

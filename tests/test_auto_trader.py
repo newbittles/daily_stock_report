@@ -98,13 +98,20 @@ class FakeAdapter:
 class FakeOrder:
     def __init__(self):
         self.calls = []
+        self._last_qty = {}  # ticker → 마지막 주문수량(체결확인이 전량체결로 회신하도록)
 
     async def inquire_psbl_order(self, ticker, price=0, ord_dvsn="01"):
         return {"output": {"nrcvb_buy_qty": "999"}}
 
     async def order_cash(self, side, ticker, qty, price=0, ord_dvsn="01"):
         self.calls.append((side, ticker, qty))
+        self._last_qty[ticker] = qty
         return {"output": {"ODNO": "1"}, "msg1": "정상"}
+
+    async def confirm_fill(self, ticker, odno, *, today=""):
+        # 전량 체결, 평균가 0 → auto_trader가 접수가(현재가)로 폴백(기존 단가 assertion 보존)
+        return {"filled_qty": self._last_qty.get(ticker, 0), "avg_price": 0.0,
+                "ord_qty": self._last_qty.get(ticker, 0), "rmn_qty": 0}
 
 
 async def test_buy_sets_initial_stop_and_pyramids(tmp_path):
@@ -324,3 +331,92 @@ async def test_run_sell_half_then_all(tmp_path):
     await run_sell(adapter2, order2, store, send=True)
     assert order2.calls == [("sell", "005930", 6)]
     assert not store.is_held("005930")
+
+
+# ── 체결확인(inquire-daily-ccld) 통합: 접수≠체결 보정 (2026-06-16) ──
+class _ConfirmOrder(FakeOrder):
+    """confirm_fill이 지정 체결결과를 회신하는 주문 더블."""
+    def __init__(self, fill):
+        super().__init__()
+        self._fill = fill
+
+    async def confirm_fill(self, ticker, odno, *, today=""):
+        return self._fill
+
+
+async def test_buy_records_confirmed_fill_qty_and_price(tmp_path):
+    """체결확인되면 접수수량/현재가가 아니라 실제 체결수량·평균가로 포지션 기록."""
+    store = PositionStore(tmp_path / "p.db")
+    order = _ConfirmOrder({"filled_qty": 5, "avg_price": 83000.0, "ord_qty": 12, "rmn_qty": 7})
+    picks = [{"ticker": "005930", "name": "삼성전자", "price": 82500, "strategies": ["C"]}]
+    await buy_top3(picks, FakeAdapter(82500, []), order, store, send=True, today="2026-06-16")
+    pos = store.get_open()[0]
+    assert order.calls == [("buy", "005930", 12)]   # 접수는 12주
+    assert pos.qty == 5                              # 실제 체결 5주만 기록
+    assert pos.entry_price == 83000.0               # 실제 체결 평균가
+    assert pos.initial_stop == 76360.0              # 83000×0.92 (실체결가 기준 -8%)
+
+
+async def test_buy_skips_when_unfilled(tmp_path):
+    """체결확인 결과 미체결(0주)이면 주문은 보냈어도 포지션을 기록하지 않는다."""
+    store = PositionStore(tmp_path / "p.db")
+    order = _ConfirmOrder({"filled_qty": 0, "avg_price": 0.0, "ord_qty": 12, "rmn_qty": 12})
+    msgs = []
+
+    async def notify(m):
+        msgs.append(m)
+
+    picks = [{"ticker": "005930", "name": "삼성전자", "price": 82500}]
+    await buy_top3(picks, FakeAdapter(82500, []), order, store,
+                   send=True, today="2026-06-16", notify=notify)
+    assert order.calls == [("buy", "005930", 12)]   # 주문은 전송됨
+    assert not store.is_held("005930")              # 미체결 → 미기록
+    assert any("미체결" in m for m in msgs)
+
+
+async def test_buy_fallback_when_confirm_errors(tmp_path):
+    """체결조회 실패는 매매를 막지 않는다 — 접수가 기준으로 기록 + ⚠️ 알림(점검요)."""
+    class _ErrConfirm(FakeOrder):
+        async def confirm_fill(self, ticker, odno, *, today=""):
+            raise RuntimeError("inquire-daily-ccld 500")
+
+    store = PositionStore(tmp_path / "p.db")
+    msgs = []
+
+    async def notify(m):
+        msgs.append(m)
+
+    picks = [{"ticker": "005930", "name": "삼성전자", "price": 82500}]
+    await buy_top3(picks, FakeAdapter(82500, []), _ErrConfirm(), store,
+                   send=True, today="2026-06-16", notify=notify)
+    pos = store.get_open()[0]
+    assert pos.qty == 12 and pos.entry_price == 82500.0   # 접수가 폴백
+    assert any("체결확인 실패" in m for m in msgs)
+
+
+async def test_sell_all_unfilled_keeps_position(tmp_path):
+    """매도 미체결이면 store를 닫지 않고 보유 유지(다음 회차 재시도)."""
+    store = PositionStore(tmp_path / "p.db")
+    store.open_position("005930", "삼성전자", "2026-06-01", 100.0, 10, strategy="B")
+    order = _ConfirmOrder({"filled_qty": 0, "avg_price": 0.0, "ord_qty": 10, "rmn_qty": 10})
+    msgs = []
+
+    async def notify(m):
+        msgs.append(m)
+
+    adapter = FakeAdapter(price=0, closes=[100.0] * 19 + [90.0, 90.0])  # B(tight) 전량 청산 신호
+    await run_sell(adapter, order, store, send=True, notify=notify)
+    assert order.calls == [("sell", "005930", 10)]   # 주문은 전송됨
+    assert store.is_held("005930")                    # 미체결 → 보유 유지
+    assert any("미체결" in m for m in msgs)
+
+
+async def test_sell_all_partial_fill_keeps_remainder(tmp_path):
+    """매도 부분체결이면 체결분만큼만 차감하고 잔여를 보유 유지."""
+    store = PositionStore(tmp_path / "p.db")
+    store.open_position("005930", "삼성전자", "2026-06-01", 100.0, 10, strategy="B")
+    order = _ConfirmOrder({"filled_qty": 4, "avg_price": 90.0, "ord_qty": 10, "rmn_qty": 6})
+    adapter = FakeAdapter(price=0, closes=[100.0] * 19 + [90.0, 90.0])
+    await run_sell(adapter, order, store, send=True)
+    assert store.is_held("005930")
+    assert store.get_open()[0].qty == 6   # 10 - 4(체결) = 6 잔여

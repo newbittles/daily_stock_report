@@ -86,6 +86,40 @@ def test_min_b_mandatory_inclusion() -> None:
     assert len(forced) == 5
 
 
+def test_top3_min_b_one_forces_pullback() -> None:
+    """Top3(limit=3, min_b=1): 점수 낮은 B라도 ≥1 의무 포함(사용자 2026-06-16).
+
+    pipeline의 KR Top3 호출 형태(diversity_max=3=limit → 전략캡 없음, exclude로 상한가 제외)를 재현.
+    """
+    high = [_pick("C0", "씨0", _C, _liq=9.0), _pick("C1", "씨1", _C, _liq=9.0),
+            _pick("C2", "씨2", _C, _liq=9.0), _pick("D0", "디0", _D, _liq=9.0)]
+    lowb = [_pick("B1", "비1", _B, _liq=1.0)]  # 점수상 top3 밖
+    picks = high + lowb
+    # min_b=0(기존) → 고득점 비B가 3칸 독식, B 0개
+    base = select_top3(picks, limit=3, diversity_max=3, min_b=0)
+    assert sum(1 for o in base if "B" in o["strategies"]) == 0
+    # min_b=1 → 저득점 B라도 1종목 의무 포함, 총 3종목 유지
+    forced = select_top3(picks, limit=3, diversity_max=3, min_b=1)
+    assert sum(1 for o in forced if "B" in o["strategies"]) >= 1
+    assert len(forced) == 3
+    assert "B1" in {o["ticker"] for o in forced}
+
+
+def test_top3_min_b_excludes_limitup_b() -> None:
+    """상한가 B는 exclude_tickers로 빠지면 min_b가 채울 수 없다(매수불가 → 강제 X)."""
+    picks = [_pick("C0", "씨0", _C, _liq=9.0), _pick("C1", "씨1", _C, _liq=9.0),
+             _pick("BL", "비상한가", _B, _liq=9.0, change_pct=30.0)]
+    out = select_top3(picks, limit=3, diversity_max=3, min_b=1, exclude_tickers={"BL"})
+    assert "BL" not in {o["ticker"] for o in out}  # 상한가 B는 제외
+
+
+def test_top3_min_b_one_noop_when_no_b() -> None:
+    """풀에 B가 없으면 min_b=1이어도 기존처럼 점수순으로만 채운다(0 강제)."""
+    picks = [_pick("C0", "씨0", _C, _liq=9.0), _pick("D0", "디0", _D, _liq=8.0)]
+    out = select_top3(picks, limit=3, diversity_max=3, min_b=1)
+    assert {o["ticker"] for o in out} == {"C0", "D0"}
+
+
 def test_bull_div_tag_propagates() -> None:
     """🔀 강세 다이버전스 참고 태그(가중치0)가 select_top3 결과로 전파됨(사용자 2026-06-12)."""
     picks = [_pick("X", "엑스", _D, bull_div=True, bull_div_rsidiv=3.0)]

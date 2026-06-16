@@ -7,6 +7,7 @@ from __future__ import annotations
 import argparse
 import asyncio
 import logging
+import random
 import sys
 from datetime import datetime
 from pathlib import Path
@@ -51,6 +52,29 @@ async def _emit(notify, msg: str) -> None:
             logger.warning("notify_failed error=%s", exc)
 
 
+async def _confirm_or_fallback(
+    order, ticker: str, odno: str, today: str, fallback_qty: int, fallback_price: float,
+    *, notify, tag: str, label: str, name: str,
+) -> tuple[int, float, bool]:
+    """체결조회로 (체결수량, 평균가, 확인됨여부) 산출 — 접수(rt_cd=0)≠체결 보정.
+
+    confirmed=True면 숫자를 신뢰(filled 0=미체결 포함 → 호출측이 미기록 처리).
+    조회 실패/미발견(best-effort)이면 confirmed=False + 접수 기준 폴백(현재 동작 유지).
+    """
+    if not odno:
+        return fallback_qty, fallback_price, False
+    try:
+        fill = await order.confirm_fill(ticker, odno, today=today.replace("-", ""))
+    except Exception as exc:  # 체결조회 실패가 매매를 막지 않도록(조용한 실패 금지 → 알림)
+        logger.warning("confirm_fill_failed ticker=%s odno=%s error=%s", ticker, odno, exc)
+        await _emit(notify, f"⚠️ {label} 체결확인 실패 {name}({ticker}) odno={odno} — 접수가 기준 기록(점검요)")
+        return fallback_qty, fallback_price, False
+    if fill is None:
+        await _emit(notify, f"⚠️ {label} 체결내역 미발견 {name}({ticker}) odno={odno} — 접수가 기준 기록")
+        return fallback_qty, fallback_price, False
+    return fill["filled_qty"], (fill["avg_price"] or fallback_price), True
+
+
 async def buy_top3(
     picks, adapter, order, store, *, send: bool, today: str, notify=None, live: bool = False
 ) -> None:
@@ -89,17 +113,27 @@ async def buy_top3(
                 print(f"  BUY/{kind}(dry-run) {ticker} {name} x{qty} (현재가 {price}, 시장가)")
                 continue
             res = await order.order_cash("buy", ticker, qty, price=0, ord_dvsn="01")
+            odno = (res.get("output") or {}).get("ODNO", "")
+            # 체결확인: 접수≠체결 → 실제 체결수량·평균가로 기록(미체결이면 미기록)
+            fqty, entry, confirmed = await _confirm_or_fallback(
+                order, ticker, odno, today, qty, float(price),
+                notify=notify, tag=tag, label=f"{tag}매수", name=name,
+            )
+            if confirmed and fqty <= 0:
+                await _emit(notify, f"⚠️ {tag}매수 미체결 {name}({ticker}) odno={odno} — 포지션 미기록")
+                continue
+            qty = fqty
+            stop = hard_stop_price(entry, atr, strat_list)  # 실제 체결가 기준 하드스톱
             if held:  # 피라미딩 — 가중평균. 손절가는 새 평단 기준 재산정은 매도루프가 보정.
-                store.add_to_position(ticker, qty, float(price), today,
-                                     initial_stop=hard_stop_price(float(price), atr, strat_list))
+                store.add_to_position(ticker, qty, entry, today, initial_stop=stop)
                 kind = "추가매수(피라미딩)"
             else:
-                store.open_position(ticker, name, today, float(price), qty, strategy=strategy,
-                                    initial_stop=hard_stop_price(float(price), atr, strat_list),
-                                    highest=float(price))
+                store.open_position(ticker, name, today, entry, qty, strategy=strategy,
+                                    initial_stop=stop, highest=entry)
                 kind = "신규매수"
-            await _emit(notify, f"🟢 {tag}{kind} {name}({ticker}) x{qty} @{price:,.0f} "
-                                f"odno={res.get('output', {}).get('ODNO')} {res.get('msg1', '')}")
+            ck = " ✅체결" if confirmed else " ⚠접수가"
+            await _emit(notify, f"🟢 {tag}{kind}{ck} {name}({ticker}) x{qty} @{entry:,.0f} "
+                                f"odno={odno} {res.get('msg1', '')}")
         except Exception as exc:  # 조용한 실패 금지 — 알리고 다음 종목 계속(사용자 2026-06-07)
             logger.exception("buy_failed ticker=%s error=%s", ticker, exc)
             await _emit(notify, f"⚠️ {tag}매수 실패 {name}({ticker}) — {exc}")
@@ -140,25 +174,48 @@ async def run_sell(adapter, order, store, *, send: bool, notify=None, live: bool
                 line += f" → 현재 {cur:,.0f} ({pnl:+.1f}%)"
             summary.append(line + f" · {action}" + (f" {reason}" if reason else ""))
             if action == "SELL_HALF" and pos.stage < 2 and not pos.partial_taken:
-                sell_qty, remaining = split_sell_qty(pos.qty)
+                sell_qty, _planned_rmn = split_sell_qty(pos.qty)
                 if not send:
-                    print(f"    SELL_HALF(dry-run) x{sell_qty} (잔여 {remaining}) — {reason}")
+                    print(f"    SELL_HALF(dry-run) x{sell_qty} (잔여 {_planned_rmn}) — {reason}")
                     continue
-                await order.order_cash("sell", pos.ticker, sell_qty, price=0, ord_dvsn="01")
+                res = await order.order_cash("sell", pos.ticker, sell_qty, price=0, ord_dvsn="01")
+                odno = (res.get("output") or {}).get("ODNO", "")
+                fqty, _, confirmed = await _confirm_or_fallback(
+                    order, pos.ticker, odno, "", sell_qty, float(cur or pos.entry_price),
+                    notify=notify, tag=tag, label=f"{tag}매도", name=pos.name)
+                if confirmed and fqty <= 0:  # 미체결 — store 미변경, 다음 회차 재시도
+                    await _emit(notify, f"⚠️ {tag}매도(50%) 미체결 {pos.name}({pos.ticker}) — 다음 회차 재시도")
+                    continue
+                sold = fqty if confirmed else sell_qty
+                remaining = pos.qty - sold
                 if remaining > 0:
                     store.update_qty_stage(pos.ticker, remaining, 2)
                     store.update_risk_state(pos.ticker, partial_taken=True)
                 else:
                     store.close(pos.ticker)
-                await _emit(notify, f"🔴 {tag}매도(50%) {pos.name}({pos.ticker}) x{sell_qty} "
+                await _emit(notify, f"🔴 {tag}매도(50%) {pos.name}({pos.ticker}) x{sold} "
                                     f"{reason} · 잔여 {remaining}")
             elif action == "SELL_ALL":
                 if not send:
                     print(f"    SELL_ALL(dry-run) x{pos.qty} — {reason}")
                     continue
-                await order.order_cash("sell", pos.ticker, pos.qty, price=0, ord_dvsn="01")
-                store.close(pos.ticker)
-                await _emit(notify, f"🔴 {tag}매도(전량) {pos.name}({pos.ticker}) x{pos.qty} {reason}")
+                res = await order.order_cash("sell", pos.ticker, pos.qty, price=0, ord_dvsn="01")
+                odno = (res.get("output") or {}).get("ODNO", "")
+                fqty, _, confirmed = await _confirm_or_fallback(
+                    order, pos.ticker, odno, "", pos.qty, float(cur or pos.entry_price),
+                    notify=notify, tag=tag, label=f"{tag}매도", name=pos.name)
+                if confirmed and fqty <= 0:  # 미체결 — 보유 유지, 다음 회차 재시도
+                    await _emit(notify, f"⚠️ {tag}매도(전량) 미체결 {pos.name}({pos.ticker}) — 다음 회차 재시도")
+                    continue
+                sold = fqty if confirmed else pos.qty
+                remaining = pos.qty - sold
+                if remaining > 0:  # 부분체결 — 잔여 보유 유지(stage 보존)
+                    store.update_qty_stage(pos.ticker, remaining, pos.stage)
+                    await _emit(notify, f"🔴 {tag}매도(부분 {sold}/{pos.qty}) {pos.name}({pos.ticker}) "
+                                        f"{reason} · 잔여 {remaining}")
+                else:
+                    store.close(pos.ticker)
+                    await _emit(notify, f"🔴 {tag}매도(전량) {pos.name}({pos.ticker}) x{sold} {reason}")
         except Exception as exc:  # 조용한 실패 금지 — 알리고 다음 종목 계속(사용자 2026-06-07)
             logger.exception("sell_failed ticker=%s error=%s", pos.ticker, exc)
             await _emit(notify, f"⚠️ {tag}매도 점검 실패 {pos.name}({pos.ticker}) — {exc}")
