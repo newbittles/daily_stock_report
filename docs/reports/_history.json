@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-06-17",
+    "time": "08:05",
+    "mode": "kr_premarket",
+    "url": "reports/2026-06-17-kr-pre.html",
+    "summary": "",
+    "kospi_pct": -0.0,
+    "kosdaq_pct": -0.0
+  },
+  {
+    "date": "2026-06-17",
     "time": "06:30",
     "mode": "us_morning",
     "url": "reports/2026-06-17-us.html",
@@ -529,14 +538,5 @@
     "summary": "코스피 8,160.6(-5.54%) · 코스닥 1,002.4(-4.50%). 강세 테마: MLCC(적층세라믹콘덴서), 은행, 카지노.",
     "kospi_pct": -5.54,
     "kosdaq_pct": -4.5
-  },
-  {
-    "date": "2026-06-06",
-    "time": "23:46",
-    "mode": "us_morning",
-    "url": "reports/2026-06-06-us.html",
-    "summary": "미국 증시는 금리 인상 우려 재부각되며 주요 지수들이 일제히 큰 폭으로 하락했습니다. 특히 기술주와 반도체 섹터가 급락하며 시장 전반의 약세를 주도했으며, AI 관련주들도 영향을 받았습니다.",
-    "kospi_pct": null,
-    "kosdaq_pct": null
   }
 ]
