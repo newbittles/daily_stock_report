@@ -37,16 +37,19 @@ def cross_badge(cross_signal: str | None) -> str:
     return ""
 
 
-def tp_badge(tp_signal: str | None, over_pct: float | None = None) -> str:
+def tp_badge(tp_signal: str | None, over_pct: float | None = None,
+            strong: bool = False) -> str:
     """익절 시그널 → 텔레그램 배지(앞 공백 포함). 없으면 빈 문자열.
 
-    REENTRY=💰익절신호(분출 종료, 익절 검토) / CLIMAX=🔥익절권(볼밴 상단 과열, 분할 익절 고려).
+    REENTRY=💰익절신호(분출 종료) / CLIMAX=🔥익절권(볼밴 상단 과열).
+    strong=True(일봉 분출 + 4시간봉 BB상단 음봉 꺾임 결합) → '강한 익절신호'로 격상(사용자 2026-06-17).
+    백테스트: 4H음봉 결합 시 '계속 달리는 케이스'가 걸러져 익절 타이밍 정밀↑(단 하락확정은 아님).
     """
     if tp_signal == TP_REENTRY:
-        return " 💰익절신호(분출종료)"
+        return " 💰강한 익절신호(분출종료+4H꺾임)" if strong else " 💰익절신호(분출종료)"
     if tp_signal == TP_CLIMAX:
         o = f"+{over_pct:.0f}%" if over_pct is not None else ""
-        return f" 🔥익절권({o})"
+        return f" 💰강한 익절신호(BB{o}+4H꺾임)" if strong else f" 🔥익절권({o})"
     return ""
 
 # 상태 코드 → (정렬 우선순위, 그룹 제목, 라인 머리표)
@@ -121,7 +124,22 @@ async def diagnose_holdings(adapter, holdings: list[dict] | None = None) -> list
             "cross_signal": cross,  # PULLBACK(🟢 단기눌림·홀드)/CORRECTION(⚠️ 조정시작·익절)/None
             "tp_signal": tp.metrics.get("state"),    # CLIMAX(🔥익절권)/REENTRY(💰익절신호)/None
             "tp_over_pct": tp.metrics.get("over_pct"),
+            "tp_strong": False,
         })
+
+    # 익절 시그널(CLIMAX/REENTRY) 보유종목에 4시간봉 BB상단 음봉(꺾임) 결합 → '강한 익절신호' 격상.
+    # 백테스트(2026-06-17): 일봉 분출 + 4H음봉이면 '계속 달리는 케이스'가 걸러져 익절 타이밍 정밀↑.
+    # best-effort(yfinance 1h→4h) — 실패해도 일반 익절 배지로 진행.
+    tp_tickers = [r["ticker"] for r in results if r.get("tp_signal")]
+    if tp_tickers:
+        try:
+            from src.datasource.kr_4h import fetch_4h_overheat
+            o4 = await fetch_4h_overheat(tp_tickers)
+            for r in results:
+                if r.get("tp_signal") and o4.get(r["ticker"]):
+                    r["tp_strong"] = True
+        except Exception as exc:  # noqa: BLE001
+            logger.warning("holdings_tp_4h_failed error=%s", exc)
     return results
 
 
@@ -142,7 +160,7 @@ def format_holdings_report(rows: list[dict]) -> str:
         sign = "+" if r["profit_rate"] >= 0 else ""
         warn = " ⚠️끝물" if r["endstage"] else ""
         badge = cross_badge(r.get("cross_signal"))
-        tpb = tp_badge(r.get("tp_signal"), r.get("tp_over_pct"))
+        tpb = tp_badge(r.get("tp_signal"), r.get("tp_over_pct"), r.get("tp_strong"))
         lines.append(f"{meta[2]} *{r['name']}* `{r['ticker']}` {r['price']:,.0f}원 "
                      f"({sign}{r['profit_rate']:.1f}%){warn}{badge}{tpb}")
         # 평단/수량/평가손익 (수동 보유종목 등 제공 시)

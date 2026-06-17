@@ -50,9 +50,12 @@ ${{ "{:,.2f}".format(item.price) }} <span class="{{ 'up-text' if pct >= 0 else '
 <div style="color:#fff;background:var(--red,#e5484d);font-weight:800;font-size:0.82rem;padding:2px 7px;border-radius:4px;display:inline-block;margin-top:3px;">⚠️ 익절권(볼밴 상단 과열) — 추격매수 주의</div>
 {%- endif -%}
 {%- endmacro -%}
-{# 보유종목 익절 시그널 배지 — CLIMAX(🔥익절권·분할익절 고려) / REENTRY(💰익절신호·분출종료) #}
+{# 보유종목 익절 시그널 배지 — CLIMAX(🔥익절권) / REENTRY(💰익절신호·분출종료).
+   tp_strong(일봉 분출 + 4시간봉 BB상단 음봉 꺾임 결합)이면 '💰 강한 익절신호'로 격상(사용자 2026-06-17). #}
 {%- macro tp_hold(h) -%}
-{%- if h.tp_signal == 'REENTRY' -%}
+{%- if h.tp_strong -%}
+<span style="color:#fff;background:var(--red,#e5484d);font-weight:800;font-size:0.83rem;padding:2px 7px;border-radius:4px;">💰 강한 익절 신호 ({{ '분출 종료' if h.tp_signal == 'REENTRY' else '볼밴 상단 +' ~ "{:.0f}".format(h.tp_over_pct|default(0)) ~ '% 강돌파' }} + 4시간봉 꺾임 — 분할 익절)</span>
+{%- elif h.tp_signal == 'REENTRY' -%}
 <span style="color:#fff;background:var(--red,#e5484d);font-weight:800;font-size:0.82rem;padding:2px 7px;border-radius:4px;">💰 익절 신호 (볼밴 상단 분출 종료 — 익절 검토)</span>
 {%- elif h.tp_signal == 'CLIMAX' -%}
 <span style="color:var(--red);font-weight:700;font-size:0.85rem;cursor:pointer;" onclick="showFlag(this)" data-flag="overheat">🔥 익절권 (볼밴 상단 +{{ "{:.0f}".format(h.tp_over_pct|default(0)) }}% 강돌파 — 분할 익절 고려)ⓘ</span>
