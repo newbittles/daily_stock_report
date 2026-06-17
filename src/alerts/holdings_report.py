@@ -12,7 +12,13 @@ import asyncio
 import logging
 import random
 
-from src.patterns.core import diagnose_holding, ma_cross_signal
+from src.patterns.core import (
+    TP_CLIMAX,
+    TP_REENTRY,
+    diagnose_holding,
+    ma_cross_signal,
+    take_profit_signal,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -28,6 +34,19 @@ def cross_badge(cross_signal: str | None) -> str:
         return " 🟢단기눌림"
     if cross_signal == "CORRECTION":
         return " ⚠️조정시작"
+    return ""
+
+
+def tp_badge(tp_signal: str | None, over_pct: float | None = None) -> str:
+    """익절 시그널 → 텔레그램 배지(앞 공백 포함). 없으면 빈 문자열.
+
+    REENTRY=💰익절신호(분출 종료, 익절 검토) / CLIMAX=🔥익절권(볼밴 상단 과열, 분할 익절 고려).
+    """
+    if tp_signal == TP_REENTRY:
+        return " 💰익절신호(분출종료)"
+    if tp_signal == TP_CLIMAX:
+        o = f"+{over_pct:.0f}%" if over_pct is not None else ""
+        return f" 🔥익절권({o})"
     return ""
 
 # 상태 코드 → (정렬 우선순위, 그룹 제목, 라인 머리표)
@@ -72,6 +91,7 @@ async def diagnose_holdings(adapter, holdings: list[dict] | None = None) -> list
         # 5·10 단기 데드 + 20일이격 → 단기눌림(🟢 홀드)/조정시작(⚠️ 익절검토) 보조신호 (domain SSOT)
         # 보유 대세주 홀드/익절 판단용 — 손절 state(STOP/BREAKDOWN)와 별개의 추세 보조 배지
         cross = ma_cross_signal([c.close for c in candles])
+        tp = take_profit_signal(candles)  # 익절 시그널(BB상단 분출 2단계)
         price = h.get("current_price") or candles[-1].close
         avg = h.get("avg_price")
         profit = h.get("profit_rate")
@@ -99,6 +119,8 @@ async def diagnose_holdings(adapter, holdings: list[dict] | None = None) -> list
             "gap60_pct": r.metrics.get("gap60_pct"),
             "endstage": bool(r.metrics.get("endstage")),
             "cross_signal": cross,  # PULLBACK(🟢 단기눌림·홀드)/CORRECTION(⚠️ 조정시작·익절)/None
+            "tp_signal": tp.metrics.get("state"),    # CLIMAX(🔥익절권)/REENTRY(💰익절신호)/None
+            "tp_over_pct": tp.metrics.get("over_pct"),
         })
     return results
 
@@ -120,8 +142,9 @@ def format_holdings_report(rows: list[dict]) -> str:
         sign = "+" if r["profit_rate"] >= 0 else ""
         warn = " ⚠️끝물" if r["endstage"] else ""
         badge = cross_badge(r.get("cross_signal"))
+        tpb = tp_badge(r.get("tp_signal"), r.get("tp_over_pct"))
         lines.append(f"{meta[2]} *{r['name']}* `{r['ticker']}` {r['price']:,.0f}원 "
-                     f"({sign}{r['profit_rate']:.1f}%){warn}{badge}")
+                     f"({sign}{r['profit_rate']:.1f}%){warn}{badge}{tpb}")
         # 평단/수량/평가손익 (수동 보유종목 등 제공 시)
         if r.get("avg_price") and r.get("quantity"):
             pl = r.get("eval_pl")

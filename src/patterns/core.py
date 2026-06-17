@@ -1020,6 +1020,44 @@ def is_bollinger_breakout(
     return PatternResult(False, "밴드 내부", metrics)
 
 
+# 익절(take-profit) 시그널 — 볼린저 상단 '분출' 기반 (순수 domain, 사용자 2026-06-17).
+# CLIMAX  🔥 당일 종가가 BB상단 위 마감 (분출/익절권 — 분할 익절 고려).
+# REENTRY 💰 직전 봉이 BB상단 위였다가 당일 밴드 안으로 복귀 (분출 종료 — 익절 신호).
+# 설계 근거(2026-06-17 실측): 후성 6월 — BB상단 돌파는 6.10~6.15 여러 번(분출 중),
+#   '꼭지'(6.15) 단독 포착은 불가(6.15엔 모멘텀 최강) → 2단계(돌파 경고 → 밴드복귀 실행)로 분리.
+#   또 Top3 백테스트상 BB돌파는 다음날 하락편향이 아닌 '고변동'이라 추천제외 아닌 '경고'로만 사용.
+TP_CLIMAX = "CLIMAX"
+TP_REENTRY = "REENTRY"
+
+
+def take_profit_signal(
+    candles: list[Candle], period: int = 20, num_std: float = 2.0
+) -> PatternResult:
+    """볼린저 상단 분출 기반 익절 시그널 (순수). metrics: state, over_pct, upper, price.
+
+    state ∈ {TP_REENTRY, TP_CLIMAX, None}. REENTRY가 CLIMAX보다 우선(분출 종료 = 더 확정적 익절).
+    """
+    if len(candles) < period + 1:
+        return PatternResult(False, "데이터 부족", {"state": None})
+    closes = _closes(candles)
+    upper, _mid, _lower = bollinger_bands(closes, period, num_std)
+    if upper[-1] is None or upper[-2] is None:
+        return PatternResult(False, "밴드 계산 불가", {"state": None})
+    price, prev = closes[-1], closes[-2]
+    over_pct = (price - upper[-1]) / upper[-1] * 100 if upper[-1] else 0.0
+    metrics = {"upper": round(upper[-1], 1), "price": round(price, 1),
+               "over_pct": round(over_pct, 1), "state": None}
+    # 분출 종료(익절 실행): 전일 종가 > 전일 상단 AND 당일 종가 ≤ 당일 상단
+    if prev > upper[-2] and price <= upper[-1]:
+        metrics["state"] = TP_REENTRY
+        return PatternResult(True, "볼밴 상단 복귀 (분출 종료 — 익절 신호)", metrics)
+    # 익절권(경고): 당일 종가 > 당일 상단
+    if price > upper[-1]:
+        metrics["state"] = TP_CLIMAX
+        return PatternResult(True, f"볼밴 상단 강돌파 (익절권 +{over_pct:.1f}% — 분할 익절 고려)", metrics)
+    return PatternResult(False, "밴드 내부", metrics)
+
+
 # 5·10 단기 데드크로스 + 20일 이격도 기반 단기조정/끝물 판정 라벨
 CROSS_PULLBACK = "PULLBACK"      # 🟢 추세 위 단기눌림 (보유 지속/매수 기회)
 CROSS_CORRECTION = "CORRECTION"  # ⚠️ 조정시작 (익절/손절 검토)

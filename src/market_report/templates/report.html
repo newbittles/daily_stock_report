@@ -43,6 +43,21 @@ ${{ "{:,.2f}".format(item.price) }} <span class="{{ 'up-text' if pct >= 0 else '
 {%- macro strat_badge(strats, suffix=' 시그널') -%}
 <span class="strat-badge" onclick="showStrat(this)" data-strats="{{ strats|join(',') }}" style="cursor:pointer;" title="전략 설명 보기">{{ strats|join('/') }}{{ suffix }} ⓘ</span>
 {%- endmacro -%}
+{# 익절권 강볼드 경고(Top3·종가베팅) — 추천 종목이 BB상단 과열(익절권)이면 추격 주의(사용자 2026-06-17).
+   백테스트상 BB돌파는 하락편향 아닌 '고변동'이라 추천제외는 안 하고 경고만(근거 동반). #}
+{%- macro tp_warn(item) -%}
+{%- if item.overheat|default(false) or item.overheat_4h|default(false) -%}
+<div style="color:#fff;background:var(--red,#e5484d);font-weight:800;font-size:0.82rem;padding:2px 7px;border-radius:4px;display:inline-block;margin-top:3px;">⚠️ 익절권(볼밴 상단 과열) — 추격매수 주의</div>
+{%- endif -%}
+{%- endmacro -%}
+{# 보유종목 익절 시그널 배지 — CLIMAX(🔥익절권·분할익절 고려) / REENTRY(💰익절신호·분출종료) #}
+{%- macro tp_hold(h) -%}
+{%- if h.tp_signal == 'REENTRY' -%}
+<span style="color:#fff;background:var(--red,#e5484d);font-weight:800;font-size:0.82rem;padding:2px 7px;border-radius:4px;">💰 익절 신호 (볼밴 상단 분출 종료 — 익절 검토)</span>
+{%- elif h.tp_signal == 'CLIMAX' -%}
+<span style="color:var(--red);font-weight:700;font-size:0.85rem;cursor:pointer;" onclick="showFlag(this)" data-flag="overheat">🔥 익절권 (볼밴 상단 +{{ "{:.0f}".format(h.tp_over_pct|default(0)) }}% 강돌파 — 분할 익절 고려)ⓘ</span>
+{%- endif -%}
+{%- endmacro -%}
 {# 종목 소속 시장 라벨(코스피/코스닥/나스닥/NYSE) — render.py env.globals['mkt'] 조회(#471). 미발견은 생략 #}
 {%- macro mk(code) -%}
 {%- set m = mkt(code) -%}
@@ -70,6 +85,7 @@ ${{ "{:,.2f}".format(item.price) }} <span class="{{ 'up-text' if pct >= 0 else '
           {% if t.marcap_str %}<span class="code">시총 {{ t.marcap_str }}</span>{% endif %}
           {{ cond_badges(t) }}{# #}
         </div>
+        {{ tp_warn(t) }}
         <div class="top3-reason">{{ t.reason }}</div>
         {% if t.supply_str %}<div class="top3-reason" style="color:var(--green);">💰 {{ t.supply_str }}</div>{% endif %}
         {% if t.theme %}
@@ -771,6 +787,7 @@ ${{ "{:,.2f}".format(item.price) }} <span class="{{ 'up-text' if pct >= 0 else '
           <span class="px">{{ us_px(t, snap.mode) }}</span>
           {{ cond_badges(t) }}{% if t.endstage %} <span class="down-text" style="font-size:0.8rem;cursor:pointer;" onclick="showFlag(this)" data-flag="endstage">⚠️끝물ⓘ</span>{% endif %}
         </div>
+        {{ tp_warn(t) }}
         {% if t.marcap_str or t.turnover_str %}<div class="pick-sub">{% if t.marcap_str %}시총 {{ t.marcap_str }}{% endif %}{% if t.turnover_str %} · 거래대금 {{ t.turnover_str }}{% endif %}</div>{% endif %}
         {% if t.sector %}<div class="pick-sub">테마: {{ t.sector }}</div>{% endif %}
         {{ kr_nb(t) }}
@@ -951,6 +968,7 @@ ${{ "{:,.2f}".format(item.price) }} <span class="{{ 'up-text' if pct >= 0 else '
               {{ cond_badges(p) }}{# 20일이격·과열·크로스 배지(Top3와 동일) #}
             </span>
           </div>
+          {{ tp_warn(p) }}
           {% if p.theme %}
           <div class="pick-theme">
             <div class="pick-theme-name">{{ p.theme }}</div>
@@ -1304,6 +1322,7 @@ ${{ "{:,.2f}".format(item.price) }} <span class="{{ 'up-text' if pct >= 0 else '
           </span>
           {% if h.endstage %}<span class="down-text" style="cursor:pointer;" onclick="showFlag(this)" data-flag="endstage">⚠️끝물ⓘ</span>{% endif %}
           {% if h.cross_signal == 'PULLBACK' %}<span class="up-text" style="font-size:0.85rem;">🟢5&lt;10 단기눌림(홀드)</span>{% elif h.cross_signal == 'CORRECTION' %}<span class="down-text" style="font-size:0.85rem;">⚠️5&lt;10 조정시작(익절검토)</span>{% endif %}
+          {% if h.tp_signal %}<div style="margin-top:3px;">{{ tp_hold(h) }}</div>{% endif %}
           {% if h.flow_desc %}<div class="pick-sub" style="color:var(--text-dim);">📊 {{ h.flow_desc }}</div>{% endif %}
           <div class="theme-reason">{{ h.reason }}</div>
           {% if h.ai_summary %}<button type="button" class="ai-btn" onclick="showAI(this)" data-name="{{ h.name }}" data-summary="{{ h.ai_summary|e }}">🤖 AI요약</button>{% endif %}
