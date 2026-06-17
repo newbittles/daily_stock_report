@@ -1716,8 +1716,11 @@ async def run_full(
         except Exception as exc:
             logger.warning("us_morning_news_translate_failed error=%s", exc)
         try:
-            from src.market_report.strategy_section import attach_holdings
-            await attach_holdings(snap)  # 📋 보유종목(오너 전용 게이트, 2026-06-14)
+            # 📋 미국 보유종목(오너 전용 게이트) — us_holdings_status(USD·미국주).
+            # 과거 KR attach_holdings 호출 시 한국 계좌 잔고(holdings_status)가 미국 리포트에
+            # 노출되는 버그 있었음(테크윙·후성 등) → 미국 보유종목 러너로 교체(사용자 2026-06-17).
+            from src.market_report.us_holdings import attach_us_holdings
+            await attach_us_holdings(snap)
         except Exception as exc:
             logger.warning("us_morning_holdings_failed error=%s", exc)
 
@@ -2030,6 +2033,16 @@ async def run_full(
         from src.market_report.top3 import select_top3 as _sel
         snap.screen_ranked = _sel(snap.screen_picks, foreign_buy=_kr_fb, inst_buy=_kr_ib,
                                   supply_streaks=_kr_streaks, return_all=True)
+        # 전략별 그룹(A/B/C/D 각 섹션) — 사용자 2026-06-17. screen_ranked(점수순·enrich완료)를
+        # 전략 초성별로 분리. 한 종목이 여러 전략 매칭 시 각 섹션에 중복 노출(매칭 의미 유지).
+        _kr_labels = {"A": "A. 수렴후 대세상승", "B": "B. 20일선 눌림목",
+                      "C": "C. 정배열 추세추종", "D": "D. 추세반전"}
+        _groups: list[dict] = []
+        for _ini in ("A", "B", "C", "D"):
+            _grp = [p for p in snap.screen_ranked if _ini in (p.get("strategies") or [])]
+            if _grp:
+                _groups.append({"label": _kr_labels[_ini], "initial": _ini, "picks": _grp[:6]})
+        snap.screen_groups = _groups
     except Exception as exc:
         logger.warning("screen_ranked_failed error=%s", exc)
 

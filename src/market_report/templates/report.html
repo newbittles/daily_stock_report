@@ -133,13 +133,15 @@ ${{ "{:,.2f}".format(item.price) }} <span class="{{ 'up-text' if pct >= 0 else '
 {%- endmacro -%}
 {# 전략 스크린 섹션 — 마감전(pre_close)은 강세/약세 테마 바로 뒤로 이동(MB7, 2026-06-14) → 매크로화. #}
 {%- macro strategy_screen_section(snap) -%}
-{% if snap.screen_ranked %}
+{% if snap.screen_groups %}
     <section>
-      <h2><span class="icon">🎯</span>전략 스크린 <span style="color:var(--text-dim);font-size:0.8rem;">(종합점수순 · 매칭전략 표기)</span>
+      <h2><span class="icon">🎯</span>전략 스크린 <span style="color:var(--text-dim);font-size:0.8rem;">(전략별 칸 · A/B/C/D)</span>
         <button class="copy-btn" data-codes="{{ snap.screen_ranked|map(attribute='ticker')|join(' ') }}" onclick="copyWatch(this)">📋 관심등록 복사</button>
       </h2>
+      {% for g in snap.screen_groups %}
+      <h3 style="margin:0.7rem 0 0.2rem;color:var(--accent);">{{ g.label }} <span style="color:var(--text-dim);font-size:0.78rem;font-weight:normal;">({{ g.picks|length }})</span></h3>
       <ul class="watch-list">
-        {% for p in snap.screen_ranked %}
+        {% for p in g.picks %}
         <li>
           <a href="https://finance.naver.com/item/main.naver?code={{ p.ticker }}" target="_blank" rel="noopener"><strong>{{ p.name }}</strong></a>
           {% if mkt(p.ticker) %}<span class="pick-ticker">{{ mkt(p.ticker) }}</span>{% endif %}
@@ -166,7 +168,8 @@ ${{ "{:,.2f}".format(item.price) }} <span class="{{ 'up-text' if pct >= 0 else '
         </li>
         {% endfor %}
       </ul>
-      <p class="disclaimer" style="font-size:12px;">※ 종목당 1줄·종합점수순. 같은 종목이 여러 전략에 잡히면 'A·C·D 시그널'처럼 묶어 표기. 참고용이며 매수 추천 아님. · 📋 일괄 관심등록.</p>
+      {% endfor %}
+      <p class="disclaimer" style="font-size:12px;">※ 전략(A/B/C/D)별 분류 · 각 칸 종합점수순. 한 종목이 여러 전략에 잡히면 각 칸에 중복 표기. 참고용이며 매수 추천 아님. · 📋 일괄 관심등록.</p>
     </section>
 {% endif %}
 {%- endmacro -%}
@@ -779,11 +782,13 @@ ${{ "{:,.2f}".format(item.price) }} <span class="{{ 'up-text' if pct >= 0 else '
     {% endif %}
 
     {# 🇺🇸 미국 종목 스크리닝 — 종합점수순(종목당 1개, 매칭전략 다 표기), KR과 동일 형식(#454) #}
-    {% if snap.us_screen_ranked %}
+    {% if snap.us_screen_groups %}
     <section>
-      <h2><span class="icon">🇺🇸</span>미국 종목 스크리닝 <span style="color:var(--text-dim);font-size:0.8rem;">(종합점수순 · 매칭전략 표기)</span></h2>
+      <h2><span class="icon">🇺🇸</span>미국 종목 스크리닝 <span style="color:var(--text-dim);font-size:0.8rem;">(전략별 칸 · A/B/C/D)</span></h2>
+      {% for g in snap.us_screen_groups %}
+      <h3 style="margin:0.7rem 0 0.2rem;color:var(--accent);">{{ g.label }} <span style="color:var(--text-dim);font-size:0.78rem;font-weight:normal;">({{ g.picks|length }})</span></h3>
       <ul class="watch-list">
-        {% for p in snap.us_screen_ranked %}
+        {% for p in g.picks %}
         <li>
           <a href="https://search.naver.com/search.naver?query={{ (p.name ~ ' 주가') | urlencode }}" target="_blank" rel="noopener"><strong>{{ p.name }}</strong></a>
           <span class="pick-ticker">{{ p.symbol }}{{ mk(p.symbol) }}</span> · {{ us_px(p, snap.mode) }}
@@ -797,7 +802,8 @@ ${{ "{:,.2f}".format(item.price) }} <span class="{{ 'up-text' if pct >= 0 else '
         </li>
         {% endfor %}
       </ul>
-      <p class="disclaimer" style="font-size:12px;">※ S&amp;P500 대상 A/B/C/D 종합 시그널(거래대금순). 백테스트상 기계적 엣지는 약하며 매수 추천이 아닙니다. 판단·책임은 본인.</p>
+      {% endfor %}
+      <p class="disclaimer" style="font-size:12px;">※ S&amp;P500 대상 A/B/C/D 전략별 분류(각 칸 거래대금순). 한 종목이 여러 전략에 잡히면 각 칸에 중복 표기. 백테스트상 기계적 엣지는 약하며 매수 추천이 아닙니다. 판단·책임은 본인.</p>
     </section>
     {% endif %}
     {% endif %}
@@ -1281,8 +1287,9 @@ ${{ "{:,.2f}".format(item.price) }} <span class="{{ 'up-text' if pct >= 0 else '
     {# 3c. 전략 스크린 — pre_close는 테마 뒤(MB7), post_close는 Top3 아래(MC2)로 이동. 그 외 모드는 여기. #}
     {% if snap.mode not in ['pre_close', 'post_close'] %}{{ strategy_screen_section(snap) }}{% endif %}
 
-    {# 3d. 보유종목 상태 — 오너 전용판(audience=owner)에서만 노출(사용자 2026-06-14 웹분리). 공개판 제외. #}
-    {% if audience|default('public') == 'owner' and snap.holdings_status %}
+    {# 3d. 보유종목 상태(한국 계좌) — 오너 전용판(audience=owner)에서만 노출(사용자 2026-06-14 웹분리). 공개판 제외.
+       미국 리포트엔 미표시(한국 계좌 종목이 미국장 리포트에 새던 버그 방지 — 미국은 us_holdings_status, 사용자 2026-06-17). #}
+    {% if audience|default('public') == 'owner' and snap.holdings_status and snap.mode not in ['us_morning', 'us_premarket', 'us_intraday', 'us_afterhours'] %}
     <section>
       <h2><span class="icon">📋</span>보유종목 상태 (홀딩/손절/추가매수)</h2>
       {% if snap.holdings_summary %}
