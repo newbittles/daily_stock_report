@@ -100,6 +100,9 @@ class FakeOrder:
         self.calls = []
         self._last_qty = {}  # ticker → 마지막 주문수량(체결확인이 전량체결로 회신하도록)
 
+    async def ensure_token(self):  # 루프 전 토큰 1회 선발급(연타 방지, 2026-06-17) — 테스트는 no-op
+        return None
+
     async def inquire_psbl_order(self, ticker, price=0, ord_dvsn="01"):
         return {"output": {"nrcvb_buy_qty": "999"}}
 

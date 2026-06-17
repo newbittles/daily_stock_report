@@ -9,6 +9,7 @@
 """
 from __future__ import annotations
 
+import asyncio
 import json
 import logging
 from datetime import datetime, timedelta
@@ -17,6 +18,10 @@ from pathlib import Path
 import httpx
 
 logger = logging.getLogger(__name__)
+
+
+class KisTokenError(Exception):
+    """토큰 발급 실패(분당 발급제한/거부 등) — 호출부가 즉시 Hard Stop 하도록 알리는 신호."""
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent.parent
 TOKEN_CACHE = PROJECT_ROOT / "data" / "kis_token.json"
@@ -97,19 +102,35 @@ class KisTokenManager:
         return await self._issue()
 
     async def _issue(self) -> str:
-        """토큰 신규 발급."""
+        """토큰 신규 발급.
+
+        KIS는 토큰 발급을 분당 1회로 제한 → 초과 시 403. 자동매매가 종목마다 재발급해
+        연타하면 종일 막힘(2026-06-17 회귀). 방어: 403이면 60초 1회만 백오프 후 재시도,
+        그래도 403이면 KisTokenError로 즉시 중단(연타 금지, 전역 §7 Hard Stop).
+        """
         url = f"{self._base}/oauth2/tokenP"
         payload = {
             "grant_type": "client_credentials",
             "appkey": self._app_key,
             "appsecret": self._app_secret,
         }
-        async with httpx.AsyncClient(timeout=10.0) as client:
-            resp = await client.post(url, json=payload)
+        data: dict | None = None
+        for attempt in range(2):
+            async with httpx.AsyncClient(timeout=10.0) as client:
+                resp = await client.post(url, json=payload)
+            if resp.status_code == 403:
+                if attempt == 0:
+                    logger.warning(
+                        "kis_token_403 env=%s — 분당 토큰발급 제한 추정, 60초 후 1회 재시도", self._env)
+                    await asyncio.sleep(60)
+                    continue
+                raise KisTokenError(
+                    f"KIS 토큰 발급 403(env={self._env}) — 분당 발급제한/거부. 자동 재시도 중단(§7).")
             resp.raise_for_status()
             data = resp.json()
+            break
 
-        self._token = data["access_token"]
+        self._token = data["access_token"]  # type: ignore[index]
         # expires_in(초) 또는 access_token_token_expired(문자열) 제공
         expires_in = int(data.get("expires_in", 86400))
         self._expires_at = datetime.now() + timedelta(seconds=expires_in)

@@ -17,6 +17,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
 if hasattr(sys.stdout, "reconfigure"):
     sys.stdout.reconfigure(encoding="utf-8")  # cp949 콘솔 보호
 
+from src.datasource.kis.token import KisTokenError  # noqa: E402
 from src.indicators.core import average_true_range  # noqa: E402
 from src.trading.ma_exit import decide_exit  # noqa: E402
 from src.trading.positions import PositionStore  # noqa: E402
@@ -81,6 +82,13 @@ async def buy_top3(
     tag = "실전" if live else "모의"
     await _emit(notify, f"=== auto-buy {today} · {len(picks)}종목 후보 "
                         f"({'LIVE' if send else 'dry-run'}{'·실전계좌' if live else ''}) ===")
+    # 토큰 1회 선발급(공유) — 종목마다 재발급 연타로 KIS 분당 토큰발급 제한 403에 걸리던 회귀 방지
+    # (2026-06-17). 선발급 실패 시 매수 전체 중단(연타 금지, 전역 §7 Hard Stop).
+    try:
+        await order.ensure_token()
+    except Exception as exc:  # noqa: BLE001
+        await _emit(notify, f"🛑 {tag}매수 중단(Hard Stop) — KIS 토큰 발급 실패: {exc}")
+        return
     for p in picks:
         ticker, name = p["ticker"], p.get("name", "")
         try:
@@ -134,6 +142,10 @@ async def buy_top3(
             ck = " ✅체결" if confirmed else " ⚠접수가"
             await _emit(notify, f"🟢 {tag}{kind}{ck} {name}({ticker}) x{qty} @{entry:,.0f} "
                                 f"odno={odno} {res.get('msg1', '')}")
+        except KisTokenError as exc:  # 토큰 발급 거부 = 연타 금지, 매수 전체 중단(전역 §7 Hard Stop)
+            logger.error("buy_token_hardstop ticker=%s error=%s", ticker, exc)
+            await _emit(notify, f"🛑 {tag}매수 중단(Hard Stop) — KIS 토큰 발급 거부: {exc}")
+            break
         except Exception as exc:  # 조용한 실패 금지 — 알리고 다음 종목 계속(사용자 2026-06-07)
             logger.exception("buy_failed ticker=%s error=%s", ticker, exc)
             await _emit(notify, f"⚠️ {tag}매수 실패 {name}({ticker}) — {exc}")
@@ -145,6 +157,12 @@ async def run_sell(adapter, order, store, *, send: bool, notify=None, live: bool
     await _emit(notify, f"=== auto-sell · 보유 {len(open_pos)}종목 "
                         f"({'LIVE' if send else 'dry-run'}{'·실전계좌' if live else ''}) ===")
     summary: list[str] = []  # 📋 일일 포지션 현황(사용자 2026-06-07) — HOLD 포함 전 종목
+    if send and open_pos:  # 매도 주문 전 토큰 1회 선발급(연타 방지) — dry-run/무포지션은 불필요
+        try:
+            await order.ensure_token()
+        except Exception as exc:  # noqa: BLE001
+            await _emit(notify, f"🛑 {tag}매도 중단(Hard Stop) — KIS 토큰 발급 실패: {exc}")
+            return
     for pos in open_pos:
         try:
             candles = await adapter.get_ohlcv(pos.ticker, days=80)
@@ -216,6 +234,10 @@ async def run_sell(adapter, order, store, *, send: bool, notify=None, live: bool
                 else:
                     store.close(pos.ticker)
                     await _emit(notify, f"🔴 {tag}매도(전량) {pos.name}({pos.ticker}) x{sold} {reason}")
+        except KisTokenError as exc:  # 토큰 발급 거부 = 연타 금지, 매도 전체 중단(전역 §7 Hard Stop)
+            logger.error("sell_token_hardstop ticker=%s error=%s", pos.ticker, exc)
+            await _emit(notify, f"🛑 {tag}매도 중단(Hard Stop) — KIS 토큰 발급 거부: {exc}")
+            break
         except Exception as exc:  # 조용한 실패 금지 — 알리고 다음 종목 계속(사용자 2026-06-07)
             logger.exception("sell_failed ticker=%s error=%s", pos.ticker, exc)
             await _emit(notify, f"⚠️ {tag}매도 점검 실패 {pos.name}({pos.ticker}) — {exc}")

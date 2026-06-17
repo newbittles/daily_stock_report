@@ -98,6 +98,13 @@ class KisOrderClient:
         self._base = self._token_mgr.base_url
         self._cano, self._acnt = _split_account(account_no)
 
+    async def ensure_token(self) -> None:
+        """주문 루프 진입 전 토큰 1회 선발급(공유) — 종목마다 재발급 연타 방지(2026-06-17).
+
+        한 번 성공하면 in-memory 캐시되어 이후 주문들이 재사용 → KIS 분당 토큰발급 제한 회피.
+        실패(KisTokenError) 시 호출부가 매수 전체를 Hard Stop 하도록 예외를 전파한다."""
+        await self._token_mgr.get_token()
+
     async def hashkey(self, body: dict[str, Any]) -> str:
         """주문 body 무결성 해시 발급. POST /uapi/hashkey → 응답 HASH."""
         await self._token_mgr.get_token()
