@@ -37,6 +37,31 @@ def test_kr_premarket_forbids_kospi_card() -> None:
     assert any("KOSPI" in i for i in audit_html("kr_premarket", html))
 
 
+def test_us_allows_index_word_in_ai_summary() -> None:
+    """미국 리포트 AI요약/메타 본문에 '주요 지수' 문구가 있어도 실제 지수 섹션 헤더가 없으면 오탐 X
+    (2026-06-12 미국애프터 오탐 재발 방지 — substring이 AI 본문에 걸리던 버그)."""
+    html = (
+        '<meta name="description" content="미국 증시는 주요 지수들이 큰 폭으로 상승했습니다">'
+        "E 투매 바닥 반등 F. 60일선 지지 삼각수렴 임박 "
+        '<div class="summary-box"><div class="label">🤖 AI 시장 요약</div>'
+        "<p>미국 증시는 전반적으로 강세를 보이며 주요 지수들이 큰 폭으로 상승했습니다.</p></div>"
+        '<div class="disclaimer">투자 판단·결과 책임은 본인에게 있습니다</div>'
+    )
+    assert audit_html("us_afterhours", html) == []
+
+
+def test_us_still_flags_real_index_section_header() -> None:
+    """반대로 실제 KR 지수 섹션 헤더(<h2>주요 지수</h2>)·KOSPI 카드가 새면 여전히 라우팅 버그로 플래그."""
+    html = (
+        "E 투매 바닥 반등 F. 60일선 지지 삼각수렴 임박 "
+        '<section><h2><span class="icon">📈</span>주요 지수</h2>'
+        '<div class="index-card"><div class="index-name">KOSPI</div></div></section>'
+        '<div class="disclaimer">판단·책임은 본인</div>'
+    )
+    issues = audit_html("us_afterhours", html)
+    assert any("주요 지수" in i for i in issues)
+
+
 def test_flags_missing_disclaimer() -> None:
     html = "E 투매 바닥 반등 F. 60일선 지지 삼각수렴 임박 AI 시장 요약"
     assert any("면책" in i for i in audit_html("pre_close", html))

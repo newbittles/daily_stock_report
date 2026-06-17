@@ -65,14 +65,30 @@ INTENTIONAL = {
 }
 
 
+# AI 시장요약·메타 설명 등 '본문(prose)'은 substring 오탐을 일으킨다(2026-06-12 미국애프터:
+# AI요약 "…주요 지수들이 큰 폭으로 상승"이 FORBIDDEN '주요 지수'에 걸림 — 실제 KR 지수 섹션은 없었음).
+# 그래서 FORBIDDEN(구조적 누출)은 본문을 제거한 '구조'(섹션 헤더·index 카드 등)에서만 검사한다.
+# REQUIRED(존재 검사)와 면책 문구는 전체 HTML 그대로 검사한다(누락 오판 방지).
+_META_DESC_RE = re.compile(r'<meta\s+name="description"[^>]*>', re.IGNORECASE)
+# 본문 단락(<p>)은 제거하되, 면책(disclaimer) 단락은 보존 → '책임은' 면책 검사가 깨지지 않게.
+_PROSE_P_RE = re.compile(r'<p\b(?![^>]*class="disclaimer")[^>]*>.*?</p>', re.IGNORECASE | re.DOTALL)
+
+
+def _structural_html(html: str) -> str:
+    """AI 요약/메타 본문(prose)을 제거하고 섹션 헤더·index 카드 등 '구조'만 남긴다(FORBIDDEN 오탐 방지)."""
+    html = _META_DESC_RE.sub("", html)
+    return _PROSE_P_RE.sub("", html)
+
+
 def audit_html(mode: str, html: str) -> list[str]:
     """단일 리포트 HTML을 매트릭스로 점검 → 위반 사유 리스트(순수 함수, I/O 없음)."""
     issues: list[str] = []
+    structural = _structural_html(html)  # FORBIDDEN은 본문(AI요약/메타) 제외 '구조'에서만 검사(오탐 방지)
     for mark in REQUIRED.get(mode, []):
         if mark not in html:
             issues.append(f"필수 섹션 누락: '{mark}'")
     for mark in FORBIDDEN.get(mode, []):
-        if mark in html:
+        if mark in structural:
             issues.append(f"금지 마커 출현(라우팅/의도 위반): '{mark}'")
     if _DISCLAIMER not in html:
         issues.append("면책 문구 누락")
