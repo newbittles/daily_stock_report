@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-06-19",
+    "time": "08:05",
+    "mode": "kr_premarket",
+    "url": "reports/2026-06-19-kr-pre.html",
+    "summary": "",
+    "kospi_pct": -0.0,
+    "kosdaq_pct": -0.0
+  },
+  {
+    "date": "2026-06-19",
     "time": "06:30",
     "mode": "us_morning",
     "url": "reports/2026-06-19-us.html",
@@ -527,15 +536,6 @@
     "mode": "us_morning",
     "url": "reports/2026-06-10-us.html",
     "summary": "미국 증시는 혼조세를 보이며 마감했습니다. 나스닥과 필라델피아반도체 지수가 하락한 반면, 다우 지수는 소폭 상승했습니다. 기술주와 반도체 섹터의 약세가 두드러졌으며, AI 관련 우려와 지정학적 이슈가 시장 전반에 영향을 미쳤습니다.",
-    "kospi_pct": null,
-    "kosdaq_pct": null
-  },
-  {
-    "date": "2026-06-09",
-    "time": "22:40",
-    "mode": "us_intraday",
-    "url": "reports/2026-06-09-us-mid.html",
-    "summary": "S&P500 7,457(+0.69%) · 나스닥 26,132(+0.78%). 강세 섹터: 2차전지/리튬, 반도체, 방산/우주항공.",
     "kospi_pct": null,
     "kosdaq_pct": null
   }
