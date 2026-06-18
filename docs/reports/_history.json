@@ -1,5 +1,14 @@
 [
   {
+    "date": "2026-06-19",
+    "time": "06:30",
+    "mode": "us_morning",
+    "url": "reports/2026-06-19-us.html",
+    "summary": "미국 증시는 AI 칩 거래 재개 기대감과 이란과의 관계 개선 조짐에 힘입어 전반적으로 상승 마감했습니다. 특히 필라델피아 반도체 지수가 6% 이상 급등하며 시장을 주도했으며, 기술주 전반의 강세가 두드러졌습니다. 금 가격은 3% 이상 하락했으며, 유가",
+    "kospi_pct": null,
+    "kosdaq_pct": null
+  },
+  {
     "date": "2026-06-18",
     "time": "22:40",
     "mode": "us_intraday",
@@ -527,15 +536,6 @@
     "mode": "us_intraday",
     "url": "reports/2026-06-09-us-mid.html",
     "summary": "S&P500 7,457(+0.69%) · 나스닥 26,132(+0.78%). 강세 섹터: 2차전지/리튬, 반도체, 방산/우주항공.",
-    "kospi_pct": null,
-    "kosdaq_pct": null
-  },
-  {
-    "date": "2026-06-09",
-    "time": "21:50",
-    "mode": "us_premarket",
-    "url": "reports/2026-06-09-us-pre.html",
-    "summary": "프리장에서 미국 증시는 반도체 섹터의 강한 반등에 힘입어 전반적으로 상승세를 보이고 있습니다. 특히 필라델피아 반도체 지수와 SOXL의 급등이 시장 분위기를 주도하고 있으며, 이는 AI 및 반도체 관련주들의 회복 기대감을 반영하는 것으로 보입니다. 다",
     "kospi_pct": null,
     "kosdaq_pct": null
   }
