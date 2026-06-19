@@ -1,5 +1,14 @@
 [
   {
+    "date": "2026-06-20",
+    "time": "07:00",
+    "mode": "us_morning",
+    "url": "reports/2026-06-20-us.html",
+    "summary": "미국 증시는 기술주 중심의 강세로 S&P500과 나스닥이 상승 마감했으며, 특히 필라델피아 반도체 지수가 큰 폭으로 올랐습니다. AI 관련주와 반도체 섹터가 시장을 주도했으며, 금 가격은 하락했습니다.",
+    "kospi_pct": null,
+    "kosdaq_pct": null
+  },
+  {
     "date": "2026-06-19",
     "time": "22:40",
     "mode": "us_intraday",
@@ -529,14 +538,5 @@
     "summary": "",
     "kospi_pct": -0.0,
     "kosdaq_pct": -0.0
-  },
-  {
-    "date": "2026-06-10",
-    "time": "22:40",
-    "mode": "us_intraday",
-    "url": "reports/2026-06-10-us-mid.html",
-    "summary": "S&P500 7,357(-0.40%) · 나스닥 25,557(-0.47%). 강세 섹터: 에너지, 금융, 헬스케어/바이오.",
-    "kospi_pct": null,
-    "kosdaq_pct": null
   }
 ]
