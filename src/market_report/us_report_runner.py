@@ -94,6 +94,7 @@ async def run_us_report(
         _collect_sector_leaders,
         _collect_us_screening,
         _render_candles,
+        _render_picks_charts,
         collect_us_snapshot,
     )
 
@@ -116,6 +117,9 @@ async def run_us_report(
 
     await _step(_collect_us_screening(snap, per_group=3), "screening")  # 하이브리드 ABCD(마감 일봉), 3개씩
     await _step(overlay(snap), "overlay")                               # 프리장/장중 시세 오버레이
+    if snap.us_top3:                                                    # Top3에 종가베팅 동일 차트(사용자 2026-06-18)
+        await _step(_render_picks_charts(
+            snap.us_top3, snap.generated_at.strftime("%Y-%m-%d"), ticker_key="symbol"), "top3_chart")
     await _step(_collect_sector_leaders(snap), "sector_leaders")        # 주요종목 = 강세4+약세4 섹터 대장
     await _step(_attach_kr_netbuy_to_picks(snap), "kr_netbuy")          # 픽별 서학개미 순매수금액(전일+5일)
     await _step(_collect_kr_us_netbuy(snap), "kr_netflow")              # 한국인 자금흐름 매수TOP5+매도TOP3(#318)

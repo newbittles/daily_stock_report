@@ -106,6 +106,9 @@ class MarketSnapshot:
     fear_greed: dict | None = None  # CNN 공포탐욕지수 {score, rating, rating_ko} (사용자 #331, 바닥 보조)
     ma_gaps: dict = field(default_factory=dict)  # 지수 이평선 이격도 {라벨: {5,10,20,60,120: %, rsi}} (사용자 #357)
     market_phase: dict = field(default_factory=dict)  # 시장 국면 신호등 {라벨: {emoji, name}} (사용자 #362)
+    # 지수 약세 경고 — 지수가 '하락전환'(정배열 깨짐 + 60일선 아래)이면 추천 섹션 상단 경고(사용자 2026-06-19).
+    # 개별종목 정배열 필터는 종목 자기 차트만 보지만, 종목이 속한 '지수'의 역풍은 안 봤던 공백 보완.
+    index_regime_warn: list[dict] = field(default_factory=list)  # [{label, emoji, name, g60}]
 
     # 테마
     top_themes: list[ThemeRank] = field(default_factory=list)

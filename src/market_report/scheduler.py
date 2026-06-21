@@ -51,8 +51,20 @@ async def _holdings_job() -> None:
         logger.exception("holdings_job_failed error=%s", exc)
 
 
-async def _us_premarket_job() -> None:
-    """미국장 장전 리포트 (평일 19:00 — 미국 프리장 시세 + 마감기준 ABCD). 웹+텔레그램."""
+async def _us_premarket_job(notice: bool = False) -> None:
+    """미국장 장전 리포트 (평일 19:00 — 미국 프리장 시세 + 마감기준 ABCD). 웹+텔레그램.
+
+    notice=True(첫 슬롯 19:00): 미국 휴장일이면 정규 리포트 대신 '휴장 안내'를 1회 발송.
+    notice=False(2차 21:50): 휴장이면 조용히 스킵(중복 안내 방지). 사용자 2026-06-19.
+    """
+    from src.market_report.holiday_calendar import us_holiday_name
+    hol = us_holiday_name()  # ET 기준 오늘
+    if hol:
+        if notice:
+            from src.market_report.telegram_notify import send_holiday_notice
+            await send_holiday_notice("us", hol)
+        logger.info("us_premarket_skip — 미국 휴장(%s) notice=%s", hol, notice)
+        return
     logger.info("us_premarket_job_start now=%s", datetime.now().isoformat())
     try:
         from src.market_report.us_premarket import run_us_premarket
@@ -139,6 +151,11 @@ async def _us_intraday_job(summer: bool | None = None) -> None:
     if summer is not None and summer != _us_is_dst():
         logger.info("us_intraday_skip — DST 불일치(summer=%s, dst=%s)", summer, _us_is_dst())
         return
+    from src.market_report.holiday_calendar import us_holiday_name
+    hol = us_holiday_name()
+    if hol:
+        logger.info("us_intraday_skip — 미국 휴장(%s)", hol)
+        return
     logger.info("us_intraday_job_start now=%s", datetime.now().isoformat())
     try:
         from src.market_report.us_intraday import run_us_intraday
@@ -150,6 +167,11 @@ async def _us_intraday_job(summer: bool | None = None) -> None:
 
 async def _midday_job() -> None:
     """장중 리포트 (평일 12:00) — 지수·수급·강세테마·핫종목·전날 top3 현황. 텔레그램 전용."""
+    from src.market_report.holiday_calendar import kr_holiday_name
+    hol = kr_holiday_name()
+    if hol:
+        logger.info("midday_skip — 한국 휴장(%s)", hol)
+        return
     logger.info("midday_job_start now=%s", datetime.now().isoformat())
     try:
         from src.market_report.midday import run_midday
@@ -160,7 +182,20 @@ async def _midday_job() -> None:
 
 
 async def _kr_morning_job(mode: str) -> None:
-    """한국장 프리(08:05)/장초(09:15) 리포트 (사용자 #404)."""
+    """한국장 프리(08:05)/장초(09:15) 리포트 (사용자 #404).
+
+    한국 휴장일이면 정규 리포트 대신 '휴장 안내'를 장전 슬롯(kr_premarket)에서 1회 발송하고
+    스킵한다. 장초(kr_open)는 조용히 스킵(중복 안내 방지). 사용자 2026-06-19.
+    08:05는 장 개시 전이라 데이터 신선도(is_kr_market_open_today)로는 판정 불가 → 달력 기준.
+    """
+    from src.market_report.holiday_calendar import kr_holiday_name
+    hol = kr_holiday_name()
+    if hol:
+        if mode == "kr_premarket":
+            from src.market_report.telegram_notify import send_holiday_notice
+            await send_holiday_notice("kr", hol)
+        logger.info("%s_skip — 한국 휴장(%s)", mode, hol)
+        return
     logger.info("%s_job_start now=%s", mode, datetime.now().isoformat())
     try:
         from src.market_report.kr_morning import run_kr_morning
@@ -272,11 +307,13 @@ def build_scheduler() -> AsyncIOScheduler:
     # 미국장 장전(프리장) 리포트 (평일 19:00 — 이른 프리장)
     scheduler.add_job(
         _us_premarket_job, CronTrigger(day_of_week="mon-fri", hour=19, minute=0, timezone=KST),
+        args=[True],  # 첫 슬롯 — 휴장 시 안내 1회 발송(사용자 2026-06-19)
         id="report_us_premarket", replace_existing=True, misfire_grace_time=900,
     )
     # 미국장 장전(프리장) 리포트 2차 (평일 21:50 — 개장 임박, 더 정확한 프리장 시세, 사용자 2026-06-05)
     scheduler.add_job(
         _us_premarket_job, CronTrigger(day_of_week="mon-fri", hour=21, minute=50, timezone=KST),
+        args=[False],  # 2차 — 휴장 시 조용히 스킵(안내 중복 방지)
         id="report_us_premarket_late", replace_existing=True, misfire_grace_time=900,
     )
     # 미국장 장중 리포트 — 개장 직후(변동 큼), DST 맞춰 1회: 섬머 22:40 / 일반 23:40 (사용자 2026-06-05)

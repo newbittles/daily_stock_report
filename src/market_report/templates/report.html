@@ -66,12 +66,27 @@ ${{ "{:,.2f}".format(item.price) }} <span class="{{ 'up-text' if pct >= 0 else '
 {%- set m = mkt(code) -%}
 {%- if m %}·{{ m }}{% endif -%}
 {%- endmacro -%}
+{# 지수 약세 경고 — 추천 종목이 속한 지수가 '하락전환'(정배열 깨짐·60일선 아래)이면 픽 상단 경고
+   (사용자 2026-06-19, 코스닥 반도체주 고점물림 피드백). 개별종목 정배열 필터는 종목 자기 차트만 보지만,
+   종목이 속한 '지수' 역풍을 명시. 추천 제외는 안 하고 경고만(근거 동반·참고용). #}
+{%- macro index_warn_banner(snap) -%}
+{%- if snap.index_regime_warn -%}
+<div style="margin:0.6rem 0;padding:9px 12px;border-radius:6px;background:rgba(229,72,77,0.12);border-left:4px solid var(--red,#e5484d);">
+  <div style="font-weight:800;color:var(--red,#e5484d);font-size:0.9rem;">⚠️ 지수 약세 주의</div>
+  <div style="font-size:0.84rem;margin-top:2px;">
+  {%- for w in snap.index_regime_warn %}{% if not loop.first %} · {% endif %}{{ w.emoji }} <strong>{{ w.label }}</strong> {{ w.name }}(정배열 깨짐·60일선 {% if w.g60 is not none %}{{ "{:+.1f}".format(w.g60) }}%{% else %}아래{% endif %}){%- endfor %}
+  </div>
+  <div style="font-size:0.78rem;color:var(--text-dim);margin-top:3px;">지수가 정배열을 잃고 60일선 아래로 떨어진 국면에서는 개별 종목이 좋아 보여도 지수 역풍에 고점 물릴 위험이 큽니다. 아래 추천은 참고용이며, 특히 해당 시장 종목은 비중·진입 시점에 유의하세요.</div>
+</div>
+{%- endif -%}
+{%- endmacro -%}
 {# ★ 오늘의 추천 Top3 섹션 — 배치 위치가 모드별로 달라 매크로화(사용자 2026-06-12:
    마감전 리포트는 지수·수급 바로 뒤, 그 외 모드는 기존 위치). #}
 {%- macro top3_section(snap) -%}
 {% if snap.top3 or snap.top3_excluded_limitup %}
     <section class="top3-sec">
       <h2><span class="icon">🏆</span>오늘의 추천 Top 3</h2>
+      {{ index_warn_banner(snap) }}
       {% for t in snap.top3 %}
       <div class="top3-card">
         <div class="top3-head">
@@ -93,6 +108,12 @@ ${{ "{:,.2f}".format(item.price) }} <span class="{{ 'up-text' if pct >= 0 else '
         {% if t.supply_str %}<div class="top3-reason" style="color:var(--green);">💰 {{ t.supply_str }}</div>{% endif %}
         {% if t.theme %}
         <div class="top3-reason">{{ '업종' if t.theme_kind == 'sector' else '테마' }}: {{ t.theme }} · 주도테마여부: <strong style="color:{{ 'var(--green)' if t.is_leading_theme else 'var(--text-mute)' }};">{{ 'O' if t.is_leading_theme else 'X' }}</strong></div>
+        {% endif %}
+        {% if t.chart_url %}
+        <div class="pick-chart">
+          <img src="{{ t.chart_url }}" alt="{{ t.name }} 차트" loading="lazy"
+               onclick="document.getElementById('lightbox-img').src=this.src;document.getElementById('lightbox').classList.add('active');">
+        </div>
         {% endif %}
       </div>
       {% endfor %}
@@ -780,6 +801,7 @@ ${{ "{:,.2f}".format(item.price) }} <span class="{{ 'up-text' if pct >= 0 else '
     {% if snap.us_top3 %}
     <section class="top3-sec">
       <h2><span class="icon">🏆</span>미국 추천 Top 3</h2>
+      {{ index_warn_banner(snap) }}
       {% for t in snap.us_top3 %}
       <div class="top3-card">
         <div class="top3-head">
@@ -796,6 +818,12 @@ ${{ "{:,.2f}".format(item.price) }} <span class="{{ 'up-text' if pct >= 0 else '
         {{ kr_nb(t) }}
         {% if t.reason %}<div class="top3-reason">{{ t.reason }}</div>{% endif %}
         {% if t.ai_summary %}<button type="button" class="ai-btn" onclick="showAI(this)" data-name="{{ t.name }}" data-summary="{{ t.ai_summary|e }}">🤖 AI요약</button>{% endif %}
+        {% if t.chart_url %}
+        <div class="pick-chart">
+          <img src="{{ t.chart_url }}" alt="{{ t.name }} 차트" loading="lazy"
+               onclick="document.getElementById('lightbox-img').src=this.src;document.getElementById('lightbox').classList.add('active');">
+        </div>
+        {% endif %}
       </div>
       {% endfor %}
     </section>

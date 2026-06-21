@@ -256,27 +256,35 @@ async def _render_candles(snap: MarketSnapshot) -> None:
     snap.candle_urls = {k: u for k, u in results if u}
 
 
-async def _render_pick_charts(snap: MarketSnapshot) -> None:
-    """후보 종목별 차트 생성 — 동기 함수를 to_thread로 병렬 처리."""
-    from src.market_report.chart import render_chart
+async def _render_picks_charts(picks: list[dict], date: str, ticker_key: str = "ticker") -> None:
+    """추천 리스트(종가베팅·Top3·US Top3)에 종가베팅 동일 차트(candidate 레이아웃) 부착.
 
-    date = snap.generated_at.strftime("%Y-%m-%d")
-    tasks = []
-    for p in snap.candidate_picks:
-        ticker = str(p.get("ticker", "")).strip()
+    KR(6자리 코드)·US(알파벳 심볼) 공용 — render_candidate_chart→_fetch_ohlcv가 US는 FDR로 처리.
+    ticker_key: KR='ticker', US='symbol'. 동기 함수를 to_thread로 병렬 처리. 각 pick에 chart_url 세팅.
+    """
+    valid, tasks = [], []
+    for p in picks:
+        ticker = str(p.get(ticker_key, "")).strip()
         name = str(p.get("name", "")).strip()
         if not ticker or not name:
+            p["chart_url"] = ""
             continue
+        valid.append(p)
         tasks.append(asyncio.to_thread(_render_chart_safe, ticker, name, date))
 
     results = await asyncio.gather(*tasks, return_exceptions=True)
-    # 각 pick에 chart_url 추가 (성공한 것만)
-    for p, result in zip(snap.candidate_picks, results):
+    for p, result in zip(valid, results):
         if isinstance(result, Exception) or result is None:
             p["chart_url"] = ""
-            logger.warning("chart_skip ticker=%s reason=%s", p.get("ticker"), result)
+            logger.warning("chart_skip ticker=%s reason=%s", p.get(ticker_key), result)
         else:
             p["chart_url"] = result
+
+
+async def _render_pick_charts(snap: MarketSnapshot) -> None:
+    """종가베팅 후보 차트 생성 — _render_picks_charts(candidate_picks) 래퍼."""
+    await _render_picks_charts(
+        snap.candidate_picks, snap.generated_at.strftime("%Y-%m-%d"), ticker_key="ticker")
 
 
 def _render_chart_safe(ticker: str, name: str, date: str) -> str | None:
@@ -1015,14 +1023,27 @@ def _market_phase(label: str, gaps: dict) -> tuple[str, str]:
     return ("🟢", "정상")
 
 
+# 지수 약세 경고를 띄울 국면 — '하락전환'(60일선 아래 + 하락방향 + 정배열 깨짐).
+# 정확히 사용자가 지적한 "정배열 아님 + 60일선 저항받고 떨어짐" 상황(사용자 2026-06-19).
+_WEAK_INDEX_PHASES = {"하락전환"}
+
+
 def _fill_market_phase(snap: MarketSnapshot) -> None:
-    """snap.ma_gaps 기반으로 지수별 시장 국면 신호등 채움 → snap.market_phase {라벨:{emoji,name}}."""
+    """snap.ma_gaps 기반으로 지수별 시장 국면 신호등 + 지수 약세 경고 채움.
+
+    → snap.market_phase {라벨:{emoji,name}} / snap.index_regime_warn [{label,emoji,name,g60}].
+    약세 경고는 market_phase를 계산하는 모든 경로(KR pre/post/morning, US morning)에서 함께 채워져
+    추천 섹션 상단 경고로 노출된다(사용자 2026-06-19, 코스닥 반도체주 고점물림 피드백)."""
     out: dict[str, dict] = {}
+    warns: list[dict] = []
     for label, gaps in (snap.ma_gaps or {}).items():
         if gaps:
             em, nm = _market_phase(label, gaps)
             out[label] = {"emoji": em, "name": nm}
+            if nm in _WEAK_INDEX_PHASES:
+                warns.append({"label": label, "emoji": em, "name": nm, "g60": gaps.get(60)})
     snap.market_phase = out
+    snap.index_regime_warn = warns
 
 
 async def _index_ma_gaps(symbol: str) -> dict:
@@ -1689,6 +1710,13 @@ async def run_full(
             await _collect_us_screening(snap, per_group=3)  # 마감 리포트 ABCD 3개(사용자 2026-06-05)
         except Exception as exc:
             logger.warning("us_morning_screening_failed error=%s", exc)
+        # 미국 추천 Top3에도 종가베팅과 동일한 차트(candidate 레이아웃) 부착 — symbol 키. 사용자 2026-06-18.
+        try:
+            if snap.us_top3:
+                await _render_picks_charts(
+                    snap.us_top3, snap.generated_at.strftime("%Y-%m-%d"), ticker_key="symbol")
+        except Exception as exc:
+            logger.warning("us_top3_chart_failed error=%s", exc)
         try:
             await _collect_sector_leaders(snap)  # 주요종목 = 섹터 대장
         except Exception as exc:
@@ -1909,6 +1937,14 @@ async def run_full(
                         [t["name"] for t in snap.top3], len(snap.top3_excluded_limitup), len(_kr_streaks))
         except Exception as exc:
             logger.warning("top3_failed error=%s", exc)
+
+        # Top3에도 종가베팅과 동일한 차트(candidate 레이아웃) 부착 — 마감 전만(종가베팅과 동일 정책). 사용자 2026-06-18.
+        if snap.mode == "pre_close" and snap.top3:
+            try:
+                await _render_picks_charts(
+                    snap.top3, snap.generated_at.strftime("%Y-%m-%d"), ticker_key="ticker")
+            except Exception as exc:  # noqa: BLE001
+                logger.warning("top3_chart_failed error=%s", exc)
 
         # 🎯 종가베팅 5선 — 점수기반 선정(B 눌림목 가산 + 4H 볼밴상단 패널티), Top3와 중복 제외.
         # 선정은 결정론(select_closing_bets), AI는 사후 주석만(rationale/risk/theme_peers). 사용자 2026-06-12.

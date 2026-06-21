@@ -82,6 +82,9 @@ def _format_strategy_holdings(snap: MarketSnapshot, *, private: bool = False) ->
     A/B/C/D 전략 스크린은 텔레그램에서 제외 — 웹 '전체 리포트 보기'에서만 표시(메시지 간결화).
     """
     lines: list[str] = []
+    # 지수 약세 경고 — 추천 위에 먼저(사용자 2026-06-19, 코스닥 반도체주 고점물림 피드백)
+    if getattr(snap, "top3", None):
+        lines.extend(_format_index_regime_warn(snap))
     # ★ 오늘의 추천 Top3
     if getattr(snap, "top3", None):
         lines.append("🏆 *오늘의 추천 Top 3*")
@@ -126,6 +129,27 @@ def _phase_suffix(snap: MarketSnapshot, label: str) -> str:
     """지수 줄에 병기할 신호등(이모지+국면명). 가시성 위해 이격 숫자는 빼고 여기만 표시(사용자 #426)."""
     ph = (getattr(snap, "market_phase", None) or {}).get(label)
     return f" {ph['emoji']} {ph['name']}" if ph else ""
+
+
+def _format_index_regime_warn(snap: MarketSnapshot) -> list[str]:
+    """⚠️ 지수 약세 경고 — 지수가 '하락전환'(정배열 깨짐·60일선 아래)이면 추천 위에 경고(사용자 2026-06-19).
+
+    개별종목 정배열 필터는 종목 자기 차트만 보지만, 종목이 속한 '지수' 역풍은 안 봤던 공백 보완.
+    추천 제외는 안 하고 경고만(근거 동반·참고용). 없으면 []."""
+    warns = getattr(snap, "index_regime_warn", None) or []
+    if not warns:
+        return []
+    parts = []
+    for w in warns:
+        g60 = w.get("g60")
+        gap = f"60일선 {g60:+.1f}%" if g60 is not None else "60일선 아래"
+        parts.append(f"{w['emoji']}{w['label']} {w['name']}(정배열 깨짐·{gap})")
+    return [
+        f"⚠️ *지수 약세 주의* — {' · '.join(parts)}",
+        "   지수가 정배열을 잃고 60일선 아래로 떨어진 국면 — 종목이 좋아 보여도 "
+        "지수 역풍에 고점 물릴 위험. 아래 추천은 참고용, 비중·진입 시점 유의.",
+        "",
+    ]
 
 
 def _overnight_quote_line(q: dict) -> str:
@@ -838,6 +862,49 @@ async def _wait_pages_built(url: str, timeout: float = 150.0, interval: float = 
             await asyncio.sleep(interval)
     logger.warning("wait_pages_timeout url=%s", url)
     return False
+
+
+async def send_holiday_notice(market: str, holiday_name: str) -> bool:
+    """증시 휴장 안내 발송 — "무슨 날 때문에 휴장"인지 사유 동반(사용자 2026-06-19).
+
+    market: "kr" 또는 "us". 장전 리포트 시각에 1회 발송(정규 리포트 대체).
+    오너/공개판 구분 없이 모든 허용 chat_id에 동일 안내. 성공 여부 반환.
+    """
+    from datetime import datetime
+
+    settings = get_settings()
+    chat_ids = settings.allowed_chat_ids()
+    if not chat_ids:
+        logger.warning("holiday_notice_no_chat_id market=%s", market)
+        return False
+
+    date = datetime.now().strftime("%Y-%m-%d")
+    if market == "us":
+        text = (
+            f"🇺🇸 *미국 증시 휴장* — {date}\n\n"
+            f"오늘(미국 현지)은 *{holiday_name}*(으)로 미국 증시가 휴장입니다.\n"
+            f"장전·장중·마감 리포트는 발송하지 않습니다.\n\n"
+            f"_※ 참고용 정보._"
+        )
+    else:
+        text = (
+            f"🇰🇷 *한국 증시 휴장* — {date}\n\n"
+            f"오늘은 *{holiday_name}*(으)로 한국 증시가 휴장입니다.\n"
+            f"정규 리포트는 발송하지 않습니다.\n\n"
+            f"_※ 참고용 정보._"
+        )
+
+    bot = Bot(token=settings.telegram_bot_token)
+    notifier = TelegramNotifier(bot=bot)
+    ok_any = False
+    for cid in chat_ids:
+        try:
+            if await notifier.send(str(cid), text):
+                ok_any = True
+        except Exception as exc:  # noqa: BLE001
+            logger.error("holiday_notice_failed market=%s chat_id=%s error=%s", market, cid, exc)
+    logger.info("holiday_notice_sent market=%s name=%s ok=%s", market, holiday_name, ok_any)
+    return ok_any
 
 
 async def send_report(snap: MarketSnapshot) -> bool:
