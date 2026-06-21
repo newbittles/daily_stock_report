@@ -1,5 +1,14 @@
 [
   {
+    "date": "2026-06-22",
+    "time": "08:05",
+    "mode": "kr_premarket",
+    "url": "reports/2026-06-22-kr-pre.html",
+    "summary": "",
+    "kospi_pct": -0.0,
+    "kosdaq_pct": -0.0
+  },
+  {
     "date": "2026-06-20",
     "time": "07:00",
     "mode": "us_morning",
@@ -529,14 +538,5 @@
     "summary": "미국 증시는 지정학적 긴장 고조와 인플레이션 우려로 인해 전반적으로 하락 마감했습니다. 특히 기술주와 반도체 섹터가 큰 폭의 약세를 보였으며, 에너지 섹터만이 소폭 상승하며 방어적인 모습을 나타냈습니다. 시장은 이란 공습과 CPI 발표에 따른 변동성 ",
     "kospi_pct": null,
     "kosdaq_pct": null
-  },
-  {
-    "date": "2026-06-11",
-    "time": "08:05",
-    "mode": "kr_premarket",
-    "url": "reports/2026-06-11-kr-pre.html",
-    "summary": "",
-    "kospi_pct": -0.0,
-    "kosdaq_pct": -0.0
   }
 ]
