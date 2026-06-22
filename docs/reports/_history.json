@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-06-23",
+    "time": "08:05",
+    "mode": "kr_premarket",
+    "url": "reports/2026-06-23-kr-pre.html",
+    "summary": "",
+    "kospi_pct": null,
+    "kosdaq_pct": null
+  },
+  {
+    "date": "2026-06-23",
     "time": "06:30",
     "mode": "us_morning",
     "url": "reports/2026-06-23-us.html",
@@ -527,15 +536,6 @@
     "mode": "us_morning",
     "url": "reports/2026-06-12-us.html",
     "summary": "미국 증시는 전반적으로 강세를 보이며 S&P500, 나스닥, 다우 지수가 모두 상승 마감했습니다. 특히 반도체 섹터가 7.91% 급등하며 시장을 주도했으며, 빅테크 종목들도 전반적으로 강세를 나타냈습니다. 지정학적 긴장 완화 기대감과 반도체 업황 개선",
-    "kospi_pct": null,
-    "kosdaq_pct": null
-  },
-  {
-    "date": "2026-06-11",
-    "time": "22:40",
-    "mode": "us_intraday",
-    "url": "reports/2026-06-11-us-mid.html",
-    "summary": "미국 증시는 혼조세를 보이며 마감했습니다. S&P500과 나스닥은 소폭 상승했으나, 다우 지수는 상대적으로 강한 상승세를 기록했습니다. 특히 반도체 섹터의 강세가 두드러졌으며, 이는 기술주 전반의 상승을 견인했습니다. 지정학적 긴장 완화 기대감이 시장",
     "kospi_pct": null,
     "kosdaq_pct": null
   }
