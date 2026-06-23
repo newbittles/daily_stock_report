@@ -1,5 +1,14 @@
 [
   {
+    "date": "2026-06-24",
+    "time": "06:30",
+    "mode": "us_morning",
+    "url": "reports/2026-06-24-us.html",
+    "summary": "미국 증시는 필라델피아 반도체 지수의 급락(-7.87%)에 영향을 받아 전반적으로 하락세를 보였습니다. 특히 기술/IT 섹터와 반도체 관련주들이 큰 폭으로 하락하며 시장 전반을 끌어내렸습니다. 금 가격(-1.26%)과 유가(WTI, -2.37%) 또한",
+    "kospi_pct": null,
+    "kosdaq_pct": null
+  },
+  {
     "date": "2026-06-23",
     "time": "22:40",
     "mode": "us_intraday",
@@ -527,15 +536,6 @@
     "mode": "us_morning",
     "url": "reports/2026-06-13-us.html",
     "summary": "미국 증시는 전반적으로 상승 마감했습니다. S&P500, 나스닥, 다우 지수가 모두 강세를 보였으며, 특히 필라델피아 반도체 지수가 큰 폭으로 올랐습니다. SpaceX의 IPO 성공과 이란과의 평화 협상 기대감이 시장 전반에 긍정적인 영향을 미쳤습니다",
-    "kospi_pct": null,
-    "kosdaq_pct": null
-  },
-  {
-    "date": "2026-06-12",
-    "time": "22:40",
-    "mode": "us_intraday",
-    "url": "reports/2026-06-12-us-mid.html",
-    "summary": "미국 증시는 혼조세를 보이며 마감했습니다. 다우 지수는 상승했지만, 나스닥은 소폭 하락하며 기술주 전반의 약세를 반영했습니다. SpaceX 상장 기대감과 중동 평화 협상 기대감이 시장 전반의 변동성을 키웠습니다.",
     "kospi_pct": null,
     "kosdaq_pct": null
   }
