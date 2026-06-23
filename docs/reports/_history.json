@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-06-24",
+    "time": "08:05",
+    "mode": "kr_premarket",
+    "url": "reports/2026-06-24-kr-pre.html",
+    "summary": "",
+    "kospi_pct": null,
+    "kosdaq_pct": null
+  },
+  {
+    "date": "2026-06-24",
     "time": "06:30",
     "mode": "us_morning",
     "url": "reports/2026-06-24-us.html",
@@ -529,14 +538,5 @@
     "summary": "",
     "kospi_pct": -0.0,
     "kosdaq_pct": -0.0
-  },
-  {
-    "date": "2026-06-13",
-    "time": "06:30",
-    "mode": "us_morning",
-    "url": "reports/2026-06-13-us.html",
-    "summary": "미국 증시는 전반적으로 상승 마감했습니다. S&P500, 나스닥, 다우 지수가 모두 강세를 보였으며, 특히 필라델피아 반도체 지수가 큰 폭으로 올랐습니다. SpaceX의 IPO 성공과 이란과의 평화 협상 기대감이 시장 전반에 긍정적인 영향을 미쳤습니다",
-    "kospi_pct": null,
-    "kosdaq_pct": null
   }
 ]
