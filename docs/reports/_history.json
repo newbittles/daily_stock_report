@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-06-24",
+    "time": "14:50",
+    "mode": "pre_close",
+    "url": "reports/2026-06-24-pre.html",
+    "summary": "코스피는 혼조세를 보이며 관망세가 짙은 가운데, 일부 테마는 강한 상승세를 보이고 있습니다.",
+    "kospi_pct": null,
+    "kosdaq_pct": null
+  },
+  {
+    "date": "2026-06-24",
     "time": "13:00",
     "mode": "us_afterhours",
     "url": "reports/2026-06-24-us-after.html",
@@ -529,14 +538,5 @@
     "summary": "오늘 코스피는 미·이란 종전 기대감에 5% 넘게 급등하며 8500선을 돌파했고, 항공, 자동차, 조선 등 경기민감 업종이 강세를 보였습니다.",
     "kospi_pct": 5.2,
     "kosdaq_pct": 0.48
-  },
-  {
-    "date": "2026-06-15",
-    "time": "14:50",
-    "mode": "pre_close",
-    "url": "reports/2026-06-15-pre.html",
-    "summary": "코스피는 강한 상승세를 보이며 8,500선을 돌파했고, 코스닥은 소폭 상승하며 혼조세를 보이고 있습니다.",
-    "kospi_pct": 4.87,
-    "kosdaq_pct": 0.22
   }
 ]
