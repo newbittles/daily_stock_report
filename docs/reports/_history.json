@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-06-26",
+    "time": "19:00",
+    "mode": "us_premarket",
+    "url": "reports/2026-06-26-us-pre.html",
+    "summary": "현재 미국 프리장에서는 기술주 전반에 대한 차익 실현 매물이 출회되며 약세를 보이고 있습니다. 특히 반도체 섹터의 하락세가 두드러지며 시장 전반의 투자 심리를 위축시키고 있습니다. 연준의 금리 인상 가능성 상승이라는 거시 경제적 불확실성 또한 시장 하",
+    "kospi_pct": null,
+    "kosdaq_pct": null
+  },
+  {
+    "date": "2026-06-26",
     "time": "16:00",
     "mode": "post_close",
     "url": "reports/2026-06-26-post.html",
@@ -529,14 +538,5 @@
     "summary": "",
     "kospi_pct": -0.0,
     "kosdaq_pct": -0.0
-  },
-  {
-    "date": "2026-06-18",
-    "time": "06:30",
-    "mode": "us_morning",
-    "url": "reports/2026-06-18-us.html",
-    "summary": "미국 증시는 연준의 금리 인상 가능성 시사로 인해 전반적으로 하락 마감했습니다. 특히 빅테크와 경기소비재 섹터가 큰 폭으로 하락한 가운데, 반도체와 방산 섹터는 강세를 보였습니다. 금과 유가 모두 하락세를 나타냈습니다.",
-    "kospi_pct": null,
-    "kosdaq_pct": null
   }
 ]
