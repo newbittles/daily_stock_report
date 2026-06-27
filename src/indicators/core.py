@@ -55,6 +55,31 @@ def moving_average(values: list[float], period: int) -> list[float | None]:
     return result
 
 
+def relative_strength(
+    stock_closes: list[float], index_closes: list[float]
+) -> list[float | None]:
+    """상대강도(RS) — 종목/지수 비율을 첫 유효일=100으로 정규화한 시계열 (순수).
+
+    RS가 오르면 시장(지수)보다 강함, 내리면 약함. 가격은 신고가인데 RS가 꺾이면
+    '시장대비 동력 소진'(약세 RS 다이버전스). 호출측은 종목·지수 종가를 **같은 날짜로
+    정렬**해 동일 길이로 넘겨야 한다(domain은 정렬·외부조회 안 함).
+    index 결측/0 또는 종목 결측 구간은 None. 길이는 min(두 입력) 기준.
+    """
+    n = min(len(stock_closes), len(index_closes))
+    out: list[float | None] = []
+    base: float | None = None
+    for i in range(n):
+        s, x = stock_closes[i], index_closes[i]
+        if s is None or x is None or x == 0:
+            out.append(None)
+            continue
+        ratio = s / x
+        if base is None:
+            base = ratio
+        out.append(ratio / base * 100 if base else None)
+    return out
+
+
 def average_true_range(
     highs: list[float], lows: list[float], closes: list[float], period: int = 14
 ) -> float | None:

@@ -140,6 +140,14 @@ async def diagnose_holdings(adapter, holdings: list[dict] | None = None) -> list
                     r["tp_strong"] = True
         except Exception as exc:  # noqa: BLE001
             logger.warning("holdings_tp_4h_failed error=%s", exc)
+
+    # RS 약세 다이버전스 + 60선 복귀실패(lower high) 경고 태그 — 보유 모멘텀주 천장 신호(사용자 2026-06-22).
+    # 가중치0 경고(매도 강제 아님). best-effort(FDR 일봉+KOSPI) — 실패해도 일반 진단으로 진행.
+    try:
+        from src.market_report.momentum_tags import tag_momentum_warn
+        await tag_momentum_warn(results, key="ticker")
+    except Exception as exc:  # noqa: BLE001
+        logger.warning("holdings_momentum_warn_failed error=%s", exc)
     return results
 
 

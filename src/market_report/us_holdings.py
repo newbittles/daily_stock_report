@@ -83,6 +83,12 @@ async def collect_us_holdings_status() -> list[dict]:
         s = build_us_holding_status(h, candles)
         if s is not None:
             out.append(s)
+    # RS 다이버전스 + 60선 복귀실패 경고 태그(S&P500 기준, 사용자 2026-06-22, 가중치0)
+    try:
+        from src.market_report.momentum_tags import tag_momentum_warn
+        await tag_momentum_warn(out, key="ticker", benchmark="US500")
+    except Exception as exc:  # noqa: BLE001
+        logger.warning("us_holdings_momentum_warn_failed error=%s", exc)
     return out
 
 

@@ -1523,6 +1523,12 @@ async def _collect_us_screening(snap: MarketSnapshot, *, per_group: int = 5) -> 
                     await _tag_macd_warn(_lst, key="symbol")
             except Exception as exc:  # noqa: BLE001
                 logger.warning("us_macd_warn_failed error=%s", exc)
+            try:  # US RS 다이버전스 + 60선 복귀실패 경고/필터 태그(S&P500 기준, 사용자 2026-06-22, 가중치0)
+                from src.market_report.momentum_tags import tag_momentum_warn
+                for _lst in (snap.us_top3, snap.us_sector_leaders, snap.us_bigtech):
+                    await tag_momentum_warn(_lst, key="symbol", benchmark="US500")
+            except Exception as exc:  # noqa: BLE001
+                logger.warning("us_momentum_warn_failed error=%s", exc)
     except Exception as exc:  # noqa: BLE001
         logger.warning("us_e_picks_failed error=%s", exc)
 
@@ -1925,6 +1931,11 @@ async def run_full(
             snap.top3_excluded_limitup = [r for r in _ranked_all if r.get("change_pct", 0) >= _LIMITUP][:5]
             await _inject_supply_streak(snap, adapter)  # Top3 표시용 연속 순매수일(supply_str)
             await _tag_macd_warn(snap.top3)  # MACD 고점 다이버전스 '고점주의' 약신호(사용자 2026-06-11)
+            try:  # RS 약세 다이버전스 + 60선 복귀실패(lower high) 경고/필터 태그(사용자 2026-06-22, 가중치0)
+                from src.market_report.momentum_tags import tag_momentum_warn
+                await tag_momentum_warn(snap.top3)
+            except Exception as exc:  # noqa: BLE001
+                logger.warning("kr_top3_momentum_warn_failed error=%s", exc)
             for _t in snap.top3_excluded_limitup:  # 상한가 제외 종목도 동일 지표(연속 순매수일) 표기
                 _s = _kr_streaks.get(_t["ticker"]) or {}
                 _ps = []
@@ -1973,6 +1984,11 @@ async def run_full(
                     p.setdefault("theme_peers", [])
                 await annotate_closing_bets(snap)            # AI 사후 주석(키없음/한도 시 폴백)
                 await _render_pick_charts(snap)              # 후보 차트(2달·전략마커·MACD)
+                try:  # RS 다이버전스 + 60선 복귀실패 경고/필터 태그(사용자 2026-06-22, 가중치0)
+                    from src.market_report.momentum_tags import tag_momentum_warn
+                    await tag_momentum_warn(snap.candidate_picks)
+                except Exception as exc:  # noqa: BLE001
+                    logger.warning("closing_bets_momentum_warn_failed error=%s", exc)
                 logger.info("closing_bets_ready picks=%s excl_limitup=%d",
                             [p["name"] for p in snap.candidate_picks],
                             len(snap.candidates_excluded_limitup))

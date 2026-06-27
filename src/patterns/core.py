@@ -8,7 +8,14 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 
 from src.datasource.base import Candle
-from src.indicators.core import bollinger_bands, ichimoku, macd, moving_average, rsi
+from src.indicators.core import (
+    bollinger_bands,
+    ichimoku,
+    macd,
+    moving_average,
+    relative_strength,
+    rsi,
+)
 
 
 @dataclass
@@ -1546,3 +1553,108 @@ def bullish_divergence(
         return PatternResult(
             True, f"강세 다이버전스({mode}) — 가격 저점↓·지표 저점↑(하락 동력 약화, 반등 신호)", metrics)
     return PatternResult(False, "다이버전스 없음", metrics)
+
+
+def rs_divergence(
+    candles: list[Candle], index_closes: list[float],
+    lookback: int = 120, near_high_tol: float = 0.05,
+    confirm_tol: float = 0.05, div_tol: float = 0.10,
+) -> PatternResult:
+    """RS(시장대비 상대강도) 다이버전스 — 가격은 신고가 근처인데 RS는 이미 꺾였나? (순수, 참고용)
+
+    사용자 2026-06-22 연구: 천장 친 테마주는 '겉으론 신고가인데 속(RS)은 반년 전 죽은' 상태였고,
+    살아남은 종목(하이닉스)만 RS 고점=가격 고점 동행. 두 상태를 한 함수로 판정한다.
+      - rs_warn(matched): 가격이 최근 lookback 고점의 -near_high_tol 이내(신고가권)인데
+        RS가 자기 최근 고점 대비 div_tol 이상 낮음 → 약세 RS 다이버전스(천장 경고).
+      - confirming(metrics): RS가 자기 최근 고점의 -confirm_tol 이내(시장 압도 지속) → 눌림 추매 신뢰 가점.
+    index_closes는 candles와 **같은 날짜로 정렬된 지수 종가**(호출측 책임). domain은 조회 안 함.
+
+    ⚠️ 가중치 0 참고 신호. OOS 백테스트(2026-06-22, 41종목·82이벤트): 방향은 맞으나
+    표본 작아 엣지 약함 → 매수/매도 강제 아님, 경고/필터 태그로만 사용.
+    """
+    closes = _closes(candles)
+    n = min(len(closes), len(index_closes))
+    if n < 60:
+        return PatternResult(False, "데이터 부족(60봉)", {"confirming": 0})
+    rs = relative_strength(closes[-n:], index_closes[-n:])
+    rs_valid = [v for v in rs[-lookback:] if v is not None]
+    rs_now = rs[-1]
+    if rs_now is None or len(rs_valid) < 20:
+        return PatternResult(False, "RS 계산 불가", {"confirming": 0})
+    rs_hi = max(rs_valid)
+    price = closes[-1]
+    hi = max(closes[-lookback:])
+    near_high = price >= hi * (1 - near_high_tol)
+    rs_from_hi = (rs_now / rs_hi - 1) * 100 if rs_hi else 0.0  # 음수 = RS가 고점서 후퇴
+    confirming = bool(rs_now >= rs_hi * (1 - confirm_tol))
+    metrics = {
+        "rs_now": round(rs_now, 1), "rs_hi": round(rs_hi, 1),
+        "rs_from_hi_pct": round(rs_from_hi, 1),
+        "near_high": 1 if near_high else 0,
+        "confirming": 1 if confirming else 0,
+    }
+    if near_high and rs_now < rs_hi * (1 - div_tol):
+        return PatternResult(
+            True,
+            f"RS 약세 다이버전스 — 가격 신고가권인데 RS는 고점대비 {rs_from_hi:.0f}%(시장대비 동력 소진, 천장 주의)",
+            metrics)
+    if confirming:
+        return PatternResult(
+            False, f"RS 강세 유지 (고점대비 {rs_from_hi:+.0f}% — 시장 압도)", metrics)
+    return PatternResult(False, "RS 중립", metrics)
+
+
+def ma60_recovery_failure(
+    candles: list[Candle], ma_period: int = 60,
+    lookback: int = 120, breach_window: int = 20, rise_min_lookback: int = 60,
+) -> PatternResult:
+    """60선 이탈 후 '직전 고점 복귀 실패'(lower high) — 추세 훼손 경고 (순수, 참고용).
+
+    사용자 2026-06-22 연구: 상승추세 종목의 60선 '터치' 자체는 매수자리(하이닉스 8/8 신고가 복귀).
+    매도 경고는 '터치'가 아니라 **이탈 후 직전 고점 복귀 실패(lower high)** = 그 첫 복귀실패일이
+    사실상 추세 사망일. 본 함수는 그 상태를 판정한다(매도 강제 아님 — 경고 배지용).
+
+    조건(모두): ① 최근 breach_window일 내 종가 60선 이탈 이력 ② 이탈 직전 상승추세
+    (60선이 rise_min_lookback 구간 우상향) ③ 이탈 이후 지금까지 직전 고점 미복귀 + 현재가 < 직전 고점.
+
+    ⚠️ 가중치 0 참고 신호. OOS 백테스트(2026-06-22): '복귀 실패=계속 하락'은 강세장에서
+    오히려 반등(미통과) → 하드 매도 금지, 추세 훼손 '경고'로만.
+    """
+    closes = _closes(candles)
+    highs = _highs(candles)
+    n = len(closes)
+    if n < ma_period + 30:
+        return PatternResult(False, "데이터 부족", {"failed": 0})
+    ma60 = moving_average(closes, ma_period)
+    # 최근 breach_window일 내 가장 최근 60선 이탈일
+    breach_idx = None
+    for i in range(n - 1, max(n - breach_window - 1, ma_period) - 1, -1):
+        if ma60[i] is not None and closes[i] < ma60[i]:
+            breach_idx = i
+            break
+    if breach_idx is None:
+        return PatternResult(False, "최근 60선 이탈 없음", {"failed": 0})
+    lo = max(0, breach_idx - lookback)
+    prior_high = max(highs[lo:breach_idx]) if breach_idx > lo else max(highs[:breach_idx + 1])
+    # 이탈 직전 상승추세 — 60선 우상향
+    rl = max(0, breach_idx - rise_min_lookback)
+    rising = (ma60[breach_idx] is not None and ma60[rl] is not None
+              and ma60[breach_idx] > ma60[rl])
+    reclaimed = any(closes[j] >= prior_high for j in range(breach_idx + 1, n))
+    price = closes[-1]
+    breach_age = n - 1 - breach_idx
+    from_prior = (price / prior_high - 1) * 100 if prior_high else 0.0
+    metrics = {
+        "prior_high": round(prior_high, 1), "price": round(price, 1),
+        "from_prior_high_pct": round(from_prior, 1),
+        "breach_age": breach_age,
+        "reclaimed": 1 if reclaimed else 0,
+        "failed": 0,
+    }
+    if rising and not reclaimed and price < prior_high:
+        metrics["failed"] = 1
+        return PatternResult(
+            True,
+            f"60선 이탈 후 직전고점 복귀 실패 (lower high, 고점대비 {from_prior:.0f}% — 추세 훼손 경고)",
+            metrics)
+    return PatternResult(False, "복귀 실패 아님(눌림 또는 복귀)", metrics)
