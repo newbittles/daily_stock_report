@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-06-29",
+    "time": "22:40",
+    "mode": "us_intraday",
+    "url": "reports/2026-06-29-us-mid.html",
+    "summary": "미국 증시는 기술주 강세에 힘입어 전반적으로 상승 마감했습니다. 특히 빅테크와 반도체 관련주들이 두드러진 오름세를 보였으며, 경기소비재 및 2차전지 섹터도 강세를 나타냈습니다. 유가(WTI)는 1.53% 상승한 $70.3를 기록했습니다.",
+    "kospi_pct": null,
+    "kosdaq_pct": null
+  },
+  {
+    "date": "2026-06-29",
     "time": "21:50",
     "mode": "us_premarket",
     "url": "reports/2026-06-29-us-pre.html",
@@ -529,14 +538,5 @@
     "summary": "",
     "kospi_pct": -0.0,
     "kosdaq_pct": -0.0
-  },
-  {
-    "date": "2026-06-19",
-    "time": "06:30",
-    "mode": "us_morning",
-    "url": "reports/2026-06-19-us.html",
-    "summary": "미국 증시는 AI 칩 거래 재개 기대감과 이란과의 관계 개선 조짐에 힘입어 전반적으로 상승 마감했습니다. 특히 필라델피아 반도체 지수가 6% 이상 급등하며 시장을 주도했으며, 기술주 전반의 강세가 두드러졌습니다. 금 가격은 3% 이상 하락했으며, 유가",
-    "kospi_pct": null,
-    "kosdaq_pct": null
   }
 ]
