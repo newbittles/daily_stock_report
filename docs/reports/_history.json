@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-07-01",
+    "time": "19:00",
+    "mode": "us_premarket",
+    "url": "reports/2026-07-01-us-pre.html",
+    "summary": "현재 미국 프리장 시장은 혼조세를 보이고 있습니다. 기술주 전반의 상승세가 둔화되는 가운데, 필라델피아 반도체 지수는 강세를 보이며 시장을 지지하고 있습니다. 투자자들은 연준의 신호와 노동 데이터 발표를 앞두고 관망세를 유지하는 분위기입니다.",
+    "kospi_pct": null,
+    "kosdaq_pct": null
+  },
+  {
+    "date": "2026-07-01",
     "time": "16:00",
     "mode": "post_close",
     "url": "reports/2026-07-01-post.html",
@@ -527,15 +536,6 @@
     "mode": "kr_premarket",
     "url": "reports/2026-06-23-kr-pre.html",
     "summary": "",
-    "kospi_pct": null,
-    "kosdaq_pct": null
-  },
-  {
-    "date": "2026-06-23",
-    "time": "06:30",
-    "mode": "us_morning",
-    "url": "reports/2026-06-23-us.html",
-    "summary": "미국 증시는 혼조세를 보이며 S&P500과 나스닥은 하락했으나 다우 지수는 소폭 상승했습니다. 반도체 섹터가 강세를 보이며 필라델피아 반도체 지수와 관련 ETF가 상승세를 이끌었으며, 통신 서비스 섹터는 하락했습니다. 금 가격은 하락했으며 WTI 유가",
     "kospi_pct": null,
     "kosdaq_pct": null
   }
