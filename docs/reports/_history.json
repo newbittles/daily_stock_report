@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-07-02",
+    "time": "11:40",
+    "mode": "midday",
+    "url": "reports/2026-07-02-midday.html",
+    "summary": "오늘 한국 증시는 반도체 업종의 약세와 외국인 매도세에 지수가 큰 폭으로 하락했습니다. 건설 중소형, 은행, 호텔/리조트 등 일부 테마는 강세를 보였으나 시장 전반의 하락세를 막지는 못했습니다. SK하이닉스는 장중 큰 폭의 하락 후 일부 반등하는 모습",
+    "kospi_pct": -2.91,
+    "kosdaq_pct": -3.99
+  },
+  {
+    "date": "2026-07-02",
     "time": "09:15",
     "mode": "kr_open",
     "url": "reports/2026-07-02-kr-open.html",
@@ -527,15 +536,6 @@
     "mode": "post_close",
     "url": "reports/2026-06-23-post.html",
     "summary": "코스피는 외국인 순매수세에 힘입어 상승 마감했으나, 코스닥은 개인 매도 물량 출회로 하락했습니다. 반도체와 이차전지 관련주가 시장을 주도했습니다.",
-    "kospi_pct": null,
-    "kosdaq_pct": null
-  },
-  {
-    "date": "2026-06-23",
-    "time": "14:50",
-    "mode": "pre_close",
-    "url": "reports/2026-06-23-pre.html",
-    "summary": "코스피는 혼조세, 코스닥은 소폭 상승하며 마감 앞두고 관망세 짙어져",
     "kospi_pct": null,
     "kosdaq_pct": null
   }
