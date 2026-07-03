@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-07-03",
+    "time": "16:00",
+    "mode": "post_close",
+    "url": "reports/2026-07-03-post.html",
+    "summary": "오늘 코스피는 반도체 대형주 강세에 힘입어 5% 이상 급등하며 8,088선으로 복귀했고, 코스닥은 소폭 상승 마감했습니다.",
+    "kospi_pct": 5.76,
+    "kosdaq_pct": 0.19
+  },
+  {
+    "date": "2026-07-03",
     "time": "14:50",
     "mode": "pre_close",
     "url": "reports/2026-07-03-pre.html",
@@ -527,15 +536,6 @@
     "mode": "us_morning",
     "url": "reports/2026-06-25-us.html",
     "summary": "미국 증시는 혼조세를 보이며 마감했습니다. 다우 지수는 상승했지만, S&P500과 나스닥은 기술주 하락에 영향을 받아 약보합세를 나타냈습니다. 특히 AI 관련 기술주들의 차익실현 매물과 에너지 섹터의 급락이 시장 전반에 부담으로 작용했습니다. 금 가격",
-    "kospi_pct": null,
-    "kosdaq_pct": null
-  },
-  {
-    "date": "2026-06-24",
-    "time": "22:40",
-    "mode": "us_intraday",
-    "url": "reports/2026-06-24-us-mid.html",
-    "summary": "미국 증시는 혼조세를 보이며 마감했습니다. AI 관련주 열기가 다소 식으면서 기술주 전반의 상승세가 둔화되었고, 특히 반도체 섹터가 약세를 보였습니다. 금 가격과 유가는 큰 폭으로 하락했습니다.",
     "kospi_pct": null,
     "kosdaq_pct": null
   }
