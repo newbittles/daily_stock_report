@@ -1,5 +1,14 @@
 [
   {
+    "date": "2026-07-06",
+    "time": "08:05",
+    "mode": "kr_premarket",
+    "url": "reports/2026-07-06-kr-pre.html",
+    "summary": "",
+    "kospi_pct": -0.0,
+    "kosdaq_pct": -0.0
+  },
+  {
     "date": "2026-07-04",
     "time": "07:00",
     "mode": "us_morning",
@@ -527,15 +536,6 @@
     "mode": "kr_open",
     "url": "reports/2026-06-25-kr-open.html",
     "summary": "오늘 한국 증시는 반도체 업종을 중심으로 강세를 보이며 지수 상승을 이끌고 있습니다. 특히 삼성전자는 장중 꾸준한 상승세를 유지하며 시장을 견인하고 있으며, SK하이닉스와 SK스퀘어, 제주반도체 등은 장 초반 높은 상승률을 기록했으나 이후 일부 차익 ",
-    "kospi_pct": null,
-    "kosdaq_pct": null
-  },
-  {
-    "date": "2026-06-25",
-    "time": "08:05",
-    "mode": "kr_premarket",
-    "url": "reports/2026-06-25-kr-pre.html",
-    "summary": "",
     "kospi_pct": null,
     "kosdaq_pct": null
   }
