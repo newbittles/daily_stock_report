@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-07-07",
+    "time": "08:05",
+    "mode": "kr_premarket",
+    "url": "reports/2026-07-07-kr-pre.html",
+    "summary": "",
+    "kospi_pct": null,
+    "kosdaq_pct": null
+  },
+  {
+    "date": "2026-07-07",
     "time": "06:30",
     "mode": "us_morning",
     "url": "reports/2026-07-07-us.html",
@@ -527,15 +536,6 @@
     "mode": "kr_premarket",
     "url": "reports/2026-06-26-kr-pre.html",
     "summary": "",
-    "kospi_pct": null,
-    "kosdaq_pct": null
-  },
-  {
-    "date": "2026-06-26",
-    "time": "06:30",
-    "mode": "us_morning",
-    "url": "reports/2026-06-26-us.html",
-    "summary": "미국 증시는 혼조세를 보이며 마감했습니다. S&P500과 나스닥은 소폭 하락했으나, 다우 지수는 상승했습니다. 반도체 섹터가 큰 폭으로 상승하며 시장을 견인했으며, 금과 유가(WTI)는 모두 상승세를 기록했습니다.",
     "kospi_pct": null,
     "kosdaq_pct": null
   }
