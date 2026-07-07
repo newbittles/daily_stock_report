@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-07-07",
+    "time": "19:00",
+    "mode": "us_premarket",
+    "url": "reports/2026-07-07-us-pre.html",
+    "summary": "현재 미국 프리장 시장은 혼조세를 보이고 있습니다. 필라델피아 반도체 지수는 강세를 보이고 있으나, 기술/IT 및 반도체 섹터 전반은 약세를 면치 못하고 있습니다. AI 관련주 중심의 변동성이 확대되는 가운데, 에너지 섹터는 유가 상승에 힘입어 강세를",
+    "kospi_pct": null,
+    "kosdaq_pct": null
+  },
+  {
+    "date": "2026-07-07",
     "time": "16:00",
     "mode": "post_close",
     "url": "reports/2026-07-07-post.html",
@@ -527,15 +536,6 @@
     "mode": "us_premarket",
     "url": "reports/2026-06-26-us-pre.html",
     "summary": "프리장에서 기술주 전반의 약세가 두드러지며 나스닥 선물이 하락세를 보이고 있습니다. 다만, 필라델피아 반도체 지수 선물은 강세를 나타내며 혼조세를 보이고 있으며, AI 관련주 일부는 여전히 주목받고 있습니다. 전반적으로 기술주 내에서의 차익 실현 및 ",
-    "kospi_pct": null,
-    "kosdaq_pct": null
-  },
-  {
-    "date": "2026-06-26",
-    "time": "16:00",
-    "mode": "post_close",
-    "url": "reports/2026-06-26-post.html",
-    "summary": "오늘 코스피는 외국인 매도세에 하락 마감했으며, 반도체 업종의 약세가 두드러졌습니다. 반면, 2차전지 관련주들은 일부 반등하며 시장의 관심을 받았습니다.",
     "kospi_pct": null,
     "kosdaq_pct": null
   }
