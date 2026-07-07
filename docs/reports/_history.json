@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-07-07",
+    "time": "09:15",
+    "mode": "kr_open",
+    "url": "reports/2026-07-07-kr-open.html",
+    "summary": "오늘 한국 증시는 전반적으로 약세를 보이고 있으며, 특히 SK스퀘어는 장중 약세를 지속하며 하락폭을 키우고 있습니다. 반면, 주성엔지니어링과 금호건설은 장 초반의 큰 하락폭을 만회하며 강한 반등세를 연출하고 있습니다.",
+    "kospi_pct": null,
+    "kosdaq_pct": null
+  },
+  {
+    "date": "2026-07-07",
     "time": "08:05",
     "mode": "kr_premarket",
     "url": "reports/2026-07-07-kr-pre.html",
@@ -527,15 +536,6 @@
     "mode": "kr_open",
     "url": "reports/2026-06-26-kr-open.html",
     "summary": "오늘 한국 증시는 전반적으로 약세를 보이고 있으며, 외국인과 기관의 매도세가 지수 하락을 이끌고 있습니다. 특히 SK는 장 초반 큰 폭으로 하락했으나 오후 들어 낙폭을 줄이며 반등하는 모습을 보였습니다.",
-    "kospi_pct": null,
-    "kosdaq_pct": null
-  },
-  {
-    "date": "2026-06-26",
-    "time": "08:05",
-    "mode": "kr_premarket",
-    "url": "reports/2026-06-26-kr-pre.html",
-    "summary": "",
     "kospi_pct": null,
     "kosdaq_pct": null
   }
