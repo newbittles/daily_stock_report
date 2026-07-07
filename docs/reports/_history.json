@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-07-07",
+    "time": "16:00",
+    "mode": "post_close",
+    "url": "reports/2026-07-07-post.html",
+    "summary": "코스피는 외국인 순매수세에 힘입어 상승 마감했으나, 코스닥은 차익실현 매물 출회로 하락했습니다. 반도체와 2차전지 관련주가 시장을 주도했습니다.",
+    "kospi_pct": null,
+    "kosdaq_pct": null
+  },
+  {
+    "date": "2026-07-07",
     "time": "14:50",
     "mode": "pre_close",
     "url": "reports/2026-07-07-pre.html",
@@ -527,15 +536,6 @@
     "mode": "post_close",
     "url": "reports/2026-06-26-post.html",
     "summary": "오늘 코스피는 외국인 매도세에 하락 마감했으며, 반도체 업종의 약세가 두드러졌습니다. 반면, 2차전지 관련주들은 일부 반등하며 시장의 관심을 받았습니다.",
-    "kospi_pct": null,
-    "kosdaq_pct": null
-  },
-  {
-    "date": "2026-06-26",
-    "time": "14:50",
-    "mode": "pre_close",
-    "url": "reports/2026-06-26-pre.html",
-    "summary": "코스피는 관망세 속 혼조세를 보이며, 코스닥은 일부 테마 강세로 상승세를 유지하고 있습니다.",
     "kospi_pct": null,
     "kosdaq_pct": null
   }
