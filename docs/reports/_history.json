@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-07-09",
+    "time": "08:05",
+    "mode": "kr_premarket",
+    "url": "reports/2026-07-09-kr-pre.html",
+    "summary": "",
+    "kospi_pct": null,
+    "kosdaq_pct": null
+  },
+  {
+    "date": "2026-07-09",
     "time": "06:30",
     "mode": "us_morning",
     "url": "reports/2026-07-09-us.html",
@@ -529,14 +538,5 @@
     "summary": "오늘 한국 증시는 코스피와 코스닥 모두 상승세를 보이며 전반적으로 강세를 나타냈습니다. 반도체 관련 테마가 강세를 주도하며 지수 상승에 기여했으며, 특히 삼성전자와 같은 대형주는 장중 상승 흐름을 이어갔습니다. 반면, 금호전기, 금호건설, 금호타이어 ",
     "kospi_pct": 0.34,
     "kosdaq_pct": 1.13
-  },
-  {
-    "date": "2026-06-30",
-    "time": "08:05",
-    "mode": "kr_premarket",
-    "url": "reports/2026-06-30-kr-pre.html",
-    "summary": "",
-    "kospi_pct": -0.0,
-    "kosdaq_pct": -0.0
   }
 ]
