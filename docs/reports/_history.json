@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-07-10",
+    "time": "13:00",
+    "mode": "us_afterhours",
+    "url": "reports/2026-07-10-us-after.html",
+    "summary": "미국 증시는 반도체 섹터의 강한 반등에 힘입어 상승 마감했습니다. 특히 필라델피아 반도체 지수가 3% 이상 급등하며 시장 전반을 견인했으며, 기술/IT 섹터 역시 강세를 보였습니다. 금 가격은 상승했으나 유가(WTI)는 하락했습니다.",
+    "kospi_pct": null,
+    "kosdaq_pct": null
+  },
+  {
+    "date": "2026-07-10",
     "time": "11:40",
     "mode": "midday",
     "url": "reports/2026-07-10-midday.html",
@@ -529,14 +538,5 @@
     "summary": "코스피는 외국인 및 연기금 매도세에 하락 전환했으나, 코스닥은 일부 테마 강세에 힘입어 상승세를 유지하고 있습니다.",
     "kospi_pct": -2.11,
     "kosdaq_pct": 0.95
-  },
-  {
-    "date": "2026-07-01",
-    "time": "13:00",
-    "mode": "us_afterhours",
-    "url": "reports/2026-07-01-us-after.html",
-    "summary": "미국 증시는 기술주와 반도체 섹터의 강세에 힘입어 S&P500과 나스닥이 상승 마감했습니다. 특히 필라델피아 반도체 지수가 3.92% 급등하며 시장 전반의 상승을 이끌었습니다. 금 가격은 소폭 상승했으나, WTI 유가는 하락세를 보였습니다.",
-    "kospi_pct": null,
-    "kosdaq_pct": null
   }
 ]
