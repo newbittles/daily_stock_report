@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-07-13",
+    "time": "22:40",
+    "mode": "us_intraday",
+    "url": "reports/2026-07-13-us-mid.html",
+    "summary": "미국 증시는 혼조세를 보이며 마감했습니다. S&P500과 나스닥은 하락했지만, 다우 지수는 소폭 상승했습니다. 에너지 섹터가 강세를 보인 반면, 반도체 섹터는 큰 폭으로 하락하며 시장 전반의 변동성을 키웠습니다. 유가(WTI)는 지정학적 긴장 고조로 ",
+    "kospi_pct": null,
+    "kosdaq_pct": null
+  },
+  {
+    "date": "2026-07-13",
     "time": "21:50",
     "mode": "us_premarket",
     "url": "reports/2026-07-13-us-pre.html",
@@ -527,15 +536,6 @@
     "mode": "us_intraday",
     "url": "reports/2026-07-02-us-mid.html",
     "summary": "미국 증시는 혼조세를 보이며 혼조세를 보였으며, 특히 기술주와 방산/우주항공, 태양광 섹터가 강세를 보였습니다. 금 가격은 상승했으나 유가는 하락했습니다. 시장은 예상치를 하회한 6월 고용 보고서 발표에 주목했습니다.",
-    "kospi_pct": null,
-    "kosdaq_pct": null
-  },
-  {
-    "date": "2026-07-02",
-    "time": "21:50",
-    "mode": "us_premarket",
-    "url": "reports/2026-07-02-us-pre.html",
-    "summary": "프리장에서 미국 증시는 혼조세를 보이고 있습니다. 나스닥 선물과 S&P 500 선물은 소폭 상승하며 기술주 중심의 강세를 예고하는 반면, 다우 지수는 약보합세를 나타내고 있습니다. 특히 필라델피아 반도체 지수의 큰 폭 하락은 시장 전반의 투자 심리에 ",
     "kospi_pct": null,
     "kosdaq_pct": null
   }
