@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-07-13",
+    "time": "14:50",
+    "mode": "pre_close",
+    "url": "reports/2026-07-13-pre.html",
+    "summary": "코스피는 혼조세, 코스닥은 낙폭 만회하며 상승 전환 시도 중입니다.",
+    "kospi_pct": null,
+    "kosdaq_pct": null
+  },
+  {
+    "date": "2026-07-13",
     "time": "11:40",
     "mode": "midday",
     "url": "reports/2026-07-13-midday.html",
@@ -529,14 +538,5 @@
     "summary": "코스피와 코스닥 지수 모두 큰 폭으로 하락하며 투자 심리가 위축된 장세입니다. 다만, 건설 중소형 테마는 강세를 보이며 일부 종목에서 거래량과 상승률이 두드러지고 있습니다.",
     "kospi_pct": -6.2,
     "kosdaq_pct": -6.32
-  },
-  {
-    "date": "2026-07-02",
-    "time": "13:00",
-    "mode": "us_afterhours",
-    "url": "reports/2026-07-02-us-after.html",
-    "summary": "미국 증시는 혼조세로 마감했습니다. 빅테크 중 메타, 마이크로소프트 등이 AI 관련 호재로 상승했으나, 반도체 섹터의 큰 폭 하락이 지수 전반의 약세를 이끌었습니다. 금 가격은 상승했으나 유가는 하락했습니다.",
-    "kospi_pct": null,
-    "kosdaq_pct": null
   }
 ]
