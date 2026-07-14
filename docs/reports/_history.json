@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-07-14",
+    "time": "14:50",
+    "mode": "pre_close",
+    "url": "reports/2026-07-14-pre.html",
+    "summary": "코스피는 관망세 속 혼조세를 보이며, 코스닥은 일부 테마 강세로 상승 마감 기대.",
+    "kospi_pct": null,
+    "kosdaq_pct": null
+  },
+  {
+    "date": "2026-07-14",
     "time": "13:00",
     "mode": "us_afterhours",
     "url": "reports/2026-07-14-us-after.html",
@@ -529,14 +538,5 @@
     "summary": "코스피는 장 후반 기관 매수세에 힘입어 8000선을 회복하며 강세를 보이고 있으나, 코스닥은 약세를 면치 못하고 있습니다.",
     "kospi_pct": 4.71,
     "kosdaq_pct": -1.1
-  },
-  {
-    "date": "2026-07-03",
-    "time": "13:00",
-    "mode": "us_afterhours",
-    "url": "reports/2026-07-03-us-after.html",
-    "summary": "미국 증시는 다우 지수는 사상 최고치를 경신하며 강세를 보였으나, 나스닥은 반도체 및 빅테크 일부 종목의 급락으로 약세를 면치 못했습니다. 헬스케어, 방산, 금융 섹터가 상승을 주도했으며, 특히 반도체 섹터의 큰 폭 하락이 두드러졌습니다. 금 가격은 ",
-    "kospi_pct": null,
-    "kosdaq_pct": null
   }
 ]
