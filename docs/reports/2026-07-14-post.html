@@ -1,0 +1,856 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>한국장 마감 리포트 — 2026-07-14</title>
+  <meta name="description" content="코스피는 외국인 순매수세에 힘입어 상승 마감했으나, 코스닥은 차익실현 매물 출회로 하락했습니다. 반도체와 2차전지 관련주가 시장을 주도했습니다.">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #0f172a;
+      --surface: #1e293b;
+      --surface2: #273449;
+      --border: #334155;
+      --text: #e2e8f0;
+      --text-dim: #94a3b8;
+      --text-mute: #64748b;
+      --accent: #60a5fa;
+      --green: #34d399;
+      --red: #f87171;
+      --yellow: #fbbf24;
+      --purple: #a78bfa;
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      padding: 1rem;
+    }
+    .container { max-width: 980px; margin: 0 auto; }
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    /* Header */
+    .header {
+      padding: 1.5rem 0;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 1.5rem;
+    }
+    .header h1 { font-size: 1.5rem; color: var(--accent); margin-bottom: 0.25rem; }
+    .header .meta {
+      color: var(--text-dim);
+      font-size: 0.85rem;
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+    .badge {
+      display: inline-block;
+      padding: 0.25rem 0.6rem;
+      border-radius: 999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+    .badge.pre { background: #fbbf2422; color: var(--yellow); border: 1px solid #fbbf2455; }
+    .badge.post { background: #60a5fa22; color: var(--accent); border: 1px solid #60a5fa55; }
+
+    /* Section */
+    section {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.25rem 1.5rem;
+      margin-bottom: 1rem;
+    }
+    section h2 {
+      font-size: 1.05rem;
+      color: var(--text-dim);
+      margin-bottom: 0.75rem;
+      font-weight: 600;
+      letter-spacing: -0.01em;
+    }
+    section h2 .icon { margin-right: 0.4rem; }
+
+    /* Indexes */
+    .indexes { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
+    .index-card {
+      background: var(--surface2);
+      border-radius: 8px;
+      padding: 1rem;
+      border-left: 3px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+    .index-card.up { border-left-color: var(--green); }
+    .index-card.down { border-left-color: var(--red); }
+    .index-info { min-width: 0; }
+    .index-spark {
+      width: 100%;
+    }
+    .index-spark img { width: 100%; height: auto; object-fit: contain; border-radius: 4px; cursor: zoom-in; display: block; }
+    /* KM6(2026-06-14): 코스피/코스닥 라벨이 칸 안에서 줄바꿈돼 가시성 저하 → nowrap + 폰트·패딩 축소로 한 줄 고정 */
+    .supply-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; table-layout: fixed; }
+    .supply-table th, .supply-table td { padding: 0.45rem 0.25rem; text-align: right; border-bottom: 1px solid var(--border); white-space: nowrap; }
+    .supply-table th { color: var(--text-dim); font-weight: 600; font-size: 0.8rem; }
+    .supply-table th:first-child, .supply-table td.sup-mk { text-align: left; color: var(--text); font-weight: 700; }
+    .supply-table td { font-variant-numeric: tabular-nums; }
+    .supply-table td.sup-date { text-align: left; color: var(--text-dim); font-size: 0.8rem; }
+    @media (max-width: 380px) { .supply-table { font-size: 0.78rem; } .supply-table th, .supply-table td { padding: 0.4rem 0.15rem; } }
+    .supply-table tr.sup-daysep td { border-top: 2px solid var(--border); }
+    .lead-themes { margin-bottom: 0.75rem; line-height: 1.9; }
+    .lead-theme-chip { display: inline-block; background: #f59e0b22; color: #fbbf24; border: 1px solid #f59e0b55;
+      border-radius: 999px; padding: 0.15rem 0.6rem; margin: 0.15rem 0.3rem 0.15rem 0; font-size: 0.85rem; font-weight: 600; }
+    .index-name { font-size: 0.85rem; color: var(--text-dim); margin-bottom: 0.25rem; }
+    .index-value { font-size: 1.5rem; font-weight: 700; }
+    .index-change { font-size: 0.9rem; margin-top: 0.25rem; }
+    /* 등락률 텍스트: 상승=초록, 하락=빨강 (사용자 2026-06-05 변경) */
+    .up-text { color: var(--green); }
+    .down-text { color: var(--red); }
+
+    /* AI Summary */
+    .summary-box {
+      background: linear-gradient(135deg, #60a5fa15, #a78bfa15);
+      border: 1px solid #60a5fa44;
+      border-radius: 8px;
+      padding: 1rem 1.25rem;
+      margin-bottom: 0.75rem;
+    }
+    .summary-box .label {
+      color: var(--accent);
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      margin-bottom: 0.4rem;
+    }
+    .summary-box p { white-space: pre-wrap; }
+
+    /* Candidate picks */
+    .pick {
+      background: var(--surface2);
+      border-radius: 8px;
+      padding: 1rem 1.25rem;
+      margin-bottom: 0.75rem;
+      border-left: 3px solid var(--yellow);
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 1rem;
+    }
+    .pick.has-chart { grid-template-columns: 1fr 360px; }
+    .pick-body { min-width: 0; }
+    .pick-chart {
+      align-self: start;
+      background: #0f172a;
+      border-radius: 6px;
+      overflow: hidden;
+    }
+    .pick-chart img {
+      width: 100%;
+      height: auto;
+      display: block;
+      cursor: zoom-in;
+    }
+    .pick-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: 0.5rem;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+    .pick-name { font-size: 1.1rem; font-weight: 700; }
+    .pick-meta-group { display: inline-flex; align-items: baseline; gap: 0.4rem; flex-wrap: wrap; }
+    .pick-ticker { color: var(--text-mute); font-size: 0.85rem; font-family: monospace; }
+    .pick-rationale { color: var(--text); margin-bottom: 0.5rem; }
+    .pick-risk {
+      color: var(--text-dim);
+      font-size: 0.85rem;
+      padding-top: 0.4rem;
+      border-top: 1px dashed var(--border);
+    }
+    .pick-risk::before { content: "⚠ "; color: var(--yellow); }
+
+    /* Theme peers */
+    .pick-theme {
+      background: #60a5fa15;
+      border: 1px solid #60a5fa33;
+      border-radius: 6px;
+      padding: 0.5rem 0.75rem;
+      margin-bottom: 0.5rem;
+      font-size: 0.83rem;
+    }
+    .pick-theme-name {
+      color: var(--accent);
+      font-weight: 600;
+      margin-bottom: 0.3rem;
+    }
+    .pick-theme-name::before { content: "🏷 "; }
+    .peer-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+    }
+    .peer-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      padding: 0.2rem 0.6rem;
+      font-size: 0.78rem;
+    }
+    .peer-chip .pct { font-family: monospace; font-weight: 700; }
+
+    /* Theme reason */
+    .theme-reason {
+      grid-column: 1 / -1;
+      font-size: 0.83rem;
+      color: var(--text-dim);
+      margin-top: 0.4rem;
+      padding-top: 0.4rem;
+      border-top: 1px dashed var(--border);
+      line-height: 1.5;
+    }
+    .theme-reason::before { content: "💡 "; }
+    .theme {
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      grid-template-areas: "rank info pct" "reason reason reason";
+      gap: 0.5rem 0.75rem;
+      align-items: center;
+      padding: 0.7rem 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .theme-rank { grid-area: rank; }
+    .theme-info { grid-area: info; }
+    .theme-pct { grid-area: pct; }
+    .theme-reason { grid-area: reason; }
+
+    /* Lightbox overlay for chart click */
+    .lightbox {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.92);
+      z-index: 100;
+      cursor: zoom-out;
+      padding: 1rem;
+      overflow: auto;
+    }
+    .lightbox.active { display: flex; align-items: flex-start; justify-content: center; }
+    .lightbox img { max-width: 100%; height: auto; }
+    /* AI 요약 버튼 + 모달 */
+    .ai-btn { background: rgba(96,165,250,0.15); color: var(--accent); border: 1px solid rgba(96,165,250,0.4);
+      border-radius: 6px; padding: 1px 7px; font-size: 0.72rem; cursor: pointer; margin-left: 5px; white-space: nowrap; }
+    .ai-btn:hover { background: rgba(96,165,250,0.32); }
+    .ai-modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.65); z-index: 100;
+      align-items: center; justify-content: center; padding: 1rem; }
+    .ai-modal.active { display: flex; }
+    .ai-modal-content { background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+      max-width: 460px; width: 100%; padding: 1.3rem 1.4rem; position: relative; }
+    .ai-modal-content h3 { margin-bottom: 0.7rem; font-size: 1.05rem; color: var(--text); }
+    .ai-modal-content .ai-body { line-height: 1.65; white-space: pre-line; color: var(--text); font-size: 0.92rem; }
+    .ai-modal-close { position: absolute; top: 0.7rem; right: 0.9rem; background: none; border: none;
+      color: var(--text-mute); font-size: 1.2rem; cursor: pointer; line-height: 1; }
+
+    /* Watchpoint */
+    .watch-list { list-style: none; padding: 0; }
+    .watch-list li {
+      padding: 0.6rem 0;
+      padding-left: 1.5rem;
+      position: relative;
+      border-bottom: 1px solid var(--border);
+    }
+    .watch-list li:last-child { border-bottom: none; }
+    .watch-list li::before {
+      content: "▸";
+      position: absolute;
+      left: 0;
+      color: var(--accent);
+      font-weight: 700;
+    }
+
+    /* Themes (base styles — grid-template-areas redefined above) */
+    .theme:last-child { border-bottom: none; }
+    .theme-rank {
+      width: 1.8rem;
+      height: 1.8rem;
+      border-radius: 50%;
+      background: var(--surface2);
+      display: grid;
+      place-items: center;
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: var(--text-dim);
+    }
+    .theme-info .name { font-weight: 600; }
+    .theme-info .leads { font-size: 0.8rem; color: var(--text-dim); margin-top: 0.15rem; }
+    .theme-info .theme-why { font-size: 0.82rem; color: var(--text); margin-top: 0.3rem; line-height: 1.4; }
+    .strat-badge { font-size: 0.72rem; font-weight: 700; background: var(--accent); color: #fff; padding: 1px 6px; border-radius: 4px; }
+    .pick-sub { font-size: 0.82rem; color: var(--text-dim); margin-top: 0.2rem; }
+    .hl-bold { font-weight: 800; color: #e23b3b; }  /* 붉은색 볼드 (가시성) */
+    .theme-pct { font-weight: 700; font-size: 0.95rem; }
+
+    /* Stock tables */
+    .stock-list { display: flex; flex-direction: column; gap: 0.4rem; }
+    .stock-row {
+      display: grid;
+      grid-template-columns: 2rem 1fr auto auto;
+      gap: 0.6rem;
+      padding: 0.5rem 0;
+      align-items: center;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.9rem;
+    }
+    .stock-row:last-child { border-bottom: none; }
+    .stock-rank { color: var(--text-mute); font-family: monospace; }
+    .stock-name { font-weight: 500; }
+    .stock-name .ticker { color: var(--text-mute); font-size: 0.75rem; margin-left: 0.3rem; }
+    .stock-price { font-family: monospace; color: var(--text-dim); }
+    .stock-pct { font-family: monospace; font-weight: 700; min-width: 60px; text-align: right; }
+
+    /* Tabs for stock lists */
+    .tabs {
+      display: flex;
+      gap: 0.5rem;
+      margin-bottom: 0.75rem;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 0.5rem;
+    }
+    .tab {
+      padding: 0.4rem 0.85rem;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      cursor: pointer;
+      color: var(--text-dim);
+      font-size: 0.85rem;
+    }
+    .tab.active { background: var(--accent); color: var(--bg); border-color: var(--accent); }
+    .tab-pane { display: none; }
+    .tab-pane.active { display: block; }
+
+    /* News */
+    .news-item {
+      padding: 0.6rem 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .news-item:last-child { border-bottom: none; }
+    .news-title { color: var(--text); }
+    .news-meta { font-size: 0.75rem; color: var(--text-mute); margin-top: 0.2rem; }
+    .news-source { color: var(--accent); }
+
+    /* Disclaimer */
+    .disclaimer {
+      text-align: center;
+      padding: 1.5rem 1rem;
+      color: var(--text-mute);
+      font-size: 0.8rem;
+      margin-top: 1rem;
+      border-top: 1px solid var(--border);
+    }
+
+    /* 전략 스크린 칸 분리 */
+    .strat-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.8rem; }
+    .strat-col { border: 1px solid var(--border); border-radius: 10px; padding: 0.6rem 0.8rem; background: rgba(255,255,255,0.02); }
+    .strat-head { display: flex; align-items: center; justify-content: space-between; gap: 0.4rem; margin-bottom: 0.3rem; flex-wrap: wrap; }
+    .strat-name { font-weight: 700; font-size: 0.95rem; }
+    .copy-btn { font-size: 0.78rem; padding: 0.35rem 0.6rem; border: 1px solid var(--border); border-radius: 6px;
+      background: var(--green); color: #fff; cursor: pointer; white-space: nowrap; }
+    .copy-btn:active { opacity: 0.7; }
+    .code { color: var(--muted); font-size: 0.82rem; }
+    .code-copy { display: inline-block; font-size: 0.8rem; padding: 0.05rem 0.4rem; margin-left: 0.3rem;
+      border: 1px solid var(--border); border-radius: 5px; background: var(--bg); color: var(--text-dim);
+      cursor: pointer; vertical-align: middle; }
+    .code-copy:active { opacity: 0.6; }
+    .pick-meta { color: var(--muted); font-size: 0.8rem; margin-top: 0.2rem; }
+    .pick-line { display: flex; flex-wrap: wrap; align-items: center; gap: 0.4rem; margin-top: 0.35rem; }
+    .strat-col .watch-list li { padding-left: 0; }
+    .strat-col .watch-list li::before { content: ""; }
+
+    /* Responsive */
+    @media (max-width: 880px) {
+      .pick.has-chart { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 640px) {
+      .indexes { grid-template-columns: 1fr 1fr; }  /* 모바일도 2x2 유지 */
+      .header h1 { font-size: 1.25rem; }
+      .pick-name { font-size: 1rem; }
+      .strat-grid { grid-template-columns: 1fr; }  /* 모바일 1열 */
+    }
+    /* Top3 헤드라인 */
+    .top3-sec { border: 2px solid var(--green); border-radius: 12px; padding: 0.8rem 1rem; background: rgba(63,185,80,0.06); margin-bottom: 1rem; }
+    .top3-card { padding: 0.6rem 0; border-bottom: 1px dashed var(--border); }
+    .top3-card:last-of-type { border-bottom: none; }
+    .top3-head { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
+    .top3-rank { display: inline-flex; width: 1.6rem; height: 1.6rem; align-items: center; justify-content: center;
+      background: var(--green); color: #fff; border-radius: 50%; font-weight: 700; font-size: 0.9rem; }
+    .top3-head a { color: var(--txt); text-decoration: none; border-bottom: 1px dashed var(--accent); font-size: 1.05rem; }
+    .top3-reason { color: var(--sub, var(--muted)); font-size: 0.86rem; margin-top: 0.3rem; padding-left: 2.1rem; line-height: 1.4; }
+    .top3-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 0.45rem; padding-left: 2.1rem; margin: 0.3rem 0; }
+    .gap-badge { font-size: 0.8rem; color: var(--text-dim); }
+    .gap-badge.overheat { color: var(--red); font-weight: 700; }
+  </style>
+</head>
+<body>
+  <div class="container">
+
+    <header class="header">
+      <h1>📊 한국장 마감 리포트</h1>
+      <div class="meta">
+        <span class="badge post">
+          🔵 마감 후
+        </span>
+        <span>2026년 07월 14일 16:00</span>
+      </div>
+      <div style="margin-top:0.5rem;">
+        <div class="label" style="font-size:0.78rem;color:var(--text-dim);">🚦 지수 상태 신호등</div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:3px;">
+          <span class="strat-badge" onclick="showFlag(this)" data-flag="phase:바닥권" style="cursor:pointer;" title="신호등 설명">🔵 코스피 바닥권 ⓘ</span>
+          <span class="strat-badge" onclick="showFlag(this)" data-flag="phase:바닥권" style="cursor:pointer;" title="신호등 설명">🔵 코스닥 바닥권 ⓘ</span>
+        </div>
+      </div>
+    </header>
+
+
+
+
+    <section>
+      <h2><span class="icon">💰</span>투자자 수급 <span style="color:var(--text-dim);font-size:0.8rem;">(최근 3일 · 순매수 억원)</span></h2>
+      <table class="supply-table">
+        <thead><tr><th>날짜</th><th>시장</th><th>개인</th><th>외국인</th><th>기관</th></tr></thead>
+        <tbody>
+          <tr >
+            <td class="sup-date">07/06</td>
+            <td class="sup-mk">코스피</td>
+            <td class="up-text">+14,654</td>
+            <td class="down-text">-7,466</td>
+            <td class="down-text">-7,951</td>
+          </tr>
+          <tr >
+            <td class="sup-date"></td>
+            <td class="sup-mk">코스닥</td>
+            <td class="up-text">+3,126</td>
+            <td class="down-text">-2,099</td>
+            <td class="down-text">-1,009</td>
+          </tr>
+          <tr >
+            <td class="sup-date">07/03</td>
+            <td class="sup-mk">코스피</td>
+            <td class="down-text">-22,942</td>
+            <td class="down-text">-22,123</td>
+            <td class="up-text">+44,451</td>
+          </tr>
+          <tr >
+            <td class="sup-date"></td>
+            <td class="sup-mk">코스닥</td>
+            <td class="up-text">+1,121</td>
+            <td class="down-text">-202</td>
+            <td class="down-text">-1,039</td>
+          </tr>
+          <tr >
+            <td class="sup-date">07/02</td>
+            <td class="sup-mk">코스피</td>
+            <td class="up-text">+62,660</td>
+            <td class="down-text">-43,710</td>
+            <td class="down-text">-20,823</td>
+          </tr>
+          <tr >
+            <td class="sup-date"></td>
+            <td class="sup-mk">코스닥</td>
+            <td class="up-text">+5,349</td>
+            <td class="down-text">-1,957</td>
+            <td class="down-text">-3,566</td>
+          </tr>
+        </tbody>
+      </table>
+      <p style="font-size:11px;color:var(--text-dim);margin-top:0.3rem;">+순매수 / −순매도(억원). 외국인·기관 동반 매수가 수급상 유리. </p>
+      <div class="summary-box" style="margin-top:0.6rem;"><div class="label">🔎 수급 요약 (최근 일주일 · 연속·전일/전주대비)</div><p>최근 일주일간 코스피 시장에서 외국인은 8일 연속 순매도를 이어가며 매도 규모가 전날보다 줄었지만, 여전히 큰 규모를 유지하고 있습니다. 반면 기관은 1일 연속 순매도를 기록하며 전날의 대규모 순매수에서 매도세로 전환했으며, 전주 대비 순매도 규모가 확대되었습니다. 코스닥 시장에서도 외국인은 3일 연속 순매도를 지속하며 매도 규모가 전날보다 늘었고, 기관은 5일 연속 순매도를 이어가며 전주 대비 순매도 규모가 크게 증가했습니다.</p></div>
+    </section>
+
+
+
+    <section>
+      <h2><span class="icon">🤖</span>AI 시장 요약</h2>
+      <div class="summary-box">
+        <div class="label">한 줄 요약</div>
+        <p>코스피는 외국인 순매수세에 힘입어 상승 마감했으나, 코스닥은 차익실현 매물 출회로 하락했습니다. 반도체와 2차전지 관련주가 시장을 주도했습니다.</p>
+      </div>
+      <div class="summary-box">
+        <div class="label">왜 움직였나</div>
+        <p>미국 증시의 견조한 흐름과 엔비디아의 실적 발표 기대감이 국내 증시에 긍정적인 영향을 미쳤습니다. 특히 외국인 투자자들은 반도체 대형주를 중심으로 순매수세를 이어가며 지수 상승을 견인했습니다. 다만, 코스닥 시장에서는 단기 급등에 따른 차익실현 욕구가 커지면서 일부 종목의 하락세가 나타났습니다.</p>
+      </div>
+      <div class="summary-box">
+        <div class="label">테마 해설</div>
+        <p>전반적으로 반도체 업종의 강세가 두드러졌으며, 인공지능(AI) 관련주들이 동반 강세를 보였습니다. 2차전지 관련주들도 일부 종목을 중심으로 반등에 성공하며 시장의 관심을 받았습니다. 반면, 최근 강세를 보였던 일부 테마는 숨 고르기 양상을 나타냈습니다.</p>
+      </div>
+    </section>
+
+    <section>
+      <h2><span class="icon">🔭</span>내일 관전 포인트</h2>
+      <ul class="watch-list">
+        <li>미국 증시의 움직임과 엔비디아 실적 발표 결과가 내일 국내 증시에 미칠 영향.</li>
+        <li>외국인 투자자들의 순매수 기조가 이어질지 여부와 매수 주체 변화 가능성.</li>
+        <li>코스닥 시장의 차익실현 매물 소화 정도와 신규 테마의 부상 여부.</li>
+      </ul>
+    </section>
+
+
+
+
+    <section class="top3-sec">
+      <h2><span class="icon">🏆</span>오늘의 추천 Top 3</h2>
+      
+      <div class="top3-card">
+        <div class="top3-head">
+          <span class="top3-rank">1</span>
+          <a href="https://finance.naver.com/item/main.naver?code=105560" target="_blank" rel="noopener"><strong>KB금융</strong></a>
+<span class="pick-ticker">코스피</span>          <button type="button" class="code-copy" data-code="105560" onclick="copyCode(this)" title="종목코드 복사 (MTS 검색창에 붙여넣기)">📋</button>
+          <span class="px">180,000원</span>
+          <span class="down-text">-3.3%</span>
+        </div>
+        <div class="top3-meta">
+<button type="button" class="ai-btn" onclick="showAI(this)" data-name="KB금융" data-summary="🏢 금융지주회사
+은행업종 전반의 약세와 함께 차익실현 매물이 출회되며 하락 전환했습니다. 특별한 악재 없이 시장 전반의 흐름에 영향을 받은 것으로 보입니다.
+📰 호재뉴스: 없음
+📋 공시: 확인 불가
+💰 수급(최근): 외인 ▼순매도2일 · 기관 ▲순매수10일 · 개인 ▲순매수2일">🤖 AI요약</button><span class="code">시총 64조 921억</span>          <span class="gap-badge ">20일선 +9.3%</span> <span class="down-text" style="font-size:0.8rem;cursor:pointer;" onclick="showFlag(this)" data-flag="rswarn">⚠️RS약화ⓘ</span>        </div>
+        
+        <div class="top3-reason">D 시그널 · ⚠️수급 이탈(기관·외인 연속 순매도)</div>
+<div class="top3-reason" style="color:var(--green);">💰 기관 순매수(10일)</div>        <div class="top3-reason">업종: 은행 · 주도테마여부: <strong style="color:var(--text-mute);">X</strong></div>
+      </div>
+      <div class="top3-card">
+        <div class="top3-head">
+          <span class="top3-rank">2</span>
+          <a href="https://finance.naver.com/item/main.naver?code=036930" target="_blank" rel="noopener"><strong>주성엔지니어링</strong></a>
+<span class="pick-ticker">코스닥</span>          <button type="button" class="code-copy" data-code="036930" onclick="copyCode(this)" title="종목코드 복사 (MTS 검색창에 붙여넣기)">📋</button>
+          <span class="px">192,600원</span>
+          <span class="up-text">+5.5%</span>
+        </div>
+        <div class="top3-meta">
+<button type="button" class="ai-btn" onclick="showAI(this)" data-name="주성엔지니어링" data-summary="🏢 반도체·디스플레이 장비 제조
+장 초반 강세를 보였으나, 상승 후 차익실현 매물이 나오면서 조정을 받았습니다. 최근 주가 상승에 따른 고점 부담이 작용한 것으로 분석됩니다.
+📰 호재뉴스: 없음
+📋 공시: 확인 불가
+💰 수급(최근): 외인 ▼순매도 · 기관 ▲순매수2일 · 개인 ▲순매수">🤖 AI요약</button><span class="code">시총 8조 8,407억</span>          <span class="gap-badge ">20일선 +0.7%</span> <span class="down-text" style="font-size:0.8rem;cursor:pointer;" onclick="showFlag(this)" data-flag="correction">⚠️5&lt;10 조정시작ⓘ</span> <span class="down-text" style="font-size:0.8rem;cursor:pointer;" onclick="showFlag(this)" data-flag="ma60fail">⚠️60선복귀실패ⓘ</span>        </div>
+        
+        <div class="top3-reason">A 시그널 · 🚀주도테마 · 당일 +5.5% 강세</div>
+<div class="top3-reason" style="color:var(--green);">💰 기관 순매수(2일)</div>        <div class="top3-reason">테마: LCD 장비 · 주도테마여부: <strong style="color:var(--green);">O</strong></div>
+      </div>
+      <p style="font-size:12px;color:var(--text-dim);margin-top:0.5rem;">📊 20일선 이격도 = 현재가가 20일 이동평균선보다 얼마나 높은지. <span style="color:var(--red);">+25% 이상이면 과열</span>(단기 조정 위험)으로 표시합니다.</p>
+      <p class="disclaimer" style="font-size:12px;">※ A/B/C/D 시그널 + 주도주·거래량·수급(외국인/기관) 종합 점수 상위 3종목(기준 P4). 상한가 종목은 매수 불가라 제외(별도 표시). 참고용이며 매수 추천 아님, 판단·책임은 본인.</p>
+    </section>
+
+    <section>
+      <h2><span class="icon">🎯</span>전략 스크린 <span style="color:var(--text-dim);font-size:0.8rem;">(전략별 칸 · A/B/C/D)</span>
+        <button class="copy-btn" data-codes="105560 036930" onclick="copyWatch(this)">📋 관심등록 복사</button>
+      </h2>
+      <h3 style="margin:0.7rem 0 0.2rem;color:var(--accent);">A. 수렴후 대세상승 <span style="color:var(--text-dim);font-size:0.78rem;font-weight:normal;">(1)</span></h3>
+      <ul class="watch-list">
+        <li>
+          <a href="https://finance.naver.com/item/main.naver?code=036930" target="_blank" rel="noopener"><strong>주성엔지니어링</strong></a>
+<span class="pick-ticker">코스닥</span>          <button type="button" class="code-copy" data-code="036930" onclick="copyCode(this)" title="종목코드 복사 (MTS 검색창에 붙여넣기)">📋</button>
+          <span class="strat-badge" onclick="showStrat(this)" data-strats="A" style="cursor:pointer;" title="전략 설명 보기">A 시그널 ⓘ</span>
+          <span class="px">192,600원</span>
+          <span class="up-text">+5.5%</span>
+          <div class="pick-line">
+<button type="button" class="ai-btn" onclick="showAI(this)" data-name="주성엔지니어링" data-summary="🏢 반도체·디스플레이 장비 제조
+장 초반 강세를 보였으나, 상승 후 차익실현 매물이 나오면서 조정을 받았습니다. 최근 주가 상승에 따른 고점 부담이 작용한 것으로 분석됩니다.
+📰 호재뉴스: 없음
+📋 공시: 확인 불가
+💰 수급(최근): 외인 ▼순매도 · 기관 ▲순매수2일 · 개인 ▲순매수">🤖 AI요약</button><span class="code">시총 8조 8,407억</span>          </div>
+          <div class="theme-reason">A 시그널 · 🚀주도테마 · 당일 +5.5% 강세</div>
+          <div class="pick-meta" style="color:var(--text-dim);">📊 20일선 이격 +0.7% <span class="down-text" style="cursor:pointer;" onclick="showFlag(this)" data-flag="correction">· ⚠️5&lt;10 조정시작ⓘ</span></div>
+          <div class="pick-meta">
+            테마:
+<a href="https://judal.co.kr/?view=stockList&themeIdx=590" target="_blank" rel="noopener">LCD 장비</a>
+            · 주도테마: O
+          </div>
+        </li>
+      </ul>
+      <h3 style="margin:0.7rem 0 0.2rem;color:var(--accent);">D. 추세반전 <span style="color:var(--text-dim);font-size:0.78rem;font-weight:normal;">(1)</span></h3>
+      <ul class="watch-list">
+        <li>
+          <a href="https://finance.naver.com/item/main.naver?code=105560" target="_blank" rel="noopener"><strong>KB금융</strong></a>
+<span class="pick-ticker">코스피</span>          <button type="button" class="code-copy" data-code="105560" onclick="copyCode(this)" title="종목코드 복사 (MTS 검색창에 붙여넣기)">📋</button>
+          <span class="strat-badge" onclick="showStrat(this)" data-strats="D" style="cursor:pointer;" title="전략 설명 보기">D 시그널 ⓘ</span>
+          <span class="px">180,000원</span>
+          <span class="down-text">-3.3%</span>
+          <div class="pick-line">
+<button type="button" class="ai-btn" onclick="showAI(this)" data-name="KB금융" data-summary="🏢 금융지주회사
+은행업종 전반의 약세와 함께 차익실현 매물이 출회되며 하락 전환했습니다. 특별한 악재 없이 시장 전반의 흐름에 영향을 받은 것으로 보입니다.
+📰 호재뉴스: 없음
+📋 공시: 확인 불가
+💰 수급(최근): 외인 ▼순매도2일 · 기관 ▲순매수10일 · 개인 ▲순매수2일">🤖 AI요약</button><span class="code">시총 64조 921억</span>          </div>
+          <div class="theme-reason">D 시그널 · ⚠️수급 이탈(기관·외인 연속 순매도)</div>
+          <div class="pick-meta" style="color:var(--text-dim);">📊 20일선 이격 +9.3%</div>
+          <div class="pick-meta">
+            업종:
+<a href="https://search.naver.com/search.naver?query=%EC%9D%80%ED%96%89+관련주" target="_blank" rel="noopener">은행</a>            · 주도테마: X
+          </div>
+        </li>
+      </ul>
+      <p class="disclaimer" style="font-size:12px;">※ 전략(A/B/C/D)별 분류 · 각 칸 종합점수순. 한 종목이 여러 전략에 잡히면 각 칸에 중복 표기. 참고용이며 매수 추천 아님. · 📋 일괄 관심등록.</p>
+    </section>
+
+    <section>
+      <h2><span class="icon">🌙</span>시간외(NXT) 상위 상승률 <span style="color:var(--text-dim);font-size:0.8rem;">(정규장 종가 대비)</span></h2>
+      <ul class="watch-list">
+        <li>
+          <a href="https://finance.naver.com/item/main.naver?code=067080" target="_blank" rel="noopener"><strong>대화제약</strong></a>
+          <span class="pick-ticker">067080·코스닥</span> · 10,670원
+          <span class="up-text">+5.12%</span>
+          <span style="color:var(--text-dim);font-size:0.8rem;">(종가 10,150)</span>
+        </li>
+        <li>
+          <a href="https://finance.naver.com/item/main.naver?code=228760" target="_blank" rel="noopener"><strong>지노믹트리</strong></a>
+          <span class="pick-ticker">228760·코스닥</span> · 12,260원
+          <span class="up-text">+1.91%</span>
+          <span style="color:var(--text-dim);font-size:0.8rem;">(종가 12,030)</span>
+        </li>
+        <li>
+          <a href="https://finance.naver.com/item/main.naver?code=028300" target="_blank" rel="noopener"><strong>HLB</strong></a>
+          <span class="pick-ticker">028300·코스닥</span> · 27,150원
+          <span class="up-text">+1.69%</span>
+          <span style="color:var(--text-dim);font-size:0.8rem;">(종가 26,700)</span>
+        </li>
+        <li>
+          <a href="https://finance.naver.com/item/main.naver?code=047920" target="_blank" rel="noopener"><strong>HLB제약</strong></a>
+          <span class="pick-ticker">047920·코스닥</span> · 6,680원
+          <span class="up-text">+1.21%</span>
+          <span style="color:var(--text-dim);font-size:0.8rem;">(종가 6,600)</span>
+        </li>
+        <li>
+          <a href="https://finance.naver.com/item/main.naver?code=196170" target="_blank" rel="noopener"><strong>알테오젠</strong></a>
+          <span class="pick-ticker">196170·코스닥</span> · 282,000원
+          <span class="up-text">+0.89%</span>
+          <span style="color:var(--text-dim);font-size:0.8rem;">(종가 279,500)</span>
+        </li>
+        <li>
+          <a href="https://finance.naver.com/item/main.naver?code=033100" target="_blank" rel="noopener"><strong>제룡전기</strong></a>
+          <span class="pick-ticker">033100·코스닥</span> · 45,850원
+          <span class="up-text">+0.55%</span>
+          <span style="color:var(--text-dim);font-size:0.8rem;">(종가 45,600)</span>
+        </li>
+        <li>
+          <a href="https://finance.naver.com/item/main.naver?code=131290" target="_blank" rel="noopener"><strong>티에스이</strong></a>
+          <span class="pick-ticker">131290·코스닥</span> · 277,500원
+          <span class="up-text">+0.18%</span>
+          <span style="color:var(--text-dim);font-size:0.8rem;">(종가 277,000)</span>
+        </li>
+      </ul>
+      <p style="font-size:11px;color:var(--text-dim);margin-top:0.3rem;">넥스트레이드(NXT) 시간외 거래 기준. 정규장 종가 대비 상승분.</p>
+    </section>
+
+
+    <section>
+      <h2><span class="icon">🩹</span>E 투매 바닥 반등 <span style="color:var(--text-dim);font-size:0.8rem;">(투매 capitulation + 반등 · 🔥=지수 동반 바닥)</span></h2>
+      <p style="color:var(--text-dim);font-size:0.9rem;margin:0.4rem 0;">현재 E(투매 바닥) 신호 없음 — 시장이 바닥권(지수 RSI·공포탐욕 극단)이 아닐 땐 비어있는 게 정상입니다.</p>
+      <p class="disclaimer" style="font-size:12px;">※ 투매 바닥(RSI≤30+50선이격+거래량폭증)에서 반등 시작 포착, 4시간봉 RSI도 과매도. 🔥는 지수(나스닥/S&P·코스피)도 RSI<35 동반 바닥(강신호). 떨어지는 칼날 위험 — 매수 추천 아님, 판단·책임 본인.</p>
+    </section>
+
+
+    <section>
+      <h2><span class="icon">📐</span>F. 60일선 지지 <span style="color:var(--text-dim);font-size:0.8rem;">(60일선까지 눌렸다 지지 마감 · 참고용)</span></h2>
+      <ul class="watch-list">
+        <li>
+          <a href="https://finance.naver.com/item/main.naver?code=006340" target="_blank" rel="noopener"><strong>대원전선</strong></a>
+          <span class="pick-ticker">006340·코스피</span> · 12,750원
+          <span class="up-text">+17.84%</span>
+<div class="theme-reason">60일선 지지 (저가 -12.5%·종가 +7.7%·꼬리지지 78%)</div>          <div class="pick-meta">시총 8,853억 · 거래량 3,339만주 · 거래대금 4,258억 · 테마: <a href="https://judal.co.kr/?view=stockList&themeIdx=71" target="_blank" rel="noopener">남북경협</a></div>
+        </li>
+        <li>
+          <a href="https://finance.naver.com/item/main.naver?code=036930" target="_blank" rel="noopener"><strong>주성엔지니어링</strong></a>
+          <span class="pick-ticker">036930·코스닥</span> · 192,600원
+          <span class="up-text">+5.53%</span>
+<div class="theme-reason">60일선 지지 (저가 +0.7%·종가 +9.7%·꼬리지지 81%)</div>          <div class="pick-meta">시총 8조 8,407억 · 거래량 223만주 · 거래대금 4,290억 · 테마: <a href="https://judal.co.kr/?view=stockList&themeIdx=590" target="_blank" rel="noopener">LCD 장비</a></div>
+        </li>
+      </ul>
+      <p class="disclaimer" style="font-size:12px;">※ 60일선까지 눌렸다 지지받고 마감한 종목(<strong>참고 태그</strong>). 백테스트상 다음날 반등 엣지 없음(승률 48~49%·생존편향 포함) 확인됨 — <strong>매수 추천·시그널 아님, 종합점수/Top3에도 미반영</strong>. 단순 참고용.</p>
+    </section>
+
+    <section>
+      <h2><span class="icon">🧬</span>삼각수렴 임박 <span style="color:var(--text-dim);font-size:0.8rem;">(변동성 수축·돌파 직전 코일 · 참고용)</span></h2>
+      <p style="color:var(--text-dim);font-size:0.9rem;margin:0.4rem 0;">오늘 삼각수렴 임박 종목 없음 — 변동성이 수축돼 돌파 직전인 코일 종목이 있을 때만 표시됩니다(참고용).</p>
+      <p class="disclaimer" style="font-size:12px;">※ 삼각수렴 돌파 <strong>임박</strong> 종목. <strong>📐장기 삼각수렴</strong>(수개월 대형 삼각형, 볼록껍질 추세선+실수축) = 백테스트 491건 <strong>승률 66%·평균 +8.7%/20일</strong>로 엣지 확인(HOOD·TSLA류 대박 초입). <strong>단기 코일</strong> = 엣지 약함(승률 ~60% 베타 수준). 🔻대칭=고점↓·저점↑ / 🟰바닥지지=저점 평평. 매수추천 아님·종합점수/Top3 미반영(관찰용).</p>
+    </section>
+
+    <section>
+      <h2><span class="icon">🏦</span>수급 주도 <span style="color:var(--text-dim);font-size:0.8rem;">(기관·외인 연속 순매수 + 급등 · 참고용)</span></h2>
+      <p style="color:var(--text-dim);font-size:0.9rem;margin:0.4rem 0;">오늘 수급 주도 종목 없음 — 기관/외인이 연속 순매수하며 급등한 종목이 있을 때만 표시됩니다(참고용).</p>
+      <p class="disclaimer" style="font-size:12px;">※ 기관/외인 연속 순매수 + 당일 급등 + <strong>정배열/추세</strong> 종목(A/B/C/D 패턴 무관). 📈정배열·🚀주도테마(오늘)·🕒최근 한달 주도테마 표기. 🤖AI요약에 📰호재뉴스·📋공시. <strong>백테스트상 정배열만 본전·비정배열은 손실 → 매수 추천 아님·Top3 미반영</strong>. 참고용(미래에셋생명류 포착, 사용자 요청).</p>
+    </section>
+
+    <section>
+      <h2><span class="icon">🏦</span>기관·외인 연속 순매수/매도 <span style="color:var(--text-dim);font-size:0.8rem;">(시총 상위 · 둘 다 연속)</span></h2>
+      <h3 style="margin-top:0.5rem;color:var(--green);">🟢 연속 순매수 Top</h3>
+      <ul class="watch-list">
+        <li><a href="https://finance.naver.com/item/main.naver?code=068270" target="_blank" rel="noopener"><strong>셀트리온</strong></a> <span class="pick-ticker">068270·코스피</span> <span style="color:var(--green);">기관 6일 · 외인 3일 연속</span></li>
+        <li><a href="https://finance.naver.com/item/main.naver?code=066570" target="_blank" rel="noopener"><strong>LG전자</strong></a> <span class="pick-ticker">066570·코스피</span> <span style="color:var(--green);">기관 6일 · 외인 3일 연속</span></li>
+        <li><a href="https://finance.naver.com/item/main.naver?code=012330" target="_blank" rel="noopener"><strong>현대모비스</strong></a> <span class="pick-ticker">012330·코스피</span> <span style="color:var(--green);">기관 3일 · 외인 5일 연속</span></li>
+        <li><a href="https://finance.naver.com/item/main.naver?code=267260" target="_blank" rel="noopener"><strong>HD현대일렉트릭</strong></a> <span class="pick-ticker">267260·코스피</span> <span style="color:var(--green);">기관 3일 · 외인 5일 연속</span></li>
+        <li><a href="https://finance.naver.com/item/main.naver?code=005380" target="_blank" rel="noopener"><strong>현대차</strong></a> <span class="pick-ticker">005380·코스피</span> <span style="color:var(--green);">기관 2일 · 외인 5일 연속</span></li>
+        <li><a href="https://finance.naver.com/item/main.naver?code=011200" target="_blank" rel="noopener"><strong>HMM</strong></a> <span class="pick-ticker">011200·코스피</span> <span style="color:var(--green);">기관 3일 · 외인 2일 연속</span></li>
+      </ul>
+      <p class="disclaimer" style="font-size:12px;">※ 기관+외국인이 며칠째 연속 순매수/매도 중인 시총상위 종목(개인보다 선행 경향 참고). 매수 추천 아님.</p>
+    </section>
+
+
+
+
+
+
+
+
+
+
+
+
+    <div class="disclaimer">
+      ※ 본 리포트는 공개 데이터 기반 참고용 정보입니다.<br>
+      투자 판단·매매 결정·결과 책임은 전적으로 본인에게 있습니다.<br><br>
+      <a href="../index.html">← 메인으로</a>
+    </div>
+
+  </div>
+
+  <div id="lightbox" class="lightbox" onclick="this.classList.remove('active')">
+    <img id="lightbox-img" src="" alt="차트 확대">
+  </div>
+
+  <div id="ai-modal" class="ai-modal" onclick="if(event.target===this)this.classList.remove('active')">
+    <div class="ai-modal-content">
+      <button type="button" class="ai-modal-close" onclick="document.getElementById('ai-modal').classList.remove('active')">✕</button>
+      <h3 id="ai-modal-title">🤖 AI 요약</h3>
+      <div id="ai-modal-body" class="ai-body"></div>
+      <p class="disclaimer" style="font-size:11px;margin-top:0.9rem;">※ AI 생성 참고용 요약입니다. 매수 추천이 아니며 판단·책임은 본인에게 있습니다.</p>
+    </div>
+  </div>
+
+  <script>
+    // Simple tab switcher
+    document.querySelectorAll('.tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        const id = tab.dataset.tab;
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+        tab.classList.add('active');
+        document.querySelector(`[data-pane="${id}"]`).classList.add('active');
+      });
+    });
+
+    // 개별 종목코드 복사 — 6자리 코드만 클립보드에 복사 (MTS 검색창 붙여넣기용)
+    function copyCode(btn) {
+      const code = (btn.dataset.code || '').trim();
+      if (!code) return;
+      const done = () => {
+        const orig = btn.textContent;
+        btn.textContent = '✅';
+        setTimeout(() => { btn.textContent = orig; }, 1200);
+      };
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(code).then(done).catch(() => fallbackCopy(code, done));
+      } else {
+        fallbackCopy(code, done);
+      }
+    }
+
+    // 종목 AI 요약 모달 표시 (사전 생성된 data-summary)
+    function showAI(btn) {
+      document.getElementById('ai-modal-title').textContent = '🤖 ' + (btn.dataset.name || '') + ' · AI 요약';
+      document.getElementById('ai-modal-body').textContent = btn.dataset.summary || '요약이 없습니다.';
+      document.getElementById('ai-modal').classList.add('active');
+    }
+
+    // 전략 시그널 설명 팝업 (배지 클릭, 사용자 #456)
+    const STRAT_INFO = {
+      'A': {name: '수렴 후 상승', cond: '변동성 수렴(볼린저밴드 폭 축소)으로 바닥을 다진 뒤, 거래량이 실리며 박스권 상단을 상향 돌파하는 초입.'},
+      'B': {name: '20일선 눌림목', cond: '상승추세 종목이 20일 이동평균선 부근까지 조정(눌림)받고 지지·반등을 확인하는 자리(과확장·급반전 제외).'},
+      'C': {name: '추세추종', cond: '정배열(단기>중기>장기 이평) 상승추세가 이어지며 신고가권에서 강세를 지속하는 흐름.'},
+      'D': {name: '추세 반전', cond: '하락추세가 바닥을 다진 뒤 주요 이평선을 상향 돌파하며 추세가 위로 꺾이는 반전 초기.'},
+      'E': {name: '투매 바닥 반등', cond: '최근 주도주가 투매(RSI≤30 + 50일선 이격 과대 + 거래량 급증)로 급락 후 반등 양봉이 나오는 자리.'},
+      '급등초입': {name: '급등 초입', cond: '20일 신고가 돌파 + 거래량 급증 + 당일 강세 — 추세 확인보다 빠른 진입(변동성 큼).'}
+    };
+    function showStrat(btn) {
+      const strats = (btn.dataset.strats || '').split(',').map(s => s.trim()).filter(Boolean);
+      const body = strats.map(s => {
+        const info = STRAT_INFO[s];
+        return info ? (s + ' 시그널: ' + info.name + '\n조건: ' + info.cond) : (s + ' 시그널');
+      }).join('\n\n');
+      document.getElementById('ai-modal-title').textContent = '🎯 전략 시그널 설명';
+      document.getElementById('ai-modal-body').textContent = body || '설명이 없습니다.';
+      document.getElementById('ai-modal').classList.add('active');
+    }
+
+    // 조건 플래그(과열·끝물·눌림·조정·신호등) 설명 팝업 (사용자 #459)
+    const FLAG_INFO = {
+      'overheat': '🔥 단기과열주의 — 일봉 볼린저밴드(20일·2σ) 상단을 종가가 돌파 = 단기 과열. C(추세추종) 종목에만 표시하며, 단기 조정 가능성 참고용(즉시 하락 보장 아님).',
+      'pullback': '🟢 5<10 단기눌림 — 5일선이 10일선 아래로 내려간 단기 데드크로스이나 아직 20일선 위 = 상승추세 중 단기 조정(눌림). 홀드/저가매수 참고.',
+      'correction': '⚠️ 5<10 조정시작 — 5<10 데드크로스 + 20일선 이탈 조짐 = 조정 시작 가능. 추세추종(C)에서 익절·리스크관리 검토 신호.',
+      'endstage': '⚠️ 끝물 — 단기 급등이 과도해 추세 막바지(상투) 위험 구간. 신규 진입 주의.',
+      'macddiv': '⚠️ MACD 고점주의 — 가격은 직전보다 높은 고점인데 MACD 고점은 낮아짐(상승 동력 약화 = 약세 다이버전스). ★약신호 참고용: 백테스트상 10일내 -5% 조정은 37%뿐(62%는 계속 상승, RSI과열 결합 시 오히려 악화). 조정 보장 아님, 보조 정보로만.',
+      'bulldiv': '🔀 강세 다이버전스 — 가격은 직전 저점보다 낮아졌는데 RSI 저점은 높아짐(하락 동력 약화 가능). D(추세반전) 종목에 참고 태그로만 표시. ⚠️ 백테스트 검증 미통과(아웃오브샘플에서 베이스라인 대비 엣지 없음·오히려 −): 매수 신호 아님, 가중치 0의 단순 참고 정보입니다.',
+      'ma60fail': '⚠️ 60선 복귀실패(lower high) — 상승추세 종목이 60일선을 이탈한 뒤 직전 고점을 회복하지 못함(lower high). 사용자 2026-06-22 연구: 60선 \'터치\'는 매수자리지만 \'이탈 후 복귀실패\'가 추세 훼손의 진짜 신호. ⚠️ OOS 백테스트상 \'복귀실패=계속 하락\'은 강세장에서 오히려 반등(미통과) → 매도 신호 아님, 가중치 0 경고 정보입니다.',
+      'rswarn': '⚠️ RS 약화(약세 다이버전스) — 가격은 신고가권인데 시장(코스피/S&P500)대비 상대강도(RS)는 이미 고점에서 꺾임(시장대비 동력 소진). 사용자 2026-06-22 연구: 천장 친 종목의 공통점. ⚠️ 표본 작아 엣지 약함 → 매도 신호 아님, 가중치 0 경고 정보입니다.',
+      'rsconfirm': '🟢 RS 강세 유지 — 종목이 시장(코스피/S&P500)대비 상대강도(RS) 신고가 부근을 유지(시장을 압도). 눌림 추매 시 신뢰 가점 참고용. ⚠️ 가중치 0 참고 정보 — 단독 매수 신호 아님.',
+      'phase:바닥권': '🔵 바닥권(1차) — 일봉 RSI≤30 / 60일선 이격≤-7% / 일봉 CCI≤-200 중 하나. 과매도 1차 바닥(백테스트 20일후 +5~10%).',
+      'phase:강한 바닥': '🔵🔵 강한 바닥(중기) — 주봉 RSI≤31 또는 주봉 CCI≤-200. 코스닥 제외(노이즈). 백테스트 12주후 +6~10%·승률 60~88%.',
+      'phase:역대급 대바닥': '🔵🔵🔵 역대급 대바닥 — 월봉 RSI≤31. 2008 금융위기급 세대 바닥(매우 희귀, 6개월후 +14~60%).',
+      'phase:과열': '🔴 과열 — 지수 이격 임계 초과 + RSI≥70 = 고점권 경계(정보용). 단일지표 고점 적중률 낮아 매도 트리거 아님.',
+      'phase:상승전환': '🔼 상승전환 — 5일선 음→양 회복 + 20일선 위 = 진짜 반등 초입(백테스트 미국 69% vs 가짜 46%).',
+      'phase:하락전환': '🔻 하락전환 — 60일선 이탈 = 중기 추세 하락 전환 경계.',
+      'phase:조정': '🟠 조정 — 20일선 이탈 = 단기 조정 국면.',
+      'phase:단기눌림': '🟡 단기눌림 — 5일선만 이탈(20일선은 위) = 일시적 단기 조정.',
+      'phase:정상': '🟢 정상 — 과열·바닥·전환 신호 없는 일반 상승/중립 구간.'
+    };
+    function showFlag(btn) {
+      if (window.event) window.event.stopPropagation();
+      document.getElementById('ai-modal-title').textContent = 'ℹ️ 시그널 설명';
+      document.getElementById('ai-modal-body').textContent = FLAG_INFO[btn.dataset.flag] || '설명이 없습니다.';
+      document.getElementById('ai-modal').classList.add('active');
+    }
+
+    // 관심종목 일괄등록 복사 (모바일 호환) — "/watch 005930 000660 ..." 클립보드 복사
+    function copyWatch(btn) {
+      const codes = (btn.dataset.codes || '').trim();
+      if (!codes) return;
+      const text = '/watch ' + codes;
+      const done = () => {
+        const orig = btn.textContent;
+        btn.textContent = '✅ 복사됨';
+        setTimeout(() => { btn.textContent = orig; }, 1500);
+      };
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(done).catch(() => fallbackCopy(text, done));
+      } else {
+        fallbackCopy(text, done);
+      }
+    }
+    function fallbackCopy(text, done) {
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      ta.style.position = 'fixed';
+      ta.style.top = '0';
+      ta.style.opacity = '0';
+      document.body.appendChild(ta);
+      ta.focus();
+      ta.setSelectionRange(0, text.length);  // iOS 호환
+      ta.select();
+      try { document.execCommand('copy'); } catch (e) {}
+      document.body.removeChild(ta);
+      if (done) done();
+    }
+
+    // 지수 차트 클릭 → 라이트박스 확대 (작은 카드 가시성 보완)
+    document.querySelectorAll('.index-spark img').forEach(function (im) {
+      im.addEventListener('click', function () {
+        document.getElementById('lightbox-img').src = this.src;
+        document.getElementById('lightbox').classList.add('active');
+      });
+    });
+  </script>
+</body>
+</html>
