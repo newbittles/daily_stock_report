@@ -1,0 +1,1186 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>미국장 장중 리포트 (잠정) — 2026-07-14</title>
+  <meta name="description" content="미국 증시는 혼조세를 보였으나 나스닥과 S&amp;P500은 소폭 상승 마감했습니다. 특히 필라델피아 반도체 지수가 3% 이상 급등하며 시장을 견인했으며, 태양광/신재생 및 반도체 관련 섹터가 강세를 보였습니다. 예상보다 낮은 CPI 보고서 발표가 시장에 긍">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #0f172a;
+      --surface: #1e293b;
+      --surface2: #273449;
+      --border: #334155;
+      --text: #e2e8f0;
+      --text-dim: #94a3b8;
+      --text-mute: #64748b;
+      --accent: #60a5fa;
+      --green: #34d399;
+      --red: #f87171;
+      --yellow: #fbbf24;
+      --purple: #a78bfa;
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      padding: 1rem;
+    }
+    .container { max-width: 980px; margin: 0 auto; }
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    /* Header */
+    .header {
+      padding: 1.5rem 0;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 1.5rem;
+    }
+    .header h1 { font-size: 1.5rem; color: var(--accent); margin-bottom: 0.25rem; }
+    .header .meta {
+      color: var(--text-dim);
+      font-size: 0.85rem;
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+    .badge {
+      display: inline-block;
+      padding: 0.25rem 0.6rem;
+      border-radius: 999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+    .badge.pre { background: #fbbf2422; color: var(--yellow); border: 1px solid #fbbf2455; }
+    .badge.post { background: #60a5fa22; color: var(--accent); border: 1px solid #60a5fa55; }
+
+    /* Section */
+    section {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.25rem 1.5rem;
+      margin-bottom: 1rem;
+    }
+    section h2 {
+      font-size: 1.05rem;
+      color: var(--text-dim);
+      margin-bottom: 0.75rem;
+      font-weight: 600;
+      letter-spacing: -0.01em;
+    }
+    section h2 .icon { margin-right: 0.4rem; }
+
+    /* Indexes */
+    .indexes { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
+    .index-card {
+      background: var(--surface2);
+      border-radius: 8px;
+      padding: 1rem;
+      border-left: 3px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+    .index-card.up { border-left-color: var(--green); }
+    .index-card.down { border-left-color: var(--red); }
+    .index-info { min-width: 0; }
+    .index-spark {
+      width: 100%;
+    }
+    .index-spark img { width: 100%; height: auto; object-fit: contain; border-radius: 4px; cursor: zoom-in; display: block; }
+    /* KM6(2026-06-14): 코스피/코스닥 라벨이 칸 안에서 줄바꿈돼 가시성 저하 → nowrap + 폰트·패딩 축소로 한 줄 고정 */
+    .supply-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; table-layout: fixed; }
+    .supply-table th, .supply-table td { padding: 0.45rem 0.25rem; text-align: right; border-bottom: 1px solid var(--border); white-space: nowrap; }
+    .supply-table th { color: var(--text-dim); font-weight: 600; font-size: 0.8rem; }
+    .supply-table th:first-child, .supply-table td.sup-mk { text-align: left; color: var(--text); font-weight: 700; }
+    .supply-table td { font-variant-numeric: tabular-nums; }
+    .supply-table td.sup-date { text-align: left; color: var(--text-dim); font-size: 0.8rem; }
+    @media (max-width: 380px) { .supply-table { font-size: 0.78rem; } .supply-table th, .supply-table td { padding: 0.4rem 0.15rem; } }
+    .supply-table tr.sup-daysep td { border-top: 2px solid var(--border); }
+    .lead-themes { margin-bottom: 0.75rem; line-height: 1.9; }
+    .lead-theme-chip { display: inline-block; background: #f59e0b22; color: #fbbf24; border: 1px solid #f59e0b55;
+      border-radius: 999px; padding: 0.15rem 0.6rem; margin: 0.15rem 0.3rem 0.15rem 0; font-size: 0.85rem; font-weight: 600; }
+    .index-name { font-size: 0.85rem; color: var(--text-dim); margin-bottom: 0.25rem; }
+    .index-value { font-size: 1.5rem; font-weight: 700; }
+    .index-change { font-size: 0.9rem; margin-top: 0.25rem; }
+    /* 등락률 텍스트: 상승=초록, 하락=빨강 (사용자 2026-06-05 변경) */
+    .up-text { color: var(--green); }
+    .down-text { color: var(--red); }
+
+    /* AI Summary */
+    .summary-box {
+      background: linear-gradient(135deg, #60a5fa15, #a78bfa15);
+      border: 1px solid #60a5fa44;
+      border-radius: 8px;
+      padding: 1rem 1.25rem;
+      margin-bottom: 0.75rem;
+    }
+    .summary-box .label {
+      color: var(--accent);
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      margin-bottom: 0.4rem;
+    }
+    .summary-box p { white-space: pre-wrap; }
+
+    /* Candidate picks */
+    .pick {
+      background: var(--surface2);
+      border-radius: 8px;
+      padding: 1rem 1.25rem;
+      margin-bottom: 0.75rem;
+      border-left: 3px solid var(--yellow);
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 1rem;
+    }
+    .pick.has-chart { grid-template-columns: 1fr 360px; }
+    .pick-body { min-width: 0; }
+    .pick-chart {
+      align-self: start;
+      background: #0f172a;
+      border-radius: 6px;
+      overflow: hidden;
+    }
+    .pick-chart img {
+      width: 100%;
+      height: auto;
+      display: block;
+      cursor: zoom-in;
+    }
+    .pick-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: 0.5rem;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+    .pick-name { font-size: 1.1rem; font-weight: 700; }
+    .pick-meta-group { display: inline-flex; align-items: baseline; gap: 0.4rem; flex-wrap: wrap; }
+    .pick-ticker { color: var(--text-mute); font-size: 0.85rem; font-family: monospace; }
+    .pick-rationale { color: var(--text); margin-bottom: 0.5rem; }
+    .pick-risk {
+      color: var(--text-dim);
+      font-size: 0.85rem;
+      padding-top: 0.4rem;
+      border-top: 1px dashed var(--border);
+    }
+    .pick-risk::before { content: "⚠ "; color: var(--yellow); }
+
+    /* Theme peers */
+    .pick-theme {
+      background: #60a5fa15;
+      border: 1px solid #60a5fa33;
+      border-radius: 6px;
+      padding: 0.5rem 0.75rem;
+      margin-bottom: 0.5rem;
+      font-size: 0.83rem;
+    }
+    .pick-theme-name {
+      color: var(--accent);
+      font-weight: 600;
+      margin-bottom: 0.3rem;
+    }
+    .pick-theme-name::before { content: "🏷 "; }
+    .peer-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+    }
+    .peer-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      padding: 0.2rem 0.6rem;
+      font-size: 0.78rem;
+    }
+    .peer-chip .pct { font-family: monospace; font-weight: 700; }
+
+    /* Theme reason */
+    .theme-reason {
+      grid-column: 1 / -1;
+      font-size: 0.83rem;
+      color: var(--text-dim);
+      margin-top: 0.4rem;
+      padding-top: 0.4rem;
+      border-top: 1px dashed var(--border);
+      line-height: 1.5;
+    }
+    .theme-reason::before { content: "💡 "; }
+    .theme {
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      grid-template-areas: "rank info pct" "reason reason reason";
+      gap: 0.5rem 0.75rem;
+      align-items: center;
+      padding: 0.7rem 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .theme-rank { grid-area: rank; }
+    .theme-info { grid-area: info; }
+    .theme-pct { grid-area: pct; }
+    .theme-reason { grid-area: reason; }
+
+    /* Lightbox overlay for chart click */
+    .lightbox {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.92);
+      z-index: 100;
+      cursor: zoom-out;
+      padding: 1rem;
+      overflow: auto;
+    }
+    .lightbox.active { display: flex; align-items: flex-start; justify-content: center; }
+    .lightbox img { max-width: 100%; height: auto; }
+    /* AI 요약 버튼 + 모달 */
+    .ai-btn { background: rgba(96,165,250,0.15); color: var(--accent); border: 1px solid rgba(96,165,250,0.4);
+      border-radius: 6px; padding: 1px 7px; font-size: 0.72rem; cursor: pointer; margin-left: 5px; white-space: nowrap; }
+    .ai-btn:hover { background: rgba(96,165,250,0.32); }
+    .ai-modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.65); z-index: 100;
+      align-items: center; justify-content: center; padding: 1rem; }
+    .ai-modal.active { display: flex; }
+    .ai-modal-content { background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+      max-width: 460px; width: 100%; padding: 1.3rem 1.4rem; position: relative; }
+    .ai-modal-content h3 { margin-bottom: 0.7rem; font-size: 1.05rem; color: var(--text); }
+    .ai-modal-content .ai-body { line-height: 1.65; white-space: pre-line; color: var(--text); font-size: 0.92rem; }
+    .ai-modal-close { position: absolute; top: 0.7rem; right: 0.9rem; background: none; border: none;
+      color: var(--text-mute); font-size: 1.2rem; cursor: pointer; line-height: 1; }
+
+    /* Watchpoint */
+    .watch-list { list-style: none; padding: 0; }
+    .watch-list li {
+      padding: 0.6rem 0;
+      padding-left: 1.5rem;
+      position: relative;
+      border-bottom: 1px solid var(--border);
+    }
+    .watch-list li:last-child { border-bottom: none; }
+    .watch-list li::before {
+      content: "▸";
+      position: absolute;
+      left: 0;
+      color: var(--accent);
+      font-weight: 700;
+    }
+
+    /* Themes (base styles — grid-template-areas redefined above) */
+    .theme:last-child { border-bottom: none; }
+    .theme-rank {
+      width: 1.8rem;
+      height: 1.8rem;
+      border-radius: 50%;
+      background: var(--surface2);
+      display: grid;
+      place-items: center;
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: var(--text-dim);
+    }
+    .theme-info .name { font-weight: 600; }
+    .theme-info .leads { font-size: 0.8rem; color: var(--text-dim); margin-top: 0.15rem; }
+    .theme-info .theme-why { font-size: 0.82rem; color: var(--text); margin-top: 0.3rem; line-height: 1.4; }
+    .strat-badge { font-size: 0.72rem; font-weight: 700; background: var(--accent); color: #fff; padding: 1px 6px; border-radius: 4px; }
+    .pick-sub { font-size: 0.82rem; color: var(--text-dim); margin-top: 0.2rem; }
+    .hl-bold { font-weight: 800; color: #e23b3b; }  /* 붉은색 볼드 (가시성) */
+    .theme-pct { font-weight: 700; font-size: 0.95rem; }
+
+    /* Stock tables */
+    .stock-list { display: flex; flex-direction: column; gap: 0.4rem; }
+    .stock-row {
+      display: grid;
+      grid-template-columns: 2rem 1fr auto auto;
+      gap: 0.6rem;
+      padding: 0.5rem 0;
+      align-items: center;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.9rem;
+    }
+    .stock-row:last-child { border-bottom: none; }
+    .stock-rank { color: var(--text-mute); font-family: monospace; }
+    .stock-name { font-weight: 500; }
+    .stock-name .ticker { color: var(--text-mute); font-size: 0.75rem; margin-left: 0.3rem; }
+    .stock-price { font-family: monospace; color: var(--text-dim); }
+    .stock-pct { font-family: monospace; font-weight: 700; min-width: 60px; text-align: right; }
+
+    /* Tabs for stock lists */
+    .tabs {
+      display: flex;
+      gap: 0.5rem;
+      margin-bottom: 0.75rem;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 0.5rem;
+    }
+    .tab {
+      padding: 0.4rem 0.85rem;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      cursor: pointer;
+      color: var(--text-dim);
+      font-size: 0.85rem;
+    }
+    .tab.active { background: var(--accent); color: var(--bg); border-color: var(--accent); }
+    .tab-pane { display: none; }
+    .tab-pane.active { display: block; }
+
+    /* News */
+    .news-item {
+      padding: 0.6rem 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .news-item:last-child { border-bottom: none; }
+    .news-title { color: var(--text); }
+    .news-meta { font-size: 0.75rem; color: var(--text-mute); margin-top: 0.2rem; }
+    .news-source { color: var(--accent); }
+
+    /* Disclaimer */
+    .disclaimer {
+      text-align: center;
+      padding: 1.5rem 1rem;
+      color: var(--text-mute);
+      font-size: 0.8rem;
+      margin-top: 1rem;
+      border-top: 1px solid var(--border);
+    }
+
+    /* 전략 스크린 칸 분리 */
+    .strat-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.8rem; }
+    .strat-col { border: 1px solid var(--border); border-radius: 10px; padding: 0.6rem 0.8rem; background: rgba(255,255,255,0.02); }
+    .strat-head { display: flex; align-items: center; justify-content: space-between; gap: 0.4rem; margin-bottom: 0.3rem; flex-wrap: wrap; }
+    .strat-name { font-weight: 700; font-size: 0.95rem; }
+    .copy-btn { font-size: 0.78rem; padding: 0.35rem 0.6rem; border: 1px solid var(--border); border-radius: 6px;
+      background: var(--green); color: #fff; cursor: pointer; white-space: nowrap; }
+    .copy-btn:active { opacity: 0.7; }
+    .code { color: var(--muted); font-size: 0.82rem; }
+    .code-copy { display: inline-block; font-size: 0.8rem; padding: 0.05rem 0.4rem; margin-left: 0.3rem;
+      border: 1px solid var(--border); border-radius: 5px; background: var(--bg); color: var(--text-dim);
+      cursor: pointer; vertical-align: middle; }
+    .code-copy:active { opacity: 0.6; }
+    .pick-meta { color: var(--muted); font-size: 0.8rem; margin-top: 0.2rem; }
+    .pick-line { display: flex; flex-wrap: wrap; align-items: center; gap: 0.4rem; margin-top: 0.35rem; }
+    .strat-col .watch-list li { padding-left: 0; }
+    .strat-col .watch-list li::before { content: ""; }
+
+    /* Responsive */
+    @media (max-width: 880px) {
+      .pick.has-chart { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 640px) {
+      .indexes { grid-template-columns: 1fr 1fr; }  /* 모바일도 2x2 유지 */
+      .header h1 { font-size: 1.25rem; }
+      .pick-name { font-size: 1rem; }
+      .strat-grid { grid-template-columns: 1fr; }  /* 모바일 1열 */
+    }
+    /* Top3 헤드라인 */
+    .top3-sec { border: 2px solid var(--green); border-radius: 12px; padding: 0.8rem 1rem; background: rgba(63,185,80,0.06); margin-bottom: 1rem; }
+    .top3-card { padding: 0.6rem 0; border-bottom: 1px dashed var(--border); }
+    .top3-card:last-of-type { border-bottom: none; }
+    .top3-head { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
+    .top3-rank { display: inline-flex; width: 1.6rem; height: 1.6rem; align-items: center; justify-content: center;
+      background: var(--green); color: #fff; border-radius: 50%; font-weight: 700; font-size: 0.9rem; }
+    .top3-head a { color: var(--txt); text-decoration: none; border-bottom: 1px dashed var(--accent); font-size: 1.05rem; }
+    .top3-reason { color: var(--sub, var(--muted)); font-size: 0.86rem; margin-top: 0.3rem; padding-left: 2.1rem; line-height: 1.4; }
+    .top3-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 0.45rem; padding-left: 2.1rem; margin: 0.3rem 0; }
+    .gap-badge { font-size: 0.8rem; color: var(--text-dim); }
+    .gap-badge.overheat { color: var(--red); font-weight: 700; }
+  </style>
+</head>
+<body>
+  <div class="container">
+
+    <header class="header">
+      <h1>📊 미국장 장중 리포트 (잠정)</h1>
+      <div class="meta">
+        <span class="badge post">
+          🔵 마감 후
+        </span>
+        <span>2026년 07월 14일 22:40</span>
+      </div>
+      <div class="summary-box" style="margin-top:0.5rem;border-left:4px solid #d29922;">
+        <div class="label">😨 공포탐욕지수 (CNN Fear &amp; Greed)</div>
+        <p style="margin:0;"><strong style="font-size:1.1rem;">44</strong> / 100 — 공포</p>
+      </div>
+      <div style="margin-top:0.5rem;">
+        <div class="label" style="font-size:0.78rem;color:var(--text-dim);">🚦 지수 상태 신호등</div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:3px;">
+          <span class="strat-badge" onclick="showFlag(this)" data-flag="phase:단기눌림" style="cursor:pointer;" title="신호등 설명">🟡 나스닥 단기눌림 ⓘ</span>
+          <span class="strat-badge" onclick="showFlag(this)" data-flag="phase:상승추세(정배열)" style="cursor:pointer;" title="신호등 설명">🔼 S&amp;P500 상승추세(정배열) ⓘ</span>
+        </div>
+      </div>
+    </header>
+
+    <section>
+      <h2><span class="icon">🌎</span>미국 증시 마감</h2>
+      <div class="indexes">
+        <div class="index-card up">
+          <div class="index-info">
+            <div class="index-name">S&amp;P500</div>
+            <div class="index-value">7,536.34</div>
+            <div class="index-change up-text">+0.28%</div>
+          </div>
+<div class="index-spark"><img src="charts/2026-07-14-us_sp500-candle.png" alt="S&amp;P500 캔들" loading="lazy"></div>        </div>
+        <div class="index-card up">
+          <div class="index-info">
+            <div class="index-name">나스닥</div>
+            <div class="index-value">26,014.54</div>
+            <div class="index-change up-text">+0.55%</div>
+          </div>
+<div class="index-spark"><img src="charts/2026-07-14-us_nasdaq-candle.png" alt="나스닥 캔들" loading="lazy"></div>        </div>
+        <div class="index-card up">
+          <div class="index-info">
+            <div class="index-name">금</div>
+            <div class="index-value">$4,091.3</div>
+            <div class="index-change up-text">+2.36%</div>
+          </div>
+<div class="index-spark"><img src="charts/2026-07-14-gold-candle.png" alt="금 캔들" loading="lazy"></div>        </div>
+        <div class="index-card up">
+          <div class="index-info">
+            <div class="index-name">WTI 유가</div>
+            <div class="index-value">$80.05</div>
+            <div class="index-change up-text">+2.44%</div>
+          </div>
+<div class="index-spark"><img src="charts/2026-07-14-wti-candle.png" alt="유가 캔들" loading="lazy"></div>        </div>
+      </div>
+      <div style="margin-top:0.7rem;border:2px solid var(--accent);border-radius:10px;padding:0.55rem 0.9rem;background:rgba(88,166,255,0.08);">
+        🇰🇷 <strong>한국 대장 · EWY(한국 MSCI ETF)</strong>
+        <span class="px">$174.09</span>
+        <span class="up-text">마감 +3.58%</span>
+        <div style="font-size:0.76rem;color:var(--text-dim);margin-top:0.15rem;">미국 상장 한국 MSCI ETF — 미국이 본 한국 시장(개장 분위기 선행)</div>
+      </div>
+      <div class="summary-box" style="margin-top:0.8rem;"><div class="label">🤖 AI 시장 요약</div><p>미국 증시는 혼조세를 보였으나 나스닥과 S&amp;P500은 소폭 상승 마감했습니다. 특히 필라델피아 반도체 지수가 3% 이상 급등하며 시장을 견인했으며, 태양광/신재생 및 반도체 관련 섹터가 강세를 보였습니다. 예상보다 낮은 CPI 보고서 발표가 시장에 긍정적인 영향을 미쳤습니다. 금과 유가(WTI)는 각각 2.36%, 2.44% 상승하며 강세를 나타냈습니다.</p></div>
+      <div class="summary-box" style="margin-top:0.6rem;"><div class="label">💡 왜 올랐나 / 왜 떨어졌나</div><p>미국 증시는 예상보다 낮은 CPI 보고서 발표로 인해 연준의 금리 인하 기대감이 살아나며 전반적으로 상승 동력을 얻었습니다. 특히 반도체 섹터는 필라델피아 반도체 지수와 SOXL의 급등을 필두로 강력한 상승세를 보였으며, 태양광/신재생 에너지 섹터도 높은 상승률을 기록했습니다. 반면, 일부 빅테크 기업(애플, 아마존, 마이크로소프트)은 하락하며 지수 상승을 제한하는 모습을 보였습니다.</p></div>
+      <div class="summary-box" style="margin-top:0.6rem;"><div class="label">🌏 한국장 시사점</div><p>오늘 미국 증시에서는 반도체 섹터가 필라델피아 반도체 지수(+3.23%)와 SOXL(+9.12%)의 폭발적인 상승을 이끌며 시장의 주도주로 부상했습니다. AMD(+4.71%)와 같은 개별 반도체 기업들도 강세를 보였습니다. 또한, 태양광/신재생 에너지(+3.56%) 및 2차전지/리튬(+2.04%) 섹터도 긍정적인 흐름을 보이며 친환경 에너지 관련주에 대한 관심을 반영했습니다. 반면, 헬스케어/바이오 섹터는 하락세를 보였습니다. 이러한 미국 증시의 반도체 강세 흐름은 한국 반도체 관련주에 대한 긍정적인 시사점을 제공합니다.</p></div>
+    </section>
+
+
+
+    <section>
+      <h2><span class="icon">🔥</span>강세 섹터 (상승률 상위)</h2>
+      <ul class="watch-list">
+        <li><strong>태양광/신재생</strong> <span class="up-text">+3.56%</span>          <div class="pick-sub">↳ 대표 <a href="https://search.naver.com/search.naver?query=%ED%8D%BC%EC%8A%A4%ED%8A%B8%20%EC%86%94%EB%9D%BC%20%EC%A3%BC%EA%B0%80" target="_blank" rel="noopener">퍼스트 솔라</a> <span class="pick-ticker">FSLR·나스닥</span> <span class="up-text">상승률 +1.8%</span> <span style="color:var(--text-dim);font-size:0.8rem;">· 1주일 -1.2%</span></div>        </li>
+        <li><strong>반도체</strong> <span class="up-text">+3.34%</span>          <div class="pick-sub">↳ 대표 <a href="https://search.naver.com/search.naver?query=%EB%A7%88%EC%9D%B4%ED%81%AC%EB%A1%A0%20%EC%A3%BC%EA%B0%80" target="_blank" rel="noopener">마이크론</a> <span class="pick-ticker">MU·나스닥</span> <span class="up-text">상승률 +4.6%</span> <span style="color:var(--text-dim);font-size:0.8rem;">· 1주일 +4.4%</span></div>        </li>
+        <li><strong>2차전지/리튬</strong> <span class="up-text">+2.04%</span>          <div class="pick-sub">↳ 대표 <a href="https://search.naver.com/search.naver?query=ALB%20%EC%A3%BC%EA%B0%80" target="_blank" rel="noopener">ALB</a> <span class="pick-ticker">ALB·NYSE</span> <span class="up-text">상승률 +3.0%</span> <span style="color:var(--text-dim);font-size:0.8rem;">· 1주일 +0.4%</span></div>        </li>
+        <li><strong>기술/IT</strong> <span class="up-text">+1.05%</span>          <div class="pick-sub">↳ 대표 <a href="https://search.naver.com/search.naver?query=%EB%A7%88%EC%9D%B4%ED%81%AC%EB%A1%9C%EC%86%8C%ED%94%84%ED%8A%B8%20%EC%A3%BC%EA%B0%80" target="_blank" rel="noopener">마이크로소프트</a> <span class="pick-ticker">MSFT·나스닥</span> <span class="down-text">상승률 -1.9%</span> <span style="color:var(--text-dim);font-size:0.8rem;">· 1주일 -1.4%</span></div>        </li>
+      </ul>
+      <h2 style="margin-top:1rem;"><span class="icon">🔻</span>약세 섹터 (하락률 상위)</h2>
+      <ul class="watch-list">
+        <li><strong>헬스케어/바이오</strong> <span class="down-text">-1.61%</span>          <div class="pick-sub">↳ 대표 <a href="https://search.naver.com/search.naver?query=%EC%9D%BC%EB%9D%BC%EC%9D%B4%EB%A6%B4%EB%A6%AC%20%EC%A3%BC%EA%B0%80" target="_blank" rel="noopener">일라이릴리</a> <span class="pick-ticker">LLY·NYSE</span> <span class="down-text">상승률 -2.3%</span> <span style="color:var(--text-dim);font-size:0.8rem;">· 1주일 -6.5%</span></div>        </li>
+        <li><strong>경기소비재</strong> <span class="down-text">-0.31%</span>          <div class="pick-sub">↳ 대표 <a href="https://search.naver.com/search.naver?query=%EC%95%84%EB%A7%88%EC%A1%B4%20%EC%A3%BC%EA%B0%80" target="_blank" rel="noopener">아마존</a> <span class="pick-ticker">AMZN·나스닥</span> <span class="down-text">상승률 -1.2%</span> <span style="color:var(--text-dim);font-size:0.8rem;">· 1주일 -0.7%</span></div>        </li>
+        <li><strong>에너지</strong> <span class="up-text">+0.22%</span>          <div class="pick-sub">↳ 대표 <a href="https://search.naver.com/search.naver?query=%EC%97%91%EC%8A%A8%EB%AA%A8%EB%B9%8C%20%EC%A3%BC%EA%B0%80" target="_blank" rel="noopener">엑슨모빌</a> <span class="pick-ticker">XOM·NYSE</span> <span class="up-text">상승률 +0.1%</span> <span style="color:var(--text-dim);font-size:0.8rem;">· 1주일 +2.1%</span></div>        </li>
+        <li><strong>금융</strong> <span class="up-text">+0.78%</span>          <div class="pick-sub">↳ 대표 <a href="https://search.naver.com/search.naver?query=JP%EB%AA%A8%EA%B1%B4%20%EC%A3%BC%EA%B0%80" target="_blank" rel="noopener">JP모건</a> <span class="pick-ticker">JPM·NYSE</span> <span class="up-text">상승률 +1.8%</span> <span style="color:var(--text-dim);font-size:0.8rem;">· 1주일 +0.4%</span></div>        </li>
+      </ul>
+    </section>
+
+    <section>
+      <h2><span class="icon">💰</span>미국장 거래대금 순위 TOP10 <span style="color:var(--text-dim);font-size:0.8rem;">(S&amp;P500)</span></h2>
+      <ul class="watch-list">
+        <li>
+          <strong style="color:var(--accent);">1.</strong>
+          <a href="https://search.naver.com/search.naver?query=%EC%95%A0%ED%94%8C%20%EC%A3%BC%EA%B0%80" target="_blank" rel="noopener"><strong>애플</strong></a>
+          <span class="pick-ticker">AAPL·나스닥</span> · 장중 $314.46 <span class="down-text">(-0.90%)</span>
+ <span class="up-text" style="font-size:0.82rem;">거래대금 1조 4,264억</span><div class="pick-sub">시총 6,873조 6,919억</div>        </li>
+        <li>
+          <strong style="color:var(--accent);">2.</strong>
+          <a href="https://search.naver.com/search.naver?query=%EB%A9%94%ED%83%80%20%EC%A3%BC%EA%B0%80" target="_blank" rel="noopener"><strong>메타</strong></a>
+          <span class="pick-ticker">META·나스닥</span> · 장중 $658.55 <span class="up-text">(+0.28%)</span>
+ <span class="up-text" style="font-size:0.82rem;">거래대금 1조 2,235억</span><div class="pick-sub">시총 2,481조 650억</div>        </li>
+        <li>
+          <strong style="color:var(--accent);">3.</strong>
+          <a href="https://search.naver.com/search.naver?query=JP%EB%AA%A8%EA%B1%B4%20%EC%A3%BC%EA%B0%80" target="_blank" rel="noopener"><strong>JP모건</strong></a>
+          <span class="pick-ticker">JPM·NYSE</span> · 장중 $339.86 <span class="up-text">(+1.59%)</span>
+ <span class="up-text" style="font-size:0.82rem;">거래대금 1조 297억</span><div class="pick-sub">시총 1,357조 1,190억</div>        </li>
+        <li>
+          <strong style="color:var(--accent);">4.</strong>
+          <a href="https://search.naver.com/search.naver?query=%EB%A3%A8%EB%A9%98%ED%85%80%20%ED%99%80%EB%94%A9%EC%8A%A4%20%EC%A3%BC%EA%B0%80" target="_blank" rel="noopener"><strong>루멘텀 홀딩스</strong></a>
+          <span class="pick-ticker">LITE·나스닥</span> · 장중 $824.12 <span class="up-text">(+7.29%)</span>
+ <span class="up-text" style="font-size:0.82rem;">거래대금 8,571억</span><div class="pick-sub">시총 94조 8,966억</div>        </li>
+        <li>
+          <strong style="color:var(--accent);">5.</strong>
+          <a href="https://search.naver.com/search.naver?query=%EC%95%84%EB%A7%88%EC%A1%B4%20%EC%A3%BC%EA%B0%80" target="_blank" rel="noopener"><strong>아마존</strong></a>
+          <span class="pick-ticker">AMZN·나스닥</span> · 장중 $246.24 <span class="down-text">(-0.43%)</span>
+ <span class="up-text" style="font-size:0.82rem;">거래대금 8,118억</span><div class="pick-sub">시총 3,932조 3,435억</div>        </li>
+        <li>
+          <strong style="color:var(--accent);">6.</strong>
+          <a href="https://search.naver.com/search.naver?query=%EA%B3%A8%EB%93%9C%EB%A7%8C%EC%82%AD%EC%8A%A4%20%EC%A3%BC%EA%B0%80" target="_blank" rel="noopener"><strong>골드만삭스</strong></a>
+          <span class="pick-ticker">GS·NYSE</span> · 장중 $1,101.45 <span class="up-text">(+5.31%)</span>
+ <span class="up-text" style="font-size:0.82rem;">거래대금 7,048억</span><div class="pick-sub">시총 484조 6,580억</div>        </li>
+        <li>
+          <strong style="color:var(--accent);">7.</strong>
+          <a href="https://search.naver.com/search.naver?query=%EB%B1%85%ED%81%AC%EC%98%A4%EB%B8%8C%EC%95%84%EB%A9%94%EB%A6%AC%EC%B9%B4%20%EC%A3%BC%EA%B0%80" target="_blank" rel="noopener"><strong>뱅크오브아메리카</strong></a>
+          <span class="pick-ticker">BAC·NYSE</span> · 장중 $60.58 <span class="up-text">(+1.82%)</span>
+ <span class="up-text" style="font-size:0.82rem;">거래대금 4,448억</span><div class="pick-sub">시총 638조 5,235억</div>        </li>
+        <li>
+          <strong style="color:var(--accent);">8.</strong>
+          <a href="https://search.naver.com/search.naver?query=%EC%9B%B0%EC%8A%A4%ED%8C%8C%EA%B3%A0%20%EC%A3%BC%EA%B0%80" target="_blank" rel="noopener"><strong>웰스파고</strong></a>
+          <span class="pick-ticker">WFC·NYSE</span> · 장중 $87.17 <span class="down-text">(-0.57%)</span>
+ <span class="up-text" style="font-size:0.82rem;">거래대금 4,197억</span><div class="pick-sub">시총 397조 588억</div>        </li>
+        <li>
+          <strong style="color:var(--accent);">9.</strong>
+          <a href="https://search.naver.com/search.naver?query=%EB%A7%88%EC%8A%A4%ED%84%B0%EC%B9%B4%EB%93%9C%20%EC%A3%BC%EA%B0%80" target="_blank" rel="noopener"><strong>마스터카드</strong></a>
+          <span class="pick-ticker">MA·NYSE</span> · 장중 $538.76 <span class="up-text">(+0.20%)</span>
+ <span class="up-text" style="font-size:0.82rem;">거래대금 3,416억</span><div class="pick-sub">시총 712조 97억</div>        </li>
+        <li>
+          <strong style="color:var(--accent);">10.</strong>
+          <a href="https://search.naver.com/search.naver?query=%EC%94%A8%ED%8B%B0%EA%B7%B8%EB%A3%B9%20%EC%A3%BC%EA%B0%80" target="_blank" rel="noopener"><strong>씨티그룹</strong></a>
+          <span class="pick-ticker">C·NYSE</span> · 장중 $142.67 <span class="up-text">(+1.39%)</span>
+ <span class="up-text" style="font-size:0.82rem;">거래대금 3,167억</span><div class="pick-sub">시총 361조 7,870억</div>        </li>
+      </ul>
+    </section>
+
+
+    <section class="top3-sec">
+      <h2><span class="icon">🏆</span>미국 추천 Top 3</h2>
+      
+      <div class="top3-card">
+        <div class="top3-head">
+          <span class="top3-rank">1</span>
+          <a href="https://search.naver.com/search.naver?query=%EC%95%A0%ED%94%8C%20%EC%A3%BC%EA%B0%80" target="_blank" rel="noopener">애플</a>
+          <span class="pick-ticker">AAPL·나스닥</span>
+<span class="strat-badge" onclick="showStrat(this)" data-strats="B,C,D" style="cursor:pointer;" title="전략 설명 보기">B/C/D ⓘ</span>          <span class="px">장중 $314.07 <span class="down-text">(-1.02%)</span> <span class="up-text">(시초 +0.14%)</span></span>
+          <span class="gap-badge ">20일선 +4.7%</span> <span class="down-text" style="font-size:0.8rem;cursor:pointer;" onclick="showFlag(this)" data-flag="ma60fail">⚠️60선복귀실패ⓘ</span> <span class="up-text" style="font-size:0.8rem;cursor:pointer;" onclick="showFlag(this)" data-flag="rsconfirm">🟢RS강세ⓘ</span>        </div>
+        
+<div class="pick-sub">시총 6,873조 6,919억 · 거래대금 1조 4,264억</div><div class="pick-sub">테마: IT하드웨어</div>        <div class="pick-sub" style="color:var(--red);">🔻 한국인 순매도 최근5일 793억(자금유출)</div>
+<div class="top3-reason">대세 정배열 + 신고가 (-2.8%, 60선+7%) · 고점대비 -2.8%</div><button type="button" class="ai-btn" onclick="showAI(this)" data-name="애플" data-summary="🏢 아이폰·맥 등 IT 기기 제조
+애플은 AI 관련주로 분류되며 기술주 랠리에 힘입어 상승했으나, 일부 증권사의 투자의견 하향 조정 소식에 조정을 받았습니다.
+📰 호재/악재: 악재">🤖 AI요약</button>        <div class="pick-chart">
+          <img src="charts/2026-07-14-AAPL.png" alt="애플 차트" loading="lazy"
+               onclick="document.getElementById('lightbox-img').src=this.src;document.getElementById('lightbox').classList.add('active');">
+        </div>
+      </div>
+      <div class="top3-card">
+        <div class="top3-head">
+          <span class="top3-rank">2</span>
+          <a href="https://search.naver.com/search.naver?query=%EB%A9%94%ED%83%80%20%EC%A3%BC%EA%B0%80" target="_blank" rel="noopener">메타</a>
+          <span class="pick-ticker">META·나스닥</span>
+<span class="strat-badge" onclick="showStrat(this)" data-strats="D" style="cursor:pointer;" title="전략 설명 보기">D ⓘ</span>          <span class="px">장중 $660.40 <span class="up-text">(+0.56%)</span> <span class="up-text">(시초 +1.29%)</span></span>
+          <span class="gap-badge ">20일선 +10.9%</span>        </div>
+        
+<div class="pick-sub">시총 2,481조 650억 · 거래대금 1조 2,235억</div><div class="pick-sub">테마: 인터넷/플랫폼</div>        <div class="pick-sub" style="color:var(--green);">🇰🇷 한국인 순매수 전일 +70억 · 최근5일 +78억</div>
+<div class="top3-reason">추세 반전 (일목구름 위, 5&gt;20, MACD+, 20&lt;60(초입))</div><button type="button" class="ai-btn" onclick="showAI(this)" data-name="메타" data-summary="🏢 페이스북·인스타그램 등 소셜 미디어 운영
+메타는 데이터센터 비용 증가 우려에도 불구하고 기술주 전반의 강세 속에서 소폭 상승했습니다.
+📰 호재/악재: 악재">🤖 AI요약</button>        <div class="pick-chart">
+          <img src="charts/2026-07-14-META.png" alt="메타 차트" loading="lazy"
+               onclick="document.getElementById('lightbox-img').src=this.src;document.getElementById('lightbox').classList.add('active');">
+        </div>
+      </div>
+      <div class="top3-card">
+        <div class="top3-head">
+          <span class="top3-rank">3</span>
+          <a href="https://search.naver.com/search.naver?query=JP%EB%AA%A8%EA%B1%B4%20%EC%A3%BC%EA%B0%80" target="_blank" rel="noopener">JP모건</a>
+          <span class="pick-ticker">JPM·NYSE</span>
+<span class="strat-badge" onclick="showStrat(this)" data-strats="A,C" style="cursor:pointer;" title="전략 설명 보기">A/C ⓘ</span>          <span class="px">장중 $341.38 <span class="up-text">(+2.05%)</span> <span class="up-text">(시초 +4.40%)</span></span>
+          <span class="gap-badge ">20일선 +2.2%</span> <span class="down-text" style="font-size:0.8rem;cursor:pointer;" onclick="showFlag(this)" data-flag="macddiv">⚠️MACD 고점주의ⓘ</span> <span class="up-text" style="font-size:0.8rem;cursor:pointer;" onclick="showFlag(this)" data-flag="rsconfirm">🟢RS강세ⓘ</span>        </div>
+        
+<div class="pick-sub">시총 1,357조 1,190억 · 거래대금 1조 297억</div><div class="pick-sub">테마: 은행</div>        
+<div class="top3-reason">대세 정배열 + 신고가 (-1.0%, 60선+8%)</div><button type="button" class="ai-btn" onclick="showAI(this)" data-name="JP모건" data-summary="🏢 금융 서비스 제공
+JP모건은 견조한 실적 발표와 함께 트레이딩 수익이 크게 증가하며 은행주 강세 속에서 신고가를 경신했습니다.
+📰 호재/악재: 호재">🤖 AI요약</button>        <div class="pick-chart">
+          <img src="charts/2026-07-14-JPM.png" alt="JP모건 차트" loading="lazy"
+               onclick="document.getElementById('lightbox-img').src=this.src;document.getElementById('lightbox').classList.add('active');">
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2><span class="icon">🇺🇸</span>미국 종목 스크리닝 <span style="color:var(--text-dim);font-size:0.8rem;">(전략별 칸 · A/B/C/D)</span></h2>
+      <h3 style="margin:0.7rem 0 0.2rem;color:var(--accent);">📊 A 수렴 후 상승 <span style="color:var(--text-dim);font-size:0.78rem;font-weight:normal;">(3)</span></h3>
+      <ul class="watch-list">
+        <li>
+          <a href="https://search.naver.com/search.naver?query=JP%EB%AA%A8%EA%B1%B4%20%EC%A3%BC%EA%B0%80" target="_blank" rel="noopener"><strong>JP모건</strong></a>
+          <span class="pick-ticker">JPM·NYSE</span> · 장중 $341.38 <span class="up-text">(+2.05%)</span> <span class="up-text">(시초 +4.40%)</span>
+<span class="strat-badge" onclick="showStrat(this)" data-strats="A,C" style="cursor:pointer;" title="전략 설명 보기">A/C 시그널 ⓘ</span>          <span class="gap-badge ">20일선 +2.2%</span><div class="pick-sub">시총 1,357조 1,190억 · 거래대금 1조 297억</div><div class="pick-sub">테마: 은행</div>          
+<div class="theme-reason">수렴대 위로 상승전환 (수렴 0.8%) / 120선 위 (+10.4%) · MACD[0선위,상승]</div><button type="button" class="ai-btn" onclick="showAI(this)" data-name="JP모건" data-summary="🏢 금융 서비스 제공
+JP모건은 견조한 실적 발표와 함께 트레이딩 수익이 크게 증가하며 은행주 강세 속에서 신고가를 경신했습니다.
+📰 호재/악재: 호재">🤖 AI요약</button>        </li>
+        <li>
+          <a href="https://search.naver.com/search.naver?query=%EB%A3%A8%EB%A9%98%ED%85%80%20%ED%99%80%EB%94%A9%EC%8A%A4%20%EC%A3%BC%EA%B0%80" target="_blank" rel="noopener"><strong>루멘텀 홀딩스</strong></a>
+          <span class="pick-ticker">LITE·나스닥</span> · 장중 $829.88 <span class="up-text">(+8.04%)</span> <span class="up-text">(시초 +1.40%)</span>
+<span class="strat-badge" onclick="showStrat(this)" data-strats="A" style="cursor:pointer;" title="전략 설명 보기">A 시그널 ⓘ</span>          <span class="gap-badge ">20일선 +0.8%</span><div class="pick-sub">시총 94조 8,966억 · 거래대금 8,571억</div><div class="pick-sub">테마: 통신장비</div>          
+<div class="theme-reason">수렴대 위로 상승전환 (수렴 5.8%) / 120선 위 (+8.2%) · MACD[GC,상승]</div><button type="button" class="ai-btn" onclick="showAI(this)" data-name="루멘텀 홀딩스" data-summary="🏢 광통신 부품 제조
+루멘텀 홀딩스는 수렴대 위로 상승 전환하며 통신 장비 섹터 강세와 AI 광통신 수요 증가 기대감에 큰 폭으로 상승했습니다.
+📰 호재/악재: 호재">🤖 AI요약</button>        </li>
+        <li>
+          <a href="https://search.naver.com/search.naver?query=%EC%95%84%EB%A7%88%EC%A1%B4%20%EC%A3%BC%EA%B0%80" target="_blank" rel="noopener"><strong>아마존</strong></a>
+          <span class="pick-ticker">AMZN·나스닥</span> · 장중 $244.43 <span class="down-text">(-1.17%)</span> <span class="down-text">(시초 -0.45%)</span>
+<span class="strat-badge" onclick="showStrat(this)" data-strats="A" style="cursor:pointer;" title="전략 설명 보기">A 시그널 ⓘ</span>          <span class="gap-badge ">20일선 +2.2%</span><div class="pick-sub">시총 3,932조 3,435억 · 거래대금 8,118억</div><div class="pick-sub">테마: 종합소매</div>          <div class="pick-sub" style="color:var(--green);">🇰🇷 한국인 순매수 최근5일 +199억</div>
+<div class="theme-reason">수렴대 위로 상승전환 (수렴 2.1%) / 120선 위 (+4.3%) · MACD[상승]</div><button type="button" class="ai-btn" onclick="showAI(this)" data-name="아마존" data-summary="🏢 전자상거래 및 클라우드 컴퓨팅
+아마존은 기술주 전반의 조정 속에서 하락했습니다.
+📰 호재/악재: 없음">🤖 AI요약</button>        </li>
+      </ul>
+      <h3 style="margin:0.7rem 0 0.2rem;color:var(--accent);">🔄 B 20일선 눌림목 <span style="color:var(--text-dim);font-size:0.78rem;font-weight:normal;">(3)</span></h3>
+      <ul class="watch-list">
+        <li>
+          <a href="https://search.naver.com/search.naver?query=%EC%95%A0%ED%94%8C%20%EC%A3%BC%EA%B0%80" target="_blank" rel="noopener"><strong>애플</strong></a>
+          <span class="pick-ticker">AAPL·나스닥</span> · 장중 $314.07 <span class="down-text">(-1.02%)</span> <span class="up-text">(시초 +0.14%)</span>
+<span class="strat-badge" onclick="showStrat(this)" data-strats="B,C,D" style="cursor:pointer;" title="전략 설명 보기">B/C/D 시그널 ⓘ</span>          <span class="gap-badge ">20일선 +4.7%</span><div class="pick-sub">시총 6,873조 6,919억 · 거래대금 1조 4,264억</div><div class="pick-sub">테마: IT하드웨어</div>          <div class="pick-sub" style="color:var(--red);">🔻 한국인 순매도 최근5일 793억(자금유출)</div>
+<div class="theme-reason">급등 (10일 +15%) / 20일선 위 (+4.7%, 60선기울기 +2.9%) / 단기눌림 (5일선 -0.3%, 5일고점 -2.8%) · 고점대비 -2.8%</div><button type="button" class="ai-btn" onclick="showAI(this)" data-name="애플" data-summary="🏢 아이폰·맥 등 IT 기기 제조
+애플은 AI 관련주로 분류되며 기술주 랠리에 힘입어 상승했으나, 일부 증권사의 투자의견 하향 조정 소식에 조정을 받았습니다.
+📰 호재/악재: 악재">🤖 AI요약</button>        </li>
+        <li>
+          <a href="https://search.naver.com/search.naver?query=%EC%95%84%EB%A6%AC%EC%8A%A4%ED%83%80%20%EB%84%A4%ED%8A%B8%EC%9B%8D%EC%8A%A4%20%EC%A3%BC%EA%B0%80" target="_blank" rel="noopener"><strong>아리스타 네트웍스</strong></a>
+          <span class="pick-ticker">ANET·NYSE</span> · 장중 $183.43 <span class="up-text">(+1.26%)</span> <span class="down-text">(시초 -0.26%)</span>
+<span class="strat-badge" onclick="showStrat(this)" data-strats="B" style="cursor:pointer;" title="전략 설명 보기">B 시그널 ⓘ</span>          <span class="gap-badge ">20일선 +6.9%</span><div class="pick-sub">시총 338조 9,113억 · 거래대금 2,486억</div><div class="pick-sub">테마: 통신장비</div>          
+<div class="theme-reason">급등 (10일 +21%) / 20일선 위 (+6.9%, 60선기울기 +3.2%) / 단기눌림 (5일선 -0.6%, 5일고점 -4.0%) · 고점대비 -4.0%</div><button type="button" class="ai-btn" onclick="showAI(this)" data-name="아리스타 네트웍스" data-summary="🏢 네트워크 장비 제조
+아리스타 네트웍스는 급등세를 보인 후 단기 눌림목 구간에 진입하며 하락했습니다.
+📰 호재/악재: 없음">🤖 AI요약</button>        </li>
+        <li>
+          <a href="https://search.naver.com/search.naver?query=%EB%A1%9C%EB%B9%88%ED%9B%84%EB%93%9C%20%EC%A3%BC%EA%B0%80" target="_blank" rel="noopener"><strong>로빈후드</strong></a>
+          <span class="pick-ticker">HOOD·나스닥</span> · 장중 $110.13 <span class="up-text">(+0.25%)</span> <span class="down-text">(시초 -0.91%)</span>
+<span class="strat-badge" onclick="showStrat(this)" data-strats="B" style="cursor:pointer;" title="전략 설명 보기">B 시그널 ⓘ</span>          <span class="gap-badge ">20일선 +3.4%</span><div class="pick-sub">시총 146조 9,683억 · 거래대금 2,890억</div><div class="pick-sub">테마: 투자은행/증권</div>          
+<div class="theme-reason">급등 (10일 +20%) / 20일선 위 (+3.4%, 60선기울기 +7.3%) / 단기눌림 (5일선 -2.1%, 5일고점 -8.2%) · 고점대비 -8.7%</div><button type="button" class="ai-btn" onclick="showAI(this)" data-name="로빈후드" data-summary="🏢 온라인 증권 거래 플랫폼
+로빈후드는 급등세를 보인 후 단기 눌림목 구간에 진입하며 하락했습니다.
+📰 호재/악재: 없음">🤖 AI요약</button>        </li>
+      </ul>
+      <h3 style="margin:0.7rem 0 0.2rem;color:var(--accent);">📈 C 추세추종 <span style="color:var(--text-dim);font-size:0.78rem;font-weight:normal;">(3)</span></h3>
+      <ul class="watch-list">
+        <li>
+          <a href="https://search.naver.com/search.naver?query=%EC%95%A0%ED%94%8C%20%EC%A3%BC%EA%B0%80" target="_blank" rel="noopener"><strong>애플</strong></a>
+          <span class="pick-ticker">AAPL·나스닥</span> · 장중 $314.07 <span class="down-text">(-1.02%)</span> <span class="up-text">(시초 +0.14%)</span>
+<span class="strat-badge" onclick="showStrat(this)" data-strats="B,C,D" style="cursor:pointer;" title="전략 설명 보기">B/C/D 시그널 ⓘ</span>          <span class="gap-badge ">20일선 +4.7%</span><div class="pick-sub">시총 6,873조 6,919억 · 거래대금 1조 4,264억</div><div class="pick-sub">테마: IT하드웨어</div>          <div class="pick-sub" style="color:var(--red);">🔻 한국인 순매도 최근5일 793억(자금유출)</div>
+<div class="theme-reason">대세 정배열 + 신고가 (-2.8%, 60선+7%)</div><button type="button" class="ai-btn" onclick="showAI(this)" data-name="애플" data-summary="🏢 아이폰·맥 등 IT 기기 제조
+애플은 AI 관련주로 분류되며 기술주 랠리에 힘입어 상승했으나, 일부 증권사의 투자의견 하향 조정 소식에 조정을 받았습니다.
+📰 호재/악재: 악재">🤖 AI요약</button>        </li>
+        <li>
+          <a href="https://search.naver.com/search.naver?query=JP%EB%AA%A8%EA%B1%B4%20%EC%A3%BC%EA%B0%80" target="_blank" rel="noopener"><strong>JP모건</strong></a>
+          <span class="pick-ticker">JPM·NYSE</span> · 장중 $341.38 <span class="up-text">(+2.05%)</span> <span class="up-text">(시초 +4.40%)</span>
+<span class="strat-badge" onclick="showStrat(this)" data-strats="A,C" style="cursor:pointer;" title="전략 설명 보기">A/C 시그널 ⓘ</span>          <span class="gap-badge ">20일선 +2.2%</span><div class="pick-sub">시총 1,357조 1,190억 · 거래대금 1조 297억</div><div class="pick-sub">테마: 은행</div>          
+<div class="theme-reason">대세 정배열 + 신고가 (-1.0%, 60선+8%)</div><button type="button" class="ai-btn" onclick="showAI(this)" data-name="JP모건" data-summary="🏢 금융 서비스 제공
+JP모건은 견조한 실적 발표와 함께 트레이딩 수익이 크게 증가하며 은행주 강세 속에서 신고가를 경신했습니다.
+📰 호재/악재: 호재">🤖 AI요약</button>        </li>
+        <li>
+          <a href="https://search.naver.com/search.naver?query=%EB%B1%85%ED%81%AC%EC%98%A4%EB%B8%8C%EC%95%84%EB%A9%94%EB%A6%AC%EC%B9%B4%20%EC%A3%BC%EA%B0%80" target="_blank" rel="noopener"><strong>뱅크오브아메리카</strong></a>
+          <span class="pick-ticker">BAC·NYSE</span> · 장중 $60.49 <span class="up-text">(+1.66%)</span> <span class="up-text">(시초 +2.53%)</span>
+<span class="strat-badge" onclick="showStrat(this)" data-strats="A,C" style="cursor:pointer;" title="전략 설명 보기">A/C 시그널 ⓘ</span>          <span class="gap-badge ">20일선 +4.1%</span><div class="pick-sub">시총 638조 5,235억 · 거래대금 4,448억</div><div class="pick-sub">테마: 은행</div>          
+<div class="theme-reason">대세 정배열 + 신고가 (-0.4%, 60선+11%)</div><button type="button" class="ai-btn" onclick="showAI(this)" data-name="뱅크오브아메리카" data-summary="🏢 금융 서비스 제공
+뱅크 오브 아메리카는 견조한 실적 발표와 AI 투자 확대, 강한 소비자 지출에 힘입어 상승하며 신고가를 경신했습니다.
+📰 호재/악재: 호재">🤖 AI요약</button>        </li>
+      </ul>
+      <h3 style="margin:0.7rem 0 0.2rem;color:var(--accent);">🔃 D 추세 반전 <span style="color:var(--text-dim);font-size:0.78rem;font-weight:normal;">(3)</span></h3>
+      <ul class="watch-list">
+        <li>
+          <a href="https://search.naver.com/search.naver?query=%EC%95%A0%ED%94%8C%20%EC%A3%BC%EA%B0%80" target="_blank" rel="noopener"><strong>애플</strong></a>
+          <span class="pick-ticker">AAPL·나스닥</span> · 장중 $314.07 <span class="down-text">(-1.02%)</span> <span class="up-text">(시초 +0.14%)</span>
+<span class="strat-badge" onclick="showStrat(this)" data-strats="B,C,D" style="cursor:pointer;" title="전략 설명 보기">B/C/D 시그널 ⓘ</span>          <span class="gap-badge ">20일선 +4.7%</span><div class="pick-sub">시총 6,873조 6,919억 · 거래대금 1조 4,264억</div><div class="pick-sub">테마: IT하드웨어</div>          <div class="pick-sub" style="color:var(--red);">🔻 한국인 순매도 최근5일 793억(자금유출)</div>
+<div class="theme-reason">추세 반전 (일목구름 위, 5&gt;20, MACD+, 20&gt;60)</div><button type="button" class="ai-btn" onclick="showAI(this)" data-name="애플" data-summary="🏢 아이폰·맥 등 IT 기기 제조
+애플은 AI 관련주로 분류되며 기술주 랠리에 힘입어 상승했으나, 일부 증권사의 투자의견 하향 조정 소식에 조정을 받았습니다.
+📰 호재/악재: 악재">🤖 AI요약</button>        </li>
+        <li>
+          <a href="https://search.naver.com/search.naver?query=%EB%A9%94%ED%83%80%20%EC%A3%BC%EA%B0%80" target="_blank" rel="noopener"><strong>메타</strong></a>
+          <span class="pick-ticker">META·나스닥</span> · 장중 $660.40 <span class="up-text">(+0.56%)</span> <span class="up-text">(시초 +1.29%)</span>
+<span class="strat-badge" onclick="showStrat(this)" data-strats="D" style="cursor:pointer;" title="전략 설명 보기">D 시그널 ⓘ</span>          <span class="gap-badge ">20일선 +10.9%</span><div class="pick-sub">시총 2,481조 650억 · 거래대금 1조 2,235억</div><div class="pick-sub">테마: 인터넷/플랫폼</div>          <div class="pick-sub" style="color:var(--green);">🇰🇷 한국인 순매수 전일 +70억 · 최근5일 +78억</div>
+<div class="theme-reason">추세 반전 (일목구름 위, 5&gt;20, MACD+, 20&lt;60(초입))</div><button type="button" class="ai-btn" onclick="showAI(this)" data-name="메타" data-summary="🏢 페이스북·인스타그램 등 소셜 미디어 운영
+메타는 데이터센터 비용 증가 우려에도 불구하고 기술주 전반의 강세 속에서 소폭 상승했습니다.
+📰 호재/악재: 악재">🤖 AI요약</button>        </li>
+        <li>
+          <a href="https://search.naver.com/search.naver?query=%EB%A7%88%EC%8A%A4%ED%84%B0%EC%B9%B4%EB%93%9C%20%EC%A3%BC%EA%B0%80" target="_blank" rel="noopener"><strong>마스터카드</strong></a>
+          <span class="pick-ticker">MA·NYSE</span> · 장중 $541.40 <span class="up-text">(+0.69%)</span> <span class="up-text">(시초 +1.20%)</span>
+<span class="strat-badge" onclick="showStrat(this)" data-strats="A,C,D" style="cursor:pointer;" title="전략 설명 보기">A/C/D 시그널 ⓘ</span>          <span class="gap-badge ">20일선 +5.4%</span><div class="pick-sub">시총 712조 97억 · 거래대금 3,416억</div><div class="pick-sub">테마: 결제</div>          
+<div class="theme-reason">추세 반전 (일목구름 위, 5&gt;20, MACD+, 20&gt;60)</div><button type="button" class="ai-btn" onclick="showAI(this)" data-name="마스터카드" data-summary="🏢 결제 처리 서비스
+마스터카드는 대세 정배열 및 신고가 흐름을 이어가며 결제 섹터 강세 속에서 소폭 상승했습니다.
+📰 호재/악재: 없음">🤖 AI요약</button>        </li>
+      </ul>
+      <p class="disclaimer" style="font-size:12px;">※ S&amp;P500 대상 A/B/C/D 전략별 분류(각 칸 거래대금순). 한 종목이 여러 전략에 잡히면 각 칸에 중복 표기. 백테스트상 기계적 엣지는 약하며 매수 추천이 아닙니다. 판단·책임은 본인.</p>
+    </section>
+
+    <section>
+      <h2><span class="icon">🇰🇷</span>한국인 자금흐름 <span style="color:var(--text-dim);font-size:0.8rem;">(서학개미 · 최근 5거래일 순매수/순매도, 억원)</span></h2>
+      <p style="color:var(--text-dim);font-size:0.8rem;margin:0.2rem 0;">📅 결제일 7/7~7/13(5거래일) 기준 · 오늘 7/14 기준 약 1일 전 데이터 · <span title="결제(T+2): 실제 매수·매도는 결제일보다 2거래일 앞섰다는 뜻">T+2 결제 기준(실제 매매는 약 2거래일 전)</span></p>
+      <div class="summary-box" style="margin:0.3rem 0;border-left:4px solid var(--green);">
+        <p style="margin:0;">💸 <strong>한국인 순매수 일평균: +5,183억</strong> (전주 +4,097억 대비 <strong class="up-text">+26.5%</strong>) <span style="color:var(--text-dim);font-size:0.8rem;">· 5일 총액 +25,916억</span></p>
+      </div>
+      <h3 style="margin-top:0.6rem;color:var(--green);">💰 순매수 TOP5 — 개별종목 <span style="color:var(--text-dim);font-size:0.78rem;font-weight:normal;">(7/7~7/13 결제 기준)</span></h3>
+      <ul class="watch-list">
+        <li><a href="https://search.naver.com/search.naver?query=%EC%95%84%EC%9D%B4%EB%A6%AC%EC%8A%A4%20%EC%97%90%EB%84%88%EC%A7%80%20%EC%A3%BC%EA%B0%80" target="_blank" rel="noopener"><strong>아이리스 에너지</strong></a> <span class="pick-ticker">IRIS</span> <span style="color:var(--green);">+1,445억</span></li>
+        <li><a href="https://search.naver.com/search.naver?query=%EB%A7%88%EC%9D%B4%ED%81%AC%EB%A1%9C%EC%86%8C%ED%94%84%ED%8A%B8%20%EC%A3%BC%EA%B0%80" target="_blank" rel="noopener"><strong>마이크로소프트</strong></a> <span class="pick-ticker">MSFT·나스닥</span> <span style="color:var(--green);">+1,350억</span><div class="pick-sub">시총 4,233조 3,595억 · 거래대금 2조 7,089억</div></li>
+        <li><a href="https://search.naver.com/search.naver?query=%EC%95%8C%ED%8C%8C%EB%B2%B3%28%EA%B5%AC%EA%B8%80%29%20%EC%A3%BC%EA%B0%80" target="_blank" rel="noopener"><strong>알파벳(구글)</strong></a> <span class="pick-ticker">GOOGL·나스닥</span> <span style="color:var(--green);">+1,337억</span><div class="pick-sub">시총 6,403조 2,285억 · 거래대금 9,573억</div></li>
+        <li><a href="https://search.naver.com/search.naver?query=%EC%96%B4%ED%94%8C%EB%9D%BC%EC%9D%B4%EB%93%9C%20%EB%A8%B8%ED%8B%B0%EB%A6%AC%EC%96%BC%EC%A6%88%20%EC%A3%BC%EA%B0%80" target="_blank" rel="noopener"><strong>어플라이드 머티리얼즈</strong></a> <span class="pick-ticker">AMAT·나스닥</span> <span style="color:var(--green);">+911억</span><div class="pick-sub">시총 707조 1,770억 · 거래대금 8,117억</div></li>
+        <li><a href="https://search.naver.com/search.naver?query=%ED%8A%B9%EC%A0%95%20%ED%8B%B0%EC%BB%A4%20%EB%B6%88%EB%AA%85%20%EC%A3%BC%EA%B0%80" target="_blank" rel="noopener"><strong>특정 티커 불명</strong></a> <span class="pick-ticker">X</span> <span style="color:var(--green);">+744억</span></li>
+      </ul>
+      <h3 style="margin-top:0.6rem;color:var(--green);">📦 순매수 TOP5 — ETF <span style="color:var(--text-dim);font-size:0.78rem;font-weight:normal;">(7/7~7/13 결제 기준)</span></h3>
+      <ul class="watch-list">
+        <li><a href="https://search.naver.com/search.naver?query=%EB%94%94%EB%A0%89%EC%85%98%20%EB%8D%B0%EC%9D%BC%EB%A6%AC%20%EC%84%B8%EB%AF%B8%EC%BB%A8%EB%8D%95%ED%84%B0%20%EB%B6%88%203X%20ETF%20%EC%A3%BC%EA%B0%80" target="_blank" rel="noopener"><strong>디렉션 데일리 세미컨덕터 불 3X ETF</strong></a> <span class="pick-ticker">SOXL</span> <span style="color:var(--green);">+6,979억</span><div class="pick-sub">거래대금 4조 5,212억</div></li>
+        <li><a href="https://search.naver.com/search.naver?query=%ED%8A%B9%EC%A0%95%20%ED%8B%B0%EC%BB%A4%20%EB%B6%88%EB%AA%85%20%EC%A3%BC%EA%B0%80" target="_blank" rel="noopener"><strong>특정 티커 불명</strong></a> <span class="pick-ticker">X</span> <span style="color:var(--green);">+1,367억</span></li>
+        <li><a href="https://search.naver.com/search.naver?query=%EB%82%98%EC%8A%A4%EB%8B%A5100%202X%28QLD%29%20%EC%A3%BC%EA%B0%80" target="_blank" rel="noopener"><strong>나스닥100 2X(QLD)</strong></a> <span class="pick-ticker">QLD</span> <span style="color:var(--green);">+1,069억</span><div class="pick-sub">거래대금 1,295억</div></li>
+        <li><a href="https://search.naver.com/search.naver?query=%ED%8A%B8%EB%A0%88%EC%9D%B4%EB%8D%94%202X%20%EB%A1%B1%20SNDK%20%EB%8D%B0%EC%9D%BC%EB%A6%AC%20ETF%20%EC%A3%BC%EA%B0%80" target="_blank" rel="noopener"><strong>트레이더 2X 롱 SNDK 데일리 ETF</strong></a> <span class="pick-ticker">SNDK·나스닥</span> <span style="color:var(--green);">+965억</span><div class="pick-sub">시총 394조 7,664억 · 거래대금 6조 2,871억</div></li>
+        <li><a href="https://search.naver.com/search.naver?query=%ED%94%84%EB%A1%9C%EC%85%B0%EC%96%B4%EC%A6%88%20%EC%9A%B8%ED%8A%B8%EB%9D%BC%ED%94%84%EB%A1%9C%20QQQ%20ETF%20%EC%A3%BC%EA%B0%80" target="_blank" rel="noopener"><strong>프로셰어즈 울트라프로 QQQ ETF</strong></a> <span class="pick-ticker">TQQQ</span> <span style="color:var(--green);">+810억</span><div class="pick-sub">거래대금 1조 8,738억</div></li>
+      </ul>
+      <h3 style="margin-top:0.6rem;color:var(--red);">🔻 순매도 TOP3 — 자금 유출 <span style="color:var(--text-dim);font-size:0.78rem;font-weight:normal;">(7/7~7/13 결제 기준)</span></h3>
+      <ul class="watch-list">
+        <li><a href="https://search.naver.com/search.naver?query=%EB%A7%88%EC%9D%B4%ED%81%AC%EB%A1%A0%20%EC%A3%BC%EA%B0%80" target="_blank" rel="noopener"><strong>마이크론</strong></a> <span class="pick-ticker">MU·나스닥</span> <span style="color:var(--red);">−2,546억</span><div class="pick-sub">시총 1,644조 9,439억 · 거래대금 8조 9,520억</div></li>
+        <li><a href="https://search.naver.com/search.naver?query=%EC%97%94%EB%B9%84%EB%94%94%EC%95%84%20%EC%A3%BC%EA%B0%80" target="_blank" rel="noopener"><strong>엔비디아</strong></a> <span class="pick-ticker">NVDA·나스닥</span> <span style="color:var(--red);">−1,873억</span><div class="pick-sub">시총 7,380조 9,228억 · 거래대금 4조 5,472억</div></li>
+        <li><a href="https://search.naver.com/search.naver?query=%EC%96%80%EB%8D%B1%EC%8A%A4%20%EC%A3%BC%EA%B0%80" target="_blank" rel="noopener"><strong>얀덱스</strong></a> <span class="pick-ticker">YNDX</span> <span style="color:var(--red);">−1,494억</span></li>
+      </ul>
+      <p class="disclaimer" style="font-size:12px;">※ 예탁결제원(SEIBro) 최근 5거래일 한국인 순매수/순매도 <strong>결제금액(T+2)</strong> · 7/7~7/13 결제 기준(실제 매매는 약 2거래일 전). 자금이 어디로 유입·유출되는지 참고용.</p>
+    </section>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <section>
+      <h2><span class="icon">🩹</span>E 투매 바닥 반등 <span style="color:var(--text-dim);font-size:0.8rem;">(투매 capitulation + 반등 · 🔥=지수 동반 바닥)</span></h2>
+      <p style="color:var(--text-dim);font-size:0.9rem;margin:0.4rem 0;">현재 E(투매 바닥) 신호 없음 — 시장이 바닥권(지수 RSI·공포탐욕 극단)이 아닐 땐 비어있는 게 정상입니다.</p>
+      <p class="disclaimer" style="font-size:12px;">※ 투매 바닥(RSI≤30+50선이격+거래량폭증)에서 반등 시작 포착, 4시간봉 RSI도 과매도. 🔥는 지수(나스닥/S&P·코스피)도 RSI<35 동반 바닥(강신호). 떨어지는 칼날 위험 — 매수 추천 아님, 판단·책임 본인.</p>
+    </section>
+
+
+    <section>
+      <h2><span class="icon">📐</span>F. 60일선 지지 <span style="color:var(--text-dim);font-size:0.8rem;">(60일선까지 눌렸다 지지 마감 · 참고용)</span></h2>
+      <ul class="watch-list">
+        <li>
+          <a href="https://search.naver.com/search.naver?query=%EC%A7%80%EC%8A%A4%EC%BC%80%EC%9D%BC%EB%9F%AC%20%EC%A3%BC%EA%B0%80" target="_blank" rel="noopener"><strong>지스케일러</strong></a>
+          <span class="pick-ticker">ZS·나스닥</span> · $148.33
+          <span class="up-text">+4.59%</span>
+<div class="theme-reason">60일선 지지 (저가 -1.7%·종가 +4.5%·꼬리지지 100%)</div>          <div class="pick-meta">시총 35조 7,663억 · 거래량 36만주 · 거래대금 795억 · 테마: 소프트웨어</div>
+<button type="button" class="ai-btn" onclick="showAI(this)" data-name="지스케일러" data-summary="🏢 클라우드 보안 솔루션 제공
+지스케일러는 60일선 지지를 받으며 소프트웨어 섹터 강세 속에서 상승했습니다.
+📰 호재/악재: 없음">🤖 AI요약</button>        </li>
+        <li>
+          <a href="https://search.naver.com/search.naver?query=%EC%97%85%EC%8A%A4%ED%83%80%ED%8A%B8%20%ED%99%80%EB%94%A9%EC%8A%A4%20%EC%A3%BC%EA%B0%80" target="_blank" rel="noopener"><strong>업스타트 홀딩스</strong></a>
+          <span class="pick-ticker">UPST·나스닥</span> · $32.35
+          <span class="up-text">+2.83%</span>
+<div class="theme-reason">60일선 지지 (저가 -0.8%·종가 +2.2%·꼬리지지 89%)</div>          <div class="pick-meta">시총 4조 5,907억 · 거래량 27만주 · 거래대금 131억 · 테마: 핀테크</div>
+<button type="button" class="ai-btn" onclick="showAI(this)" data-name="업스타트 홀딩스" data-summary="🏢 AI 기반 대출 플랫폼 운영
+업스타트는 60일선 지지를 받으며 핀테크 섹터 강세 속에서 상승했습니다.
+📰 호재/악재: 호재">🤖 AI요약</button>        </li>
+        <li>
+          <a href="https://search.naver.com/search.naver?query=%EC%95%A1%EC%84%AC%20%ED%85%8C%EB%9D%BC%ED%93%A8%ED%8B%B1%EC%8A%A4%20%EC%A3%BC%EA%B0%80" target="_blank" rel="noopener"><strong>액섬 테라퓨틱스</strong></a>
+          <span class="pick-ticker">AXSM·나스닥</span> · $230.84
+          <span class="up-text">+1.12%</span>
+<div class="theme-reason">60일선 지지 (저가 -0.5%·종가 +1.3%·꼬리지지 98%)</div>          <div class="pick-meta">시총 17조 6,720억 · 거래량 2만주 · 거래대금 59억 · 테마: 제약</div>
+<button type="button" class="ai-btn" onclick="showAI(this)" data-name="액섬 테라퓨틱스" data-summary="🏢 신경계 질환 치료제 개발
+액섬 테라퓨틱스는 60일선 지지를 받으며 제약 섹터 강세 속에서 상승했습니다.
+📰 호재/악재: 없음">🤖 AI요약</button>        </li>
+        <li>
+          <a href="https://search.naver.com/search.naver?query=%EC%9D%B8%ED%84%B0%EB%82%B4%EC%85%94%EB%84%90%20%ED%94%8C%EB%A0%88%EC%9D%B4%EB%B2%84%20%EC%95%A4%20%ED%94%84%EB%9E%98%EA%B7%B8%EB%9E%9C%EC%8B%9C%EC%8A%A4%20%EC%A3%BC%EA%B0%80" target="_blank" rel="noopener"><strong>인터내셔널 플레이버 앤 프래그랜시스</strong></a>
+          <span class="pick-ticker">IFF·NYSE</span> · $75.93
+          <span class="up-text">+1.11%</span>
+<div class="theme-reason">60일선 지지 (저가 -0.1%·종가 +0.4%·꼬리지지 51%)</div>          <div class="pick-meta">시총 28조 7,216억 · 거래량 7만주 · 거래대금 76억 · 테마: 특수화학</div>
+<button type="button" class="ai-btn" onclick="showAI(this)" data-name="인터내셔널 플레이버 앤 프래그랜시스" data-summary="🏢 향료 및 향신료 제조
+인터내셔널 플레이버 앤 프래그랜시스는 60일선 지지를 받으며 특수화학 섹터 강세 속에서 상승했습니다.
+📰 호재/악재: 악재">🤖 AI요약</button>        </li>
+        <li>
+          <a href="https://search.naver.com/search.naver?query=%ED%98%B8%EC%8A%A4%ED%8A%B8%20%ED%98%B8%ED%85%94%EC%8A%A4%20%26%20%EB%A6%AC%EC%A1%B0%ED%8A%B8%20%EC%A3%BC%EA%B0%80" target="_blank" rel="noopener"><strong>호스트 호텔스 &amp; 리조트</strong></a>
+          <span class="pick-ticker">HST·나스닥</span> · $23.31
+          <span class="up-text">+1.04%</span>
+<div class="theme-reason">60일선 지지 (저가 +1.0%·종가 +1.8%·꼬리지지 61%)</div>          <div class="pick-meta">시총 23조 6,995억 · 거래량 45만주 · 거래대금 155억 · 테마: Hotel &amp; Resort REITs</div>
+<button type="button" class="ai-btn" onclick="showAI(this)" data-name="호스트 호텔스 &amp; 리조트" data-summary="🏢 호텔 및 리조트 부동산 투자
+호스트 호텔스 &amp; 리조트는 60일선 지지를 받으며 호텔 섹터 강세와 함께 상승했습니다.
+📰 호재/악재: 호재">🤖 AI요약</button>        </li>
+        <li>
+          <a href="https://search.naver.com/search.naver?query=%ED%82%A8%EB%8D%94%20%EB%AA%A8%EA%B1%B4%20%EC%A3%BC%EA%B0%80" target="_blank" rel="noopener"><strong>킨더 모건</strong></a>
+          <span class="pick-ticker">KMI·NYSE</span> · $32.47
+          <span class="up-text">+0.70%</span>
+<div class="theme-reason">60일선 지지 (저가 +0.1%·종가 +0.9%·꼬리지지 75%)</div>          <div class="pick-meta">시총 107조 1,737억 · 거래량 33만주 · 거래대금 160억 · 테마: 에너지인프라</div>
+<button type="button" class="ai-btn" onclick="showAI(this)" data-name="킨더 모건" data-summary="🏢 에너지 인프라 운영
+킨더 모건은 60일선 지지를 받으며 에너지 인프라 섹터 강세 속에서 상승했습니다.
+📰 호재/악재: 없음">🤖 AI요약</button>        </li>
+        <li>
+          <a href="https://search.naver.com/search.naver?query=%ED%8C%A8%ED%82%A4%EC%A7%95%20%EC%BD%94%ED%8D%BC%EB%A0%88%EC%9D%B4%EC%85%98%20%EC%98%A4%EB%B8%8C%20%EC%95%84%EB%A9%94%EB%A6%AC%EC%B9%B4%20%EC%A3%BC%EA%B0%80" target="_blank" rel="noopener"><strong>패키징 코퍼레이션 오브 아메리카</strong></a>
+          <span class="pick-ticker">PKG·NYSE</span> · $227.35
+          <span class="up-text">+0.66%</span>
+<div class="theme-reason">60일선 지지 (저가 +0.9%·종가 +1.9%·꼬리지지 81%)</div>          <div class="pick-meta">시총 29조 9,634억 · 거래량 2만주 · 거래대금 74억 · 테마: Paper &amp; Plastic Packaging Products &amp; Materials</div>
+<button type="button" class="ai-btn" onclick="showAI(this)" data-name="패키징 코퍼레이션 오브 아메리카" data-summary="🏢 종이 및 플라스틱 포장재 제조
+패키징 코퍼레이션 오브 아메리카는 60일선 지지를 받으며 포장재 섹터 강세 속에서 상승했습니다.
+📰 호재/악재: 없음">🤖 AI요약</button>        </li>
+        <li>
+          <a href="https://search.naver.com/search.naver?query=%EC%97%91%EC%8A%A4%ED%8A%B8%EB%9D%BC%20%EC%8A%A4%ED%8E%98%EC%9D%B4%EC%8A%A4%20%EC%8A%A4%ED%86%A0%EB%A6%AC%EC%A7%80%20%EC%A3%BC%EA%B0%80" target="_blank" rel="noopener"><strong>엑스트라 스페이스 스토리지</strong></a>
+          <span class="pick-ticker">EXR·NYSE</span> · $146.15
+          <span class="up-text">+0.57%</span>
+<div class="theme-reason">60일선 지지 (저가 +0.7%·종가 +1.2%·꼬리지지 100%)</div>          <div class="pick-meta">시총 45조 8,459억 · 거래량 2만주 · 거래대금 45억 · 테마: Self-Storage REITs</div>
+<button type="button" class="ai-btn" onclick="showAI(this)" data-name="엑스트라 스페이스 스토리지" data-summary="🏢 셀프 스토리지 부동산 투자
+엑스트라 스페이스 스토리지는 60일선 지지를 받으며 관련 섹터 강세 속에서 상승했습니다.
+📰 호재/악재: 없음">🤖 AI요약</button>        </li>
+        <li>
+          <a href="https://search.naver.com/search.naver?query=%ED%94%84%EB%A1%A4%EB%A1%9C%EC%A7%81%EC%8A%A4%20%EC%A3%BC%EA%B0%80" target="_blank" rel="noopener"><strong>프롤로직스</strong></a>
+          <span class="pick-ticker">PLD·NYSE</span> · $142.82
+          <span class="up-text">+0.46%</span>
+<div class="theme-reason">60일선 지지 (저가 -0.6%·종가 +0.2%·꼬리지지 93%)</div>          <div class="pick-meta">시총 197조 9,166억 · 거래량 14만주 · 거래대금 303억 · 테마: Industrial REITs</div>
+<button type="button" class="ai-btn" onclick="showAI(this)" data-name="프롤로직스" data-summary="🏢 산업용 부동산 개발 및 임대
+프롤로직스는 60일선 지지를 받으며 산업용 부동산 섹터 강세 속에서 상승했습니다.
+📰 호재/악재: 없음">🤖 AI요약</button>        </li>
+        <li>
+          <a href="https://search.naver.com/search.naver?query=%EC%95%8C%ED%8A%B8%EB%A6%AC%EC%95%84%20%EC%A3%BC%EA%B0%80" target="_blank" rel="noopener"><strong>알트리아</strong></a>
+          <span class="pick-ticker">MO·NYSE</span> · $71.90
+          <span class="up-text">+0.04%</span>
+<div class="theme-reason">60일선 지지 (저가 +0.9%·종가 +1.5%·꼬리지지 89%)</div>          <div class="pick-meta">시총 178조 247억 · 거래량 17만주 · 거래대금 181억 · 테마: 담배</div>
+<button type="button" class="ai-btn" onclick="showAI(this)" data-name="알트리아" data-summary="🏢 담배 및 니코틴 제품 제조
+알트리아는 60일선 지지를 받으며 담배 섹터 강세 속에서 보합세를 보였습니다.
+📰 호재/악재: 없음">🤖 AI요약</button>        </li>
+      </ul>
+      <p class="disclaimer" style="font-size:12px;">※ 60일선까지 눌렸다 지지받고 마감한 종목(<strong>참고 태그</strong>). 백테스트상 다음날 반등 엣지 없음(승률 48~49%·생존편향 포함) 확인됨 — <strong>매수 추천·시그널 아님, 종합점수/Top3에도 미반영</strong>. 단순 참고용.</p>
+    </section>
+
+    <section>
+      <h2><span class="icon">🧬</span>삼각수렴 임박 <span style="color:var(--text-dim);font-size:0.8rem;">(변동성 수축·돌파 직전 코일 · 참고용)</span></h2>
+      <div class="pick has-chart">
+        <div class="pick-body">
+          <div class="pick-head">
+            <a class="pick-name" href="https://search.naver.com/search.naver?query=%EC%93%B0%EB%A6%AC%EC%97%A0%20%EC%A3%BC%EA%B0%80" target="_blank" rel="noopener">쓰리엠</a>
+            <span class="pick-meta-group">
+              <span class="pick-ticker">MMM·NYSE</span>
+<span class="strat-badge" style="background:var(--green);">📐 장기 삼각수렴</span><span class="strat-badge" style="background:var(--accent);">🟰 장기 대칭수렴</span><span class="px">$159.63</span>
+              <span class="up-text">+1.23%</span>            </span>
+          </div>
+<div class="pick-rationale">장기 삼각수렴 대칭수렴 (150일·저항-0.05/지지+0.12%일·밴드 9%·수축 60%)</div>          <div class="pick-meta">시총 123조 1,176억 · 거래량 6만주 · 거래대금 145억 · 테마: 복합산업</div>
+<button type="button" class="ai-btn" onclick="showAI(this)" data-name="쓰리엠" data-summary="🏢 복합 산업 제품 제조
+쓰리엠은 장기 삼각수렴 패턴을 보이며 복합 산업 섹터 강세 속에서 상승했습니다.
+📰 호재/악재: 없음">🤖 AI요약</button>        </div>
+        <div class="pick-chart">
+          <img src="charts/2026-07-14-MMM-ltri.png" alt="쓰리엠 삼각수렴 차트" loading="lazy"
+               onclick="document.getElementById('lightbox-img').src=this.src;document.getElementById('lightbox').classList.add('active');">
+        </div>
+      </div>
+      <div class="pick has-chart">
+        <div class="pick-body">
+          <div class="pick-head">
+            <a class="pick-name" href="https://search.naver.com/search.naver?query=AES%20%EC%BD%94%ED%8D%BC%EB%A0%88%EC%9D%B4%EC%85%98%20%EC%A3%BC%EA%B0%80" target="_blank" rel="noopener">AES 코퍼레이션</a>
+            <span class="pick-meta-group">
+              <span class="pick-ticker">AES·NYSE</span>
+<span class="strat-badge" style="background:var(--green);">📐 장기 삼각수렴</span><span class="strat-badge" style="background:var(--accent);">🟰 장기 대칭수렴</span><span class="px">$14.80</span>
+              <span class="up-text">+0.27%</span>            </span>
+          </div>
+<div class="pick-rationale">장기 삼각수렴 대칭수렴 (150일·저항-0.21/지지+0.06%일·밴드 1%·수축 8%)</div>          <div class="pick-meta">시총 15조 6,970억 · 거래량 30만주 · 거래대금 66억 · 테마: 발전/전력거래</div>
+<button type="button" class="ai-btn" onclick="showAI(this)" data-name="AES 코퍼레이션" data-summary="🏢 발전 및 전력 거래
+AES 코퍼레이션은 장기 삼각수렴 패턴을 보이며 발전 섹터 강세 속에서 상승했습니다.
+📰 호재/악재: 없음">🤖 AI요약</button>        </div>
+        <div class="pick-chart">
+          <img src="charts/2026-07-14-AES-ltri.png" alt="AES 코퍼레이션 삼각수렴 차트" loading="lazy"
+               onclick="document.getElementById('lightbox-img').src=this.src;document.getElementById('lightbox').classList.add('active');">
+        </div>
+      </div>
+      <div class="pick has-chart">
+        <div class="pick-body">
+          <div class="pick-head">
+            <a class="pick-name" href="https://search.naver.com/search.naver?query=%EC%95%A0%EC%A7%88%EB%9F%B0%ED%8A%B8%20%ED%85%8C%ED%81%AC%EB%86%80%EB%A1%9C%EC%A7%80%EC%8A%A4%20%EC%A3%BC%EA%B0%80" target="_blank" rel="noopener">애질런트 테크놀로지스</a>
+            <span class="pick-meta-group">
+              <span class="pick-ticker">A·NYSE</span>
+<span class="strat-badge" style="background:var(--green);">📐 장기 삼각수렴</span><span class="strat-badge" style="background:var(--accent);">🟰 장기 대칭수렴</span><span class="px">$134.54</span>
+              <span class="up-text">+0.37%</span>            </span>
+          </div>
+<div class="pick-rationale">장기 삼각수렴 대칭수렴 (150일·저항-0.07/지지+0.60%일·밴드 1%·수축 51%)</div>          <div class="pick-meta">시총 56조 6,479억 · 거래량 5만주 · 거래대금 94억 · 테마: 생명과학도구</div>
+<button type="button" class="ai-btn" onclick="showAI(this)" data-name="애질런트 테크놀로지스" data-summary="🏢 생명 과학 도구 및 시약 제조
+애질런트 테크놀로지스는 장기 삼각수렴 패턴을 보이며 생명 과학 도구 섹터 강세 속에서 상승했습니다.
+📰 호재/악재: 없음">🤖 AI요약</button>        </div>
+        <div class="pick-chart">
+          <img src="charts/2026-07-14-A-ltri.png" alt="애질런트 테크놀로지스 삼각수렴 차트" loading="lazy"
+               onclick="document.getElementById('lightbox-img').src=this.src;document.getElementById('lightbox').classList.add('active');">
+        </div>
+      </div>
+      <div class="pick has-chart">
+        <div class="pick-body">
+          <div class="pick-head">
+            <a class="pick-name" href="https://search.naver.com/search.naver?query=%EC%95%8C%EB%A0%89%EC%82%B0%EB%93%9C%EB%A6%AC%EC%95%84%20%EB%B6%80%EB%8F%99%EC%82%B0%20%EC%A3%BC%EA%B0%80" target="_blank" rel="noopener">알렉산드리아 부동산</a>
+            <span class="pick-meta-group">
+              <span class="pick-ticker">ARE·NYSE</span>
+<span class="strat-badge" style="background:var(--green);">📐 장기 삼각수렴</span><span class="strat-badge" style="background:var(--accent);">🟰 장기 대칭수렴</span><span class="px">$48.44</span>
+              <span class="up-text">+0.75%</span>            </span>
+          </div>
+<div class="pick-rationale">장기 삼각수렴 대칭수렴 (150일·저항-0.07/지지+0.33%일·밴드 17%·수축 57%)</div>          <div class="pick-meta">시총 12조 5,041억 · 거래량 5만주 · 거래대금 33억 · 테마: Office REITs</div>
+<button type="button" class="ai-btn" onclick="showAI(this)" data-name="알렉산드리아 부동산" data-summary="🏢 부동산 투자 신탁 (오피스)
+알렉산드리아 부동산은 장기 삼각수렴 패턴을 보이며 오피스 REITs 섹터 강세 속에서 상승했습니다.
+📰 호재/악재: 호재">🤖 AI요약</button>        </div>
+        <div class="pick-chart">
+          <img src="charts/2026-07-14-ARE-ltri.png" alt="알렉산드리아 부동산 삼각수렴 차트" loading="lazy"
+               onclick="document.getElementById('lightbox-img').src=this.src;document.getElementById('lightbox').classList.add('active');">
+        </div>
+      </div>
+      <div class="pick has-chart">
+        <div class="pick-body">
+          <div class="pick-head">
+            <a class="pick-name" href="https://search.naver.com/search.naver?query=%EC%95%8C%ED%8C%8C%EB%B2%B3%28%EA%B5%AC%EA%B8%80%29%20%EC%A3%BC%EA%B0%80" target="_blank" rel="noopener">알파벳(구글)</a>
+            <span class="pick-meta-group">
+              <span class="pick-ticker">GOOGL·나스닥</span>
+<span class="strat-badge" style="background:var(--text-mute);">단기 코일</span><span class="strat-badge" style="background:var(--accent);">🟰 바닥지지수렴</span><span class="px">$353.91</span>
+              <span class="up-text">+0.40%</span>            </span>
+          </div>
+<div class="pick-rationale">삼각수렴 바닥지지수렴 (BB폭 10.4%·이격 0.8%·고점-0.09/저점-0.02%일)</div>          <div class="pick-meta">시총 6,422조 7,246억 · 거래량 153만주 · 거래대금 8,071억 · 테마: 인터넷/플랫폼</div>
+<button type="button" class="ai-btn" onclick="showAI(this)" data-name="알파벳(구글)" data-summary="🏢 인터넷 검색 및 광고
+알파벳(구글)은 삼각수렴 바닥 지지 수렴 패턴을 보이며 기술주 랠리 속에서 상승했습니다.
+📰 호재/악재: 없음">🤖 AI요약</button>        </div>
+        <div class="pick-chart">
+          <img src="charts/2026-07-14-GOOGL-coil.png" alt="알파벳(구글) 삼각수렴 차트" loading="lazy"
+               onclick="document.getElementById('lightbox-img').src=this.src;document.getElementById('lightbox').classList.add('active');">
+        </div>
+      </div>
+      <div class="pick has-chart">
+        <div class="pick-body">
+          <div class="pick-head">
+            <a class="pick-name" href="https://search.naver.com/search.naver?query=%EC%95%8C%ED%8C%8C%EB%B2%B3%28%EA%B5%AC%EA%B8%80%29%20%EC%A3%BC%EA%B0%80" target="_blank" rel="noopener">알파벳(구글)</a>
+            <span class="pick-meta-group">
+              <span class="pick-ticker">GOOG·나스닥</span>
+<span class="strat-badge" style="background:var(--text-mute);">단기 코일</span><span class="strat-badge" style="background:var(--accent);">🟰 바닥지지수렴</span><span class="px">$351.64</span>
+              <span class="up-text">+0.28%</span>            </span>
+          </div>
+<div class="pick-rationale">삼각수렴 바닥지지수렴 (BB폭 10.2%·이격 0.7%·고점-0.11/저점-0.05%일)</div>          <div class="pick-meta">시총 6,380조 8,675억 · 거래량 100만주 · 거래대금 5,249억 · 테마: 인터넷/플랫폼</div>
+<button type="button" class="ai-btn" onclick="showAI(this)" data-name="알파벳(구글)" data-summary="🏢 인터넷 검색 및 광고
+알파벳(구글)은 삼각수렴 바닥 지지 수렴 패턴을 보이며 기술주 랠리 속에서 상승했습니다.
+📰 호재/악재: 없음">🤖 AI요약</button>        </div>
+        <div class="pick-chart">
+          <img src="charts/2026-07-14-GOOG-coil.png" alt="알파벳(구글) 삼각수렴 차트" loading="lazy"
+               onclick="document.getElementById('lightbox-img').src=this.src;document.getElementById('lightbox').classList.add('active');">
+        </div>
+      </div>
+      <div class="pick ">
+        <div class="pick-body">
+          <div class="pick-head">
+            <a class="pick-name" href="https://search.naver.com/search.naver?query=%EC%95%8C%ED%8A%B8%EB%A6%AC%EC%95%84%20%EC%A3%BC%EA%B0%80" target="_blank" rel="noopener">알트리아</a>
+            <span class="pick-meta-group">
+              <span class="pick-ticker">MO·NYSE</span>
+<span class="strat-badge" style="background:var(--green);">📐 장기 삼각수렴</span><span class="strat-badge" style="background:var(--accent);">🟰 장기 대칭수렴</span><span class="px">$71.90</span>
+              <span class="up-text">+0.04%</span>            </span>
+          </div>
+<div class="pick-rationale">장기 삼각수렴 대칭수렴 (150일·저항-0.01/지지+0.17%일·밴드 6%·수축 47%)</div>          <div class="pick-meta">시총 178조 247억 · 거래량 17만주 · 거래대금 181억 · 테마: 담배</div>
+<button type="button" class="ai-btn" onclick="showAI(this)" data-name="알트리아" data-summary="🏢 담배 및 니코틴 제품 제조
+알트리아는 60일선 지지를 받으며 담배 섹터 강세 속에서 보합세를 보였습니다.
+📰 호재/악재: 없음">🤖 AI요약</button>        </div>
+      </div>
+      <div class="pick ">
+        <div class="pick-body">
+          <div class="pick-head">
+            <a class="pick-name" href="https://search.naver.com/search.naver?query=%EC%95%84%EB%A7%88%EC%A1%B4%20%EC%A3%BC%EA%B0%80" target="_blank" rel="noopener">아마존</a>
+            <span class="pick-meta-group">
+              <span class="pick-ticker">AMZN·나스닥</span>
+<span class="strat-badge" style="background:var(--green);">📐 장기 삼각수렴</span><span class="strat-badge" style="background:var(--accent);">🟰 장기 대칭수렴</span><span class="px">$246.03</span>
+              <span class="down-text">-0.52%</span>            </span>
+          </div>
+<div class="pick-rationale">장기 삼각수렴 대칭수렴 (150일·저항-0.27/지지+0.13%일·밴드 7%·수축 48%)</div>          <div class="pick-meta">시총 3,932조 3,435억 · 거래량 251만주 · 거래대금 9,197억 · 테마: 종합소매</div>
+<button type="button" class="ai-btn" onclick="showAI(this)" data-name="아마존" data-summary="🏢 전자상거래 및 클라우드 컴퓨팅
+아마존은 기술주 전반의 조정 속에서 하락했습니다.
+📰 호재/악재: 없음">🤖 AI요약</button>        </div>
+      </div>
+      <div class="pick ">
+        <div class="pick-body">
+          <div class="pick-head">
+            <a class="pick-name" href="https://search.naver.com/search.naver?query=%EC%95%B0%EC%BD%94%20%EC%A3%BC%EA%B0%80" target="_blank" rel="noopener">앰코</a>
+            <span class="pick-meta-group">
+              <span class="pick-ticker">AMCR·NYSE</span>
+<span class="strat-badge" style="background:var(--green);">📐 장기 삼각수렴</span><span class="strat-badge" style="background:var(--accent);">🟰 장기 대칭수렴</span><span class="px">$42.62</span>
+              <span class="up-text">+0.44%</span>            </span>
+          </div>
+<div class="pick-rationale">장기 삼각수렴 대칭수렴 (150일·저항-0.14/지지+0.39%일·밴드 7%·수축 52%)</div>          <div class="pick-meta">시총 29조 1,400억 · 거래량 19만주 · 거래대금 118억 · 테마: Paper &amp; Plastic Packaging Products &amp; Materials</div>
+<button type="button" class="ai-btn" onclick="showAI(this)" data-name="앰코" data-summary="🏢 종이 및 플라스틱 포장재 제조
+앰코는 장기 삼각수렴 패턴을 보이며 포장재 섹터 강세 속에서 상승했습니다.
+📰 호재/악재: 호재">🤖 AI요약</button>        </div>
+      </div>
+      <div class="pick ">
+        <div class="pick-body">
+          <div class="pick-head">
+            <a class="pick-name" href="https://search.naver.com/search.naver?query=%EC%95%84%EB%A9%94%EB%A6%AC%EC%B9%B8%EC%9D%B5%EC%8A%A4%ED%94%84%EB%A0%88%EC%8A%A4%20%EC%A3%BC%EA%B0%80" target="_blank" rel="noopener">아메리칸익스프레스</a>
+            <span class="pick-meta-group">
+              <span class="pick-ticker">AXP·NYSE</span>
+<span class="strat-badge" style="background:var(--green);">📐 장기 삼각수렴</span><span class="strat-badge" style="background:var(--accent);">🟰 장기 대칭수렴</span><span class="px">$357.50</span>
+              <span class="up-text">+0.87%</span>            </span>
+          </div>
+<div class="pick-rationale">장기 삼각수렴 대칭수렴 (150일·저항-0.06/지지+0.05%일·밴드 15%·수축 58%)</div>          <div class="pick-meta">시총 362조 7,551억 · 거래량 8만주 · 거래대금 443억 · 테마: 소비자금융</div>
+<button type="button" class="ai-btn" onclick="showAI(this)" data-name="아메리칸익스프레스" data-summary="🏢 신용카드 및 금융 서비스
+아메리칸익스프레스는 장기 삼각수렴 패턴을 보이며 소비자 금융 섹터 강세 속에서 상승했습니다.
+📰 호재/악재: 호재">🤖 AI요약</button>        </div>
+      </div>
+      <p class="disclaimer" style="font-size:12px;">※ 삼각수렴 돌파 <strong>임박</strong> 종목. <strong>📐장기 삼각수렴</strong>(수개월 대형 삼각형, 볼록껍질 추세선+실수축) = 백테스트 491건 <strong>승률 66%·평균 +8.7%/20일</strong>로 엣지 확인(HOOD·TSLA류 대박 초입). <strong>단기 코일</strong> = 엣지 약함(승률 ~60% 베타 수준). 🔻대칭=고점↓·저점↑ / 🟰바닥지지=저점 평평. 매수추천 아님·종합점수/Top3 미반영(관찰용).</p>
+    </section>
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <section>
+      <h2><span class="icon">📰</span>미국 시장 뉴스</h2>
+      <div class="news-item">
+        <a href="https://finance.yahoo.com/markets/live/stock-market-today-tuesday-july-14-dow-sp-500-nasdaq-070833816.html" target="_blank" rel="noopener" class="news-title">주식 시장 오늘: 예상보다 낮은 CPI 보고서 발표 후 다우, S&amp;P 500, 나스닥 혼조세</a>
+<div class="news-meta" style="color:var(--text-dim);font-size:0.78rem;">Stock market today: Dow, S&amp;P 500, Nasdaq mixed after cooler-than-expected CPI report</div><div class="news-meta"><span class="news-source">Yahoo Finance</span></div>      </div>
+      <div class="news-item">
+        <a href="https://finance.yahoo.com/markets/article/earnings-season-is-about-to-kick-off--2-charts-reveal-how-it-may-go-135222405.html" target="_blank" rel="noopener" class="news-title">실적 시즌이 곧 시작됩니다 — 2가지 차트가 그 양상을 보여줍니다</a>
+<div class="news-meta" style="color:var(--text-dim);font-size:0.78rem;">Earnings season is about to kick off — 2 charts reveal how it may go</div><div class="news-meta"><span class="news-source">Yahoo Finance</span></div>      </div>
+      <div class="news-item">
+        <a href="https://finance.yahoo.com/healthcare/articles/centene-corporation-cnc-rallied-following-133233020.html" target="_blank" rel="noopener" class="news-title">Centene Corporation (CNC), 견조한 실적 발표 후 급등</a>
+<div class="news-meta" style="color:var(--text-dim);font-size:0.78rem;">Centene Corporation (CNC) Rallied Following the Robust Result</div><div class="news-meta"><span class="news-source">Insider Monkey</span></div>      </div>
+      <div class="news-item">
+        <a href="https://finance.yahoo.com/markets/stocks/articles/3-reasons-ptlo-risky-1-132711499.html" target="_blank" rel="noopener" class="news-title">PTLO가 위험한 3가지 이유와 대신 매수할 주식 1가지</a>
+<div class="news-meta" style="color:var(--text-dim);font-size:0.78rem;">3 Reasons PTLO is Risky and 1 Stock to Buy Instead</div><div class="news-meta"><span class="news-source">StockStory</span></div>      </div>
+      <div class="news-item">
+        <a href="https://finance.yahoo.com/markets/stocks/articles/sprinklr-cxm-buy-sell-hold-131911614.html" target="_blank" rel="noopener" class="news-title">Sprinklr (CXM): 1분기 실적 발표 후 매수, 매도 또는 보유?</a>
+<div class="news-meta" style="color:var(--text-dim);font-size:0.78rem;">Sprinklr (CXM): Buy, Sell, or Hold Post Q1 Earnings?</div><div class="news-meta"><span class="news-source">StockStory</span></div>      </div>
+      <div class="news-item">
+        <a href="https://www.investors.com/market-trend/stock-market-today/dow-jones-sp500-nasdaq-june-cpi-inflation-ibm-stock/?src=A00220&amp;yptr=yahoo" target="_blank" rel="noopener" class="news-title">주식 시장 오늘: S&amp;P, 예상 밖 CPI 인플레이션 보고서에 상승; IBM, 실적 발표에 23% 급락 (실시간 보도)</a>
+<div class="news-meta" style="color:var(--text-dim);font-size:0.78rem;">Stock Market Today: S&amp;P Climbs On Surprise CPI Inflation Report; IBM Plunges 23% On Earnings (Live Coverage)</div><div class="news-meta"><span class="news-source">Investor&#39;s Business Daily</span></div>      </div>
+      <div class="news-item">
+        <a href="https://finance.yahoo.com/markets/stocks/articles/3-reasons-aiz-risky-1-131111610.html" target="_blank" rel="noopener" class="news-title">AIZ가 위험한 3가지 이유와 대신 매수할 주식 1가지</a>
+<div class="news-meta" style="color:var(--text-dim);font-size:0.78rem;">3 Reasons AIZ is Risky and 1 Stock to Buy Instead</div><div class="news-meta"><span class="news-source">StockStory</span></div>      </div>
+      <div class="news-item">
+        <a href="https://www.investors.com/news/cpi-inflation-june-federal-reserve-warsh-testimony-oil-prices-sp-500/?src=A00220&amp;yptr=yahoo" target="_blank" rel="noopener" class="news-title">CPI 충격적으로 둔화, 연준 금리 인상 가능성 억제; 워시 앞두고 (실시간 보도)</a>
+<div class="news-meta" style="color:var(--text-dim);font-size:0.78rem;">CPI Shockingly Cool, Curbing Fed Rate-Hike Odds; Warsh Ahead (Live Coverage)</div><div class="news-meta"><span class="news-source">Investor&#39;s Business Daily</span></div>      </div>
+    </section>
+
+    <div class="disclaimer">
+      ※ 본 리포트는 공개 데이터 기반 참고용 정보입니다.<br>
+      투자 판단·매매 결정·결과 책임은 전적으로 본인에게 있습니다.<br><br>
+      <a href="../index.html">← 메인으로</a>
+    </div>
+
+  </div>
+
+  <div id="lightbox" class="lightbox" onclick="this.classList.remove('active')">
+    <img id="lightbox-img" src="" alt="차트 확대">
+  </div>
+
+  <div id="ai-modal" class="ai-modal" onclick="if(event.target===this)this.classList.remove('active')">
+    <div class="ai-modal-content">
+      <button type="button" class="ai-modal-close" onclick="document.getElementById('ai-modal').classList.remove('active')">✕</button>
+      <h3 id="ai-modal-title">🤖 AI 요약</h3>
+      <div id="ai-modal-body" class="ai-body"></div>
+      <p class="disclaimer" style="font-size:11px;margin-top:0.9rem;">※ AI 생성 참고용 요약입니다. 매수 추천이 아니며 판단·책임은 본인에게 있습니다.</p>
+    </div>
+  </div>
+
+  <script>
+    // Simple tab switcher
+    document.querySelectorAll('.tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        const id = tab.dataset.tab;
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+        tab.classList.add('active');
+        document.querySelector(`[data-pane="${id}"]`).classList.add('active');
+      });
+    });
+
+    // 개별 종목코드 복사 — 6자리 코드만 클립보드에 복사 (MTS 검색창 붙여넣기용)
+    function copyCode(btn) {
+      const code = (btn.dataset.code || '').trim();
+      if (!code) return;
+      const done = () => {
+        const orig = btn.textContent;
+        btn.textContent = '✅';
+        setTimeout(() => { btn.textContent = orig; }, 1200);
+      };
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(code).then(done).catch(() => fallbackCopy(code, done));
+      } else {
+        fallbackCopy(code, done);
+      }
+    }
+
+    // 종목 AI 요약 모달 표시 (사전 생성된 data-summary)
+    function showAI(btn) {
+      document.getElementById('ai-modal-title').textContent = '🤖 ' + (btn.dataset.name || '') + ' · AI 요약';
+      document.getElementById('ai-modal-body').textContent = btn.dataset.summary || '요약이 없습니다.';
+      document.getElementById('ai-modal').classList.add('active');
+    }
+
+    // 전략 시그널 설명 팝업 (배지 클릭, 사용자 #456)
+    const STRAT_INFO = {
+      'A': {name: '수렴 후 상승', cond: '변동성 수렴(볼린저밴드 폭 축소)으로 바닥을 다진 뒤, 거래량이 실리며 박스권 상단을 상향 돌파하는 초입.'},
+      'B': {name: '20일선 눌림목', cond: '상승추세 종목이 20일 이동평균선 부근까지 조정(눌림)받고 지지·반등을 확인하는 자리(과확장·급반전 제외).'},
+      'C': {name: '추세추종', cond: '정배열(단기>중기>장기 이평) 상승추세가 이어지며 신고가권에서 강세를 지속하는 흐름.'},
+      'D': {name: '추세 반전', cond: '하락추세가 바닥을 다진 뒤 주요 이평선을 상향 돌파하며 추세가 위로 꺾이는 반전 초기.'},
+      'E': {name: '투매 바닥 반등', cond: '최근 주도주가 투매(RSI≤30 + 50일선 이격 과대 + 거래량 급증)로 급락 후 반등 양봉이 나오는 자리.'},
+      '급등초입': {name: '급등 초입', cond: '20일 신고가 돌파 + 거래량 급증 + 당일 강세 — 추세 확인보다 빠른 진입(변동성 큼).'}
+    };
+    function showStrat(btn) {
+      const strats = (btn.dataset.strats || '').split(',').map(s => s.trim()).filter(Boolean);
+      const body = strats.map(s => {
+        const info = STRAT_INFO[s];
+        return info ? (s + ' 시그널: ' + info.name + '\n조건: ' + info.cond) : (s + ' 시그널');
+      }).join('\n\n');
+      document.getElementById('ai-modal-title').textContent = '🎯 전략 시그널 설명';
+      document.getElementById('ai-modal-body').textContent = body || '설명이 없습니다.';
+      document.getElementById('ai-modal').classList.add('active');
+    }
+
+    // 조건 플래그(과열·끝물·눌림·조정·신호등) 설명 팝업 (사용자 #459)
+    const FLAG_INFO = {
+      'overheat': '🔥 단기과열주의 — 일봉 볼린저밴드(20일·2σ) 상단을 종가가 돌파 = 단기 과열. C(추세추종) 종목에만 표시하며, 단기 조정 가능성 참고용(즉시 하락 보장 아님).',
+      'pullback': '🟢 5<10 단기눌림 — 5일선이 10일선 아래로 내려간 단기 데드크로스이나 아직 20일선 위 = 상승추세 중 단기 조정(눌림). 홀드/저가매수 참고.',
+      'correction': '⚠️ 5<10 조정시작 — 5<10 데드크로스 + 20일선 이탈 조짐 = 조정 시작 가능. 추세추종(C)에서 익절·리스크관리 검토 신호.',
+      'endstage': '⚠️ 끝물 — 단기 급등이 과도해 추세 막바지(상투) 위험 구간. 신규 진입 주의.',
+      'macddiv': '⚠️ MACD 고점주의 — 가격은 직전보다 높은 고점인데 MACD 고점은 낮아짐(상승 동력 약화 = 약세 다이버전스). ★약신호 참고용: 백테스트상 10일내 -5% 조정은 37%뿐(62%는 계속 상승, RSI과열 결합 시 오히려 악화). 조정 보장 아님, 보조 정보로만.',
+      'bulldiv': '🔀 강세 다이버전스 — 가격은 직전 저점보다 낮아졌는데 RSI 저점은 높아짐(하락 동력 약화 가능). D(추세반전) 종목에 참고 태그로만 표시. ⚠️ 백테스트 검증 미통과(아웃오브샘플에서 베이스라인 대비 엣지 없음·오히려 −): 매수 신호 아님, 가중치 0의 단순 참고 정보입니다.',
+      'ma60fail': '⚠️ 60선 복귀실패(lower high) — 상승추세 종목이 60일선을 이탈한 뒤 직전 고점을 회복하지 못함(lower high). 사용자 2026-06-22 연구: 60선 \'터치\'는 매수자리지만 \'이탈 후 복귀실패\'가 추세 훼손의 진짜 신호. ⚠️ OOS 백테스트상 \'복귀실패=계속 하락\'은 강세장에서 오히려 반등(미통과) → 매도 신호 아님, 가중치 0 경고 정보입니다.',
+      'rswarn': '⚠️ RS 약화(약세 다이버전스) — 가격은 신고가권인데 시장(코스피/S&P500)대비 상대강도(RS)는 이미 고점에서 꺾임(시장대비 동력 소진). 사용자 2026-06-22 연구: 천장 친 종목의 공통점. ⚠️ 표본 작아 엣지 약함 → 매도 신호 아님, 가중치 0 경고 정보입니다.',
+      'rsconfirm': '🟢 RS 강세 유지 — 종목이 시장(코스피/S&P500)대비 상대강도(RS) 신고가 부근을 유지(시장을 압도). 눌림 추매 시 신뢰 가점 참고용. ⚠️ 가중치 0 참고 정보 — 단독 매수 신호 아님.',
+      'phase:바닥권': '🔵 바닥권(1차) — 일봉 RSI≤30 / 60일선 이격≤-7% / 일봉 CCI≤-200 중 하나. 과매도 1차 바닥(백테스트 20일후 +5~10%).',
+      'phase:강한 바닥': '🔵🔵 강한 바닥(중기) — 주봉 RSI≤31 또는 주봉 CCI≤-200. 코스닥 제외(노이즈). 백테스트 12주후 +6~10%·승률 60~88%.',
+      'phase:역대급 대바닥': '🔵🔵🔵 역대급 대바닥 — 월봉 RSI≤31. 2008 금융위기급 세대 바닥(매우 희귀, 6개월후 +14~60%).',
+      'phase:과열': '🔴 과열 — 지수 이격 임계 초과 + RSI≥70 = 고점권 경계(정보용). 단일지표 고점 적중률 낮아 매도 트리거 아님.',
+      'phase:상승전환': '🔼 상승전환 — 5일선 음→양 회복 + 20일선 위 = 진짜 반등 초입(백테스트 미국 69% vs 가짜 46%).',
+      'phase:하락전환': '🔻 하락전환 — 60일선 이탈 = 중기 추세 하락 전환 경계.',
+      'phase:조정': '🟠 조정 — 20일선 이탈 = 단기 조정 국면.',
+      'phase:단기눌림': '🟡 단기눌림 — 5일선만 이탈(20일선은 위) = 일시적 단기 조정.',
+      'phase:정상': '🟢 정상 — 과열·바닥·전환 신호 없는 일반 상승/중립 구간.'
+    };
+    function showFlag(btn) {
+      if (window.event) window.event.stopPropagation();
+      document.getElementById('ai-modal-title').textContent = 'ℹ️ 시그널 설명';
+      document.getElementById('ai-modal-body').textContent = FLAG_INFO[btn.dataset.flag] || '설명이 없습니다.';
+      document.getElementById('ai-modal').classList.add('active');
+    }
+
+    // 관심종목 일괄등록 복사 (모바일 호환) — "/watch 005930 000660 ..." 클립보드 복사
+    function copyWatch(btn) {
+      const codes = (btn.dataset.codes || '').trim();
+      if (!codes) return;
+      const text = '/watch ' + codes;
+      const done = () => {
+        const orig = btn.textContent;
+        btn.textContent = '✅ 복사됨';
+        setTimeout(() => { btn.textContent = orig; }, 1500);
+      };
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(done).catch(() => fallbackCopy(text, done));
+      } else {
+        fallbackCopy(text, done);
+      }
+    }
+    function fallbackCopy(text, done) {
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      ta.style.position = 'fixed';
+      ta.style.top = '0';
+      ta.style.opacity = '0';
+      document.body.appendChild(ta);
+      ta.focus();
+      ta.setSelectionRange(0, text.length);  // iOS 호환
+      ta.select();
+      try { document.execCommand('copy'); } catch (e) {}
+      document.body.removeChild(ta);
+      if (done) done();
+    }
+
+    // 지수 차트 클릭 → 라이트박스 확대 (작은 카드 가시성 보완)
+    document.querySelectorAll('.index-spark img').forEach(function (im) {
+      im.addEventListener('click', function () {
+        document.getElementById('lightbox-img').src = this.src;
+        document.getElementById('lightbox').classList.add('active');
+      });
+    });
+  </script>
+</body>
+</html>
