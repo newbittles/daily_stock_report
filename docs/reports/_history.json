@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-07-15",
+    "time": "11:40",
+    "mode": "midday",
+    "url": "reports/2026-07-15-midday.html",
+    "summary": "오늘 한국 증시는 전반적으로 약세를 보이고 있으나, 금융주를 중심으로 일부 종목은 강세를 나타내고 있습니다. 특히 KB금융은 장중 꾸준한 상승세를 이어가며 시장 대비 강한 흐름을 보이고 있습니다. 반면, 대원전선은 장 초반 하락세를 보였으나 오후 들어",
+    "kospi_pct": null,
+    "kosdaq_pct": null
+  },
+  {
+    "date": "2026-07-15",
     "time": "09:15",
     "mode": "kr_open",
     "url": "reports/2026-07-15-kr-open.html",
@@ -527,15 +536,6 @@
     "mode": "post_close",
     "url": "reports/2026-07-06-post.html",
     "summary": "코스피는 소폭 하락 마감했으나, 코스닥은 외국인 순매수에 힘입어 상승 마감하며 차별화된 흐름을 보였습니다. 반도체와 2차전지 관련주가 시장을 주도했습니다.",
-    "kospi_pct": null,
-    "kosdaq_pct": null
-  },
-  {
-    "date": "2026-07-06",
-    "time": "14:50",
-    "mode": "pre_close",
-    "url": "reports/2026-07-06-pre.html",
-    "summary": "코스피는 혼조세, 코스닥은 낙폭을 줄이며 소폭 반등 시도 중입니다.",
     "kospi_pct": null,
     "kosdaq_pct": null
   }
