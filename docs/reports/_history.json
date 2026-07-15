@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-07-15",
+    "time": "22:40",
+    "mode": "us_intraday",
+    "url": "reports/2026-07-15-us-mid.html",
+    "summary": "미국 증시는 전반적으로 상승 마감했으며, 특히 AI 관련주와 반도체 섹터의 강세가 지수 상승을 견인했습니다. 금 가격은 소폭 상승했고, WTI 유가는 상승세를 보였습니다.",
+    "kospi_pct": null,
+    "kosdaq_pct": null
+  },
+  {
+    "date": "2026-07-15",
     "time": "21:50",
     "mode": "us_premarket",
     "url": "reports/2026-07-15-us-pre.html",
@@ -527,15 +536,6 @@
     "mode": "kr_open",
     "url": "reports/2026-07-07-kr-open.html",
     "summary": "오늘 한국 증시는 전반적으로 약세를 보이고 있으며, 특히 SK스퀘어는 장중 약세를 지속하며 하락폭을 키우고 있습니다. 반면, 주성엔지니어링과 금호건설은 장 초반의 큰 하락폭을 만회하며 강한 반등세를 연출하고 있습니다.",
-    "kospi_pct": null,
-    "kosdaq_pct": null
-  },
-  {
-    "date": "2026-07-07",
-    "time": "08:05",
-    "mode": "kr_premarket",
-    "url": "reports/2026-07-07-kr-pre.html",
-    "summary": "",
     "kospi_pct": null,
     "kosdaq_pct": null
   }
