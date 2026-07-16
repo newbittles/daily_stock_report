@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-07-16",
+    "time": "11:40",
+    "mode": "midday",
+    "url": "reports/2026-07-16-midday.html",
+    "summary": "오늘 한국 증시는 전반적으로 약세를 보이고 있으며, 특히 반도체 관련주와 건설주에서 두드러진 하락세가 나타나고 있습니다. 주성엔지니어링, 대원전선, 금호건설 등 주요 종목들은 장중 큰 폭의 하락을 경험한 후 일부 반등하며 낙폭을 줄이는 흐름을 보였습니",
+    "kospi_pct": null,
+    "kosdaq_pct": null
+  },
+  {
+    "date": "2026-07-16",
     "time": "09:15",
     "mode": "kr_open",
     "url": "reports/2026-07-16-kr-open.html",
@@ -527,15 +536,6 @@
     "mode": "post_close",
     "url": "reports/2026-07-07-post.html",
     "summary": "코스피는 외국인 순매수세에 힘입어 상승 마감했으나, 코스닥은 차익실현 매물 출회로 하락했습니다. 반도체와 2차전지 관련주가 시장을 주도했습니다.",
-    "kospi_pct": null,
-    "kosdaq_pct": null
-  },
-  {
-    "date": "2026-07-07",
-    "time": "14:50",
-    "mode": "pre_close",
-    "url": "reports/2026-07-07-pre.html",
-    "summary": "코스피는 혼조세, 코스닥은 낙폭을 줄이며 반등 시도 중입니다.",
     "kospi_pct": null,
     "kosdaq_pct": null
   }
