@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-07-16",
+    "time": "16:00",
+    "mode": "post_close",
+    "url": "reports/2026-07-16-post.html",
+    "summary": "오늘 코스피와 코스닥 지수는 혼조세를 보이며 마감했습니다. 반도체 관련주와 2차전지주가 시장을 주도했습니다.",
+    "kospi_pct": null,
+    "kosdaq_pct": null
+  },
+  {
+    "date": "2026-07-16",
     "time": "14:50",
     "mode": "pre_close",
     "url": "reports/2026-07-16-pre.html",
@@ -527,15 +536,6 @@
     "mode": "us_morning",
     "url": "reports/2026-07-08-us.html",
     "summary": "미국 증시는 반도체 섹터의 급락과 유가 급등 속에서 혼조세를 보였습니다. 특히 필라델피아 반도체 지수가 큰 폭으로 하락하며 기술주 전반에 부담을 주었으나, 에너지 섹터는 강세를 나타냈습니다. AI 관련 우려와 지정학적 이슈가 시장 전반의 변동성을 키웠",
-    "kospi_pct": null,
-    "kosdaq_pct": null
-  },
-  {
-    "date": "2026-07-07",
-    "time": "22:40",
-    "mode": "us_intraday",
-    "url": "reports/2026-07-07-us-mid.html",
-    "summary": "미국 증시는 혼조세를 보이며 마감했습니다. S&P500과 나스닥은 하락했지만, 다우 지수는 소폭 상승했습니다. 반도체 섹터의 큰 폭 하락이 시장 전반에 부담을 주었으며, 빅테크 중 일부는 상승세를 보였습니다. 금 가격은 상승했고, WTI 유가는 강세를",
     "kospi_pct": null,
     "kosdaq_pct": null
   }
