@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-07-16",
+    "time": "22:40",
+    "mode": "us_intraday",
+    "url": "reports/2026-07-16-us-mid.html",
+    "summary": "미국 증시는 혼조세를 보이며 마감했습니다. 다우 지수는 소폭 상승했지만, S&P 500과 나스닥은 반도체 섹터의 큰 폭 하락에 영향을 받아 하락했습니다. 특히 필라델피아 반도체 지수가 3% 넘게 하락하며 기술주 전반에 부담을 주었습니다. 금 가격은 하",
+    "kospi_pct": null,
+    "kosdaq_pct": null
+  },
+  {
+    "date": "2026-07-16",
     "time": "21:50",
     "mode": "us_premarket",
     "url": "reports/2026-07-16-us-pre.html",
@@ -527,15 +536,6 @@
     "mode": "kr_open",
     "url": "reports/2026-07-08-kr-open.html",
     "summary": "오늘 한국 증시는 전반적으로 약세를 보이며 하락 흐름을 이어가고 있습니다. 외국인과 기관의 매도세가 지수 하락을 주도하는 가운데, 일부 건설주들이 장중 변동성을 보였습니다. 특히 대원전선은 장 초반 급락했으나 이후 낙폭을 일부 만회하며 반등하는 모습을",
-    "kospi_pct": null,
-    "kosdaq_pct": null
-  },
-  {
-    "date": "2026-07-08",
-    "time": "08:05",
-    "mode": "kr_premarket",
-    "url": "reports/2026-07-08-kr-pre.html",
-    "summary": "",
     "kospi_pct": null,
     "kosdaq_pct": null
   }
