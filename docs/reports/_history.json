@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-07-16",
+    "time": "13:00",
+    "mode": "us_afterhours",
+    "url": "reports/2026-07-16-us-after.html",
+    "summary": "미국 증시는 기술주 강세에 힘입어 전반적으로 상승 마감했으나, 반도체 업종은 차익실현 매물로 하락했습니다. 특히 빅테크 기업들의 견조한 실적 발표와 예상보다 둔화된 인플레이션 지표가 시장 전반의 투자 심리를 개선시켰습니다. 금 가격은 하락했으나 WTI",
+    "kospi_pct": null,
+    "kosdaq_pct": null
+  },
+  {
+    "date": "2026-07-16",
     "time": "11:40",
     "mode": "midday",
     "url": "reports/2026-07-16-midday.html",
@@ -527,15 +536,6 @@
     "mode": "us_premarket",
     "url": "reports/2026-07-07-us-pre.html",
     "summary": "프리장에서 미국 증시는 전반적으로 혼조세를 보이고 있습니다. 필라델피아 반도체 지수 선물은 강세를 보이나, 개별 반도체 종목들은 삼성전자 실적 발표 이후 차익실현 매물과 함께 하락세를 주도하며 기술/IT 섹터 전반의 약세를 이끌고 있습니다. 헬스케어 ",
-    "kospi_pct": null,
-    "kosdaq_pct": null
-  },
-  {
-    "date": "2026-07-07",
-    "time": "16:00",
-    "mode": "post_close",
-    "url": "reports/2026-07-07-post.html",
-    "summary": "코스피는 외국인 순매수세에 힘입어 상승 마감했으나, 코스닥은 차익실현 매물 출회로 하락했습니다. 반도체와 2차전지 관련주가 시장을 주도했습니다.",
     "kospi_pct": null,
     "kosdaq_pct": null
   }
