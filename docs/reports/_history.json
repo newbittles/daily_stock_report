@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-07-16",
+    "time": "14:50",
+    "mode": "pre_close",
+    "url": "reports/2026-07-16-pre.html",
+    "summary": "코스피는 혼조세, 코스닥은 낙폭을 줄이며 반등 시도 중입니다.",
+    "kospi_pct": null,
+    "kosdaq_pct": null
+  },
+  {
+    "date": "2026-07-16",
     "time": "13:00",
     "mode": "us_afterhours",
     "url": "reports/2026-07-16-us-after.html",
@@ -527,15 +536,6 @@
     "mode": "us_intraday",
     "url": "reports/2026-07-07-us-mid.html",
     "summary": "미국 증시는 혼조세를 보이며 마감했습니다. S&P500과 나스닥은 하락했지만, 다우 지수는 소폭 상승했습니다. 반도체 섹터의 큰 폭 하락이 시장 전반에 부담을 주었으며, 빅테크 중 일부는 상승세를 보였습니다. 금 가격은 상승했고, WTI 유가는 강세를",
-    "kospi_pct": null,
-    "kosdaq_pct": null
-  },
-  {
-    "date": "2026-07-07",
-    "time": "21:50",
-    "mode": "us_premarket",
-    "url": "reports/2026-07-07-us-pre.html",
-    "summary": "프리장에서 미국 증시는 전반적으로 혼조세를 보이고 있습니다. 필라델피아 반도체 지수 선물은 강세를 보이나, 개별 반도체 종목들은 삼성전자 실적 발표 이후 차익실현 매물과 함께 하락세를 주도하며 기술/IT 섹터 전반의 약세를 이끌고 있습니다. 헬스케어 ",
     "kospi_pct": null,
     "kosdaq_pct": null
   }
