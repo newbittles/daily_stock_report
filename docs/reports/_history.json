@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-07-17",
+    "time": "13:00",
+    "mode": "us_afterhours",
+    "url": "reports/2026-07-17-us-after.html",
+    "summary": "미국 증시는 기술주 약세와 반도체 섹터의 큰 폭 하락으로 전반적인 하락세를 보였습니다. 특히 필라델피아 반도체 지수가 4% 이상 급락하며 시장 전반을 끌어내렸습니다. 금 가격은 1.44% 하락했고, WTI 유가도 0.82% 하락하며 약세를 나타냈습니다",
+    "kospi_pct": null,
+    "kosdaq_pct": null
+  },
+  {
+    "date": "2026-07-17",
     "time": "06:30",
     "mode": "us_morning",
     "url": "reports/2026-07-17-us.html",
@@ -527,15 +536,6 @@
     "mode": "us_afterhours",
     "url": "reports/2026-07-08-us-after.html",
     "summary": "미국 증시는 전반적으로 하락 마감했으며, 특히 반도체 섹터의 큰 폭 하락이 지수 전반에 부담을 주었습니다. 에너지 섹터는 유가 상승에 힘입어 강세를 보였으나, 기술/IT 및 반도체 업종의 약세가 두드러졌습니다. 지정학적 리스크와 연준 금리 관련 불확실",
-    "kospi_pct": null,
-    "kosdaq_pct": null
-  },
-  {
-    "date": "2026-07-08",
-    "time": "11:40",
-    "mode": "midday",
-    "url": "reports/2026-07-08-midday.html",
-    "summary": "오늘 한국 증시는 전반적으로 약세를 보이고 있으며, 특히 대원전선은 장중 지속적인 하락세를 보이며 저점 부근에서 거래되고 있습니다. 금호건설은 장중 보합권을 유지하며 상대적으로 안정적인 흐름을 나타내고 있습니다.",
     "kospi_pct": null,
     "kosdaq_pct": null
   }
