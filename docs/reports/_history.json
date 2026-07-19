@@ -1,5 +1,14 @@
 [
   {
+    "date": "2026-07-20",
+    "time": "08:05",
+    "mode": "kr_premarket",
+    "url": "reports/2026-07-20-kr-pre.html",
+    "summary": "",
+    "kospi_pct": null,
+    "kosdaq_pct": null
+  },
+  {
     "date": "2026-07-18",
     "time": "06:30",
     "mode": "us_morning",
@@ -527,15 +536,6 @@
     "mode": "us_intraday",
     "url": "reports/2026-07-08-us-mid.html",
     "summary": "미국 증시는 전반적으로 하락세를 보였으나, 반도체 섹터는 강세를 유지하며 필라델피아 반도체 지수가 상승했습니다. 빅테크 종목들은 혼조세를 보였으며, 특히 기술주 전반의 약세 속에서 반도체 관련주들의 선방이 두드러졌습니다. 유가(WTI)는 5.35% 급",
-    "kospi_pct": null,
-    "kosdaq_pct": null
-  },
-  {
-    "date": "2026-07-08",
-    "time": "21:50",
-    "mode": "us_premarket",
-    "url": "reports/2026-07-08-us-pre.html",
-    "summary": "현재 미국 프리장 시장은 전반적으로 약세를 보이고 있으며, 특히 반도체 섹터의 큰 하락이 두드러집니다. 국제 유가 상승에도 불구하고 지정학적 리스크 부각으로 투자 심리가 위축된 모습입니다. 기술주 전반의 하락세 속에서 에너지 섹터만이 강세를 나타내고 ",
     "kospi_pct": null,
     "kosdaq_pct": null
   }
