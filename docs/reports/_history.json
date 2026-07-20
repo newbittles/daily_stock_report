@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-07-20",
+    "time": "11:40",
+    "mode": "midday",
+    "url": "reports/2026-07-20-midday.html",
+    "summary": "오늘 한국 증시는 전반적으로 약세를 보이며 하락세를 이어가고 있습니다. 외국인과 기관의 매도세가 지수 하락을 주도하는 가운데, 반도체 장비 관련주인 주성엔지니어링과 건설주인 금호건설은 장중 상승세를 보였으나 이내 큰 폭으로 밀리며 하락 전환하는 모습을",
+    "kospi_pct": null,
+    "kosdaq_pct": null
+  },
+  {
+    "date": "2026-07-20",
     "time": "09:15",
     "mode": "kr_open",
     "url": "reports/2026-07-20-kr-open.html",
@@ -527,15 +536,6 @@
     "mode": "kr_premarket",
     "url": "reports/2026-07-09-kr-pre.html",
     "summary": "",
-    "kospi_pct": null,
-    "kosdaq_pct": null
-  },
-  {
-    "date": "2026-07-09",
-    "time": "06:30",
-    "mode": "us_morning",
-    "url": "reports/2026-07-09-us.html",
-    "summary": "미국 증시는 혼조세를 보이며 마감했습니다. 나스닥과 필라델피아 반도체 지수는 상승했지만, 다우 지수는 큰 폭으로 하락했습니다. 반도체, 에너지, 기술 섹터가 강세를 보인 반면, 금융, 방산, 2차전지 섹터는 약세를 나타냈습니다. 유가(WTI)는 이란 ",
     "kospi_pct": null,
     "kosdaq_pct": null
   }
