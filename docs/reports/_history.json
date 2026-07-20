@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-07-20",
+    "time": "14:50",
+    "mode": "pre_close",
+    "url": "reports/2026-07-20-pre.html",
+    "summary": "코스피는 혼조세, 코스닥은 낙폭을 줄이며 반등 시도 중입니다.",
+    "kospi_pct": null,
+    "kosdaq_pct": null
+  },
+  {
+    "date": "2026-07-20",
     "time": "11:40",
     "mode": "midday",
     "url": "reports/2026-07-20-midday.html",
@@ -527,15 +536,6 @@
     "mode": "kr_open",
     "url": "reports/2026-07-09-kr-open.html",
     "summary": "오늘 한국 증시는 전반적으로 약세를 보이고 있으며, 외국인과 기관의 매도세가 지수를 끌어내리고 있습니다. 다만, 금호건설은 장 초반 급등 후 일부 조정을 보였으나 여전히 강세를 유지하고 있으며, 대원전선은 장중 낙폭을 만회하며 반등하는 흐름을 보이고 ",
-    "kospi_pct": null,
-    "kosdaq_pct": null
-  },
-  {
-    "date": "2026-07-09",
-    "time": "08:05",
-    "mode": "kr_premarket",
-    "url": "reports/2026-07-09-kr-pre.html",
-    "summary": "",
     "kospi_pct": null,
     "kosdaq_pct": null
   }
