@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-07-21",
+    "time": "13:00",
+    "mode": "us_afterhours",
+    "url": "reports/2026-07-21-us-after.html",
+    "summary": "미국 증시는 혼조세를 보이며 마감했습니다. S&P500과 다우 지수는 하락한 반면, 나스닥은 소폭 하락에 그쳤습니다. 반도체 섹터는 강세를 보였으나, 2차전지 및 신재생 에너지 섹터는 큰 폭으로 하락했습니다. WTI 유가는 상승세를 이어갔습니다.",
+    "kospi_pct": null,
+    "kosdaq_pct": null
+  },
+  {
+    "date": "2026-07-21",
     "time": "11:40",
     "mode": "midday",
     "url": "reports/2026-07-21-midday.html",
@@ -527,15 +536,6 @@
     "mode": "kr_premarket",
     "url": "reports/2026-07-10-kr-pre.html",
     "summary": "",
-    "kospi_pct": null,
-    "kosdaq_pct": null
-  },
-  {
-    "date": "2026-07-10",
-    "time": "06:30",
-    "mode": "us_morning",
-    "url": "reports/2026-07-10-us.html",
-    "summary": "미국 증시는 기술주 강세에 힘입어 전반적으로 상승 마감했습니다. 특히 반도체 섹터의 강한 반등이 지수 상승을 견인했으며, AI 관련 투자 기대감이 시장 전반의 투자 심리를 개선시켰습니다. 금 가격은 상승했으나 유가(WTI)는 하락했습니다.",
     "kospi_pct": null,
     "kosdaq_pct": null
   }
