@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-07-21",
+    "time": "19:00",
+    "mode": "us_premarket",
+    "url": "reports/2026-07-21-us-pre.html",
+    "summary": "프리장에서 미국 증시는 전반적으로 혼조세를 보이고 있으나, 기술주 및 반도체 섹터의 강세가 두드러집니다. 특히 반도체 관련 종목들의 급등세가 지수 상승을 견인하며 시장의 AI 관련 우려를 일부 완화시키는 모습입니다. 다만, 다우 지수는 하락세를 보이며",
+    "kospi_pct": null,
+    "kosdaq_pct": null
+  },
+  {
+    "date": "2026-07-21",
     "time": "16:00",
     "mode": "post_close",
     "url": "reports/2026-07-21-post.html",
@@ -527,15 +536,6 @@
     "mode": "us_afterhours",
     "url": "reports/2026-07-10-us-after.html",
     "summary": "미국 증시는 반도체 섹터의 강한 반등에 힘입어 상승 마감했습니다. 특히 필라델피아 반도체 지수가 3% 이상 급등하며 시장 전반을 견인했으며, 기술/IT 섹터 역시 강세를 보였습니다. 금 가격은 상승했으나 유가(WTI)는 하락했습니다.",
-    "kospi_pct": null,
-    "kosdaq_pct": null
-  },
-  {
-    "date": "2026-07-10",
-    "time": "11:40",
-    "mode": "midday",
-    "url": "reports/2026-07-10-midday.html",
-    "summary": "오늘 한국 증시는 전반적으로 약세를 보이고 있으며, 외국인과 기관의 매도세가 지수를 끌어내리고 있습니다. 다만, 금호건설은 장중 큰 폭의 하락 후 반등에 성공하며 저점 대비 상당한 회복세를 보였고, 대원전선은 장중 꾸준한 강세를 이어가며 높은 상승률을",
     "kospi_pct": null,
     "kosdaq_pct": null
   }
