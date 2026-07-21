@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-07-22",
+    "time": "08:05",
+    "mode": "kr_premarket",
+    "url": "reports/2026-07-22-kr-pre.html",
+    "summary": "",
+    "kospi_pct": null,
+    "kosdaq_pct": null
+  },
+  {
+    "date": "2026-07-22",
     "time": "06:30",
     "mode": "us_morning",
     "url": "reports/2026-07-22-us.html",
@@ -527,15 +536,6 @@
     "mode": "us_premarket",
     "url": "reports/2026-07-10-us-pre.html",
     "summary": "프리장에서 미국 증시는 혼조세를 보이고 있습니다. 필라델피아 반도체 지수가 큰 폭으로 상승하며 시장의 관심을 받고 있으나, 나스닥 선물은 하락하며 기술주 전반의 약세를 일부 반영하고 있습니다. 빅테크 중에서는 메타가 강세를 보이며 시장을 견인하는 모습",
-    "kospi_pct": null,
-    "kosdaq_pct": null
-  },
-  {
-    "date": "2026-07-10",
-    "time": "16:00",
-    "mode": "post_close",
-    "url": "reports/2026-07-10-post.html",
-    "summary": "오늘 코스피는 외국인 순매수세에 힘입어 상승 마감했으나, 코스닥은 차익실현 매물 출회로 하락했습니다. 반도체와 2차전지 관련주가 시장을 주도했습니다.",
     "kospi_pct": null,
     "kosdaq_pct": null
   }
