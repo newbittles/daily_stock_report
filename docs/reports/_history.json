@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-07-22",
+    "time": "09:15",
+    "mode": "kr_open",
+    "url": "reports/2026-07-22-kr-open.html",
+    "summary": "오늘 한국 증시는 전반적으로 약세를 보이고 있으며, 외국인과 기관의 매도세가 지수를 끌어내리고 있습니다. 다만, 일부 종목에서는 뚜렷한 수급 변화와 함께 강한 반등 흐름이 나타나고 있습니다. 특히 금호건설은 장 초반 약세를 보였으나 오후 들어 강하게 ",
+    "kospi_pct": null,
+    "kosdaq_pct": null
+  },
+  {
+    "date": "2026-07-22",
     "time": "08:05",
     "mode": "kr_premarket",
     "url": "reports/2026-07-22-kr-pre.html",
@@ -527,15 +536,6 @@
     "mode": "us_intraday",
     "url": "reports/2026-07-10-us-mid.html",
     "summary": "미국 증시는 혼조세를 보이며 혼조세로 마감했습니다. 기술주 내에서는 메타가 강세를 보였으나 반도체 업종은 약세를 면치 못했습니다. 금 가격은 하락했으며, WTI 유가는 소폭 상승했습니다.",
-    "kospi_pct": null,
-    "kosdaq_pct": null
-  },
-  {
-    "date": "2026-07-10",
-    "time": "21:50",
-    "mode": "us_premarket",
-    "url": "reports/2026-07-10-us-pre.html",
-    "summary": "프리장에서 미국 증시는 혼조세를 보이고 있습니다. 필라델피아 반도체 지수가 큰 폭으로 상승하며 시장의 관심을 받고 있으나, 나스닥 선물은 하락하며 기술주 전반의 약세를 일부 반영하고 있습니다. 빅테크 중에서는 메타가 강세를 보이며 시장을 견인하는 모습",
     "kospi_pct": null,
     "kosdaq_pct": null
   }
