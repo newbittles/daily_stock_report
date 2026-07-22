@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-07-22",
+    "time": "19:00",
+    "mode": "us_premarket",
+    "url": "reports/2026-07-22-us-pre.html",
+    "summary": "프리장에서 미국 증시는 혼조세를 보이고 있습니다. 다우 지수 선물은 소폭 상승세를 유지하고 있으나, S&P500과 나스닥 선물은 하락하며 전반적인 투자 심리가 다소 위축된 모습입니다. 에너지 섹터의 강세와 반도체 섹터의 약세가 두드러지며, 주요 빅테크",
+    "kospi_pct": null,
+    "kosdaq_pct": null
+  },
+  {
+    "date": "2026-07-22",
     "time": "16:00",
     "mode": "post_close",
     "url": "reports/2026-07-22-post.html",
@@ -527,15 +536,6 @@
     "mode": "pre_close",
     "url": "reports/2026-07-13-pre.html",
     "summary": "코스피는 혼조세, 코스닥은 낙폭 만회하며 상승 전환 시도 중입니다.",
-    "kospi_pct": null,
-    "kosdaq_pct": null
-  },
-  {
-    "date": "2026-07-13",
-    "time": "11:40",
-    "mode": "midday",
-    "url": "reports/2026-07-13-midday.html",
-    "summary": "오늘 한국 증시는 전반적으로 약세를 보이고 있으며, 외국인과 기관의 매도세가 지수 하락을 주도하고 있습니다. 다만, 금융업종은 KB금융이 장중 상승세를 보이다 일부 반납했지만 여전히 강세를 유지하고 있습니다. 반면, 건설업종은 금호건설이 큰 폭의 하락",
     "kospi_pct": null,
     "kosdaq_pct": null
   }
