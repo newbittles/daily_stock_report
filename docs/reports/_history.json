@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-07-23",
+    "time": "08:05",
+    "mode": "kr_premarket",
+    "url": "reports/2026-07-23-kr-pre.html",
+    "summary": "",
+    "kospi_pct": null,
+    "kosdaq_pct": null
+  },
+  {
+    "date": "2026-07-23",
     "time": "06:30",
     "mode": "us_morning",
     "url": "reports/2026-07-23-us.html",
@@ -527,15 +536,6 @@
     "mode": "us_intraday",
     "url": "reports/2026-07-13-us-mid.html",
     "summary": "미국 증시는 혼조세를 보이며 마감했습니다. S&P500과 나스닥은 하락했지만, 다우 지수는 소폭 상승했습니다. 에너지 섹터가 강세를 보인 반면, 반도체 섹터는 큰 폭으로 하락하며 시장 전반의 변동성을 키웠습니다. 유가(WTI)는 지정학적 긴장 고조로 ",
-    "kospi_pct": null,
-    "kosdaq_pct": null
-  },
-  {
-    "date": "2026-07-13",
-    "time": "21:50",
-    "mode": "us_premarket",
-    "url": "reports/2026-07-13-us-pre.html",
-    "summary": "프리장에서 혼조세를 보이며 전반적으로는 약보합세를 나타내고 있습니다. 중동 지정학적 리스크 부각으로 유가가 급등하며 에너지 섹터가 강세를 보인 반면, 반도체 및 기술 섹터는 하락세를 주도하고 있습니다. 빅테크 중에서는 애플이 AI 관련 우려에서 벗어나",
     "kospi_pct": null,
     "kosdaq_pct": null
   }
