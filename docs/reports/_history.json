@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-07-22",
+    "time": "22:40",
+    "mode": "us_intraday",
+    "url": "reports/2026-07-22-us-mid.html",
+    "summary": "S&P500 7,494(-0.18%) · 나스닥 25,685(-0.59%). 강세 섹터: 태양광/신재생, 에너지, 방산/우주항공.",
+    "kospi_pct": null,
+    "kosdaq_pct": null
+  },
+  {
+    "date": "2026-07-22",
     "time": "21:50",
     "mode": "us_premarket",
     "url": "reports/2026-07-22-us-pre.html",
@@ -527,15 +536,6 @@
     "mode": "post_close",
     "url": "reports/2026-07-13-post.html",
     "summary": "오늘 코스피는 외국인 매도세에 하락 마감했으며, 반도체와 2차전지 관련주가 시장을 주도했습니다.",
-    "kospi_pct": null,
-    "kosdaq_pct": null
-  },
-  {
-    "date": "2026-07-13",
-    "time": "14:50",
-    "mode": "pre_close",
-    "url": "reports/2026-07-13-pre.html",
-    "summary": "코스피는 혼조세, 코스닥은 낙폭 만회하며 상승 전환 시도 중입니다.",
     "kospi_pct": null,
     "kosdaq_pct": null
   }
