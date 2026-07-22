@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-07-22",
+    "time": "16:00",
+    "mode": "post_close",
+    "url": "reports/2026-07-22-post.html",
+    "summary": "오늘 코스피는 외국인 순매수세에 힘입어 상승 마감했으나, 코스닥은 차익실현 매물 출회로 하락했습니다. 반도체와 2차전지 관련주가 시장을 주도했습니다.",
+    "kospi_pct": null,
+    "kosdaq_pct": null
+  },
+  {
+    "date": "2026-07-22",
     "time": "14:50",
     "mode": "pre_close",
     "url": "reports/2026-07-22-pre.html",
@@ -527,15 +536,6 @@
     "mode": "midday",
     "url": "reports/2026-07-13-midday.html",
     "summary": "오늘 한국 증시는 전반적으로 약세를 보이고 있으며, 외국인과 기관의 매도세가 지수 하락을 주도하고 있습니다. 다만, 금융업종은 KB금융이 장중 상승세를 보이다 일부 반납했지만 여전히 강세를 유지하고 있습니다. 반면, 건설업종은 금호건설이 큰 폭의 하락",
-    "kospi_pct": null,
-    "kosdaq_pct": null
-  },
-  {
-    "date": "2026-07-13",
-    "time": "09:15",
-    "mode": "kr_open",
-    "url": "reports/2026-07-13-kr-open.html",
-    "summary": "오늘 한국 증시는 전반적으로 약세를 보이고 있으나, 일부 금융 및 건설 관련 종목에서 뚜렷한 흐름이 나타나고 있습니다. KB금융과 대원전선은 장중 꾸준한 강세를 유지하며 상승세를 타고 있는 반면, 금호건설은 장 초반 급락 후 상당 부분 반등에 성공하며",
     "kospi_pct": null,
     "kosdaq_pct": null
   }
