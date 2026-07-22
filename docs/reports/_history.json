@@ -1,5 +1,14 @@
 [
   {
+    "date": "2026-07-23",
+    "time": "06:30",
+    "mode": "us_morning",
+    "url": "reports/2026-07-23-us.html",
+    "summary": "미국 증시는 혼조세를 보이며 마감했습니다. S&P500과 나스닥은 소폭 하락했으나, 필라델피아 반도체 지수는 상승세를 기록했습니다. AI 관련주와 반도체 업종이 강세를 보인 반면, 빅테크 일부 종목은 하락했습니다. 금과 유가는 상승 마감했습니다.",
+    "kospi_pct": null,
+    "kosdaq_pct": null
+  },
+  {
     "date": "2026-07-22",
     "time": "22:40",
     "mode": "us_intraday",
@@ -527,15 +536,6 @@
     "mode": "us_premarket",
     "url": "reports/2026-07-13-us-pre.html",
     "summary": "프리장에서 혼조세를 보이며 전반적으로는 약보합세를 나타내고 있습니다. 중동 지정학적 리스크 부각으로 유가가 급등하며 에너지 섹터가 강세를 보인 반면, 반도체 및 기술 섹터는 하락세를 주도하고 있습니다. 빅테크 중에서는 애플이 AI 관련 우려에서 벗어나",
-    "kospi_pct": null,
-    "kosdaq_pct": null
-  },
-  {
-    "date": "2026-07-13",
-    "time": "16:00",
-    "mode": "post_close",
-    "url": "reports/2026-07-13-post.html",
-    "summary": "오늘 코스피는 외국인 매도세에 하락 마감했으며, 반도체와 2차전지 관련주가 시장을 주도했습니다.",
     "kospi_pct": null,
     "kosdaq_pct": null
   }
