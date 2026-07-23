@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-07-23",
+    "time": "11:40",
+    "mode": "midday",
+    "url": "reports/2026-07-23-midday.html",
+    "summary": "오늘 한국 증시는 전반적으로 약세를 보이고 있으며, 외국인과 기관의 매도세가 지수 하락을 이끌고 있습니다. 특히 SK이터닉스는 장중 큰 폭의 상승세를 보였으나 이후 차익 실현 매물에 밀리며 상승폭을 일부 반납하는 흐름을 나타냈습니다.",
+    "kospi_pct": null,
+    "kosdaq_pct": null
+  },
+  {
+    "date": "2026-07-23",
     "time": "09:15",
     "mode": "kr_open",
     "url": "reports/2026-07-23-kr-open.html",
@@ -527,15 +536,6 @@
     "mode": "kr_premarket",
     "url": "reports/2026-07-14-kr-pre.html",
     "summary": "",
-    "kospi_pct": null,
-    "kosdaq_pct": null
-  },
-  {
-    "date": "2026-07-14",
-    "time": "06:30",
-    "mode": "us_morning",
-    "url": "reports/2026-07-14-us.html",
-    "summary": "미국 증시는 전반적으로 하락 마감했으며, 특히 기술주와 반도체 섹터의 약세가 두드러졌습니다. 에너지 섹터는 유가 급등에 힘입어 강세를 보였습니다. 금 가격은 하락했으나 WTI 유가는 트럼프 전 대통령의 이란 관련 발언으로 급등했습니다.",
     "kospi_pct": null,
     "kosdaq_pct": null
   }
