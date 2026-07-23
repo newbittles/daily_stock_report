@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-07-23",
+    "time": "22:40",
+    "mode": "us_intraday",
+    "url": "reports/2026-07-23-us-mid.html",
+    "summary": "미국 증시는 AI 투자 및 중동 확전 우려로 전반적인 하락세를 보였으며, 특히 빅테크 기업들의 실적 발표 후 주가 하락이 두드러졌습니다. 방산/우주항공 섹터는 강세를 보였으나, 기술/IT 섹터는 약세를 면치 못했습니다. 금 가격은 하락했으나 WTI 유",
+    "kospi_pct": null,
+    "kosdaq_pct": null
+  },
+  {
+    "date": "2026-07-23",
     "time": "21:50",
     "mode": "us_premarket",
     "url": "reports/2026-07-23-us-pre.html",
@@ -527,15 +536,6 @@
     "mode": "post_close",
     "url": "reports/2026-07-14-post.html",
     "summary": "코스피는 외국인 순매수세에 힘입어 상승 마감했으나, 코스닥은 차익실현 매물 출회로 하락했습니다. 반도체와 2차전지 관련주가 시장을 주도했습니다.",
-    "kospi_pct": null,
-    "kosdaq_pct": null
-  },
-  {
-    "date": "2026-07-14",
-    "time": "14:50",
-    "mode": "pre_close",
-    "url": "reports/2026-07-14-pre.html",
-    "summary": "코스피는 관망세 속 혼조세를 보이며, 코스닥은 일부 테마 강세로 상승 마감 기대.",
     "kospi_pct": null,
     "kosdaq_pct": null
   }
