@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-07-23",
+    "time": "16:00",
+    "mode": "post_close",
+    "url": "reports/2026-07-23-post.html",
+    "summary": "오늘 코스피는 외국인 매도세에 하락 마감했으며, 반도체 업황 둔화 우려와 함께 2차전지 관련주들이 약세를 보였습니다.",
+    "kospi_pct": null,
+    "kosdaq_pct": null
+  },
+  {
+    "date": "2026-07-23",
     "time": "14:50",
     "mode": "pre_close",
     "url": "reports/2026-07-23-pre.html",
@@ -527,15 +536,6 @@
     "mode": "us_afterhours",
     "url": "reports/2026-07-14-us-after.html",
     "summary": "미국 증시는 전반적으로 하락 마감했으며, 특히 반도체 섹터의 큰 폭 하락이 지수 전반에 부담을 주었습니다. 에너지 섹터는 강세를 보였으나, 기술 및 반도체 업종의 약세가 두드러졌습니다. 지정학적 긴장 고조와 금리 인상 우려가 시장 전반의 투자 심리를 ",
-    "kospi_pct": null,
-    "kosdaq_pct": null
-  },
-  {
-    "date": "2026-07-14",
-    "time": "11:40",
-    "mode": "midday",
-    "url": "reports/2026-07-14-midday.html",
-    "summary": "오늘 한국 증시는 전반적으로 약세를 보이고 있으며, 외국인과 기관의 매도세가 지수 하락을 이끌고 있습니다. 다만, 대원전선은 장중 꾸준한 강세를 유지하며 시장의 주목을 받고 있습니다. KB금융과 금호건설은 장 초반의 하락세를 만회하며 낙폭을 줄이는 흐",
     "kospi_pct": null,
     "kosdaq_pct": null
   }
