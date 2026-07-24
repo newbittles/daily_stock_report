@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-07-24",
+    "time": "14:50",
+    "mode": "pre_close",
+    "url": "reports/2026-07-24-pre.html",
+    "summary": "코스피는 혼조세, 코스닥은 낙폭을 줄이며 소폭 반등 시도 중입니다.",
+    "kospi_pct": null,
+    "kosdaq_pct": null
+  },
+  {
+    "date": "2026-07-24",
     "time": "13:00",
     "mode": "us_afterhours",
     "url": "reports/2026-07-24-us-after.html",
@@ -527,15 +536,6 @@
     "mode": "midday",
     "url": "reports/2026-07-15-midday.html",
     "summary": "오늘 한국 증시는 전반적으로 약세를 보이고 있으나, 금융주를 중심으로 일부 종목은 강세를 나타내고 있습니다. 특히 KB금융은 장중 꾸준한 상승세를 이어가며 시장 대비 강한 흐름을 보이고 있습니다. 반면, 대원전선은 장 초반 하락세를 보였으나 오후 들어",
-    "kospi_pct": null,
-    "kosdaq_pct": null
-  },
-  {
-    "date": "2026-07-15",
-    "time": "09:15",
-    "mode": "kr_open",
-    "url": "reports/2026-07-15-kr-open.html",
-    "summary": "오늘 한국 증시는 전반적으로 약세를 보이고 있으며, 외국인과 기관의 매도세가 지수 하락을 이끌고 있습니다. 다만, 금융주는 KB금융이 보합권을 유지하며 선방하고 있고, 건설주는 대원전선이 꾸준한 강세를 보이며 시장 대비 차별화된 흐름을 나타내고 있습니",
     "kospi_pct": null,
     "kosdaq_pct": null
   }
