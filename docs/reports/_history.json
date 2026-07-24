@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-07-24",
+    "time": "16:00",
+    "mode": "post_close",
+    "url": "reports/2026-07-24-post.html",
+    "summary": "코스피는 외국인 매도세에 하락 마감, 코스닥은 개인 순매수세에 상승 마감하며 혼조세를 보였습니다. 반도체 업황 회복 기대감과 2차전지 섹터의 변동성이 두드러진 하루였습니다.",
+    "kospi_pct": null,
+    "kosdaq_pct": null
+  },
+  {
+    "date": "2026-07-24",
     "time": "14:50",
     "mode": "pre_close",
     "url": "reports/2026-07-24-pre.html",
@@ -527,15 +536,6 @@
     "mode": "us_afterhours",
     "url": "reports/2026-07-15-us-after.html",
     "summary": "미국 증시는 금리 인하 기대감과 일부 은행주의 호실적으로 혼조세를 보였으나, 반도체 섹터의 급락으로 인해 나스닥과 필라델피아 반도체 지수가 큰 폭으로 하락했습니다. 에너지 섹터는 강세를 보였으며, 금과 유가는 상승 마감했습니다.",
-    "kospi_pct": null,
-    "kosdaq_pct": null
-  },
-  {
-    "date": "2026-07-15",
-    "time": "11:40",
-    "mode": "midday",
-    "url": "reports/2026-07-15-midday.html",
-    "summary": "오늘 한국 증시는 전반적으로 약세를 보이고 있으나, 금융주를 중심으로 일부 종목은 강세를 나타내고 있습니다. 특히 KB금융은 장중 꾸준한 상승세를 이어가며 시장 대비 강한 흐름을 보이고 있습니다. 반면, 대원전선은 장 초반 하락세를 보였으나 오후 들어",
     "kospi_pct": null,
     "kosdaq_pct": null
   }
