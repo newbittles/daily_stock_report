@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-07-24",
+    "time": "19:00",
+    "mode": "us_premarket",
+    "url": "reports/2026-07-24-us-pre.html",
+    "summary": "프리장 초반 미국 증시는 혼조세를 보이고 있습니다. 기술주 중심의 나스닥 선물은 상승세를 유지하며 낙폭을 만회하려는 움직임을 보이지만, 다우 지수 선물은 하락하며 시장 전반의 상승 동력은 약한 모습입니다. 유가 하락과 일부 기술주 강세에도 불구하고 금",
+    "kospi_pct": null,
+    "kosdaq_pct": null
+  },
+  {
+    "date": "2026-07-24",
     "time": "16:00",
     "mode": "post_close",
     "url": "reports/2026-07-24-post.html",
@@ -527,15 +536,6 @@
     "mode": "pre_close",
     "url": "reports/2026-07-15-pre.html",
     "summary": "코스피는 혼조세, 코스닥은 소폭 상승하며 마감 임박",
-    "kospi_pct": null,
-    "kosdaq_pct": null
-  },
-  {
-    "date": "2026-07-15",
-    "time": "13:00",
-    "mode": "us_afterhours",
-    "url": "reports/2026-07-15-us-after.html",
-    "summary": "미국 증시는 금리 인하 기대감과 일부 은행주의 호실적으로 혼조세를 보였으나, 반도체 섹터의 급락으로 인해 나스닥과 필라델피아 반도체 지수가 큰 폭으로 하락했습니다. 에너지 섹터는 강세를 보였으며, 금과 유가는 상승 마감했습니다.",
     "kospi_pct": null,
     "kosdaq_pct": null
   }
