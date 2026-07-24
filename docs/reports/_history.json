@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-07-24",
+    "time": "13:00",
+    "mode": "us_afterhours",
+    "url": "reports/2026-07-24-us-after.html",
+    "summary": "미국 증시는 전반적으로 하락 마감했으며, 특히 기술주와 빅테크의 약세가 두드러졌습니다. 방산/우주항공 및 헬스케어 섹터가 강세를 보인 반면, 경기소비재와 기술/IT 섹터는 큰 폭으로 하락했습니다. 유가(WTI)는 6.17% 급등하며 시장 전반에 부담을",
+    "kospi_pct": null,
+    "kosdaq_pct": null
+  },
+  {
+    "date": "2026-07-24",
     "time": "11:40",
     "mode": "midday",
     "url": "reports/2026-07-24-midday.html",
@@ -527,15 +536,6 @@
     "mode": "kr_open",
     "url": "reports/2026-07-15-kr-open.html",
     "summary": "오늘 한국 증시는 전반적으로 약세를 보이고 있으며, 외국인과 기관의 매도세가 지수 하락을 이끌고 있습니다. 다만, 금융주는 KB금융이 보합권을 유지하며 선방하고 있고, 건설주는 대원전선이 꾸준한 강세를 보이며 시장 대비 차별화된 흐름을 나타내고 있습니",
-    "kospi_pct": null,
-    "kosdaq_pct": null
-  },
-  {
-    "date": "2026-07-15",
-    "time": "08:05",
-    "mode": "kr_premarket",
-    "url": "reports/2026-07-15-kr-pre.html",
-    "summary": "",
     "kospi_pct": null,
     "kosdaq_pct": null
   }
