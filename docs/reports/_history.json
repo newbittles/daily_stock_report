@@ -1,5 +1,14 @@
 [
   {
+    "date": "2026-07-27",
+    "time": "08:05",
+    "mode": "kr_premarket",
+    "url": "reports/2026-07-27-kr-pre.html",
+    "summary": "",
+    "kospi_pct": null,
+    "kosdaq_pct": null
+  },
+  {
     "date": "2026-07-25",
     "time": "06:30",
     "mode": "us_morning",
@@ -527,15 +536,6 @@
     "mode": "us_intraday",
     "url": "reports/2026-07-15-us-mid.html",
     "summary": "미국 증시는 전반적으로 상승 마감했으며, 특히 AI 관련주와 반도체 섹터의 강세가 지수 상승을 견인했습니다. 금 가격은 소폭 상승했고, WTI 유가는 상승세를 보였습니다.",
-    "kospi_pct": null,
-    "kosdaq_pct": null
-  },
-  {
-    "date": "2026-07-15",
-    "time": "21:50",
-    "mode": "us_premarket",
-    "url": "reports/2026-07-15-us-pre.html",
-    "summary": "미국 증시 프리마켓은 혼조세를 보이고 있습니다. 기술주 중심의 상승세가 일부 이어지고 있으나, 필라델피아 반도체 지수의 큰 폭 하락이 시장 전반의 투자 심리에 부담을 주고 있습니다. 인플레이션 데이터 발표와 중동 긴장 고조 등 거시 경제적 요인이 시장",
     "kospi_pct": null,
     "kosdaq_pct": null
   }
