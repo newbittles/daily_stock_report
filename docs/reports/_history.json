@@ -1,5 +1,14 @@
 [
   {
+    "date": "2026-07-28",
+    "time": "06:30",
+    "mode": "us_morning",
+    "url": "reports/2026-07-28-us.html",
+    "summary": "미국 증시는 혼조세를 보이며 마감했습니다. 다우 지수는 상승했으나 나스닥과 S&P500은 소폭 하락했으며, 특히 필라델피아 반도체 지수는 큰 폭으로 하락했습니다. 기술주 내에서는 빅테크 일부가 강세를 보였으나 반도체 관련주는 약세를 면치 못했습니다. ",
+    "kospi_pct": null,
+    "kosdaq_pct": null
+  },
+  {
     "date": "2026-07-27",
     "time": "22:40",
     "mode": "us_intraday",
@@ -527,15 +536,6 @@
     "mode": "post_close",
     "url": "reports/2026-07-16-post.html",
     "summary": "오늘 코스피와 코스닥 지수는 혼조세를 보이며 마감했습니다. 반도체 관련주와 2차전지주가 시장을 주도했습니다.",
-    "kospi_pct": null,
-    "kosdaq_pct": null
-  },
-  {
-    "date": "2026-07-16",
-    "time": "14:50",
-    "mode": "pre_close",
-    "url": "reports/2026-07-16-pre.html",
-    "summary": "코스피는 혼조세, 코스닥은 낙폭을 줄이며 반등 시도 중입니다.",
     "kospi_pct": null,
     "kosdaq_pct": null
   }
