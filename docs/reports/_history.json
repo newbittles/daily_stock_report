@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-07-27",
+    "time": "22:40",
+    "mode": "us_intraday",
+    "url": "reports/2026-07-27-us-mid.html",
+    "summary": "미국 증시는 주요 지수 모두 상승하며 마감했습니다. 특히 빅테크 기업들의 호실적 기대감과 AI 관련 수요 증가가 시장을 견인했으며, 방산/우주항공 및 경기소비재 섹터가 강세를 보였습니다. 유가는 큰 폭으로 하락했습니다.",
+    "kospi_pct": null,
+    "kosdaq_pct": null
+  },
+  {
+    "date": "2026-07-27",
     "time": "21:50",
     "mode": "us_premarket",
     "url": "reports/2026-07-27-us-pre.html",
@@ -527,15 +536,6 @@
     "mode": "pre_close",
     "url": "reports/2026-07-16-pre.html",
     "summary": "코스피는 혼조세, 코스닥은 낙폭을 줄이며 반등 시도 중입니다.",
-    "kospi_pct": null,
-    "kosdaq_pct": null
-  },
-  {
-    "date": "2026-07-16",
-    "time": "13:00",
-    "mode": "us_afterhours",
-    "url": "reports/2026-07-16-us-after.html",
-    "summary": "미국 증시는 기술주 강세에 힘입어 전반적으로 상승 마감했으나, 반도체 업종은 차익실현 매물로 하락했습니다. 특히 빅테크 기업들의 견조한 실적 발표와 예상보다 둔화된 인플레이션 지표가 시장 전반의 투자 심리를 개선시켰습니다. 금 가격은 하락했으나 WTI",
     "kospi_pct": null,
     "kosdaq_pct": null
   }
