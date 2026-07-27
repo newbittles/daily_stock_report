@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-07-28",
+    "time": "08:05",
+    "mode": "kr_premarket",
+    "url": "reports/2026-07-28-kr-pre.html",
+    "summary": "",
+    "kospi_pct": null,
+    "kosdaq_pct": null
+  },
+  {
+    "date": "2026-07-28",
     "time": "06:30",
     "mode": "us_morning",
     "url": "reports/2026-07-28-us.html",
@@ -527,15 +536,6 @@
     "mode": "us_premarket",
     "url": "reports/2026-07-16-us-pre.html",
     "summary": "현재 미국 프리장 시장은 혼조세를 보이고 있습니다. 기술주 전반의 약세와 반도체 섹터의 큰 폭 하락이 두드러지지만, 다우 지수 선물은 소폭 상승하며 일부 방어적인 흐름을 나타내고 있습니다. 주요 빅테크 기업들의 실적 발표를 앞두고 투자자들의 경계감이 ",
-    "kospi_pct": null,
-    "kosdaq_pct": null
-  },
-  {
-    "date": "2026-07-16",
-    "time": "16:00",
-    "mode": "post_close",
-    "url": "reports/2026-07-16-post.html",
-    "summary": "오늘 코스피와 코스닥 지수는 혼조세를 보이며 마감했습니다. 반도체 관련주와 2차전지주가 시장을 주도했습니다.",
     "kospi_pct": null,
     "kosdaq_pct": null
   }
