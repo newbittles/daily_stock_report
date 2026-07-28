@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-07-28",
+    "time": "14:50",
+    "mode": "pre_close",
+    "url": "reports/2026-07-28-pre.html",
+    "summary": "코스피는 혼조세, 코스닥은 낙폭을 줄이며 반등 시도 중입니다.",
+    "kospi_pct": null,
+    "kosdaq_pct": null
+  },
+  {
+    "date": "2026-07-28",
     "time": "13:00",
     "mode": "us_afterhours",
     "url": "reports/2026-07-28-us-after.html",
@@ -527,15 +536,6 @@
     "mode": "us_premarket",
     "url": "reports/2026-07-17-us-pre.html",
     "summary": "현재 미국 프리장 시장은 전반적으로 약세를 보이고 있으며, 특히 기술 및 반도체 섹터의 하락세가 두드러집니다. 넷플릭스의 실적 실망과 AI 관련 우려가 기술주 전반에 부담을 주고 있으며, 중동 지역의 지정학적 긴장도 투자 심리를 위축시키고 있습니다. ",
-    "kospi_pct": null,
-    "kosdaq_pct": null
-  },
-  {
-    "date": "2026-07-17",
-    "time": "13:00",
-    "mode": "us_afterhours",
-    "url": "reports/2026-07-17-us-after.html",
-    "summary": "미국 증시는 기술주 약세와 반도체 섹터의 큰 폭 하락으로 전반적인 하락세를 보였습니다. 특히 필라델피아 반도체 지수가 4% 이상 급락하며 시장 전반을 끌어내렸습니다. 금 가격은 1.44% 하락했고, WTI 유가도 0.82% 하락하며 약세를 나타냈습니다",
     "kospi_pct": null,
     "kosdaq_pct": null
   }
