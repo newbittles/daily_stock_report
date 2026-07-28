@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-07-28",
+    "time": "11:40",
+    "mode": "midday",
+    "url": "reports/2026-07-28-midday.html",
+    "summary": "오늘 한국 증시는 전반적으로 약세를 보이며 지수가 하락세를 이어가고 있습니다. 외국인과 기관의 매도세가 지수 하락을 주도하는 가운데, 일부 종목들은 장중 큰 폭의 하락 후 반등하는 모습을 보였습니다. 특히 SK이터닉스는 장중 큰 폭의 하락을 겪었으나 ",
+    "kospi_pct": null,
+    "kosdaq_pct": null
+  },
+  {
+    "date": "2026-07-28",
     "time": "09:15",
     "mode": "kr_open",
     "url": "reports/2026-07-28-kr-open.html",
@@ -527,15 +536,6 @@
     "mode": "us_morning",
     "url": "reports/2026-07-17-us.html",
     "summary": "S&P500 7,534(-0.51%) · 나스닥 25,882(-1.47%). 강세 섹터: 헬스케어/바이오, 에너지, 금융.",
-    "kospi_pct": null,
-    "kosdaq_pct": null
-  },
-  {
-    "date": "2026-07-16",
-    "time": "22:40",
-    "mode": "us_intraday",
-    "url": "reports/2026-07-16-us-mid.html",
-    "summary": "미국 증시는 혼조세를 보이며 마감했습니다. 다우 지수는 소폭 상승했지만, S&P 500과 나스닥은 반도체 섹터의 큰 폭 하락에 영향을 받아 하락했습니다. 특히 필라델피아 반도체 지수가 3% 넘게 하락하며 기술주 전반에 부담을 주었습니다. 금 가격은 하",
     "kospi_pct": null,
     "kosdaq_pct": null
   }
