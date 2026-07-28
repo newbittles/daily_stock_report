@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-07-28",
+    "time": "19:00",
+    "mode": "us_premarket",
+    "url": "reports/2026-07-28-us-pre.html",
+    "summary": "현재 미국 프리장에서는 반도체 섹터의 급락세가 시장 전반의 투자 심리를 위축시키며 혼조세를 보이고 있습니다. 특히 AI 관련 칩 제조사들의 하락이 두드러지며 기술주 전반에 부담을 주고 있으나, 헬스케어 및 금융 섹터는 상대적으로 강세를 유지하며 지수 ",
+    "kospi_pct": null,
+    "kosdaq_pct": null
+  },
+  {
+    "date": "2026-07-28",
     "time": "16:00",
     "mode": "post_close",
     "url": "reports/2026-07-28-post.html",
@@ -527,15 +536,6 @@
     "mode": "us_morning",
     "url": "reports/2026-07-18-us.html",
     "summary": "미국 증시는 전반적으로 하락 마감했으며, 특히 반도체 섹터의 약세가 두드러졌습니다. AI 관련 기술주들의 차익 실현 매물과 중동 지역 긴장 고조로 인한 유가 상승이 시장 전반에 부담을 주었습니다. 금 가격은 소폭 상승했습니다.",
-    "kospi_pct": null,
-    "kosdaq_pct": null
-  },
-  {
-    "date": "2026-07-17",
-    "time": "22:40",
-    "mode": "us_intraday",
-    "url": "reports/2026-07-17-us-mid.html",
-    "summary": "미국 증시는 전반적으로 하락 마감했으며, 특히 기술 및 반도체 섹터의 큰 폭 하락이 지수 전반에 부담을 주었습니다. 에너지와 헬스케어 섹터는 상대적으로 선방했으나, 빅테크 전반의 약세가 두드러졌습니다. 유가(WTI)는 상승세를 보였습니다.",
     "kospi_pct": null,
     "kosdaq_pct": null
   }
