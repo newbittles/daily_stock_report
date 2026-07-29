@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-07-30",
+    "time": "08:05",
+    "mode": "kr_premarket",
+    "url": "reports/2026-07-30-kr-pre.html",
+    "summary": "",
+    "kospi_pct": null,
+    "kosdaq_pct": null
+  },
+  {
+    "date": "2026-07-30",
     "time": "06:30",
     "mode": "us_morning",
     "url": "reports/2026-07-30-us.html",
@@ -527,15 +536,6 @@
     "mode": "us_afterhours",
     "url": "reports/2026-07-21-us-after.html",
     "summary": "미국 증시는 혼조세를 보이며 마감했습니다. S&P500과 다우 지수는 하락한 반면, 나스닥은 소폭 하락에 그쳤습니다. 반도체 섹터는 강세를 보였으나, 2차전지 및 신재생 에너지 섹터는 큰 폭으로 하락했습니다. WTI 유가는 상승세를 이어갔습니다.",
-    "kospi_pct": null,
-    "kosdaq_pct": null
-  },
-  {
-    "date": "2026-07-21",
-    "time": "11:40",
-    "mode": "midday",
-    "url": "reports/2026-07-21-midday.html",
-    "summary": "오늘 한국 증시는 전반적으로 약세를 보이고 있으며, 외국인과 기관의 매도세가 지수 하락을 견인하고 있습니다. 다만, 대원전선은 장 초반의 약세를 딛고 강하게 반등하며 눈에 띄는 회복세를 보였습니다.",
     "kospi_pct": null,
     "kosdaq_pct": null
   }
