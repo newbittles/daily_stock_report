@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-07-29",
+    "time": "11:40",
+    "mode": "midday",
+    "url": "reports/2026-07-29-midday.html",
+    "summary": "오늘 한국 증시는 전반적으로 약세를 보이며 지수가 하락하는 가운데, 일부 종목들은 장중 급락 후 반등하거나 고점 대비 큰 폭으로 하락하는 등 변동성이 두드러졌습니다. 특히 SK이터닉스는 장중 큰 폭의 하락세를 보이다가 반등에 성공하며 낙폭을 줄이는 모",
+    "kospi_pct": null,
+    "kosdaq_pct": null
+  },
+  {
+    "date": "2026-07-29",
     "time": "09:15",
     "mode": "kr_open",
     "url": "reports/2026-07-29-kr-open.html",
@@ -527,15 +536,6 @@
     "mode": "post_close",
     "url": "reports/2026-07-20-post.html",
     "summary": "오늘 코스피는 외국인 순매수세에 힘입어 상승 마감했으나, 코스닥은 차익실현 매물 출회로 하락했습니다. 반도체와 2차전지 관련주가 시장을 주도했습니다.",
-    "kospi_pct": null,
-    "kosdaq_pct": null
-  },
-  {
-    "date": "2026-07-20",
-    "time": "14:50",
-    "mode": "pre_close",
-    "url": "reports/2026-07-20-pre.html",
-    "summary": "코스피는 혼조세, 코스닥은 낙폭을 줄이며 반등 시도 중입니다.",
     "kospi_pct": null,
     "kosdaq_pct": null
   }
