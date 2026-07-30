@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-07-30",
+    "time": "11:40",
+    "mode": "midday",
+    "url": "reports/2026-07-30-midday.html",
+    "summary": "오늘 한국 증시는 전반적으로 약세를 보이고 있으며, 외국인과 기관의 매도세가 지수 하락을 이끌고 있습니다. 다만, 일부 종목은 장중 급락 후 반등하거나 꾸준한 강세를 보이며 차별화된 흐름을 나타내고 있습니다. 특히 SK이터닉스와 대원전선은 장중 저점 ",
+    "kospi_pct": null,
+    "kosdaq_pct": null
+  },
+  {
+    "date": "2026-07-30",
     "time": "09:15",
     "mode": "kr_open",
     "url": "reports/2026-07-30-kr-open.html",
@@ -527,15 +536,6 @@
     "mode": "post_close",
     "url": "reports/2026-07-21-post.html",
     "summary": "오늘 코스피와 코스닥 지수는 혼조세를 보이며 마감했습니다. 반도체 관련주와 2차전지 관련주가 시장의 주목을 받았습니다.",
-    "kospi_pct": null,
-    "kosdaq_pct": null
-  },
-  {
-    "date": "2026-07-21",
-    "time": "14:50",
-    "mode": "pre_close",
-    "url": "reports/2026-07-21-pre.html",
-    "summary": "코스피는 혼조세, 코스닥은 낙폭을 줄이며 반등 시도 중입니다.",
     "kospi_pct": null,
     "kosdaq_pct": null
   }
