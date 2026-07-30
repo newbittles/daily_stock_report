@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-07-31",
+    "time": "08:05",
+    "mode": "kr_premarket",
+    "url": "reports/2026-07-31-kr-pre.html",
+    "summary": "",
+    "kospi_pct": null,
+    "kosdaq_pct": null
+  },
+  {
+    "date": "2026-07-31",
     "time": "07:00",
     "mode": "us_morning",
     "url": "reports/2026-07-31-us.html",
@@ -527,15 +536,6 @@
     "mode": "us_afterhours",
     "url": "reports/2026-07-22-us-after.html",
     "summary": "미국 증시는 기술주와 반도체주의 강세에 힘입어 전반적으로 상승 마감했습니다. 특히 필라델피아 반도체 지수가 5% 이상 급등하며 시장을 견인했으며, 금과 유가(WTI) 역시 상승세를 보였습니다. AI 관련주와 메모리 반도체 업종의 강세가 두드러졌습니다.",
-    "kospi_pct": null,
-    "kosdaq_pct": null
-  },
-  {
-    "date": "2026-07-22",
-    "time": "11:40",
-    "mode": "midday",
-    "url": "reports/2026-07-22-midday.html",
-    "summary": "오늘 한국 증시는 전반적으로 약세를 보이고 있으며, 외국인과 기관의 매도세가 지수 하락을 이끌고 있습니다. 다만, SK이터닉스는 장 초반 강세를 보였으나 고점 대비 하락하며 변동성을 키웠고, 대원전선은 꾸준한 상승세를 유지하고 있습니다. 금호건설은 장",
     "kospi_pct": null,
     "kosdaq_pct": null
   }
