@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-07-31",
+    "time": "09:15",
+    "mode": "kr_open",
+    "url": "reports/2026-07-31-kr-open.html",
+    "summary": "오늘 한국 증시는 전반적으로 약세를 보이고 있으며, 외국인과 기관의 매도세가 지수 하락을 이끌고 있습니다. 다만, SK이터닉스와 대원전선은 장중 꾸준한 강세를 유지하며 시장 대비 차별화된 흐름을 보였습니다. 금호건설은 오전 중 하락세를 보였으나 오후 ",
+    "kospi_pct": null,
+    "kosdaq_pct": null
+  },
+  {
+    "date": "2026-07-31",
     "time": "08:05",
     "mode": "kr_premarket",
     "url": "reports/2026-07-31-kr-pre.html",
@@ -527,15 +536,6 @@
     "mode": "pre_close",
     "url": "reports/2026-07-22-pre.html",
     "summary": "코스피는 혼조세, 코스닥은 낙폭을 줄이며 소폭 반등 시도 중입니다.",
-    "kospi_pct": null,
-    "kosdaq_pct": null
-  },
-  {
-    "date": "2026-07-22",
-    "time": "13:00",
-    "mode": "us_afterhours",
-    "url": "reports/2026-07-22-us-after.html",
-    "summary": "미국 증시는 기술주와 반도체주의 강세에 힘입어 전반적으로 상승 마감했습니다. 특히 필라델피아 반도체 지수가 5% 이상 급등하며 시장을 견인했으며, 금과 유가(WTI) 역시 상승세를 보였습니다. AI 관련주와 메모리 반도체 업종의 강세가 두드러졌습니다.",
     "kospi_pct": null,
     "kosdaq_pct": null
   }
