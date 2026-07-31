@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-07-31",
+    "time": "14:50",
+    "mode": "pre_close",
+    "url": "reports/2026-07-31-pre.html",
+    "summary": "코스피는 관망세 속 혼조세를 보이며, 코스닥은 일부 테마 강세로 상승 마감 예상.",
+    "kospi_pct": null,
+    "kosdaq_pct": null
+  },
+  {
+    "date": "2026-07-31",
     "time": "13:00",
     "mode": "us_afterhours",
     "url": "reports/2026-07-31-us-after.html",
@@ -527,15 +536,6 @@
     "mode": "us_intraday",
     "url": "reports/2026-07-22-us-mid.html",
     "summary": "S&P500 7,494(-0.18%) · 나스닥 25,685(-0.59%). 강세 섹터: 태양광/신재생, 에너지, 방산/우주항공.",
-    "kospi_pct": null,
-    "kosdaq_pct": null
-  },
-  {
-    "date": "2026-07-22",
-    "time": "21:50",
-    "mode": "us_premarket",
-    "url": "reports/2026-07-22-us-pre.html",
-    "summary": "S&P500 선물 7,522(-0.17%) · 나스닥 선물 29,058(-0.48%). 강세 섹터: 에너지, 헬스케어/바이오, 방산/우주항공.",
     "kospi_pct": null,
     "kosdaq_pct": null
   }
