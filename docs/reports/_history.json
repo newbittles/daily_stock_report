@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-08-03",
+    "time": "11:40",
+    "mode": "midday",
+    "url": "reports/2026-08-03-midday.html",
+    "summary": "오늘 한국 증시는 전반적으로 약세를 보이고 있으며, 개인과 외국인의 매도세가 지수 하락을 이끌고 있습니다. 다만, SK이터닉스와 금호건설은 장 초반 하락세를 보였으나 이후 반등에 성공하며 낙폭을 만회하는 모습을 보였습니다.",
+    "kospi_pct": null,
+    "kosdaq_pct": null
+  },
+  {
+    "date": "2026-08-03",
     "time": "09:15",
     "mode": "kr_open",
     "url": "reports/2026-08-03-kr-open.html",
@@ -527,15 +536,6 @@
     "mode": "post_close",
     "url": "reports/2026-07-23-post.html",
     "summary": "오늘 코스피는 외국인 매도세에 하락 마감했으며, 반도체 업황 둔화 우려와 함께 2차전지 관련주들이 약세를 보였습니다.",
-    "kospi_pct": null,
-    "kosdaq_pct": null
-  },
-  {
-    "date": "2026-07-23",
-    "time": "14:50",
-    "mode": "pre_close",
-    "url": "reports/2026-07-23-pre.html",
-    "summary": "코스피는 기관 매도세에 하락 출발했으나, 개인의 매수세 유입으로 낙폭을 줄이며 혼조세를 보이고 있습니다. 코스닥은 외국인과 기관의 동반 매수세에 힘입어 상승세를 이어가고 있습니다.",
     "kospi_pct": null,
     "kosdaq_pct": null
   }
