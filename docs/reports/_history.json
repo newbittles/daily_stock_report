@@ -1,5 +1,14 @@
 [
   {
+    "date": "2026-08-04",
+    "time": "06:37",
+    "mode": "us_morning",
+    "url": "reports/2026-08-04-us.html",
+    "summary": "미국 증시는 기술주 강세에 힘입어 일제히 상승 마감했습니다. 특히 빅테크와 AI 관련주가 시장을 주도했으며, 반도체 섹터도 견조한 흐름을 보였습니다. 금 가격은 상승했으나 유가(WTI)는 큰 폭으로 하락했습니다.",
+    "kospi_pct": null,
+    "kosdaq_pct": null
+  },
+  {
     "date": "2026-08-03",
     "time": "22:40",
     "mode": "us_intraday",
@@ -527,15 +536,6 @@
     "mode": "kr_open",
     "url": "reports/2026-07-24-kr-open.html",
     "summary": "오늘 한국 증시는 전반적으로 약세를 보이며 투자 심리가 위축된 가운데, 일부 종목은 장중 큰 변동성을 나타냈습니다. 특히 대원전선은 장 초반 급락 후 일부 반등에 성공했으나 여전히 약세를 면치 못했으며, 삼성E&A는 장중 상승세를 지키지 못하고 하락 ",
-    "kospi_pct": null,
-    "kosdaq_pct": null
-  },
-  {
-    "date": "2026-07-24",
-    "time": "08:05",
-    "mode": "kr_premarket",
-    "url": "reports/2026-07-24-kr-pre.html",
-    "summary": "",
     "kospi_pct": null,
     "kosdaq_pct": null
   }
