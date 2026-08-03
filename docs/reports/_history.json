@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-08-03",
+    "time": "14:50",
+    "mode": "pre_close",
+    "url": "reports/2026-08-03-pre.html",
+    "summary": "코스피는 관망세 속 혼조세를 보이며, 코스닥은 일부 테마의 강세로 상승세를 유지하고 있습니다.",
+    "kospi_pct": null,
+    "kosdaq_pct": null
+  },
+  {
+    "date": "2026-08-03",
     "time": "11:40",
     "mode": "midday",
     "url": "reports/2026-08-03-midday.html",
@@ -527,15 +536,6 @@
     "mode": "us_premarket",
     "url": "reports/2026-07-23-us-pre.html",
     "summary": "현재 미국 프리장 시장은 전반적으로 약세를 보이고 있습니다. 특히 빅테크 및 기술주 중심으로 하락세가 두드러지며, 이는 알파벳과 테슬라의 실적 발표 이후 나온 자본 지출 우려 및 부진한 실적에 대한 실망감이 반영된 것으로 풀이됩니다. 다만, 유가 상승",
-    "kospi_pct": null,
-    "kosdaq_pct": null
-  },
-  {
-    "date": "2026-07-23",
-    "time": "16:00",
-    "mode": "post_close",
-    "url": "reports/2026-07-23-post.html",
-    "summary": "오늘 코스피는 외국인 매도세에 하락 마감했으며, 반도체 업황 둔화 우려와 함께 2차전지 관련주들이 약세를 보였습니다.",
     "kospi_pct": null,
     "kosdaq_pct": null
   }
