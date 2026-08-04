@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-08-04",
+    "time": "14:50",
+    "mode": "pre_close",
+    "url": "reports/2026-08-04-pre.html",
+    "summary": "코스피는 혼조세를 보이며 관망세가 짙은 가운데, 일부 테마는 강한 상승세를 보이고 있습니다.",
+    "kospi_pct": null,
+    "kosdaq_pct": null
+  },
+  {
+    "date": "2026-08-04",
     "time": "11:40",
     "mode": "midday",
     "url": "reports/2026-08-04-midday.html",
@@ -527,15 +536,6 @@
     "mode": "post_close",
     "url": "reports/2026-07-24-post.html",
     "summary": "코스피는 외국인 매도세에 하락 마감, 코스닥은 개인 순매수세에 상승 마감하며 혼조세를 보였습니다. 반도체 업황 회복 기대감과 2차전지 섹터의 변동성이 두드러진 하루였습니다.",
-    "kospi_pct": null,
-    "kosdaq_pct": null
-  },
-  {
-    "date": "2026-07-24",
-    "time": "14:50",
-    "mode": "pre_close",
-    "url": "reports/2026-07-24-pre.html",
-    "summary": "코스피는 혼조세, 코스닥은 낙폭을 줄이며 소폭 반등 시도 중입니다.",
     "kospi_pct": null,
     "kosdaq_pct": null
   }
