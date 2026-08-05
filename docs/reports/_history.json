@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-08-05",
+    "time": "13:00",
+    "mode": "us_afterhours",
+    "url": "reports/2026-08-05-us-after.html",
+    "summary": "미국 증시는 기술주 강세에 힘입어 S&P500, 나스닥, 다우 지수 모두 상승 마감했습니다. 특히 반도체 섹터가 필라델피아 반도체 지수 6.55% 상승을 견인하며 시장 전반의 랠리를 이끌었습니다. AI 관련 기업들의 실적 발표와 기술주에 대한 투자 심",
+    "kospi_pct": null,
+    "kosdaq_pct": null
+  },
+  {
+    "date": "2026-08-05",
     "time": "11:40",
     "mode": "midday",
     "url": "reports/2026-08-05-midday.html",
@@ -527,15 +536,6 @@
     "mode": "post_close",
     "url": "reports/2026-07-27-post.html",
     "summary": "오늘 코스피는 외국인 순매수세에 힘입어 상승 마감했으며, 반도체와 2차전지 관련주들이 시장을 견인했습니다.",
-    "kospi_pct": null,
-    "kosdaq_pct": null
-  },
-  {
-    "date": "2026-07-27",
-    "time": "14:50",
-    "mode": "pre_close",
-    "url": "reports/2026-07-27-pre.html",
-    "summary": "코스피는 혼조세, 코스닥은 낙폭을 줄이며 소폭 반등 시도 중입니다.",
     "kospi_pct": null,
     "kosdaq_pct": null
   }
