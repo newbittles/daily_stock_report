@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-08-05",
+    "time": "11:40",
+    "mode": "midday",
+    "url": "reports/2026-08-05-midday.html",
+    "summary": "오늘 한국 증시는 전반적으로 약세를 보이고 있으며, 외국인과 기관의 매도세가 지수 하락을 이끌고 있습니다. 특히 NAVER는 장 초반 상승세를 보였으나 고점을 낮추며 현재는 소폭 상승에 머물고 있으며, 대원전선과 금호건설 역시 장중 큰 폭의 상승 후 ",
+    "kospi_pct": null,
+    "kosdaq_pct": null
+  },
+  {
+    "date": "2026-08-05",
     "time": "09:15",
     "mode": "kr_open",
     "url": "reports/2026-08-05-kr-open.html",
@@ -527,15 +536,6 @@
     "mode": "pre_close",
     "url": "reports/2026-07-27-pre.html",
     "summary": "코스피는 혼조세, 코스닥은 낙폭을 줄이며 소폭 반등 시도 중입니다.",
-    "kospi_pct": null,
-    "kosdaq_pct": null
-  },
-  {
-    "date": "2026-07-27",
-    "time": "11:40",
-    "mode": "midday",
-    "url": "reports/2026-07-27-midday.html",
-    "summary": "오늘 한국 증시는 전반적으로 약세를 보이고 있으며, 외국인과 기관의 매도세가 지수 하락을 이끌고 있습니다. 특히 SK이터닉스는 장중 약세를 지속하며 큰 폭의 하락세를 보이고 있으며, SK텔레콤은 장 초반의 하락을 딛고 반등에 성공하는 모습을 보였습니다",
     "kospi_pct": null,
     "kosdaq_pct": null
   }
