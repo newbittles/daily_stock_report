@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-08-06",
+    "time": "13:00",
+    "mode": "us_afterhours",
+    "url": "reports/2026-08-06-us-after.html",
+    "summary": "미국 증시는 혼조세를 보이며 마감했습니다. 다우 지수는 상승했지만, S&P500과 나스닥은 하락했으며 필라델피아 반도체 지수도 약세를 면치 못했습니다. 2차전지, 헬스케어 등 일부 섹터는 강세를 보인 반면, 반도체와 에너지 섹터는 하락했습니다. 금 가",
+    "kospi_pct": null,
+    "kosdaq_pct": null
+  },
+  {
+    "date": "2026-08-06",
     "time": "11:40",
     "mode": "midday",
     "url": "reports/2026-08-06-midday.html",
@@ -527,15 +536,6 @@
     "mode": "post_close",
     "url": "reports/2026-07-28-post.html",
     "summary": "코스피는 외국인 매도세에 하락 마감했으며, 코스닥은 개인 매수세 유입으로 소폭 상승했습니다. 반도체 업황 둔화 우려와 이차전지 관련주들의 차익 실현 매물이 시장 전반의 하락 압력으로 작용했습니다.",
-    "kospi_pct": null,
-    "kosdaq_pct": null
-  },
-  {
-    "date": "2026-07-28",
-    "time": "14:50",
-    "mode": "pre_close",
-    "url": "reports/2026-07-28-pre.html",
-    "summary": "코스피는 혼조세, 코스닥은 낙폭을 줄이며 반등 시도 중입니다.",
     "kospi_pct": null,
     "kosdaq_pct": null
   }
