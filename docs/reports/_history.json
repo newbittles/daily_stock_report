@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-08-06",
+    "time": "11:40",
+    "mode": "midday",
+    "url": "reports/2026-08-06-midday.html",
+    "summary": "오늘 한국 증시는 전반적으로 약세를 보이고 있으며, 외국인과 기관의 매도세가 지수 하락을 주도하고 있습니다. 다만, 대원전선과 금호건설은 장 초반 큰 폭의 하락세를 보였으나 이후 반등하며 낙폭을 줄이는 모습을 보였습니다.",
+    "kospi_pct": null,
+    "kosdaq_pct": null
+  },
+  {
+    "date": "2026-08-06",
     "time": "09:15",
     "mode": "kr_open",
     "url": "reports/2026-08-06-kr-open.html",
@@ -527,15 +536,6 @@
     "mode": "pre_close",
     "url": "reports/2026-07-28-pre.html",
     "summary": "코스피는 혼조세, 코스닥은 낙폭을 줄이며 반등 시도 중입니다.",
-    "kospi_pct": null,
-    "kosdaq_pct": null
-  },
-  {
-    "date": "2026-07-28",
-    "time": "13:00",
-    "mode": "us_afterhours",
-    "url": "reports/2026-07-28-us-after.html",
-    "summary": "미국 증시는 혼조세를 보이며 마감했습니다. 다우 지수는 상승했지만, 나스닥과 S&P500 지수는 소폭 하락했으며, 특히 필라델피아 반도체 지수는 큰 폭으로 내렸습니다. 빅테크 중에서는 알파벳, 마이크로소프트, 애플 등이 강세를 보였으나 엔비디아, AM",
     "kospi_pct": null,
     "kosdaq_pct": null
   }
