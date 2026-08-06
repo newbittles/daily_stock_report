@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-08-06",
+    "time": "14:50",
+    "mode": "pre_close",
+    "url": "reports/2026-08-06-pre.html",
+    "summary": "코스피는 혼조세, 코스닥은 낙폭을 줄이며 반등 시도 중입니다.",
+    "kospi_pct": null,
+    "kosdaq_pct": null
+  },
+  {
+    "date": "2026-08-06",
     "time": "13:00",
     "mode": "us_afterhours",
     "url": "reports/2026-08-06-us-after.html",
@@ -527,15 +536,6 @@
     "mode": "us_premarket",
     "url": "reports/2026-07-28-us-pre.html",
     "summary": "프리장에서 혼조세를 보이고 있으며, 특히 기술주와 반도체 섹터의 약세가 두드러집니다. 중동 긴장 완화 기대감에도 불구하고 AI 투자에 대한 우려와 반도체 업종의 차익 실현 매물이 지수 전반의 상승을 제한하는 모습입니다. 한국 투자자들은 반도체 섹터의 ",
-    "kospi_pct": null,
-    "kosdaq_pct": null
-  },
-  {
-    "date": "2026-07-28",
-    "time": "16:00",
-    "mode": "post_close",
-    "url": "reports/2026-07-28-post.html",
-    "summary": "코스피는 외국인 매도세에 하락 마감했으며, 코스닥은 개인 매수세 유입으로 소폭 상승했습니다. 반도체 업황 둔화 우려와 이차전지 관련주들의 차익 실현 매물이 시장 전반의 하락 압력으로 작용했습니다.",
     "kospi_pct": null,
     "kosdaq_pct": null
   }
