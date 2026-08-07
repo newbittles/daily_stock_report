@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-08-07",
+    "time": "14:50",
+    "mode": "pre_close",
+    "url": "reports/2026-08-07-pre.html",
+    "summary": "코스피는 혼조세, 코스닥은 상승 흐름 속에서 일부 기술주 강세",
+    "kospi_pct": null,
+    "kosdaq_pct": null
+  },
+  {
+    "date": "2026-08-07",
     "time": "13:00",
     "mode": "us_afterhours",
     "url": "reports/2026-08-07-us-after.html",
@@ -527,15 +536,6 @@
     "mode": "us_premarket",
     "url": "reports/2026-07-29-us-pre.html",
     "summary": "프리장에서 혼조세를 보이고 있습니다. 다우 지수 선물은 강세를 보이나, 필라델피아 반도체 지수 선물은 큰 폭의 하락세를 기록하며 기술주 전반에 대한 우려를 나타내고 있습니다. 에너지 섹터가 유가 상승에 힘입어 강세를 보이는 반면, 반도체 섹터는 약세를",
-    "kospi_pct": null,
-    "kosdaq_pct": null
-  },
-  {
-    "date": "2026-07-29",
-    "time": "16:00",
-    "mode": "post_close",
-    "url": "reports/2026-07-29-post.html",
-    "summary": "코스피는 외국인 순매수세에 힘입어 상승 마감했으나, 코스닥은 개인 매도 물량 출회로 하락했습니다. 반도체와 이차전지 관련주가 시장을 주도했습니다.",
     "kospi_pct": null,
     "kosdaq_pct": null
   }
