@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-08-07",
+    "time": "11:40",
+    "mode": "midday",
+    "url": "reports/2026-08-07-midday.html",
+    "summary": "오늘 한국 증시는 전반적으로 약세를 보이며 하락 흐름을 이어가고 있습니다. 외국인과 기관의 매도세가 지수 하락을 주도하는 가운데, 대원전선과 금호건설은 장 초반 상승세를 보였으나 이후 급락하며 고점 대비 큰 폭의 하락세를 기록하고 있습니다.",
+    "kospi_pct": null,
+    "kosdaq_pct": null
+  },
+  {
+    "date": "2026-08-07",
     "time": "09:15",
     "mode": "kr_open",
     "url": "reports/2026-08-07-kr-open.html",
@@ -527,15 +536,6 @@
     "mode": "pre_close",
     "url": "reports/2026-07-29-pre.html",
     "summary": "코스피는 혼조세, 코스닥은 낙폭 만회하며 상승 전환 시도 중입니다.",
-    "kospi_pct": null,
-    "kosdaq_pct": null
-  },
-  {
-    "date": "2026-07-29",
-    "time": "13:00",
-    "mode": "us_afterhours",
-    "url": "reports/2026-07-29-us-after.html",
-    "summary": "미국 증시는 혼조세를 보이며 마감했습니다. 다우 지수는 상승했지만, 나스닥과 필라델피아 반도체 지수는 하락했습니다. 헬스케어, 경기소비재, 금융 섹터가 강세를 보인 반면, 반도체 및 신재생 에너지 섹터는 큰 폭으로 하락했습니다. 유가(WTI)는 이란 ",
     "kospi_pct": null,
     "kosdaq_pct": null
   }
