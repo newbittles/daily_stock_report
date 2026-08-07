@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-08-07",
+    "time": "16:00",
+    "mode": "post_close",
+    "url": "reports/2026-08-07-post.html",
+    "summary": "오늘 코스피는 외국인 매도세에 하락 마감했으며, 반도체 업황 둔화 우려와 지정학적 리스크가 시장 전반에 부담으로 작용했습니다.",
+    "kospi_pct": null,
+    "kosdaq_pct": null
+  },
+  {
+    "date": "2026-08-07",
     "time": "14:50",
     "mode": "pre_close",
     "url": "reports/2026-08-07-pre.html",
@@ -527,15 +536,6 @@
     "mode": "us_intraday",
     "url": "reports/2026-07-29-us-mid.html",
     "summary": "S&P500 7,422(-0.09%) · 나스닥 24,842(-0.14%). 강세 섹터: 에너지, 헬스케어/바이오, 경기소비재.",
-    "kospi_pct": null,
-    "kosdaq_pct": null
-  },
-  {
-    "date": "2026-07-29",
-    "time": "21:50",
-    "mode": "us_premarket",
-    "url": "reports/2026-07-29-us-pre.html",
-    "summary": "프리장에서 혼조세를 보이고 있습니다. 다우 지수 선물은 강세를 보이나, 필라델피아 반도체 지수 선물은 큰 폭의 하락세를 기록하며 기술주 전반에 대한 우려를 나타내고 있습니다. 에너지 섹터가 유가 상승에 힘입어 강세를 보이는 반면, 반도체 섹터는 약세를",
     "kospi_pct": null,
     "kosdaq_pct": null
   }
