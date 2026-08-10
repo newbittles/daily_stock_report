@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-08-10",
+    "time": "19:00",
+    "mode": "us_premarket",
+    "url": "reports/2026-08-10-us-pre.html",
+    "summary": "프리장에서 미국 증시는 전반적으로 강보합세를 보이고 있습니다. 특히 필라델피아 반도체 지수와 관련 ETF의 강세가 두드러지며, AI 인프라 및 기술주에 대한 기대감이 시장을 주도하고 있습니다. 다만, 인플레이션 데이터 발표를 앞두고 투자자들의 경계심도",
+    "kospi_pct": null,
+    "kosdaq_pct": null
+  },
+  {
+    "date": "2026-08-10",
     "time": "16:00",
     "mode": "post_close",
     "url": "reports/2026-08-10-post.html",
@@ -527,15 +536,6 @@
     "mode": "us_intraday",
     "url": "reports/2026-07-30-us-mid.html",
     "summary": "미국 증시는 연준의 결정 이후 기술주를 중심으로 반등하며 S&P500, 나스닥, 다우 지수가 상승 마감했습니다. 특히 필라델피아 반도체 지수가 5% 이상 급등하며 시장을 견인했으며, 금 가격은 상승했으나 유가(WTI)는 하락했습니다.",
-    "kospi_pct": null,
-    "kosdaq_pct": null
-  },
-  {
-    "date": "2026-07-30",
-    "time": "21:50",
-    "mode": "us_premarket",
-    "url": "reports/2026-07-30-us-pre.html",
-    "summary": "프리장에서 미국 증시는 혼조세를 보이고 있습니다. 마이크로소프트의 호실적 발표와 AI 관련 기대감이 기술주 전반을 견인하며 나스닥 선물은 강세를 나타내고 있으나, 다우 지수 선물은 큰 폭의 하락세를 보이며 시장 전반의 투자 심리가 엇갈리고 있습니다. ",
     "kospi_pct": null,
     "kosdaq_pct": null
   }
