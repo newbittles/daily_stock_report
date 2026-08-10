@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-08-10",
+    "time": "14:50",
+    "mode": "pre_close",
+    "url": "reports/2026-08-10-pre.html",
+    "summary": "코스피는 혼조세, 코스닥은 낙폭 만회하며 소폭 상승 중입니다.",
+    "kospi_pct": null,
+    "kosdaq_pct": null
+  },
+  {
+    "date": "2026-08-10",
     "time": "11:40",
     "mode": "midday",
     "url": "reports/2026-08-10-midday.html",
@@ -527,15 +536,6 @@
     "mode": "post_close",
     "url": "reports/2026-07-30-post.html",
     "summary": "오늘 코스피는 외국인 매도세에 하락 마감했으며, 코스닥은 개인 매수세 유입으로 소폭 상승했습니다. 반도체 업황 둔화 우려와 지정학적 리스크가 시장 전반에 부담으로 작용했습니다.",
-    "kospi_pct": null,
-    "kosdaq_pct": null
-  },
-  {
-    "date": "2026-07-30",
-    "time": "14:50",
-    "mode": "pre_close",
-    "url": "reports/2026-07-30-pre.html",
-    "summary": "코스피는 혼조세를 보이며 관망세가 짙은 가운데, 일부 테마는 강한 상승세를 나타내고 있습니다.",
     "kospi_pct": null,
     "kosdaq_pct": null
   }
