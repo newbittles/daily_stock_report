@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-08-10",
+    "time": "16:00",
+    "mode": "post_close",
+    "url": "reports/2026-08-10-post.html",
+    "summary": "오늘 코스피와 코스닥 지수는 혼조세를 보이며 마감했습니다. 반도체 관련주들의 강세와 일부 2차전지 종목의 약세가 두드러진 하루였습니다.",
+    "kospi_pct": null,
+    "kosdaq_pct": null
+  },
+  {
+    "date": "2026-08-10",
     "time": "14:50",
     "mode": "pre_close",
     "url": "reports/2026-08-10-pre.html",
@@ -527,15 +536,6 @@
     "mode": "us_premarket",
     "url": "reports/2026-07-30-us-pre.html",
     "summary": "프리장에서 미국 증시는 혼조세를 보이고 있습니다. 마이크로소프트의 호실적 발표와 AI 관련 기대감이 기술주 전반을 견인하며 나스닥 선물은 강세를 나타내고 있으나, 다우 지수 선물은 큰 폭의 하락세를 보이며 시장 전반의 투자 심리가 엇갈리고 있습니다. ",
-    "kospi_pct": null,
-    "kosdaq_pct": null
-  },
-  {
-    "date": "2026-07-30",
-    "time": "16:00",
-    "mode": "post_close",
-    "url": "reports/2026-07-30-post.html",
-    "summary": "오늘 코스피는 외국인 매도세에 하락 마감했으며, 코스닥은 개인 매수세 유입으로 소폭 상승했습니다. 반도체 업황 둔화 우려와 지정학적 리스크가 시장 전반에 부담으로 작용했습니다.",
     "kospi_pct": null,
     "kosdaq_pct": null
   }
