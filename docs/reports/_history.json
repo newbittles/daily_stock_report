@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-08-12",
+    "time": "08:05",
+    "mode": "kr_premarket",
+    "url": "reports/2026-08-12-kr-pre.html",
+    "summary": "",
+    "kospi_pct": null,
+    "kosdaq_pct": null
+  },
+  {
+    "date": "2026-08-12",
     "time": "07:00",
     "mode": "us_morning",
     "url": "reports/2026-08-12-us.html",
@@ -527,15 +536,6 @@
     "mode": "kr_open",
     "url": "reports/2026-08-03-kr-open.html",
     "summary": "오늘 한국 증시는 전반적으로 약세를 보이고 있으며, 외국인과 기관의 매도세가 지수 하락을 이끌고 있습니다. 다만, SK이터닉스, 대원전선, 금호건설 등 일부 종목은 개장 초 급락 후 반등하며 낙폭을 줄이는 모습을 보였습니다.",
-    "kospi_pct": null,
-    "kosdaq_pct": null
-  },
-  {
-    "date": "2026-08-03",
-    "time": "08:05",
-    "mode": "kr_premarket",
-    "url": "reports/2026-08-03-kr-pre.html",
-    "summary": "",
     "kospi_pct": null,
     "kosdaq_pct": null
   }
