@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-08-11",
+    "time": "22:40",
+    "mode": "us_intraday",
+    "url": "reports/2026-08-11-us-mid.html",
+    "summary": "미국 증시는 혼조세를 보이며 마감했습니다. 다우 지수는 상승했지만, 나스닥은 하락하며 기술주 전반의 약세가 지수 전반의 상승을 제한했습니다. 반도체 섹터는 필라델피아 반도체 지수와 관련 ETF의 강세로 주도주 역할을 했으며, AI 성장 동력에 대한 기",
+    "kospi_pct": null,
+    "kosdaq_pct": null
+  },
+  {
+    "date": "2026-08-11",
     "time": "21:50",
     "mode": "us_premarket",
     "url": "reports/2026-08-11-us-pre.html",
@@ -527,15 +536,6 @@
     "mode": "us_morning",
     "url": "reports/2026-08-01-us.html",
     "summary": "미국 증시는 아마존의 폭발적인 클라우드 사업 성장과 AI 투자 열기에 힘입어 전반적으로 상승 마감했습니다. 특히 경기소비재 섹터가 강세를 보였으며, 금 가격은 소폭 하락한 반면 WTI 유가는 3.84% 급등했습니다.",
-    "kospi_pct": null,
-    "kosdaq_pct": null
-  },
-  {
-    "date": "2026-07-31",
-    "time": "22:40",
-    "mode": "us_intraday",
-    "url": "reports/2026-07-31-us-mid.html",
-    "summary": "미국 증시는 빅테크의 AI 투자 지속 기대감과 아마존의 호실적으로 상승 마감했습니다. 특히 반도체 섹터가 강세를 보였으며, 금 가격은 보합세를, 유가는 상승했습니다.",
     "kospi_pct": null,
     "kosdaq_pct": null
   }
