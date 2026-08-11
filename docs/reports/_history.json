@@ -1,5 +1,14 @@
 [
   {
+    "date": "2026-08-12",
+    "time": "06:30",
+    "mode": "us_morning",
+    "url": "reports/2026-08-12-us.html",
+    "summary": "미국 증시는 혼조세를 보이며 전반적으로 하락 마감했습니다. AI 관련주와 반도체 섹터는 강세를 보였으나, 빅테크 전반과 기술주가 하락하며 지수 하락을 이끌었습니다. 금과 유가는 상승세를 기록했습니다.",
+    "kospi_pct": null,
+    "kosdaq_pct": null
+  },
+  {
     "date": "2026-08-11",
     "time": "22:40",
     "mode": "us_intraday",
@@ -527,15 +536,6 @@
     "mode": "kr_premarket",
     "url": "reports/2026-08-03-kr-pre.html",
     "summary": "",
-    "kospi_pct": null,
-    "kosdaq_pct": null
-  },
-  {
-    "date": "2026-08-01",
-    "time": "06:36",
-    "mode": "us_morning",
-    "url": "reports/2026-08-01-us.html",
-    "summary": "미국 증시는 아마존의 폭발적인 클라우드 사업 성장과 AI 투자 열기에 힘입어 전반적으로 상승 마감했습니다. 특히 경기소비재 섹터가 강세를 보였으며, 금 가격은 소폭 하락한 반면 WTI 유가는 3.84% 급등했습니다.",
     "kospi_pct": null,
     "kosdaq_pct": null
   }
