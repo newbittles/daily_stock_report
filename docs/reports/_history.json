@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-08-12",
+    "time": "11:40",
+    "mode": "midday",
+    "url": "reports/2026-08-12-midday.html",
+    "summary": "오늘 한국 증시는 전반적으로 약세를 보이며 투자 심리가 위축된 가운데, 개별 종목별로는 뚜렷한 차별화 장세를 나타내고 있습니다. 특히 알테오젠은 장중 큰 폭의 하락세를 보였으나 저점 대비 일부 반등하며 변동성을 키우는 모습을 보였고, 대원전선과 금호건",
+    "kospi_pct": null,
+    "kosdaq_pct": null
+  },
+  {
+    "date": "2026-08-12",
     "time": "09:15",
     "mode": "kr_open",
     "url": "reports/2026-08-12-kr-open.html",
@@ -527,15 +536,6 @@
     "mode": "pre_close",
     "url": "reports/2026-08-03-pre.html",
     "summary": "코스피는 관망세 속 혼조세를 보이며, 코스닥은 일부 테마의 강세로 상승세를 유지하고 있습니다.",
-    "kospi_pct": null,
-    "kosdaq_pct": null
-  },
-  {
-    "date": "2026-08-03",
-    "time": "11:40",
-    "mode": "midday",
-    "url": "reports/2026-08-03-midday.html",
-    "summary": "오늘 한국 증시는 전반적으로 약세를 보이고 있으며, 개인과 외국인의 매도세가 지수 하락을 이끌고 있습니다. 다만, SK이터닉스와 금호건설은 장 초반 하락세를 보였으나 이후 반등에 성공하며 낙폭을 만회하는 모습을 보였습니다.",
     "kospi_pct": null,
     "kosdaq_pct": null
   }
