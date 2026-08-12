@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-08-13",
+    "time": "08:05",
+    "mode": "kr_premarket",
+    "url": "reports/2026-08-13-kr-pre.html",
+    "summary": "",
+    "kospi_pct": null,
+    "kosdaq_pct": null
+  },
+  {
+    "date": "2026-08-13",
     "time": "07:00",
     "mode": "us_morning",
     "url": "reports/2026-08-13-us.html",
@@ -527,15 +536,6 @@
     "mode": "midday",
     "url": "reports/2026-08-04-midday.html",
     "summary": "오늘 한국 증시는 전반적으로 약세를 보이며 하락 흐름을 이어가고 있습니다. 외국인과 기관의 매도세가 지수 하락을 주도하는 가운데, 일부 테마주들이 강세를 보이고 있습니다. 특히 SK이터닉스는 장중 꾸준한 강세를 유지하며 높은 상승률을 기록하고 있습니다",
-    "kospi_pct": null,
-    "kosdaq_pct": null
-  },
-  {
-    "date": "2026-08-04",
-    "time": "09:15",
-    "mode": "kr_open",
-    "url": "reports/2026-08-04-kr-open.html",
-    "summary": "오늘 한국 증시는 전반적으로 약세를 보이고 있으며, 외국인과 기관의 매도세가 지수 하락을 주도하고 있습니다. 특히 SK이터닉스는 장중 꾸준한 강세를 유지하며 시장 흐름과 차별화된 모습을 보이고 있습니다. 반면 대원전선과 금호건설은 장 초반 상승분을 반",
     "kospi_pct": null,
     "kosdaq_pct": null
   }
