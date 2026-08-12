@@ -1,5 +1,14 @@
 [
   {
+    "date": "2026-08-13",
+    "time": "06:34",
+    "mode": "us_morning",
+    "url": "reports/2026-08-13-us.html",
+    "summary": "미국 증시는 혼조세를 보인 가운데, 나스닥과 S&P500은 인플레이션 둔화 소식에 상승 마감했습니다. 반도체 및 기술 섹터가 AI 수요 강세에 힘입어 두드러진 상승세를 보였으며, 금 가격은 상승, 유가는 하락했습니다.",
+    "kospi_pct": null,
+    "kosdaq_pct": null
+  },
+  {
     "date": "2026-08-12",
     "time": "22:40",
     "mode": "us_intraday",
@@ -527,15 +536,6 @@
     "mode": "kr_open",
     "url": "reports/2026-08-04-kr-open.html",
     "summary": "오늘 한국 증시는 전반적으로 약세를 보이고 있으며, 외국인과 기관의 매도세가 지수 하락을 주도하고 있습니다. 특히 SK이터닉스는 장중 꾸준한 강세를 유지하며 시장 흐름과 차별화된 모습을 보이고 있습니다. 반면 대원전선과 금호건설은 장 초반 상승분을 반",
-    "kospi_pct": null,
-    "kosdaq_pct": null
-  },
-  {
-    "date": "2026-08-04",
-    "time": "08:05",
-    "mode": "kr_premarket",
-    "url": "reports/2026-08-04-kr-pre.html",
-    "summary": "",
     "kospi_pct": null,
     "kosdaq_pct": null
   }
