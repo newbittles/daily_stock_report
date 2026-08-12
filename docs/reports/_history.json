@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-08-12",
+    "time": "22:40",
+    "mode": "us_intraday",
+    "url": "reports/2026-08-12-us-mid.html",
+    "summary": "미국 증시는 혼조세를 보이며 마감했습니다. 특히 반도체 섹터의 강세가 두드러졌으며, AI 관련주들이 시장을 견인했습니다. 금 가격은 상승했지만 유가는 소폭 하락했습니다.",
+    "kospi_pct": null,
+    "kosdaq_pct": null
+  },
+  {
+    "date": "2026-08-12",
     "time": "21:50",
     "mode": "us_premarket",
     "url": "reports/2026-08-12-us-pre.html",
@@ -527,15 +536,6 @@
     "mode": "kr_premarket",
     "url": "reports/2026-08-04-kr-pre.html",
     "summary": "",
-    "kospi_pct": null,
-    "kosdaq_pct": null
-  },
-  {
-    "date": "2026-08-04",
-    "time": "06:37",
-    "mode": "us_morning",
-    "url": "reports/2026-08-04-us.html",
-    "summary": "미국 증시는 기술주 강세에 힘입어 일제히 상승 마감했습니다. 특히 빅테크와 AI 관련주가 시장을 주도했으며, 반도체 섹터도 견조한 흐름을 보였습니다. 금 가격은 상승했으나 유가(WTI)는 큰 폭으로 하락했습니다.",
     "kospi_pct": null,
     "kosdaq_pct": null
   }
