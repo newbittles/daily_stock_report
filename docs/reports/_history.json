@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-08-13",
+    "time": "09:15",
+    "mode": "kr_open",
+    "url": "reports/2026-08-13-kr-open.html",
+    "summary": "오늘 한국 증시는 삼성전자, 삼성전기 등 대형 기술주가 강세를 보이며 지수 상승을 견인하고 있습니다. 다만, 대원전선은 장 초반 하락세를 보였으나 저점 대비 반등에 성공하며 낙폭을 줄였고, 한국콜마는 장중 고점 대비 다소 밀리는 모습을 보였습니다. 전",
+    "kospi_pct": null,
+    "kosdaq_pct": null
+  },
+  {
+    "date": "2026-08-13",
     "time": "08:05",
     "mode": "kr_premarket",
     "url": "reports/2026-08-13-kr-pre.html",
@@ -527,15 +536,6 @@
     "mode": "pre_close",
     "url": "reports/2026-08-04-pre.html",
     "summary": "코스피는 혼조세를 보이며 관망세가 짙은 가운데, 일부 테마는 강한 상승세를 보이고 있습니다.",
-    "kospi_pct": null,
-    "kosdaq_pct": null
-  },
-  {
-    "date": "2026-08-04",
-    "time": "11:40",
-    "mode": "midday",
-    "url": "reports/2026-08-04-midday.html",
-    "summary": "오늘 한국 증시는 전반적으로 약세를 보이며 하락 흐름을 이어가고 있습니다. 외국인과 기관의 매도세가 지수 하락을 주도하는 가운데, 일부 테마주들이 강세를 보이고 있습니다. 특히 SK이터닉스는 장중 꾸준한 강세를 유지하며 높은 상승률을 기록하고 있습니다",
     "kospi_pct": null,
     "kosdaq_pct": null
   }
