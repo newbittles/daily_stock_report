@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-08-14",
+    "time": "19:00",
+    "mode": "us_premarket",
+    "url": "reports/2026-08-14-us-pre.html",
+    "summary": "미국 증시 프리마켓은 전반적으로 소폭 강세를 보이고 있습니다. 기술주와 반도체 섹터가 상승세를 주도하며 나스닥 선물 강세를 이끌고 있으며, 에너지 섹터도 유가 상승에 힘입어 동반 강세를 나타내고 있습니다. 다만, 2차전지 섹터의 약세와 인플레이션 우려",
+    "kospi_pct": null,
+    "kosdaq_pct": null
+  },
+  {
+    "date": "2026-08-14",
     "time": "16:00",
     "mode": "post_close",
     "url": "reports/2026-08-14-post.html",
@@ -527,15 +536,6 @@
     "mode": "kr_premarket",
     "url": "reports/2026-08-06-kr-pre.html",
     "summary": "",
-    "kospi_pct": null,
-    "kosdaq_pct": null
-  },
-  {
-    "date": "2026-08-06",
-    "time": "06:39",
-    "mode": "us_morning",
-    "url": "reports/2026-08-06-us.html",
-    "summary": "미국 증시는 혼조세를 보이며 마감했습니다. 다우 지수는 상승했지만, S&P500과 나스닥은 하락했으며, 특히 필라델피아 반도체 지수는 큰 폭으로 내렸습니다. 빅테크 중에서는 엔비디아가 강세를 보인 반면, 알파벳과 테슬라 등은 하락했습니다. 금 가격은 ",
     "kospi_pct": null,
     "kosdaq_pct": null
   }
