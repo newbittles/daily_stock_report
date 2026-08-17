@@ -1,5 +1,14 @@
 [
   {
+    "date": "2026-08-18",
+    "time": "06:46",
+    "mode": "us_morning",
+    "url": "reports/2026-08-18-us.html",
+    "summary": "미국 증시는 전반적으로 하락세를 보였으나, 필라델피아 반도체 지수가 강세를 보이며 기술주 일부가 상승 동력을 찾으려 노력했습니다. AI 투자에 대한 기대감이 지속되는 가운데, 유가(WTI)는 3.09% 상승하며 시장에 영향을 미쳤습니다. 금 가격 역시",
+    "kospi_pct": null,
+    "kosdaq_pct": null
+  },
+  {
     "date": "2026-08-17",
     "time": "22:40",
     "mode": "us_intraday",
@@ -527,15 +536,6 @@
     "mode": "post_close",
     "url": "reports/2026-08-06-post.html",
     "summary": "코스피는 외국인 매도세에 하락 마감, 코스닥은 개인 순매수 유입으로 소폭 상승했습니다. 반도체 업황 둔화 우려와 2차전지 섹터의 차익 실현 매물이 지수 하락을 주도했습니다.",
-    "kospi_pct": null,
-    "kosdaq_pct": null
-  },
-  {
-    "date": "2026-08-06",
-    "time": "14:50",
-    "mode": "pre_close",
-    "url": "reports/2026-08-06-pre.html",
-    "summary": "코스피는 혼조세, 코스닥은 낙폭을 줄이며 반등 시도 중입니다.",
     "kospi_pct": null,
     "kosdaq_pct": null
   }
