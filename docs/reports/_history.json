@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-08-18",
+    "time": "16:00",
+    "mode": "post_close",
+    "url": "reports/2026-08-18-post.html",
+    "summary": "오늘 코스피는 외국인 매도세에 하락 마감했으며, 반도체 업종이 부진한 흐름을 보였습니다.",
+    "kospi_pct": null,
+    "kosdaq_pct": null
+  },
+  {
+    "date": "2026-08-18",
     "time": "14:50",
     "mode": "pre_close",
     "url": "reports/2026-08-18-pre.html",
@@ -527,15 +536,6 @@
     "mode": "kr_open",
     "url": "reports/2026-08-07-kr-open.html",
     "summary": "오늘 한국 증시는 전반적으로 약세를 보이고 있으며, 외국인과 기관의 매도세가 지수 하락을 주도하고 있습니다. 특히 대원전선과 금호건설은 장 초반 상승세를 보였으나, 이후 차익실현 매물에 밀리며 현재는 소폭 상승에 그치고 있습니다.",
-    "kospi_pct": null,
-    "kosdaq_pct": null
-  },
-  {
-    "date": "2026-08-07",
-    "time": "08:05",
-    "mode": "kr_premarket",
-    "url": "reports/2026-08-07-kr-pre.html",
-    "summary": "",
     "kospi_pct": null,
     "kosdaq_pct": null
   }
