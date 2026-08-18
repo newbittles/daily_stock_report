@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-08-19",
+    "time": "08:05",
+    "mode": "kr_premarket",
+    "url": "reports/2026-08-19-kr-pre.html",
+    "summary": "",
+    "kospi_pct": null,
+    "kosdaq_pct": null
+  },
+  {
+    "date": "2026-08-19",
     "time": "06:30",
     "mode": "us_morning",
     "url": "reports/2026-08-19-us.html",
@@ -527,15 +536,6 @@
     "mode": "post_close",
     "url": "reports/2026-08-07-post.html",
     "summary": "오늘 코스피는 외국인 매도세에 하락 마감했으며, 반도체 업황 둔화 우려와 지정학적 리스크가 시장 전반에 부담으로 작용했습니다.",
-    "kospi_pct": null,
-    "kosdaq_pct": null
-  },
-  {
-    "date": "2026-08-07",
-    "time": "14:50",
-    "mode": "pre_close",
-    "url": "reports/2026-08-07-pre.html",
-    "summary": "코스피는 혼조세, 코스닥은 상승 흐름 속에서 일부 기술주 강세",
     "kospi_pct": null,
     "kosdaq_pct": null
   }
