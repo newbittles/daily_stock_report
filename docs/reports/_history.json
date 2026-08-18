@@ -1,5 +1,14 @@
 [
   {
+    "date": "2026-08-19",
+    "time": "07:00",
+    "mode": "us_morning",
+    "url": "reports/2026-08-19-us.html",
+    "summary": "미국 증시는 전반적으로 하락 마감했으며, 특히 기술주와 반도체 섹터의 약세가 두드러졌습니다. 금리 상승 우려와 일부 기업의 실적 부진이 시장 전반에 부담을 주었습니다. 금 가격은 하락했고 유가(WTI)는 소폭 하락했습니다.",
+    "kospi_pct": null,
+    "kosdaq_pct": null
+  },
+  {
     "date": "2026-08-18",
     "time": "22:40",
     "mode": "us_intraday",
@@ -527,15 +536,6 @@
     "mode": "pre_close",
     "url": "reports/2026-08-07-pre.html",
     "summary": "코스피는 혼조세, 코스닥은 상승 흐름 속에서 일부 기술주 강세",
-    "kospi_pct": null,
-    "kosdaq_pct": null
-  },
-  {
-    "date": "2026-08-07",
-    "time": "13:00",
-    "mode": "us_afterhours",
-    "url": "reports/2026-08-07-us-after.html",
-    "summary": "미국 증시는 혼조세를 보이며 마감했습니다. 다우 지수는 하락한 반면, S&P500과 나스닥은 소폭 하락하거나 보합세를 유지했습니다. 반도체 섹터는 강세를 보였으나 기술주 전반은 약세를 나타냈습니다. 유가는 큰 폭으로 상승했습니다.",
     "kospi_pct": null,
     "kosdaq_pct": null
   }
