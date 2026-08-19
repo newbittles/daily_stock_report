@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-08-20",
+    "time": "08:05",
+    "mode": "kr_premarket",
+    "url": "reports/2026-08-20-kr-pre.html",
+    "summary": "",
+    "kospi_pct": null,
+    "kosdaq_pct": null
+  },
+  {
+    "date": "2026-08-20",
     "time": "07:02",
     "mode": "us_morning",
     "url": "reports/2026-08-20-us.html",
@@ -527,15 +536,6 @@
     "mode": "us_premarket",
     "url": "reports/2026-08-10-us-pre.html",
     "summary": "프리장에서 미국 증시는 혼조세를 보이고 있습니다. 필라델피아 반도체 지수와 에너지, 2차전지 섹터가 강세를 주도하는 가운데, 기술주 일부와 나스닥 선물은 약세를 나타내고 있습니다. 유가 상승과 금값 강세는 원자재 관련 섹터에 긍정적인 영향을 미치고 있",
-    "kospi_pct": null,
-    "kosdaq_pct": null
-  },
-  {
-    "date": "2026-08-10",
-    "time": "16:00",
-    "mode": "post_close",
-    "url": "reports/2026-08-10-post.html",
-    "summary": "오늘 코스피와 코스닥 지수는 혼조세를 보이며 마감했습니다. 반도체 관련주들의 강세와 일부 2차전지 종목의 약세가 두드러진 하루였습니다.",
     "kospi_pct": null,
     "kosdaq_pct": null
   }
