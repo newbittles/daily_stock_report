@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-08-20",
+    "time": "19:00",
+    "mode": "us_premarket",
+    "url": "reports/2026-08-20-us-pre.html",
+    "summary": "현재 미국 프리장 시장은 혼조세를 보이고 있습니다. 다우 지수는 소폭 상승 출발을 예고하는 반면, S&P500과 나스닥 선물은 하락하며 기술주 전반에 대한 경계감이 나타나고 있습니다. 특히 필라델피아 반도체 지수의 큰 폭 하락이 시장 전반의 투자 심리",
+    "kospi_pct": null,
+    "kosdaq_pct": null
+  },
+  {
+    "date": "2026-08-20",
     "time": "16:00",
     "mode": "post_close",
     "url": "reports/2026-08-20-post.html",
@@ -527,15 +536,6 @@
     "mode": "us_afterhours",
     "url": "reports/2026-08-11-us-after.html",
     "summary": "미국 증시는 혼조세를 보이며 소폭 하락 마감했습니다. 에너지 섹터가 강세를 보인 반면, 반도체 섹터는 큰 폭으로 하락하며 지수 하락을 주도했습니다. 금 가격은 소폭 상승했으며, 유가(WTI)는 5% 이상 급등했습니다.",
-    "kospi_pct": null,
-    "kosdaq_pct": null
-  },
-  {
-    "date": "2026-08-11",
-    "time": "11:40",
-    "mode": "midday",
-    "url": "reports/2026-08-11-midday.html",
-    "summary": "오늘 한국 증시는 전반적으로 약세를 보이고 있으며, 특히 코스피는 외국인과 기관의 매도세에 하락폭을 키우고 있습니다. 이러한 흐름 속에서 알테오젠은 장중 약세를 이어가며 하락폭을 확대하고 있으나, 대원전선은 장 초반의 하락을 딛고 반등에 성공하는 모습",
     "kospi_pct": null,
     "kosdaq_pct": null
   }
