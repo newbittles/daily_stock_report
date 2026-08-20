@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-08-21",
+    "time": "08:05",
+    "mode": "kr_premarket",
+    "url": "reports/2026-08-21-kr-pre.html",
+    "summary": "",
+    "kospi_pct": null,
+    "kosdaq_pct": null
+  },
+  {
+    "date": "2026-08-21",
     "time": "07:00",
     "mode": "us_morning",
     "url": "reports/2026-08-21-us.html",
@@ -527,15 +536,6 @@
     "mode": "us_premarket",
     "url": "reports/2026-08-11-us-pre.html",
     "summary": "현재 미국 프리장 시장은 혼조세를 보이고 있습니다. 필라델피아반도체 지수의 큰 하락에도 불구하고, 반도체 섹터 ETF와 일부 빅테크 종목들이 상승하며 기술주 전반의 강세를 일부 지지하고 있습니다. 태양광/신재생 에너지 섹터의 강세도 눈에 띄는 부분입니",
-    "kospi_pct": null,
-    "kosdaq_pct": null
-  },
-  {
-    "date": "2026-08-11",
-    "time": "16:00",
-    "mode": "post_close",
-    "url": "reports/2026-08-11-post.html",
-    "summary": "코스피는 외국인 매도세에 하락 마감했으며, 코스닥은 개인 매수세 유입으로 소폭 상승했습니다. 반도체 업황 둔화 우려와 2차전지 관련주 약세가 두드러졌습니다.",
     "kospi_pct": null,
     "kosdaq_pct": null
   }
