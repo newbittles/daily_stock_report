@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-08-20",
+    "time": "14:50",
+    "mode": "pre_close",
+    "url": "reports/2026-08-20-pre.html",
+    "summary": "코스피는 혼조세, 코스닥은 낙폭을 줄이며 반등 시도 중입니다.",
+    "kospi_pct": null,
+    "kosdaq_pct": null
+  },
+  {
+    "date": "2026-08-20",
     "time": "13:00",
     "mode": "us_afterhours",
     "url": "reports/2026-08-20-us-after.html",
@@ -527,15 +536,6 @@
     "mode": "kr_open",
     "url": "reports/2026-08-11-kr-open.html",
     "summary": "오늘 한국 증시는 전반적으로 약세를 보이고 있으며, 외국인과 기관의 매도세가 지수 하락을 주도하고 있습니다. 특히 알테오젠은 장 초반 하락세를 보였으나 저점 대비 반등하며 낙폭을 줄이는 모습을 보였고, 대원전선은 장 초반 하락 후 강한 반등세를 나타내",
-    "kospi_pct": null,
-    "kosdaq_pct": null
-  },
-  {
-    "date": "2026-08-11",
-    "time": "08:05",
-    "mode": "kr_premarket",
-    "url": "reports/2026-08-11-kr-pre.html",
-    "summary": "",
     "kospi_pct": null,
     "kosdaq_pct": null
   }
