@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-08-21",
+    "time": "14:50",
+    "mode": "pre_close",
+    "url": "reports/2026-08-21-pre.html",
+    "summary": "코스피는 혼조세, 코스닥은 2차전지 및 반도체 관련주 강세",
+    "kospi_pct": null,
+    "kosdaq_pct": null
+  },
+  {
+    "date": "2026-08-21",
     "time": "13:00",
     "mode": "us_afterhours",
     "url": "reports/2026-08-21-us-after.html",
@@ -527,15 +536,6 @@
     "mode": "kr_open",
     "url": "reports/2026-08-12-kr-open.html",
     "summary": "오늘 한국 증시는 전반적으로 약세를 보이고 있으며, 특히 코스닥 시장의 하락세가 두드러집니다. 외국인과 기관의 순매도세가 지수 하락을 이끌고 있으며, 일부 테마주들이 장 초반 강세를 보였으나 차익 실현 매물에 밀리는 흐름을 나타내고 있습니다. 금호건설",
-    "kospi_pct": null,
-    "kosdaq_pct": null
-  },
-  {
-    "date": "2026-08-12",
-    "time": "08:05",
-    "mode": "kr_premarket",
-    "url": "reports/2026-08-12-kr-pre.html",
-    "summary": "",
     "kospi_pct": null,
     "kosdaq_pct": null
   }
