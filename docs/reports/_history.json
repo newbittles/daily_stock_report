@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-08-21",
+    "time": "22:40",
+    "mode": "us_intraday",
+    "url": "reports/2026-08-21-us-mid.html",
+    "summary": "미국 증시는 혼조세를 보이며 혼조세로 마감했습니다. S&P 500, 나스닥, 다우 지수는 소폭 상승했으나, 필라델피아 반도체 지수는 약보합세를 기록했습니다. 2차전지/리튬, 헬스케어/바이오 섹터가 강세를 보인 반면, 반도체 섹터는 하락했습니다. 비트코",
+    "kospi_pct": null,
+    "kosdaq_pct": null
+  },
+  {
+    "date": "2026-08-21",
     "time": "21:50",
     "mode": "us_premarket",
     "url": "reports/2026-08-21-us-pre.html",
@@ -527,15 +536,6 @@
     "mode": "pre_close",
     "url": "reports/2026-08-12-pre.html",
     "summary": "코스피는 혼조세, 코스닥은 낙폭을 줄이며 반등 시도 중입니다.",
-    "kospi_pct": null,
-    "kosdaq_pct": null
-  },
-  {
-    "date": "2026-08-12",
-    "time": "13:00",
-    "mode": "us_afterhours",
-    "url": "reports/2026-08-12-us-after.html",
-    "summary": "미국 증시는 혼조세를 보이며 하락 마감했습니다. 반도체 섹터는 강세를 보인 반면, 빅테크 일부 종목과 기술/IT 섹터는 약세를 나타냈습니다. 유가는 큰 폭으로 상승하며 시장의 주요 변수로 작용했습니다.",
     "kospi_pct": null,
     "kosdaq_pct": null
   }
