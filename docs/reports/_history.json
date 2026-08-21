@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-08-21",
+    "time": "16:00",
+    "mode": "post_close",
+    "url": "reports/2026-08-21-post.html",
+    "summary": "오늘 코스피는 외국인 순매수세에 힘입어 상승 마감했으며, 반도체와 2차전지 관련주가 시장을 견인했습니다.",
+    "kospi_pct": null,
+    "kosdaq_pct": null
+  },
+  {
+    "date": "2026-08-21",
     "time": "14:50",
     "mode": "pre_close",
     "url": "reports/2026-08-21-pre.html",
@@ -527,15 +536,6 @@
     "mode": "midday",
     "url": "reports/2026-08-12-midday.html",
     "summary": "오늘 한국 증시는 전반적으로 약세를 보이며 투자 심리가 위축된 가운데, 개별 종목별로는 뚜렷한 차별화 장세를 나타내고 있습니다. 특히 알테오젠은 장중 큰 폭의 하락세를 보였으나 저점 대비 일부 반등하며 변동성을 키우는 모습을 보였고, 대원전선과 금호건",
-    "kospi_pct": null,
-    "kosdaq_pct": null
-  },
-  {
-    "date": "2026-08-12",
-    "time": "09:15",
-    "mode": "kr_open",
-    "url": "reports/2026-08-12-kr-open.html",
-    "summary": "오늘 한국 증시는 전반적으로 약세를 보이고 있으며, 특히 코스닥 시장의 하락세가 두드러집니다. 외국인과 기관의 순매도세가 지수 하락을 이끌고 있으며, 일부 테마주들이 장 초반 강세를 보였으나 차익 실현 매물에 밀리는 흐름을 나타내고 있습니다. 금호건설",
     "kospi_pct": null,
     "kosdaq_pct": null
   }
