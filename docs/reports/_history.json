@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-08-24",
+    "time": "14:50",
+    "mode": "pre_close",
+    "url": "reports/2026-08-24-pre.html",
+    "summary": "코스피는 혼조세, 코스닥은 낙폭 만회하며 상승 전환 시도 중입니다.",
+    "kospi_pct": null,
+    "kosdaq_pct": null
+  },
+  {
+    "date": "2026-08-24",
     "time": "11:40",
     "mode": "midday",
     "url": "reports/2026-08-24-midday.html",
@@ -527,15 +536,6 @@
     "mode": "kr_premarket",
     "url": "reports/2026-08-13-kr-pre.html",
     "summary": "",
-    "kospi_pct": null,
-    "kosdaq_pct": null
-  },
-  {
-    "date": "2026-08-13",
-    "time": "07:00",
-    "mode": "us_morning",
-    "url": "reports/2026-08-13-us.html",
-    "summary": "미국 증시는 혼조세로 마감했으나, 나스닥과 S&P500은 소폭 상승하며 AI 관련 기술주 강세를 보였습니다. 특히 필라델피아 반도체 지수가 2% 넘게 오르며 시장 상승을 주도했으며, 금 가격은 상승한 반면 유가는 하락했습니다.",
     "kospi_pct": null,
     "kosdaq_pct": null
   }
