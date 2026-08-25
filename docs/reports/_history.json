@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-08-25",
+    "time": "09:15",
+    "mode": "kr_open",
+    "url": "reports/2026-08-25-kr-open.html",
+    "summary": "오늘 한국 증시는 전반적인 약세를 보이고 있으며, 특히 NAVER, SK하이닉스, 삼성전자 등 주요 기술주들이 장중 약세를 이어가고 있습니다. 금호건설은 장 초반 강세를 보였으나 고점 대비 하락하며 현재 소폭 상승에 머물러 있습니다.",
+    "kospi_pct": null,
+    "kosdaq_pct": null
+  },
+  {
+    "date": "2026-08-25",
     "time": "08:05",
     "mode": "kr_premarket",
     "url": "reports/2026-08-25-kr-pre.html",
@@ -527,15 +536,6 @@
     "mode": "us_premarket",
     "url": "reports/2026-08-13-us-pre.html",
     "summary": "프리장에서 미국 증시는 혼조세를 보이고 있습니다. S&P 500 선물은 소폭 상승했지만, 나스닥과 다우 지수는 약보합세를 나타내고 있습니다. 반도체 섹터는 필라델피아 반도체 지수의 강세에 힘입어 주목받고 있으며, AI 관련 기업들의 실적 발표가 시장의",
-    "kospi_pct": null,
-    "kosdaq_pct": null
-  },
-  {
-    "date": "2026-08-13",
-    "time": "16:00",
-    "mode": "post_close",
-    "url": "reports/2026-08-13-post.html",
-    "summary": "오늘 코스피는 외국인 매도세에 하락 마감했으며, 반도체 관련주가 강세를 보였습니다.",
     "kospi_pct": null,
     "kosdaq_pct": null
   }
