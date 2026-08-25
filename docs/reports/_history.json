@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-08-25",
+    "time": "14:50",
+    "mode": "pre_close",
+    "url": "reports/2026-08-25-pre.html",
+    "summary": "코스피는 혼조세, 코스닥은 일부 기술주 강세와 함께 상승 마감 예상.",
+    "kospi_pct": null,
+    "kosdaq_pct": null
+  },
+  {
+    "date": "2026-08-25",
     "time": "13:00",
     "mode": "us_afterhours",
     "url": "reports/2026-08-25-us-after.html",
@@ -527,15 +536,6 @@
     "mode": "kr_premarket",
     "url": "reports/2026-08-14-kr-pre.html",
     "summary": "",
-    "kospi_pct": null,
-    "kosdaq_pct": null
-  },
-  {
-    "date": "2026-08-14",
-    "time": "07:04",
-    "mode": "us_morning",
-    "url": "reports/2026-08-14-us.html",
-    "summary": "미국 증시는 기술주 강세에 힘입어 전반적으로 상승 마감했습니다. 특히 필라델피아 반도체 지수도 견조한 흐름을 보였으며, 넷플릭스와 테슬라 등 주요 빅테크 종목들이 강세를 이끌었습니다. 금 가격은 소폭 하락했으나, WTI 유가는 큰 폭으로 하락하며 시장",
     "kospi_pct": null,
     "kosdaq_pct": null
   }
