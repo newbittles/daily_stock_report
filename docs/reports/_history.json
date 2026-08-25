@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-08-25",
+    "time": "16:00",
+    "mode": "post_close",
+    "url": "reports/2026-08-25-post.html",
+    "summary": "오늘 코스피와 코스닥 지수는 혼조세를 보이며 마감했습니다. 반도체 관련주와 2차전지 섹터가 시장의 주목을 받았습니다.",
+    "kospi_pct": null,
+    "kosdaq_pct": null
+  },
+  {
+    "date": "2026-08-25",
     "time": "14:50",
     "mode": "pre_close",
     "url": "reports/2026-08-25-pre.html",
@@ -527,15 +536,6 @@
     "mode": "kr_open",
     "url": "reports/2026-08-14-kr-open.html",
     "summary": "오늘 한국 증시는 장 초반 상승세를 보였으나, 오후 들어 일부 차익 실현 매물 출회로 상승폭이 줄어드는 모습입니다. 특히 SK스퀘어, 삼성전자, 금호건설 등은 장중 고점을 찍고 하락하며 변동성을 키웠습니다.",
-    "kospi_pct": null,
-    "kosdaq_pct": null
-  },
-  {
-    "date": "2026-08-14",
-    "time": "08:05",
-    "mode": "kr_premarket",
-    "url": "reports/2026-08-14-kr-pre.html",
-    "summary": "",
     "kospi_pct": null,
     "kosdaq_pct": null
   }
