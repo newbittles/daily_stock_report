@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-08-25",
+    "time": "19:00",
+    "mode": "us_premarket",
+    "url": "reports/2026-08-25-us-pre.html",
+    "summary": "프리장에서 미국 증시는 전반적으로 혼조세를 보이고 있습니다. 나스닥 선물과 S&P 500 선물은 소폭 상승하며 기술주 중심의 강세를 나타내고 있으나, 필라델피아 반도체 지수는 큰 폭으로 하락하며 투자 심리에 부담을 주고 있습니다. 엔비디아 실적 발표와",
+    "kospi_pct": null,
+    "kosdaq_pct": null
+  },
+  {
+    "date": "2026-08-25",
     "time": "16:00",
     "mode": "post_close",
     "url": "reports/2026-08-25-post.html",
@@ -527,15 +536,6 @@
     "mode": "midday",
     "url": "reports/2026-08-14-midday.html",
     "summary": "오늘 한국 증시는 개장 초반 강세를 보였으나, 이후 차익 실현 매물에 밀리며 상승폭을 반납하는 흐름을 보였습니다. 특히 NAVER, SK스퀘어, 삼성전자 등 주요 기술주들이 장중 고점 대비 하락하며 지수 약세에 영향을 미쳤습니다. 반면, SK이터닉스는",
-    "kospi_pct": null,
-    "kosdaq_pct": null
-  },
-  {
-    "date": "2026-08-14",
-    "time": "09:15",
-    "mode": "kr_open",
-    "url": "reports/2026-08-14-kr-open.html",
-    "summary": "오늘 한국 증시는 장 초반 상승세를 보였으나, 오후 들어 일부 차익 실현 매물 출회로 상승폭이 줄어드는 모습입니다. 특히 SK스퀘어, 삼성전자, 금호건설 등은 장중 고점을 찍고 하락하며 변동성을 키웠습니다.",
     "kospi_pct": null,
     "kosdaq_pct": null
   }
