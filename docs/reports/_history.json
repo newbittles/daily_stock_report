@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-08-25",
+    "time": "11:40",
+    "mode": "midday",
+    "url": "reports/2026-08-25-midday.html",
+    "summary": "오늘 한국 증시는 장 초반 큰 폭의 하락세를 보였으나, 오후 들어 낙폭을 줄이며 반등하는 흐름을 나타내고 있습니다. 특히 NAVER, SK하이닉스, 삼성전자 등 주요 기술주들이 장중 저점 대비 상당 부분 회복하며 시장 하락을 방어하는 모습을 보였습니다",
+    "kospi_pct": null,
+    "kosdaq_pct": null
+  },
+  {
+    "date": "2026-08-25",
     "time": "09:15",
     "mode": "kr_open",
     "url": "reports/2026-08-25-kr-open.html",
@@ -527,15 +536,6 @@
     "mode": "us_intraday",
     "url": "reports/2026-08-13-us-mid.html",
     "summary": "미국 증시는 연준의 금리 인하 기대감을 높이는 완화적인 인플레이션 데이터 발표에 힘입어 전반적으로 상승 마감했습니다. 특히 반도체 및 기술주가 강세를 보이며 지수 상승을 견인했으며, 금 가격은 상승했으나 유가(WTI)는 하락했습니다.",
-    "kospi_pct": null,
-    "kosdaq_pct": null
-  },
-  {
-    "date": "2026-08-13",
-    "time": "21:50",
-    "mode": "us_premarket",
-    "url": "reports/2026-08-13-us-pre.html",
-    "summary": "프리장에서 미국 증시는 혼조세를 보이고 있습니다. S&P 500 선물은 소폭 상승했지만, 나스닥과 다우 지수는 약보합세를 나타내고 있습니다. 반도체 섹터는 필라델피아 반도체 지수의 강세에 힘입어 주목받고 있으며, AI 관련 기업들의 실적 발표가 시장의",
     "kospi_pct": null,
     "kosdaq_pct": null
   }
