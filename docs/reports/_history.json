@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-08-26",
+    "time": "16:00",
+    "mode": "post_close",
+    "url": "reports/2026-08-26-post.html",
+    "summary": "오늘 코스피는 외국인 순매도세에 하락 마감했으며, 반도체와 2차전지 관련주가 시장을 주도했습니다.",
+    "kospi_pct": null,
+    "kosdaq_pct": null
+  },
+  {
+    "date": "2026-08-26",
     "time": "14:50",
     "mode": "pre_close",
     "url": "reports/2026-08-26-pre.html",
@@ -527,15 +536,6 @@
     "mode": "us_intraday",
     "url": "reports/2026-08-17-us-mid.html",
     "summary": "미국 증시는 혼조세로 마감했습니다. S&P500과 다우는 하락했지만, 나스닥은 소폭 상승하며 기술주 강세를 지지했습니다. 특히 필라델피아 반도체 지수가 1.20% 상승하며 반도체 섹터의 강세를 이끌었습니다. AI 투자에 따른 실적 개선 기대감이 시장의",
-    "kospi_pct": null,
-    "kosdaq_pct": null
-  },
-  {
-    "date": "2026-08-17",
-    "time": "21:50",
-    "mode": "us_premarket",
-    "url": "reports/2026-08-17-us-pre.html",
-    "summary": "현재 미국 프리장 시장은 전반적으로 혼조세를 보이고 있습니다. 빅테크의 AI 투자 성과에 대한 긍정적인 전망이 일부 기술주를 지지하고 있으나, 지정학적 불확실성(미-이란 휴전 만료)과 전반적인 시장의 경계감이 지수 선물 하락에 영향을 미치고 있습니다.",
     "kospi_pct": null,
     "kosdaq_pct": null
   }
