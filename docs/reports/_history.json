@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-08-27",
+    "time": "08:05",
+    "mode": "kr_premarket",
+    "url": "reports/2026-08-27-kr-pre.html",
+    "summary": "",
+    "kospi_pct": null,
+    "kosdaq_pct": null
+  },
+  {
+    "date": "2026-08-27",
     "time": "06:30",
     "mode": "us_morning",
     "url": "reports/2026-08-27-us.html",
@@ -527,15 +536,6 @@
     "mode": "midday",
     "url": "reports/2026-08-18-midday.html",
     "summary": "오늘 한국 증시는 장 초반 강세를 보였으나 오후 들어 상승폭을 반납하며 혼조세를 나타내고 있습니다. 반도체 관련주인 SK하이닉스와 SK스퀘어가 장중 큰 폭의 상승세를 보였으나 고점 대비 하락하며 차익 실현 매물이 출회되는 모습입니다.",
-    "kospi_pct": null,
-    "kosdaq_pct": null
-  },
-  {
-    "date": "2026-08-18",
-    "time": "09:15",
-    "mode": "kr_open",
-    "url": "reports/2026-08-18-kr-open.html",
-    "summary": "오늘 한국 증시는 반도체 업종을 중심으로 강세를 보이고 있으며, 특히 SK하이닉스와 삼성전자 등 대형 기술주들이 견조한 흐름을 이어가고 있습니다. 다만, 금호건설은 장 초반 급등 후 일부 차익 실현 매물이 나오며 상승폭을 반납하는 모습을 보였습니다.",
     "kospi_pct": null,
     "kosdaq_pct": null
   }
