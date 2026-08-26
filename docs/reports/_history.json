@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-08-26",
+    "time": "22:40",
+    "mode": "us_intraday",
+    "url": "reports/2026-08-26-us-mid.html",
+    "summary": "미국 증시는 혼조세로 마감했습니다. S&P500과 나스닥은 소폭 하락한 반면, 다우 지수는 상승했습니다. PCE 물가 지표 발표 이후 시장의 경계감이 높아졌으며, 기술/IT 및 반도체 섹터는 강보합세를 보였습니다. 금 가격은 상승했으나 유가(WTI)는",
+    "kospi_pct": null,
+    "kosdaq_pct": null
+  },
+  {
+    "date": "2026-08-26",
     "time": "21:50",
     "mode": "us_premarket",
     "url": "reports/2026-08-26-us-pre.html",
@@ -527,15 +536,6 @@
     "mode": "kr_premarket",
     "url": "reports/2026-08-18-kr-pre.html",
     "summary": "",
-    "kospi_pct": null,
-    "kosdaq_pct": null
-  },
-  {
-    "date": "2026-08-18",
-    "time": "07:00",
-    "mode": "us_morning",
-    "url": "reports/2026-08-18-us.html",
-    "summary": "미국 증시는 전반적으로 하락세를 보였으나, 필라델피아 반도체 지수가 강세를 기록하며 기술주 일부가 상승 동력을 찾으려는 움직임을 보였습니다. AI 투자에 대한 기대감이 지속되는 가운데, 지정학적 긴장 고조로 인한 유가 상승이 시장 전반의 투자 심리에 ",
     "kospi_pct": null,
     "kosdaq_pct": null
   }
