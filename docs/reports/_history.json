@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-08-27",
+    "time": "11:40",
+    "mode": "midday",
+    "url": "reports/2026-08-27-midday.html",
+    "summary": "오늘 한국 증시는 전반적으로 약세를 보이고 있으나, 삼성전자가 꾸준한 강세를 유지하며 지수 하락을 일부 방어하고 있습니다. 반면, 한미약품은 장중 약세를 지속하고 있으며, 금호건설은 오전 상승분을 반납하며 큰 폭의 하락세를 나타내고 있습니다.",
+    "kospi_pct": null,
+    "kosdaq_pct": null
+  },
+  {
+    "date": "2026-08-27",
     "time": "09:15",
     "mode": "kr_open",
     "url": "reports/2026-08-27-kr-open.html",
@@ -527,15 +536,6 @@
     "mode": "post_close",
     "url": "reports/2026-08-18-post.html",
     "summary": "오늘 코스피는 외국인 매도세에 하락 마감했으며, 반도체 업종이 부진한 흐름을 보였습니다.",
-    "kospi_pct": null,
-    "kosdaq_pct": null
-  },
-  {
-    "date": "2026-08-18",
-    "time": "14:50",
-    "mode": "pre_close",
-    "url": "reports/2026-08-18-pre.html",
-    "summary": "코스피는 혼조세, 코스닥은 낙폭 만회하며 상승 전환 시도 중입니다.",
     "kospi_pct": null,
     "kosdaq_pct": null
   }
