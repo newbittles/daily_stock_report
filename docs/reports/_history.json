@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-08-27",
+    "time": "14:50",
+    "mode": "pre_close",
+    "url": "reports/2026-08-27-pre.html",
+    "summary": "코스피는 혼조세, 코스닥은 낙폭을 줄이며 반등 시도 중입니다.",
+    "kospi_pct": null,
+    "kosdaq_pct": null
+  },
+  {
+    "date": "2026-08-27",
     "time": "13:00",
     "mode": "us_afterhours",
     "url": "reports/2026-08-27-us-after.html",
@@ -527,15 +536,6 @@
     "mode": "us_intraday",
     "url": "reports/2026-08-18-us-mid.html",
     "summary": "미국 증시는 전반적으로 하락 마감했으며, 특히 기술주와 반도체 섹터의 약세가 두드러졌습니다. 헬스케어와 에너지가 상대적으로 강세를 보였으며, 금과 유가는 소폭 상승했습니다. 시장은 매크로 경제 지표와 기업 실적 발표를 주시하는 가운데 변동성을 보였습니",
-    "kospi_pct": null,
-    "kosdaq_pct": null
-  },
-  {
-    "date": "2026-08-18",
-    "time": "21:50",
-    "mode": "us_premarket",
-    "url": "reports/2026-08-18-us-pre.html",
-    "summary": "현재 미국 프리장 시장은 전반적으로 약세를 보이고 있습니다. 기술 및 반도체 섹터의 하락세가 두드러지며 지수 선물 또한 하락 출발할 가능성을 시사하고 있습니다. 다만, 에너지와 헬스케어 섹터는 상대적으로 강세를 유지하며 시장의 일부 방어 역할을 하고 ",
     "kospi_pct": null,
     "kosdaq_pct": null
   }
