@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-08-28",
+    "time": "22:42",
+    "mode": "us_intraday",
+    "url": "reports/2026-08-28-us-mid.html",
+    "summary": "미국 증시는 혼조세를 보이며 혼조세로 마감했습니다. 경기소비재, 2차전지, 에너지 섹터가 상승세를 이끌었으나 반도체 섹터는 하락했습니다. 투자자들은 잭슨홀 연설을 앞두고 관망세를 보였습니다. 금 가격은 상승했으나 유가는 하락했습니다.",
+    "kospi_pct": null,
+    "kosdaq_pct": null
+  },
+  {
+    "date": "2026-08-28",
     "time": "21:50",
     "mode": "us_premarket",
     "url": "reports/2026-08-28-us-pre.html",
@@ -527,15 +536,6 @@
     "mode": "kr_open",
     "url": "reports/2026-08-20-kr-open.html",
     "summary": "오늘 한국 증시는 반도체 업종 강세에 힘입어 전반적으로 상승 흐름을 보이고 있습니다. 특히 SK하이닉스와 삼성전자가 장중 꾸준한 강세를 유지하며 지수 상승을 견인하고 있습니다. 다만, SK스퀘어와 금호건설은 장 초반 상승세를 보였으나 이후 차익 실현 ",
-    "kospi_pct": null,
-    "kosdaq_pct": null
-  },
-  {
-    "date": "2026-08-20",
-    "time": "08:05",
-    "mode": "kr_premarket",
-    "url": "reports/2026-08-20-kr-pre.html",
-    "summary": "",
     "kospi_pct": null,
     "kosdaq_pct": null
   }
