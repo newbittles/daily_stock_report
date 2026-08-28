@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-08-28",
+    "time": "09:15",
+    "mode": "kr_open",
+    "url": "reports/2026-08-28-kr-open.html",
+    "summary": "오늘 한국 증시는 전반적으로 약세를 보이고 있으며, 외국인 및 기관의 매도세가 지수 하락을 주도하는 모습입니다. 다만, 삼성SDI는 장 초반의 하락세를 딛고 반등에 성공하며 강보합으로 전환되었고, 금호건설 역시 저점 대비 회복세를 보이고 있습니다.",
+    "kospi_pct": null,
+    "kosdaq_pct": null
+  },
+  {
+    "date": "2026-08-28",
     "time": "08:17",
     "mode": "kr_premarket",
     "url": "reports/2026-08-28-kr-pre.html",
@@ -527,15 +536,6 @@
     "mode": "pre_close",
     "url": "reports/2026-08-19-pre.html",
     "summary": "코스피는 혼조세를 보이며 관망세가 짙은 가운데, 일부 테마는 뚜렷한 상승세를 나타내고 있습니다.",
-    "kospi_pct": null,
-    "kosdaq_pct": null
-  },
-  {
-    "date": "2026-08-19",
-    "time": "13:00",
-    "mode": "us_afterhours",
-    "url": "reports/2026-08-19-us-after.html",
-    "summary": "미국 증시는 전반적으로 하락 마감했으며, 특히 기술주와 반도체 섹터의 약세가 두드러졌습니다. 에너지와 헬스케어 섹터는 상승세를 보였습니다. 금 가격은 하락했으나 유가(WTI)는 소폭 상승했습니다.",
     "kospi_pct": null,
     "kosdaq_pct": null
   }
