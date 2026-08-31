@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-08-31",
+    "time": "09:15",
+    "mode": "kr_open",
+    "url": "reports/2026-08-31-kr-open.html",
+    "summary": "오늘 한국 증시는 전반적으로 약세를 보이며 코스피는 하락세를 이어가고 있습니다. 외국인과 기관의 매도세가 지수 하락을 주도하는 가운데, 삼성전기는 장중 약세를 지속하며 하락폭을 키우고 있습니다. 반면, 삼성전기는 장 초반 큰 폭의 하락세를 보였으나 이",
+    "kospi_pct": null,
+    "kosdaq_pct": null
+  },
+  {
+    "date": "2026-08-31",
     "time": "08:05",
     "mode": "kr_premarket",
     "url": "reports/2026-08-31-kr-pre.html",
@@ -527,15 +536,6 @@
     "mode": "pre_close",
     "url": "reports/2026-08-20-pre.html",
     "summary": "코스피는 혼조세, 코스닥은 낙폭을 줄이며 반등 시도 중입니다.",
-    "kospi_pct": null,
-    "kosdaq_pct": null
-  },
-  {
-    "date": "2026-08-20",
-    "time": "13:00",
-    "mode": "us_afterhours",
-    "url": "reports/2026-08-20-us-after.html",
-    "summary": "미국 증시는 혼조세를 보이며 S&P500, 나스닥, 다우 지수가 소폭 상승 마감했습니다. 헬스케어/바이오 섹터가 강세를 보인 반면, 반도체 섹터는 하락하며 대조적인 흐름을 나타냈습니다. 금 가격은 하락했으나 WTI 유가는 상승했습니다.",
     "kospi_pct": null,
     "kosdaq_pct": null
   }
