@@ -1,5 +1,14 @@
 [
   {
+    "date": "2026-09-01",
+    "time": "07:00",
+    "mode": "us_morning",
+    "url": "reports/2026-09-01-us.html",
+    "summary": "미국 증시는 전반적으로 하락 마감했으나, 에너지 섹터의 강세와 일부 빅테크 종목의 상승이 눈에 띄었습니다. 특히 유가 상승에 힘입어 에너지 섹터가 강세를 보였으며, 테슬라를 포함한 일부 기술주들이 반등했습니다. 다만, 반도체 섹터의 큰 폭 하락이 시장",
+    "kospi_pct": null,
+    "kosdaq_pct": null
+  },
+  {
     "date": "2026-08-31",
     "time": "22:40",
     "mode": "us_intraday",
@@ -527,15 +536,6 @@
     "mode": "kr_open",
     "url": "reports/2026-08-21-kr-open.html",
     "summary": "오늘 한국 증시는 전반적으로 약세를 보이고 있으며, 특히 코스피는 외국인과 기관의 매도세에 하락 압력을 받고 있습니다. 다만, SK하이닉스와 삼성전자가 장중 보합권을 유지하며 지수 하락을 일부 방어하는 모습입니다. 금호건설은 장 초반 급락 후 강한 반",
-    "kospi_pct": null,
-    "kosdaq_pct": null
-  },
-  {
-    "date": "2026-08-21",
-    "time": "08:05",
-    "mode": "kr_premarket",
-    "url": "reports/2026-08-21-kr-pre.html",
-    "summary": "",
     "kospi_pct": null,
     "kosdaq_pct": null
   }
