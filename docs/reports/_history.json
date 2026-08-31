@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-08-31",
+    "time": "14:50",
+    "mode": "pre_close",
+    "url": "reports/2026-08-31-pre.html",
+    "summary": "코스피는 관망세 속 혼조세를 보이며, 코스닥은 일부 테마 강세로 상승 마감 기대.",
+    "kospi_pct": null,
+    "kosdaq_pct": null
+  },
+  {
+    "date": "2026-08-31",
     "time": "11:40",
     "mode": "midday",
     "url": "reports/2026-08-31-midday.html",
@@ -527,15 +536,6 @@
     "mode": "us_premarket",
     "url": "reports/2026-08-20-us-pre.html",
     "summary": "프리장에서 미국 증시는 혼조세를 보이고 있습니다. 다우 지수 선물은 소폭 상승세를 유지하고 있으나, S&P500과 나스닥 선물은 하락하며 기술주 전반에 대한 경계감이 나타나고 있습니다. 에너지 섹터의 강세와 반도체 섹터의 약세가 두드러지며, 유가 상승",
-    "kospi_pct": null,
-    "kosdaq_pct": null
-  },
-  {
-    "date": "2026-08-20",
-    "time": "16:00",
-    "mode": "post_close",
-    "url": "reports/2026-08-20-post.html",
-    "summary": "오늘 코스피는 외국인 순매수세에 힘입어 상승 마감했으나, 코스닥은 차익실현 매물 출회로 하락했습니다. 반도체와 2차전지 관련주들이 시장을 주도했습니다.",
     "kospi_pct": null,
     "kosdaq_pct": null
   }
