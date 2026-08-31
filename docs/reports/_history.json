@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-09-01",
+    "time": "08:05",
+    "mode": "kr_premarket",
+    "url": "reports/2026-09-01-kr-pre.html",
+    "summary": "",
+    "kospi_pct": null,
+    "kosdaq_pct": null
+  },
+  {
+    "date": "2026-09-01",
     "time": "06:40",
     "mode": "us_morning",
     "url": "reports/2026-09-01-us.html",
@@ -527,15 +536,6 @@
     "mode": "midday",
     "url": "reports/2026-08-21-midday.html",
     "summary": "오늘 한국 증시는 반도체 대형주를 중심으로 강세를 보이며 지수 상승을 견인하고 있습니다. 다만, 알테오젠은 장중 약세를 이어가고 있으며, 금호건설은 장 초반 급등 후 상당폭 하락하며 변동성이 큰 모습을 보였습니다.",
-    "kospi_pct": null,
-    "kosdaq_pct": null
-  },
-  {
-    "date": "2026-08-21",
-    "time": "09:15",
-    "mode": "kr_open",
-    "url": "reports/2026-08-21-kr-open.html",
-    "summary": "오늘 한국 증시는 전반적으로 약세를 보이고 있으며, 특히 코스피는 외국인과 기관의 매도세에 하락 압력을 받고 있습니다. 다만, SK하이닉스와 삼성전자가 장중 보합권을 유지하며 지수 하락을 일부 방어하는 모습입니다. 금호건설은 장 초반 급락 후 강한 반",
     "kospi_pct": null,
     "kosdaq_pct": null
   }
