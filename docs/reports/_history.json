@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-08-31",
+    "time": "22:40",
+    "mode": "us_intraday",
+    "url": "reports/2026-08-31-us-mid.html",
+    "summary": "미국 증시는 지정학적 긴장 고조와 금리 인상 우려로 하락 마감했습니다. 에너지 섹터가 유가 상승에 힘입어 강세를 보였으나, 반도체 섹터는 큰 폭의 조정을 겪었습니다. 금 가격은 소폭 상승했습니다.",
+    "kospi_pct": null,
+    "kosdaq_pct": null
+  },
+  {
+    "date": "2026-08-31",
     "time": "21:50",
     "mode": "us_premarket",
     "url": "reports/2026-08-31-us-pre.html",
@@ -527,15 +536,6 @@
     "mode": "kr_premarket",
     "url": "reports/2026-08-21-kr-pre.html",
     "summary": "",
-    "kospi_pct": null,
-    "kosdaq_pct": null
-  },
-  {
-    "date": "2026-08-21",
-    "time": "07:00",
-    "mode": "us_morning",
-    "url": "reports/2026-08-21-us.html",
-    "summary": "미국 증시는 전반적으로 하락세를 보였으나, 반도체 섹터는 강세를 유지했습니다. 소비재 및 헬스케어 섹터의 부진이 두드러졌으며, 금 가격은 상승했습니다. 전반적으로 시장은 소비 둔화 우려와 금리 상승 압박 속에서 약세를 나타냈습니다.",
     "kospi_pct": null,
     "kosdaq_pct": null
   }
