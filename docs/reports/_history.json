@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-09-01",
+    "time": "13:00",
+    "mode": "us_afterhours",
+    "url": "reports/2026-09-01-us-after.html",
+    "summary": "미국 증시는 전반적으로 하락 마감했으며, 특히 기술주와 반도체 섹터의 약세가 두드러졌습니다. 다만, 테슬라의 강세와 에너지 섹터의 상승은 일부 긍정적인 요인으로 작용했습니다. 금 가격은 하락했으나 유가(WTI)는 상승세를 보였습니다.",
+    "kospi_pct": null,
+    "kosdaq_pct": null
+  },
+  {
+    "date": "2026-09-01",
     "time": "11:40",
     "mode": "midday",
     "url": "reports/2026-09-01-midday.html",
@@ -527,15 +536,6 @@
     "mode": "post_close",
     "url": "reports/2026-08-21-post.html",
     "summary": "오늘 코스피는 외국인 순매수세에 힘입어 상승 마감했으며, 반도체와 2차전지 관련주가 시장을 견인했습니다.",
-    "kospi_pct": null,
-    "kosdaq_pct": null
-  },
-  {
-    "date": "2026-08-21",
-    "time": "14:50",
-    "mode": "pre_close",
-    "url": "reports/2026-08-21-pre.html",
-    "summary": "코스피는 혼조세, 코스닥은 2차전지 및 반도체 관련주 강세",
     "kospi_pct": null,
     "kosdaq_pct": null
   }
