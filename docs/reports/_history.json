@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-09-01",
+    "time": "22:40",
+    "mode": "us_intraday",
+    "url": "reports/2026-09-01-us-mid.html",
+    "summary": "미국 증시는 전반적으로 하락 마감했으며, 특히 기술주와 반도체 업종의 약세가 두드러졌습니다. 에너지 섹터는 상승했으나 시장 전반의 하락세를 막기에는 역부족이었습니다. 유가는 상승세를 보였습니다.",
+    "kospi_pct": null,
+    "kosdaq_pct": null
+  },
+  {
+    "date": "2026-09-01",
     "time": "21:50",
     "mode": "us_premarket",
     "url": "reports/2026-09-01-us-pre.html",
@@ -527,15 +536,6 @@
     "mode": "kr_premarket",
     "url": "reports/2026-08-24-kr-pre.html",
     "summary": "",
-    "kospi_pct": null,
-    "kosdaq_pct": null
-  },
-  {
-    "date": "2026-08-22",
-    "time": "06:30",
-    "mode": "us_morning",
-    "url": "reports/2026-08-22-us.html",
-    "summary": "미국 증시는 혼조세를 보이며 마감했습니다. S&P500과 나스닥은 소폭 상승했지만, 다우 지수는 0.98% 강세를 기록했습니다. 2차전지, 헬스케어, 경기소비재 섹터가 강세를 보인 반면, 반도체 섹터는 약세를 면치 못했습니다. 금 가격은 상승했으나 유",
     "kospi_pct": null,
     "kosdaq_pct": null
   }
