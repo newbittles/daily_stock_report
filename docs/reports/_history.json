@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-09-02",
+    "time": "19:00",
+    "mode": "us_premarket",
+    "url": "reports/2026-09-02-us-pre.html",
+    "summary": "현재 미국 프리장 시장은 전반적으로 약세를 보이고 있습니다. 특히 반도체와 2차전지 섹터의 하락세가 두드러지며, AI 관련주에 대한 과열 우려와 9월 시장 약세론이 투자 심리를 위축시키는 모습입니다. 다만, 금 가격 상승과 유가 소폭 상승은 일부 원자",
+    "kospi_pct": null,
+    "kosdaq_pct": null
+  },
+  {
+    "date": "2026-09-02",
     "time": "16:00",
     "mode": "post_close",
     "url": "reports/2026-09-02-post.html",
@@ -527,15 +536,6 @@
     "mode": "us_morning",
     "url": "reports/2026-08-25-us.html",
     "summary": "미국 증시는 혼조세로 마감했습니다. 다우 지수는 소폭 상승했으나, S&P 500과 나스닥은 하락하며 기술주 전반의 약세를 보였습니다. 특히 반도체 섹터의 큰 폭 하락이 지수 전반에 부담을 주었습니다. 금 가격은 상승했으나 유가(WTI)는 하락했습니다.",
-    "kospi_pct": null,
-    "kosdaq_pct": null
-  },
-  {
-    "date": "2026-08-24",
-    "time": "22:40",
-    "mode": "us_intraday",
-    "url": "reports/2026-08-24-us-mid.html",
-    "summary": "미국 증시는 혼조세를 보이며 마감했습니다. S&P500과 나스닥은 하락한 반면, 다우 지수는 소폭 상승했습니다. 반도체 섹터의 큰 폭 하락이 지수 전반에 부담을 주었으며, 금 가격은 상승, 유가는 하락했습니다.",
     "kospi_pct": null,
     "kosdaq_pct": null
   }
