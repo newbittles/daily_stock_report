@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-09-02",
+    "time": "14:50",
+    "mode": "pre_close",
+    "url": "reports/2026-09-02-pre.html",
+    "summary": "코스피는 관망세 속 혼조세를 보이며, 코스닥은 일부 테마 강세로 상승 마감 예상.",
+    "kospi_pct": null,
+    "kosdaq_pct": null
+  },
+  {
+    "date": "2026-09-02",
     "time": "13:00",
     "mode": "us_afterhours",
     "url": "reports/2026-09-02-us-after.html",
@@ -527,15 +536,6 @@
     "mode": "us_premarket",
     "url": "reports/2026-08-24-us-pre.html",
     "summary": "프리장에서 미국 증시는 전반적으로 약보합세를 보이고 있습니다. 다우 지수 선물은 상승세를 유지하고 있으나, S&P500과 나스닥 선물은 하락하며 혼조세를 나타내고 있습니다. 투자자들은 주요 경제 지표 발표와 엔비디아 실적 발표를 앞두고 관망세를 보이는",
-    "kospi_pct": null,
-    "kosdaq_pct": null
-  },
-  {
-    "date": "2026-08-24",
-    "time": "16:00",
-    "mode": "post_close",
-    "url": "reports/2026-08-24-post.html",
-    "summary": "오늘 코스피와 코스닥 지수는 혼조세를 보이며 마감했습니다. 외국인과 기관의 매도세 속에서 일부 반도체 및 2차전지 관련주가 강세를 보였습니다.",
     "kospi_pct": null,
     "kosdaq_pct": null
   }
