@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-09-01T16:41:45.899230",
-  "date_str": "2026-09-01",
+  "generated_at": "2026-09-02T16:41:44.610366",
+  "date_str": "2026-09-02",
   "strategies": [
     "A. 수렴 후 대세상승 시작",
     "B. 주도주 20일선 눌림목",
@@ -9,18 +9,48 @@
   ],
   "by_strategy": {
     "A. 수렴 후 대세상승 시작": {
+      "20260902": [
+        {
+          "ticker": "058730",
+          "name": "다스코",
+          "reason": "수렴대 위로 상승전환 (수렴 4.0%) / 120선 위 (+12.3%) · MACD[GC,상승]; 거래대금 572억 (OK)",
+          "endstage": false,
+          "price": 3940.0
+        },
+        {
+          "ticker": "228340",
+          "name": "동양파일",
+          "reason": "수렴대 위로 상승전환 (수렴 5.7%) / 120선 위 (+58.2%) · MACD[GC,0선위,상승]; 거래대금 105억 (OK)",
+          "endstage": false,
+          "price": 3885.0
+        },
+        {
+          "ticker": "159010",
+          "name": "아스플로",
+          "reason": "수렴대 위로 상승전환 (수렴 1.9%) / 120선 위 (+67.2%) · MACD[GC,0선위,상승]; 거래대금 188억 (OK)",
+          "endstage": false,
+          "price": 24100.0
+        },
+        {
+          "ticker": "003160",
+          "name": "디아이",
+          "reason": "수렴대 위로 상승전환 (수렴 4.6%) / 120선 위 (+9.7%) · MACD[GC,0선위,상승]; 거래대금 900억 (OK)",
+          "endstage": false,
+          "price": 30600.0
+        }
+      ],
       "20260901": [
         {
           "ticker": "009150",
           "name": "삼성전기",
-          "reason": "수렴대 위로 상승전환 (수렴 3.2%) / 120선 위 (+19.6%) · MACD[0선돌파,0선위,상승]; 거래대금 8242억 (OK)",
+          "reason": "수렴대 위로 상승전환 (수렴 3.2%) / 120선 위 (+19.6%) · MACD[0선돌파,0선위,상승]; 거래대금 8520억 (OK)",
           "endstage": false,
           "price": 1430000.0
         },
         {
           "ticker": "066570",
           "name": "LG전자",
-          "reason": "수렴대 위로 상승전환 (수렴 4.1%) / 120선 위 (+16.0%) · MACD[0선위,상승]; 거래대금 1372억 (OK)",
+          "reason": "수렴대 위로 상승전환 (수렴 4.1%) / 120선 위 (+16.0%) · MACD[0선위,상승]; 거래대금 1480억 (OK)",
           "endstage": false,
           "price": 206500.0
         },
@@ -34,7 +64,7 @@
         {
           "ticker": "067290",
           "name": "JW신약",
-          "reason": "수렴대 위로 상승전환 (수렴 4.4%) / 120선 위 (+55.8%) · MACD[GC,0선위,상승]; 거래대금 1113억 (OK)",
+          "reason": "수렴대 위로 상승전환 (수렴 4.4%) / 120선 위 (+55.8%) · MACD[GC,0선위,상승]; 거래대금 1114억 (OK)",
           "endstage": false,
           "price": 2990.0
         },
@@ -46,25 +76,32 @@
           "price": 8290.0
         },
         {
+          "ticker": "228340",
+          "name": "동양파일",
+          "reason": "수렴대 위로 상승전환 (수렴 2.1%) / 120선 위 (+22.4%) · MACD[GC,0선위,상승]; 거래대금 53억 (OK)",
+          "endstage": false,
+          "price": 2990.0
+        },
+        {
+          "ticker": "079650",
+          "name": "서산",
+          "reason": "수렴대 위로 상승전환 (수렴 2.9%) / 120선 위 (+81.6%) · MACD[GC,0선위,상승]; 거래대금 191억 (OK)",
+          "endstage": false,
+          "price": 5230.0
+        },
+        {
+          "ticker": "396300",
+          "name": "세아메카닉스",
+          "reason": "수렴대 위로 상승전환 (수렴 4.9%) / 120선 위 (+20.2%) · MACD[GC,0선위,상승]; 거래대금 287억 (OK)",
+          "endstage": false,
+          "price": 5200.0
+        },
+        {
           "ticker": "402340",
           "name": "SK스퀘어",
-          "reason": "수렴대 위로 상승전환 (수렴 1.2%) / 120선 위 (+2.3%) · MACD[상승]; 거래대금 4643억 (OK)",
+          "reason": "수렴대 위로 상승전환 (수렴 1.2%) / 120선 위 (+2.3%) · MACD[상승]; 거래대금 4926억 (OK)",
           "endstage": false,
           "price": 1067000.0
-        },
-        {
-          "ticker": "105560",
-          "name": "KB금융",
-          "reason": "수렴대 위로 상승전환 (수렴 1.8%) / 120선 위 (+6.6%) · MACD[0선돌파,GC,0선위,상승]; 거래대금 2214억 (OK)",
-          "endstage": false,
-          "price": 171200.0
-        },
-        {
-          "ticker": "096770",
-          "name": "SK이노베이션",
-          "reason": "수렴대 위로 상승전환 (수렴 2.8%) / 120선 위 (+15.5%) · MACD[0선위,상승]; 거래대금 3200억 (OK)",
-          "endstage": false,
-          "price": 135300.0
         }
       ],
       "20260831": [
@@ -97,32 +134,18 @@
           "price": 2300.0
         },
         {
-          "ticker": "024840",
-          "name": "KBI메탈",
-          "reason": "수렴대 위로 상승전환 (수렴 5.4%) / 120선 위 (+35.7%) · MACD[GC,0선위,상승]; 거래대금 631억 (OK)",
+          "ticker": "228340",
+          "name": "동양파일",
+          "reason": "수렴대 위로 상승전환 (수렴 3.2%) / 120선 위 (+27.5%) · MACD[GC,0선위,상승]; 거래대금 124억 (OK)",
           "endstage": false,
-          "price": 5940.0
+          "price": 3105.0
         },
         {
-          "ticker": "105560",
-          "name": "KB금융",
-          "reason": "수렴대 위로 상승전환 (수렴 1.4%) / 120선 위 (+8.0%) · MACD[0선돌파,GC,0선위,상승]; 거래대금 5252억 (OK)",
+          "ticker": "079650",
+          "name": "서산",
+          "reason": "수렴대 위로 상승전환 (수렴 2.2%) / 120선 위 (+82.9%) · MACD[0선위,상승]; 거래대금 253억 (OK)",
           "endstage": false,
-          "price": 173300.0
-        },
-        {
-          "ticker": "096770",
-          "name": "SK이노베이션",
-          "reason": "수렴대 위로 상승전환 (수렴 4.2%) / 120선 위 (+7.3%) · MACD[0선위,상승]; 거래대금 2415억 (OK)",
-          "endstage": false,
-          "price": 125500.0
-        },
-        {
-          "ticker": "080220",
-          "name": "제주반도체",
-          "reason": "수렴대 위로 상승전환 (수렴 2.4%) / 120선 위 (+8.2%) · MACD[상승]; 거래대금 1218억 (OK)",
-          "endstage": false,
-          "price": 78200.0
+          "price": 5210.0
         }
       ],
       "20260828": [
@@ -141,11 +164,11 @@
           "price": 243000.0
         },
         {
-          "ticker": "105560",
-          "name": "KB금융",
-          "reason": "수렴대 위로 상승전환 (수렴 1.0%) / 120선 위 (+7.1%) · MACD[GC,상승]; 거래대금 1511억 (OK)",
+          "ticker": "079650",
+          "name": "서산",
+          "reason": "수렴대 위로 상승전환 (수렴 2.7%) / 120선 위 (+80.0%) · MACD[0선위,상승]; 거래대금 364억 (OK)",
           "endstage": false,
-          "price": 171600.0
+          "price": 5070.0
         }
       ],
       "20260827": [
@@ -164,18 +187,11 @@
           "price": 234000.0
         },
         {
-          "ticker": "105560",
-          "name": "KB금융",
-          "reason": "수렴대 위로 상승전환 (수렴 1.3%) / 120선 위 (+5.1%) · MACD[상승]; 거래대금 1270억 (OK)",
+          "ticker": "396300",
+          "name": "세아메카닉스",
+          "reason": "수렴대 위로 상승전환 (수렴 4.8%) / 120선 위 (+8.0%) · MACD[GC,0선위,상승]; 거래대금 44억 (OK)",
           "endstage": false,
-          "price": 168100.0
-        },
-        {
-          "ticker": "080220",
-          "name": "제주반도체",
-          "reason": "수렴대 위로 상승전환 (수렴 2.5%) / 120선 위 (+8.3%) · MACD[상승]; 거래대금 751억 (OK)",
-          "endstage": false,
-          "price": 77700.0
+          "price": 4650.0
         }
       ],
       "20260825": [
@@ -228,131 +244,180 @@
           "reason": "수렴대 위로 상승전환 (수렴 3.2%) / 120선 위 (+13.1%) · MACD[GC,상승]; 거래대금 8089억 (OK)",
           "endstage": false,
           "price": 1135000.0
-        },
-        {
-          "ticker": "096770",
-          "name": "SK이노베이션",
-          "reason": "수렴대 위로 상승전환 (수렴 5.9%) / 120선 위 (+12.0%) · MACD[0선위,상승]; 거래대금 1081억 (OK)",
-          "endstage": false,
-          "price": 131500.0
-        }
-      ],
-      "20260814": [
-        {
-          "ticker": "000660",
-          "name": "SK하이닉스",
-          "reason": "수렴대 위로 상승전환 (수렴 5.8%) / 120선 위 (+2.2%) · MACD[GC,상승]; 거래대금 74370억 (OK)",
-          "endstage": false,
-          "price": 1645000.0
-        },
-        {
-          "ticker": "005930",
-          "name": "삼성전자",
-          "reason": "수렴대 위로 상승전환 (수렴 3.7%) / 120선 위 (+9.1%) · MACD[상승]; 거래대금 59483억 (OK)",
-          "endstage": false,
-          "price": 274500.0
-        },
-        {
-          "ticker": "011070",
-          "name": "LG이노텍",
-          "reason": "수렴대 위로 상승전환 (수렴 4.2%) / 120선 위 (+3.5%) · MACD[상승]; 거래대금 1751억 (OK)",
-          "endstage": false,
-          "price": 654000.0
-        },
-        {
-          "ticker": "402340",
-          "name": "SK스퀘어",
-          "reason": "수렴대 위로 상승전환 (수렴 1.9%) / 120선 위 (+15.5%) · MACD[GC,상승]; 거래대금 7604억 (OK)",
-          "endstage": false,
-          "price": 1154000.0
-        },
-        {
-          "ticker": "096770",
-          "name": "SK이노베이션",
-          "reason": "수렴대 위로 상승전환 (수렴 5.4%) / 120선 위 (+9.7%) · MACD[GC,0선위,상승]; 거래대금 872억 (OK)",
-          "endstage": false,
-          "price": 128700.0
         }
       ]
     },
     "B. 주도주 20일선 눌림목": {
-      "20260827": [
+      "20260825": [
         {
-          "ticker": "001210",
-          "name": "금호전기",
-          "reason": "급등 (10일 +78%) / 20일선 위 (+44.4%, 60선기울기 +17.4%) / 단기눌림 (5일선 -2.9%, 5일고점 -15.6%); 거래대금 212억 (OK)",
+          "ticker": "159010",
+          "name": "아스플로",
+          "reason": "급등 (10일 +30%) / 20일선 위 (+13.6%, 60선기울기 +5.2%) / 단기눌림 (5일선 -2.1%, 5일고점 -10.8%); 거래대금 65억 (OK)",
           "endstage": false,
-          "price": 8220.0
+          "price": 21100.0
+        }
+      ],
+      "20260824": [
+        {
+          "ticker": "159010",
+          "name": "아스플로",
+          "reason": "급등 (10일 +29%) / 20일선 위 (+9.7%, 60선기울기 +5.5%) / 단기눌림 (5일선 -8.8%, 5일고점 -18.1%); 거래대금 43억 (OK)",
+          "endstage": false,
+          "price": 19990.0
         }
       ],
       "20260819": [
         {
-          "ticker": "001210",
-          "name": "금호전기",
-          "reason": "급등 (10일 +166%) / 20일선 위 (+26.3%, 60선기울기 +3.3%) / 단기눌림 (5일선 -6.2%, 5일고점 -29.7%); 거래대금 137억 (OK)",
+          "ticker": "159010",
+          "name": "아스플로",
+          "reason": "급등 (10일 +63%) / 20일선 위 (+31.1%, 60선기울기 +5.3%) / 단기눌림 (5일선 -0.2%, 5일고점 -7.2%); 거래대금 33억 (OK)",
           "endstage": false,
-          "price": 5740.0
+          "price": 22650.0
+        },
+        {
+          "ticker": "196170",
+          "name": "알테오젠",
+          "reason": "급등 (10일 +31%) / 20일선 위 (+11.9%, 60선기울기 +2.4%) / 단기눌림 (5일선 -2.1%, 5일고점 -7.0%); 거래대금 1093억 (OK)",
+          "endstage": false,
+          "price": 303500.0
+        }
+      ],
+      "20260818": [
+        {
+          "ticker": "196170",
+          "name": "알테오젠",
+          "reason": "급등 (10일 +46%) / 20일선 위 (+11.8%, 60선기울기 +2.1%) / 단기눌림 (5일선 -5.4%, 5일고점 -14.9%); 거래대금 1362억 (OK)",
+          "endstage": false,
+          "price": 298000.0
         }
       ]
     },
     "C. 대세 정배열 추세추종": {
-      "20260901": [
+      "20260902": [
         {
-          "ticker": "014990",
-          "name": "인디에프",
-          "reason": "대세 정배열 + 신고가 (+0.0%, 60선+83%); 거래대금 105억 (OK)",
+          "ticker": "024850",
+          "name": "HLB이노베이션",
+          "reason": "대세 정배열 + 신고가 (-2.5%, 60선+31%); 거래대금 86억 (OK)",
           "endstage": false,
-          "price": 4010.0
-        },
-        {
-          "ticker": "134580",
-          "name": "탑코미디어",
-          "reason": "대세 정배열 + 신고가 (+0.0%, 60선+185%); 거래대금 42억 (OK)",
-          "endstage": false,
-          "price": 4240.0
-        }
-      ],
-      "20260828": [
-        {
-          "ticker": "001210",
-          "name": "금호전기",
-          "reason": "대세 정배열 + 신고가 (+0.0%, 60선+128%); 거래대금 2749억 (OK)",
-          "endstage": false,
-          "price": 10680.0
-        },
-        {
-          "ticker": "307870",
-          "name": "비투엔",
-          "reason": "대세 정배열 + 신고가 (-2.0%, 60선+21%); 거래대금 47억 (OK)",
-          "endstage": false,
-          "price": 1159.0
-        }
-      ],
-      "20260825": [
-        {
-          "ticker": "134580",
-          "name": "탑코미디어",
-          "reason": "대세 정배열 + 신고가 (-0.3%, 60선+167%); 거래대금 67억 (OK)",
-          "endstage": false,
-          "price": 3440.0
+          "price": 15690.0
         }
       ]
     },
     "D. 추세 반전": {
-      "20260901": [
+      "20260902": [
         {
           "ticker": "067290",
           "name": "JW신약",
-          "reason": "추세 반전 (일목구름 위, 5>20, MACD+, 20>60); 거래대금 1113억 (OK)",
+          "reason": "추세 반전 (일목구름 위, 5>20, MACD+, 20>60); 거래대금 1721억 (OK)",
           "endstage": false,
-          "price": 2990.0
+          "price": 3100.0
+        },
+        {
+          "ticker": "002990",
+          "name": "금호건설",
+          "reason": "추세 반전 (일목구름 위, 5>20, MACD+, 20>60); 거래대금 3448억 (OK)",
+          "endstage": false,
+          "price": 17100.0
+        },
+        {
+          "ticker": "443670",
+          "name": "에스피소프트",
+          "reason": "추세 반전 (일목구름 위, 5>20, MACD+, 20>60); 거래대금 681억 (OK)",
+          "endstage": false,
+          "price": 4350.0
+        },
+        {
+          "ticker": "004310",
+          "name": "현대약품",
+          "reason": "추세 반전 (일목구름 위, 5>20, MACD+, 20>60); 거래대금 926억 (OK)",
+          "endstage": false,
+          "price": 7570.0
+        },
+        {
+          "ticker": "368600",
+          "name": "아이씨에이치",
+          "reason": "추세 반전 (일목구름 위, 5>20, MACD+, 20>60); 거래대금 130억 (OK)",
+          "endstage": false,
+          "price": 1077.0
         },
         {
           "ticker": "198440",
           "name": "강동씨앤엘",
-          "reason": "추세 반전 (일목구름 위, 5>20, MACD+, 20<60(초입)); 거래대금 750억 (OK)",
+          "reason": "추세 반전 (일목구름 위, 5>20, MACD+, 20<60(초입)); 거래대금 252억 (OK)",
           "endstage": false,
           "price": 2135.0
+        },
+        {
+          "ticker": "047770",
+          "name": "코데즈컴바인",
+          "reason": "추세 반전 (일목구름 위, 5>20, MACD+, 20>60); 거래대금 456억 (OK)",
+          "endstage": false,
+          "price": 3950.0
+        },
+        {
+          "ticker": "079650",
+          "name": "서산",
+          "reason": "추세 반전 (일목구름 위, 5>20, MACD+, 20>60); 거래대금 597억 (OK)",
+          "endstage": false,
+          "price": 6790.0
+        },
+        {
+          "ticker": "091590",
+          "name": "남화토건",
+          "reason": "추세 반전 (일목구름 위, 5>20, MACD+, 20>60); 거래대금 452억 (OK)",
+          "endstage": false,
+          "price": 8030.0
+        },
+        {
+          "ticker": "216080",
+          "name": "제테마",
+          "reason": "추세 반전 (일목구름 위, 5>20, MACD+, 20>60); 거래대금 107억 (OK)",
+          "endstage": false,
+          "price": 6180.0
+        },
+        {
+          "ticker": "026040",
+          "name": "제이에스티나",
+          "reason": "추세 반전 (일목구름 위, 5>20, MACD+, 20>60); 거래대금 115억 (OK)",
+          "endstage": false,
+          "price": 2615.0
+        },
+        {
+          "ticker": "092870",
+          "name": "엑시콘",
+          "reason": "추세 반전 (일목구름 위, 5>20, MACD+, 20>60); 거래대금 316억 (OK)",
+          "endstage": false,
+          "price": 31050.0
+        },
+        {
+          "ticker": "159010",
+          "name": "아스플로",
+          "reason": "추세 반전 (일목구름 위, 5>20, MACD+, 20>60); 거래대금 188억 (OK)",
+          "endstage": false,
+          "price": 24100.0
+        },
+        {
+          "ticker": "005320",
+          "name": "온타이드",
+          "reason": "추세 반전 (일목구름 위, 5>20, MACD+, 20<60(초입)); 거래대금 35억 (OK)",
+          "endstage": false,
+          "price": 1146.0
+        }
+      ],
+      "20260901": [
+        {
+          "ticker": "067290",
+          "name": "JW신약",
+          "reason": "추세 반전 (일목구름 위, 5>20, MACD+, 20>60); 거래대금 1114억 (OK)",
+          "endstage": false,
+          "price": 2990.0
+        },
+        {
+          "ticker": "002990",
+          "name": "금호건설",
+          "reason": "추세 반전 (일목구름 위, 5>20, MACD+, 20>60); 거래대금 1067억 (OK)",
+          "endstage": false,
+          "price": 16500.0
         },
         {
           "ticker": "004310",
@@ -362,622 +427,504 @@
           "price": 8290.0
         },
         {
-          "ticker": "001210",
-          "name": "금호전기",
-          "reason": "추세 반전 (일목구름 위, 5>20, MACD+, 20>60); 거래대금 2116억 (OK)",
+          "ticker": "198440",
+          "name": "강동씨앤엘",
+          "reason": "추세 반전 (일목구름 위, 5>20, MACD+, 20<60(초입)); 거래대금 754억 (OK)",
           "endstage": false,
-          "price": 13070.0
+          "price": 2135.0
         },
         {
           "ticker": "047770",
           "name": "코데즈컴바인",
-          "reason": "추세 반전 (일목구름 위, 5>20, MACD+, 20>60); 거래대금 633억 (OK)",
+          "reason": "추세 반전 (일목구름 위, 5>20, MACD+, 20>60); 거래대금 637억 (OK)",
           "endstage": false,
           "price": 3950.0
         },
         {
-          "ticker": "014990",
-          "name": "인디에프",
-          "reason": "추세 반전 (일목구름 위, 5>20, MACD+, 20>60); 거래대금 105억 (OK)",
-          "endstage": false,
-          "price": 4010.0
-        },
-        {
-          "ticker": "307870",
-          "name": "비투엔",
-          "reason": "추세 반전 (일목구름 위, 5>20, MACD+, 20>60); 거래대금 65억 (OK)",
-          "endstage": false,
-          "price": 1274.0
-        },
-        {
           "ticker": "092870",
           "name": "엑시콘",
-          "reason": "추세 반전 (일목구름 위, 5>20, MACD+, 20>60); 거래대금 162억 (OK)",
+          "reason": "추세 반전 (일목구름 위, 5>20, MACD+, 20>60); 거래대금 163억 (OK)",
           "endstage": false,
           "price": 27800.0
-        },
-        {
-          "ticker": "293490",
-          "name": "카카오게임즈",
-          "reason": "추세 반전 (일목구름 위, 5>20, MACD+, 20>60); 거래대금 309억 (OK)",
-          "endstage": false,
-          "price": 9880.0
-        },
-        {
-          "ticker": "006400",
-          "name": "삼성SDI",
-          "reason": "추세 반전 (일목구름 위, 5>20, MACD+, 20>60); 거래대금 3258억 (OK)",
-          "endstage": false,
-          "price": 569000.0
         }
       ],
       "20260831": [
         {
-          "ticker": "001210",
-          "name": "금호전기",
-          "reason": "추세 반전 (일목구름 위, 5>20, MACD+, 20>60); 거래대금 3431억 (OK)",
+          "ticker": "002990",
+          "name": "금호건설",
+          "reason": "추세 반전 (일목구름 위, 5>20, MACD+, 20>60); 거래대금 3033억 (OK)",
           "endstage": false,
-          "price": 12480.0
-        },
-        {
-          "ticker": "064550",
-          "name": "바이오니아",
-          "reason": "추세 반전 (일목구름 위, 5>20, MACD+, 20>60); 거래대금 57억 (OK)",
-          "endstage": false,
-          "price": 8790.0
-        },
-        {
-          "ticker": "330350",
-          "name": "위더스제약",
-          "reason": "추세 반전 (일목구름 위, 5>20, MACD+, 20>60); 거래대금 118억 (OK)",
-          "endstage": false,
-          "price": 7860.0
-        },
-        {
-          "ticker": "006400",
-          "name": "삼성SDI",
-          "reason": "추세 반전 (일목구름 위, 5>20, MACD+, 20>60); 거래대금 4770억 (OK)",
-          "endstage": false,
-          "price": 577000.0
+          "price": 16460.0
         }
       ],
       "20260828": [
         {
-          "ticker": "001210",
-          "name": "금호전기",
-          "reason": "추세 반전 (일목구름 위, 5>20, MACD+, 20>60); 거래대금 2749억 (OK)",
+          "ticker": "002990",
+          "name": "금호건설",
+          "reason": "추세 반전 (일목구름 위, 5>20, MACD+, 20>60); 거래대금 6019억 (OK)",
           "endstage": false,
-          "price": 10680.0
-        },
-        {
-          "ticker": "307870",
-          "name": "비투엔",
-          "reason": "추세 반전 (일목구름 위, 5>20, MACD+, 20>60); 거래대금 47억 (OK)",
-          "endstage": false,
-          "price": 1159.0
-        },
-        {
-          "ticker": "330350",
-          "name": "위더스제약",
-          "reason": "추세 반전 (일목구름 위, 5>20, MACD+, 20>60); 거래대금 62억 (OK)",
-          "endstage": false,
-          "price": 8570.0
-        },
-        {
-          "ticker": "134580",
-          "name": "탑코미디어",
-          "reason": "추세 반전 (일목구름 위, 5>20, MACD+, 20>60); 거래대금 41억 (OK)",
-          "endstage": false,
-          "price": 3450.0
-        },
-        {
-          "ticker": "006400",
-          "name": "삼성SDI",
-          "reason": "추세 반전 (일목구름 위, 5>20, MACD+, 20>60); 거래대금 2531억 (OK)",
-          "endstage": false,
-          "price": 571000.0
+          "price": 17020.0
         }
       ],
       "20260827": [
         {
-          "ticker": "001210",
-          "name": "금호전기",
-          "reason": "추세 반전 (일목구름 위, 5>20, MACD+, 20>60); 거래대금 212억 (OK)",
+          "ticker": "002990",
+          "name": "금호건설",
+          "reason": "추세 반전 (일목구름 위, 5>20, MACD+, 20>60); 거래대금 530억 (OK)",
           "endstage": false,
-          "price": 8220.0
-        },
-        {
-          "ticker": "134580",
-          "name": "탑코미디어",
-          "reason": "추세 반전 (일목구름 위, 5>20, MACD+, 20>60); 거래대금 67억 (OK)",
-          "endstage": false,
-          "price": 3320.0
-        },
-        {
-          "ticker": "006400",
-          "name": "삼성SDI",
-          "reason": "추세 반전 (일목구름 위, 5>20, MACD+, 20<60(초입)); 거래대금 5352억 (OK)",
-          "endstage": false,
-          "price": 569000.0
+          "price": 15150.0
         }
       ],
       "20260826": [
         {
-          "ticker": "001210",
-          "name": "금호전기",
-          "reason": "추세 반전 (일목구름 위, 5>20, MACD+, 20>60); 거래대금 439억 (OK)",
+          "ticker": "002990",
+          "name": "금호건설",
+          "reason": "추세 반전 (일목구름 위, 5>20, MACD+, 20>60); 거래대금 1457억 (OK)",
           "endstage": false,
-          "price": 8450.0
+          "price": 15690.0
         }
       ],
       "20260825": [
         {
-          "ticker": "001210",
-          "name": "금호전기",
-          "reason": "추세 반전 (일목구름 위, 5>20, MACD+, 20>60); 거래대금 595억 (OK)",
+          "ticker": "002990",
+          "name": "금호건설",
+          "reason": "추세 반전 (일목구름 위, 5>20, MACD+, 20>60); 거래대금 856억 (OK)",
           "endstage": false,
-          "price": 8580.0
+          "price": 15380.0
         },
         {
-          "ticker": "014990",
-          "name": "인디에프",
-          "reason": "추세 반전 (일목구름 위, 5>20, MACD+, 20>60); 거래대금 38억 (OK)",
+          "ticker": "159010",
+          "name": "아스플로",
+          "reason": "추세 반전 (일목구름 위, 5>20, MACD+, 20>60); 거래대금 65억 (OK)",
           "endstage": false,
-          "price": 3070.0
+          "price": 21100.0
         },
         {
-          "ticker": "134580",
-          "name": "탑코미디어",
-          "reason": "추세 반전 (일목구름 위, 5>20, MACD+, 20>60); 거래대금 67억 (OK)",
+          "ticker": "196170",
+          "name": "알테오젠",
+          "reason": "추세 반전 (일목구름 위, 5>20, MACD+, 20>60); 거래대금 972억 (OK)",
           "endstage": false,
-          "price": 3440.0
-        },
-        {
-          "ticker": "096770",
-          "name": "SK이노베이션",
-          "reason": "추세 반전 (일목구름 위, 5>20, MACD+, 20>60); 거래대금 610억 (OK)",
-          "endstage": false,
-          "price": 125000.0
+          "price": 305500.0
         }
       ],
       "20260824": [
         {
-          "ticker": "001210",
-          "name": "금호전기",
-          "reason": "추세 반전 (일목구름 위, 5>20, MACD+, 20>60); 거래대금 1077억 (OK)",
+          "ticker": "002990",
+          "name": "금호건설",
+          "reason": "추세 반전 (일목구름 위, 5>20, MACD+, 20>60); 거래대금 920억 (OK)",
           "endstage": false,
-          "price": 8700.0
+          "price": 14860.0
         },
         {
-          "ticker": "014990",
-          "name": "인디에프",
-          "reason": "추세 반전 (일목구름 위, 5>20, MACD+, 20>60); 거래대금 63억 (OK)",
+          "ticker": "159010",
+          "name": "아스플로",
+          "reason": "추세 반전 (일목구름 위, 5>20, MACD+, 20>60); 거래대금 43억 (OK)",
           "endstage": false,
-          "price": 3340.0
+          "price": 19990.0
         },
         {
-          "ticker": "064550",
-          "name": "바이오니아",
-          "reason": "추세 반전 (일목구름 위, 5>20, MACD+, 20>60); 거래대금 52억 (OK)",
+          "ticker": "196170",
+          "name": "알테오젠",
+          "reason": "추세 반전 (일목구름 위, 5>20, MACD+, 20>60); 거래대금 1207억 (OK)",
           "endstage": false,
-          "price": 8960.0
-        },
-        {
-          "ticker": "330350",
-          "name": "위더스제약",
-          "reason": "추세 반전 (일목구름 위, 5>20, MACD+, 20>60); 거래대금 35억 (OK)",
-          "endstage": false,
-          "price": 8820.0
-        },
-        {
-          "ticker": "134580",
-          "name": "탑코미디어",
-          "reason": "추세 반전 (일목구름 위, 5>20, MACD+, 20>60); 거래대금 97억 (OK)",
-          "endstage": false,
-          "price": 2785.0
+          "price": 320500.0
         }
       ],
       "20260821": [
         {
-          "ticker": "001210",
-          "name": "금호전기",
-          "reason": "추세 반전 (일목구름 위, 5>20, MACD+, 20>60); 거래대금 2339억 (OK)",
+          "ticker": "002990",
+          "name": "금호건설",
+          "reason": "추세 반전 (일목구름 위, 5>20, MACD+, 20>60); 거래대금 4638억 (OK)",
           "endstage": false,
-          "price": 8380.0
+          "price": 14750.0
         },
         {
-          "ticker": "014990",
-          "name": "인디에프",
-          "reason": "추세 반전 (일목구름 위, 5>20, MACD+, 20<60(초입)); 거래대금 189억 (OK)",
+          "ticker": "465770",
+          "name": "STX그린로지스",
+          "reason": "추세 반전 (일목구름 위, 5>20, MACD+, 20>60); 거래대금 82억 (OK)",
           "endstage": false,
-          "price": 3270.0
+          "price": 3610.0
         },
         {
-          "ticker": "064550",
-          "name": "바이오니아",
-          "reason": "추세 반전 (일목구름 위, 5>20, MACD+, 20<60(초입)); 거래대금 81억 (OK)",
+          "ticker": "196170",
+          "name": "알테오젠",
+          "reason": "추세 반전 (일목구름 위, 5>20, MACD+, 20>60); 거래대금 1573억 (OK)",
           "endstage": false,
-          "price": 9030.0
-        },
-        {
-          "ticker": "330350",
-          "name": "위더스제약",
-          "reason": "추세 반전 (일목구름 위, 5>20, MACD+, 20>60); 거래대금 81억 (OK)",
-          "endstage": false,
-          "price": 8870.0
+          "price": 320000.0
         }
       ],
       "20260820": [
         {
-          "ticker": "001210",
-          "name": "금호전기",
-          "reason": "추세 반전 (일목구름 위, 5>20, MACD+, 20>60); 거래대금 656억 (OK)",
+          "ticker": "002990",
+          "name": "금호건설",
+          "reason": "추세 반전 (일목구름 위, 5>20, MACD+, 20>60); 거래대금 4043억 (OK)",
           "endstage": false,
-          "price": 7460.0
+          "price": 15650.0
         },
         {
-          "ticker": "064550",
-          "name": "바이오니아",
-          "reason": "추세 반전 (일목구름 위, 5>20, MACD+, 20<60(초입)); 거래대금 196억 (OK)",
+          "ticker": "465770",
+          "name": "STX그린로지스",
+          "reason": "추세 반전 (일목구름 위, 5>20, MACD+, 20>60); 거래대금 43억 (OK)",
           "endstage": false,
-          "price": 9500.0
+          "price": 3470.0
+        },
+        {
+          "ticker": "196170",
+          "name": "알테오젠",
+          "reason": "추세 반전 (일목구름 위, 5>20, MACD+, 20>60); 거래대금 3462억 (OK)",
+          "endstage": false,
+          "price": 339500.0
         }
       ],
       "20260819": [
         {
-          "ticker": "001210",
-          "name": "금호전기",
-          "reason": "추세 반전 (일목구름 위, 5>20, MACD+, 20>60); 거래대금 137억 (OK)",
+          "ticker": "002990",
+          "name": "금호건설",
+          "reason": "추세 반전 (일목구름 위, 5>20, MACD+, 20>60); 거래대금 404억 (OK)",
           "endstage": false,
-          "price": 5740.0
+          "price": 12600.0
         },
         {
-          "ticker": "014990",
-          "name": "인디에프",
-          "reason": "추세 반전 (일목구름 위, 5>20, MACD+, 20<60(초입)); 거래대금 80억 (OK)",
+          "ticker": "159010",
+          "name": "아스플로",
+          "reason": "추세 반전 (일목구름 위, 5>20, MACD+, 20<60(초입)); 거래대금 33억 (OK)",
           "endstage": false,
-          "price": 3110.0
+          "price": 22650.0
         },
         {
-          "ticker": "064550",
-          "name": "바이오니아",
-          "reason": "추세 반전 (일목구름 위, 5>20, MACD+, 20<60(초입)); 거래대금 120억 (OK)",
+          "ticker": "196170",
+          "name": "알테오젠",
+          "reason": "추세 반전 (일목구름 위, 5>20, MACD+, 20>60); 거래대금 1093억 (OK)",
           "endstage": false,
-          "price": 9190.0
+          "price": 303500.0
         }
       ],
       "20260818": [
         {
-          "ticker": "001210",
-          "name": "금호전기",
-          "reason": "추세 반전 (일목구름 위, 5>20, MACD+, 20>60); 거래대금 439억 (OK)",
+          "ticker": "002990",
+          "name": "금호건설",
+          "reason": "추세 반전 (일목구름 위, 5>20, MACD+, 20>60); 거래대금 1519억 (OK)",
           "endstage": false,
-          "price": 6180.0
-        }
-      ],
-      "20260814": [
-        {
-          "ticker": "001210",
-          "name": "금호전기",
-          "reason": "추세 반전 (일목구름 위, 5>20, MACD+, 20>60); 거래대금 1552억 (OK)",
-          "endstage": false,
-          "price": 6490.0
+          "price": 13950.0
         },
         {
-          "ticker": "134580",
-          "name": "탑코미디어",
-          "reason": "추세 반전 (일목구름 위, 5>20, MACD+, 20>60); 거래대금 49억 (OK)",
+          "ticker": "159010",
+          "name": "아스플로",
+          "reason": "추세 반전 (일목구름 위, 5>20, MACD+, 20<60(초입)); 거래대금 46억 (OK)",
           "endstage": false,
-          "price": 1989.0
+          "price": 22850.0
+        },
+        {
+          "ticker": "196170",
+          "name": "알테오젠",
+          "reason": "추세 반전 (일목구름 위, 5>20, MACD+, 20>60); 거래대금 1362억 (OK)",
+          "endstage": false,
+          "price": 298000.0
         }
       ]
     }
   },
   "charts": {
-    "000660": "charts_interactive/2026-09-01-000660.html",
-    "001210": "charts_interactive/2026-09-01-001210.html",
-    "004310": "charts_interactive/2026-09-01-004310.html",
-    "005930": "charts_interactive/2026-09-01-005930.html",
-    "006400": "charts_interactive/2026-09-01-006400.html",
-    "009150": "charts_interactive/2026-09-01-009150.html",
-    "011070": "charts_interactive/2026-09-01-011070.html",
-    "014990": "charts_interactive/2026-09-01-014990.html",
-    "018260": "charts_interactive/2026-09-01-018260.html",
-    "024840": "charts_interactive/2026-09-01-024840.html",
-    "047770": "charts_interactive/2026-09-01-047770.html",
-    "064550": "charts_interactive/2026-09-01-064550.html",
-    "066570": "charts_interactive/2026-09-01-066570.html",
-    "067290": "charts_interactive/2026-09-01-067290.html",
-    "080220": "charts_interactive/2026-09-01-080220.html",
-    "092870": "charts_interactive/2026-09-01-092870.html",
-    "096770": "charts_interactive/2026-09-01-096770.html",
-    "105560": "charts_interactive/2026-09-01-105560.html",
-    "134580": "charts_interactive/2026-09-01-134580.html",
-    "198440": "charts_interactive/2026-09-01-198440.html",
-    "293490": "charts_interactive/2026-09-01-293490.html",
-    "307870": "charts_interactive/2026-09-01-307870.html",
-    "330350": "charts_interactive/2026-09-01-330350.html",
-    "402340": "charts_interactive/2026-09-01-402340.html"
+    "000660": "charts_interactive/2026-09-02-000660.html",
+    "002990": "charts_interactive/2026-09-02-002990.html",
+    "003160": "charts_interactive/2026-09-02-003160.html",
+    "004310": "charts_interactive/2026-09-02-004310.html",
+    "005320": "charts_interactive/2026-09-02-005320.html",
+    "005930": "charts_interactive/2026-09-02-005930.html",
+    "009150": "charts_interactive/2026-09-02-009150.html",
+    "018260": "charts_interactive/2026-09-02-018260.html",
+    "024850": "charts_interactive/2026-09-02-024850.html",
+    "026040": "charts_interactive/2026-09-02-026040.html",
+    "047770": "charts_interactive/2026-09-02-047770.html",
+    "058730": "charts_interactive/2026-09-02-058730.html",
+    "066570": "charts_interactive/2026-09-02-066570.html",
+    "067290": "charts_interactive/2026-09-02-067290.html",
+    "079650": "charts_interactive/2026-09-02-079650.html",
+    "091590": "charts_interactive/2026-09-02-091590.html",
+    "092870": "charts_interactive/2026-09-02-092870.html",
+    "159010": "charts_interactive/2026-09-02-159010.html",
+    "196170": "charts_interactive/2026-09-02-196170.html",
+    "198440": "charts_interactive/2026-09-02-198440.html",
+    "216080": "charts_interactive/2026-09-02-216080.html",
+    "228340": "charts_interactive/2026-09-02-228340.html",
+    "368600": "charts_interactive/2026-09-02-368600.html",
+    "396300": "charts_interactive/2026-09-02-396300.html",
+    "402340": "charts_interactive/2026-09-02-402340.html",
+    "443670": "charts_interactive/2026-09-02-443670.html",
+    "465770": "charts_interactive/2026-09-02-465770.html"
   },
   "market": {
-    "new_highs": [
-      {
-        "ticker": "134580",
-        "name": "탑코미디어",
-        "price": 4240.0,
-        "lookback": 220
-      }
-    ],
+    "new_highs": [],
     "sectors_up": [
       {
-        "code": "0016",
-        "name": "유통",
-        "index": 647.27,
-        "change_pct": 2.98,
-        "volume": 10884
+        "code": "0014",
+        "name": "의료·정밀기기",
+        "index": 1583.09,
+        "change_pct": 0.97,
+        "volume": 3702
       },
       {
-        "code": "0025",
-        "name": "보험",
-        "index": 50044.96,
-        "change_pct": 2.15,
-        "volume": 8476
+        "code": "0028",
+        "name": "부동산",
+        "index": 903.03,
+        "change_pct": -0.26,
+        "volume": 10851
       },
       {
-        "code": "0021",
-        "name": "금융",
-        "index": 1135.44,
-        "change_pct": 1.52,
-        "volume": 33949
-      },
-      {
-        "code": "0017",
-        "name": "전기·가스",
-        "index": 1033.59,
-        "change_pct": 0.92,
-        "volume": 1392
-      },
-      {
-        "code": "0164",
-        "name": "배당성장50",
-        "index": 7162.46,
-        "change_pct": 0.87,
-        "volume": 13630
-      },
-      {
-        "code": "0242",
-        "name": "코스피 배당성장 50 TR",
-        "index": 10591.48,
-        "change_pct": 0.87,
-        "volume": 0
-      }
-    ],
-    "sectors_down": [
-      {
-        "code": "0503",
-        "name": "VKOSPI",
-        "index": 44.03,
-        "change_pct": -4.39,
-        "volume": 0
-      },
-      {
-        "code": "0018",
-        "name": "건설",
-        "index": 162.25,
-        "change_pct": -3.5,
-        "volume": 26852
-      },
-      {
-        "code": "0012",
-        "name": "기계·장비",
-        "index": 3036.3,
-        "change_pct": -1.34,
-        "volume": 8138
+        "code": "0007",
+        "name": "종이·목재",
+        "index": 223.24,
+        "change_pct": -0.41,
+        "volume": 829
       },
       {
         "code": "0005",
         "name": "음식료·담배",
-        "index": 5051.61,
-        "change_pct": -1.24,
-        "volume": 2168
+        "index": 5016.64,
+        "change_pct": -0.69,
+        "volume": 4337
       },
+      {
+        "code": "0006",
+        "name": "섬유·의류",
+        "index": 224.51,
+        "change_pct": -0.81,
+        "volume": 10757
+      },
+      {
+        "code": "0009",
+        "name": "제약",
+        "index": 15989.27,
+        "change_pct": -1.26,
+        "volume": 23851
+      }
+    ],
+    "sectors_down": [
       {
         "code": "0015",
         "name": "운송장비·부품",
-        "index": 4918.05,
-        "change_pct": -1.19,
-        "volume": 11081
+        "index": 4655.42,
+        "change_pct": -5.34,
+        "volume": 11608
       },
       {
-        "code": "0011",
-        "name": "금속",
-        "index": 6989.3,
-        "change_pct": -0.73,
-        "volume": 9203
+        "code": "0013",
+        "name": "전기·전자",
+        "index": 104342.03,
+        "change_pct": -4.34,
+        "volume": 61808
+      },
+      {
+        "code": "0012",
+        "name": "기계·장비",
+        "index": 2905.04,
+        "change_pct": -4.32,
+        "volume": 8247
+      },
+      {
+        "code": "0027",
+        "name": "제조",
+        "index": 19282.27,
+        "change_pct": -4.19,
+        "volume": 167421
+      },
+      {
+        "code": "0002",
+        "name": "대형주",
+        "index": 7155.96,
+        "change_pct": -4.12,
+        "volume": 72925
+      },
+      {
+        "code": "2180",
+        "name": "코스피 200 ESG 지수",
+        "index": 1361.39,
+        "change_pct": -4.08,
+        "volume": 79493
       }
     ],
     "foreign_buy": [
       {
-        "ticker": "000660",
-        "name": "SK하이닉스",
-        "price": 1693000.0,
-        "change_pct": 1.14,
-        "net_qty": 65000,
-        "frgn_net_value": 110045,
-        "orgn_net_value": -199774
-      },
-      {
-        "ticker": "096770",
-        "name": "SK이노베이션",
-        "price": 135300.0,
-        "change_pct": 7.81,
-        "net_qty": 313000,
-        "frgn_net_value": 42349,
-        "orgn_net_value": 18401
-      },
-      {
-        "ticker": "316140",
-        "name": "우리금융지주",
-        "price": 34550.0,
-        "change_pct": 2.22,
-        "net_qty": 628000,
-        "frgn_net_value": 21697,
-        "orgn_net_value": -933
-      },
-      {
-        "ticker": "257720",
-        "name": "실리콘투",
-        "price": 51900.0,
-        "change_pct": -4.24,
-        "net_qty": 263000,
-        "frgn_net_value": 13650,
-        "orgn_net_value": -5034
-      },
-      {
-        "ticker": "003230",
-        "name": "삼양식품",
-        "price": 1492000.0,
-        "change_pct": -2.55,
-        "net_qty": 8000,
-        "frgn_net_value": 11936,
-        "orgn_net_value": 0
-      },
-      {
-        "ticker": "010950",
-        "name": "S-Oil",
-        "price": 151700.0,
-        "change_pct": 1.07,
-        "net_qty": 56000,
-        "frgn_net_value": 8495,
-        "orgn_net_value": 4854
+        "ticker": "007660",
+        "name": "이수페타시스",
+        "price": 112000.0,
+        "change_pct": 0.81,
+        "net_qty": 170000,
+        "frgn_net_value": 19040,
+        "orgn_net_value": 3808
       },
       {
         "ticker": "003490",
         "name": "대한항공",
-        "price": 28750.0,
-        "change_pct": 2.31,
-        "net_qty": 280000,
-        "frgn_net_value": 8050,
-        "orgn_net_value": 1323
+        "price": 28900.0,
+        "change_pct": 0.52,
+        "net_qty": 633000,
+        "frgn_net_value": 18294,
+        "orgn_net_value": 5636
       },
       {
-        "ticker": "207940",
-        "name": "삼성바이오로직스",
-        "price": 1520000.0,
-        "change_pct": 0.13,
-        "net_qty": 5000,
-        "frgn_net_value": 7600,
+        "ticker": "078930",
+        "name": "GS",
+        "price": 120000.0,
+        "change_pct": -3.77,
+        "net_qty": 135000,
+        "frgn_net_value": 16200,
+        "orgn_net_value": -3120
+      },
+      {
+        "ticker": "003550",
+        "name": "LG",
+        "price": 118500.0,
+        "change_pct": -1.5,
+        "net_qty": 115000,
+        "frgn_net_value": 13628,
+        "orgn_net_value": 356
+      },
+      {
+        "ticker": "003230",
+        "name": "삼양식품",
+        "price": 1475000.0,
+        "change_pct": -1.14,
+        "net_qty": 9000,
+        "frgn_net_value": 13275,
         "orgn_net_value": 0
       },
       {
-        "ticker": "034730",
-        "name": "SK",
-        "price": 586000.0,
-        "change_pct": 7.52,
-        "net_qty": 12000,
-        "frgn_net_value": 7032,
-        "orgn_net_value": 2344
+        "ticker": "316140",
+        "name": "우리금융지주",
+        "price": 34500.0,
+        "change_pct": -0.14,
+        "net_qty": 376000,
+        "frgn_net_value": 12972,
+        "orgn_net_value": 9660
       },
       {
-        "ticker": "161890",
-        "name": "한국콜마",
-        "price": 155000.0,
-        "change_pct": -3.19,
-        "net_qty": 43000,
-        "frgn_net_value": 6665,
-        "orgn_net_value": -775
+        "ticker": "042700",
+        "name": "한미반도체",
+        "price": 213500.0,
+        "change_pct": -0.7,
+        "net_qty": 59000,
+        "frgn_net_value": 12597,
+        "orgn_net_value": 427
+      },
+      {
+        "ticker": "035420",
+        "name": "NAVER",
+        "price": 209000.0,
+        "change_pct": -2.79,
+        "net_qty": 55000,
+        "frgn_net_value": 11495,
+        "orgn_net_value": -5225
+      },
+      {
+        "ticker": "192820",
+        "name": "코스맥스",
+        "price": 285500.0,
+        "change_pct": -0.52,
+        "net_qty": 39000,
+        "frgn_net_value": 11135,
+        "orgn_net_value": -1428
+      },
+      {
+        "ticker": "036930",
+        "name": "주성엔지니어링",
+        "price": 173700.0,
+        "change_pct": 0.4,
+        "net_qty": 64000,
+        "frgn_net_value": 11117,
+        "orgn_net_value": 1042
       }
     ],
     "inst_buy": [
       {
-        "ticker": "086790",
-        "name": "하나금융지주",
-        "price": 137400.0,
-        "change_pct": 0.81,
-        "net_qty": 141000,
-        "frgn_net_value": 2748,
-        "orgn_net_value": 19373
-      },
-      {
-        "ticker": "096770",
-        "name": "SK이노베이션",
-        "price": 135300.0,
-        "change_pct": 7.81,
-        "net_qty": 136000,
-        "frgn_net_value": 42349,
-        "orgn_net_value": 18401
-      },
-      {
-        "ticker": "028260",
-        "name": "삼성물산",
-        "price": 390500.0,
-        "change_pct": 3.72,
-        "net_qty": 39000,
-        "frgn_net_value": -2734,
-        "orgn_net_value": 15230
-      },
-      {
         "ticker": "055550",
         "name": "신한지주",
-        "price": 111100.0,
-        "change_pct": 2.02,
-        "net_qty": 113000,
-        "frgn_net_value": -7110,
-        "orgn_net_value": 12554
-      },
-      {
-        "ticker": "047050",
-        "name": "포스코인터내셔널",
-        "price": 55300.0,
-        "change_pct": 2.98,
-        "net_qty": 129000,
-        "frgn_net_value": -2267,
-        "orgn_net_value": 7134
-      },
-      {
-        "ticker": "005935",
-        "name": "삼성전자우",
-        "price": 190300.0,
-        "change_pct": 2.04,
-        "net_qty": 29000,
-        "frgn_net_value": -381,
-        "orgn_net_value": 5519
-      },
-      {
-        "ticker": "051910",
-        "name": "LG화학",
-        "price": 282000.0,
-        "change_pct": 0.71,
-        "net_qty": 18000,
-        "frgn_net_value": 3102,
-        "orgn_net_value": 5076
+        "price": 110500.0,
+        "change_pct": -0.54,
+        "net_qty": 221000,
+        "frgn_net_value": -15249,
+        "orgn_net_value": 24421
       },
       {
         "ticker": "010950",
         "name": "S-Oil",
-        "price": 151700.0,
-        "change_pct": 1.07,
-        "net_qty": 32000,
-        "frgn_net_value": 8495,
-        "orgn_net_value": 4854
+        "price": 150900.0,
+        "change_pct": -0.53,
+        "net_qty": 80000,
+        "frgn_net_value": -9356,
+        "orgn_net_value": 12072
       },
       {
-        "ticker": "006400",
-        "name": "삼성SDI",
-        "price": 569000.0,
-        "change_pct": -1.39,
-        "net_qty": 8000,
-        "frgn_net_value": -35278,
-        "orgn_net_value": 4552
+        "ticker": "196170",
+        "name": "알테오젠",
+        "price": 298500.0,
+        "change_pct": -0.83,
+        "net_qty": 34000,
+        "frgn_net_value": -54626,
+        "orgn_net_value": 10149
       },
       {
-        "ticker": "090460",
-        "name": "비에이치",
-        "price": 22000.0,
-        "change_pct": 20.68,
-        "net_qty": 201000,
-        "frgn_net_value": -2288,
-        "orgn_net_value": 4422
+        "ticker": "086790",
+        "name": "하나금융지주",
+        "price": 134900.0,
+        "change_pct": -1.82,
+        "net_qty": 74000,
+        "frgn_net_value": -27115,
+        "orgn_net_value": 9983
+      },
+      {
+        "ticker": "316140",
+        "name": "우리금융지주",
+        "price": 34500.0,
+        "change_pct": -0.14,
+        "net_qty": 280000,
+        "frgn_net_value": 12972,
+        "orgn_net_value": 9660
+      },
+      {
+        "ticker": "001040",
+        "name": "CJ",
+        "price": 130300.0,
+        "change_pct": -2.47,
+        "net_qty": 49000,
+        "frgn_net_value": -6515,
+        "orgn_net_value": 6385
+      },
+      {
+        "ticker": "005830",
+        "name": "DB손해보험",
+        "price": 190900.0,
+        "change_pct": -0.88,
+        "net_qty": 31000,
+        "frgn_net_value": -18136,
+        "orgn_net_value": 5918
+      },
+      {
+        "ticker": "138040",
+        "name": "메리츠금융지주",
+        "price": 129800.0,
+        "change_pct": 3.51,
+        "net_qty": 45000,
+        "frgn_net_value": 1817,
+        "orgn_net_value": 5841
+      },
+      {
+        "ticker": "003160",
+        "name": "디아이",
+        "price": 30600.0,
+        "change_pct": 14.82,
+        "net_qty": 186000,
+        "frgn_net_value": 2356,
+        "orgn_net_value": 5692
+      },
+      {
+        "ticker": "003490",
+        "name": "대한항공",
+        "price": 28900.0,
+        "change_pct": 0.52,
+        "net_qty": 195000,
+        "frgn_net_value": 18294,
+        "orgn_net_value": 5636
       }
     ]
   }
