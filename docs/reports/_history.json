@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-09-02",
+    "time": "13:00",
+    "mode": "us_afterhours",
+    "url": "reports/2026-09-02-us-after.html",
+    "summary": "미국 증시는 전반적으로 하락 마감했으며, 특히 기술주와 반도체 업종의 약세가 두드러졌습니다. 에너지 섹터는 상승했으나 시장 전반의 하락세를 막지는 못했습니다. 금 가격은 하락한 반면, 유가(WTI)는 큰 폭으로 상승했습니다.",
+    "kospi_pct": null,
+    "kosdaq_pct": null
+  },
+  {
+    "date": "2026-09-02",
     "time": "11:40",
     "mode": "midday",
     "url": "reports/2026-09-02-midday.html",
@@ -527,15 +536,6 @@
     "mode": "post_close",
     "url": "reports/2026-08-24-post.html",
     "summary": "오늘 코스피와 코스닥 지수는 혼조세를 보이며 마감했습니다. 외국인과 기관의 매도세 속에서 일부 반도체 및 2차전지 관련주가 강세를 보였습니다.",
-    "kospi_pct": null,
-    "kosdaq_pct": null
-  },
-  {
-    "date": "2026-08-24",
-    "time": "14:50",
-    "mode": "pre_close",
-    "url": "reports/2026-08-24-pre.html",
-    "summary": "코스피는 혼조세, 코스닥은 낙폭 만회하며 상승 전환 시도 중입니다.",
     "kospi_pct": null,
     "kosdaq_pct": null
   }
