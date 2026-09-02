@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-09-02",
+    "time": "16:00",
+    "mode": "post_close",
+    "url": "reports/2026-09-02-post.html",
+    "summary": "코스피는 외국인 매도세에 하락 마감했으며, 코스닥은 개인 순매수 유입으로 소폭 상승했습니다. 반도체 업황 둔화 우려와 2차전지 섹터의 차익 실현 매물이 시장 전반의 하락 압력으로 작용했습니다.",
+    "kospi_pct": null,
+    "kosdaq_pct": null
+  },
+  {
+    "date": "2026-09-02",
     "time": "14:50",
     "mode": "pre_close",
     "url": "reports/2026-09-02-pre.html",
@@ -527,15 +536,6 @@
     "mode": "us_intraday",
     "url": "reports/2026-08-24-us-mid.html",
     "summary": "미국 증시는 혼조세를 보이며 마감했습니다. S&P500과 나스닥은 하락한 반면, 다우 지수는 소폭 상승했습니다. 반도체 섹터의 큰 폭 하락이 지수 전반에 부담을 주었으며, 금 가격은 상승, 유가는 하락했습니다.",
-    "kospi_pct": null,
-    "kosdaq_pct": null
-  },
-  {
-    "date": "2026-08-24",
-    "time": "21:50",
-    "mode": "us_premarket",
-    "url": "reports/2026-08-24-us-pre.html",
-    "summary": "프리장에서 미국 증시는 전반적으로 약보합세를 보이고 있습니다. 다우 지수 선물은 상승세를 유지하고 있으나, S&P500과 나스닥 선물은 하락하며 혼조세를 나타내고 있습니다. 투자자들은 주요 경제 지표 발표와 엔비디아 실적 발표를 앞두고 관망세를 보이는",
     "kospi_pct": null,
     "kosdaq_pct": null
   }
