@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-09-02",
+    "time": "11:40",
+    "mode": "midday",
+    "url": "reports/2026-09-02-midday.html",
+    "summary": "오늘 한국 증시는 전반적으로 약세를 보이며 하락 흐름을 이어가고 있습니다. 특히 SK스퀘어와 삼성전자가 장중 약세를 지속하는 가운데, SK이노베이션과 삼성전기는 장 초반의 급락세를 만회하며 반등에 성공하는 모습을 보였습니다. 금호건설은 장중 큰 폭의 ",
+    "kospi_pct": null,
+    "kosdaq_pct": null
+  },
+  {
+    "date": "2026-09-02",
     "time": "09:15",
     "mode": "kr_open",
     "url": "reports/2026-09-02-kr-open.html",
@@ -527,15 +536,6 @@
     "mode": "pre_close",
     "url": "reports/2026-08-24-pre.html",
     "summary": "코스피는 혼조세, 코스닥은 낙폭 만회하며 상승 전환 시도 중입니다.",
-    "kospi_pct": null,
-    "kosdaq_pct": null
-  },
-  {
-    "date": "2026-08-24",
-    "time": "11:40",
-    "mode": "midday",
-    "url": "reports/2026-08-24-midday.html",
-    "summary": "오늘 한국 증시는 전반적으로 약세를 보이고 있으며, 특히 삼성전자와 SK하이닉스 등 대형 기술주가 장중 하락폭을 키우는 모습입니다. 금호건설은 장 초반 강세를 보였으나 이후 상승분을 상당 부분 반납하며 변동성을 나타냈습니다.",
     "kospi_pct": null,
     "kosdaq_pct": null
   }
