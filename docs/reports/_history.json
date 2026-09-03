@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-09-03",
+    "time": "13:00",
+    "mode": "us_afterhours",
+    "url": "reports/2026-09-03-us-after.html",
+    "summary": "미국 증시는 전반적으로 상승 마감하며 S&P500, 나스닥, 다우 지수가 모두 강보합세를 보였습니다. 특히 엔비디아를 필두로 한 빅테크와 반도체 관련주들이 강세를 보인 가운데, 태양광/신재생, 금융, 헬스케어 섹터도 견조한 흐름을 나타냈습니다. 금과 ",
+    "kospi_pct": null,
+    "kosdaq_pct": null
+  },
+  {
+    "date": "2026-09-03",
     "time": "11:40",
     "mode": "midday",
     "url": "reports/2026-09-03-midday.html",
@@ -527,15 +536,6 @@
     "mode": "post_close",
     "url": "reports/2026-08-25-post.html",
     "summary": "오늘 코스피와 코스닥 지수는 혼조세를 보이며 마감했습니다. 반도체 관련주와 2차전지 섹터가 시장의 주목을 받았습니다.",
-    "kospi_pct": null,
-    "kosdaq_pct": null
-  },
-  {
-    "date": "2026-08-25",
-    "time": "14:50",
-    "mode": "pre_close",
-    "url": "reports/2026-08-25-pre.html",
-    "summary": "코스피는 혼조세, 코스닥은 일부 기술주 강세와 함께 상승 마감 예상.",
     "kospi_pct": null,
     "kosdaq_pct": null
   }
