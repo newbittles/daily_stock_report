@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-09-03",
+    "time": "14:50",
+    "mode": "pre_close",
+    "url": "reports/2026-09-03-pre.html",
+    "summary": "코스피는 소폭 하락세, 코스닥은 강보합권에서 혼조세를 보이고 있습니다.",
+    "kospi_pct": null,
+    "kosdaq_pct": null
+  },
+  {
+    "date": "2026-09-03",
     "time": "13:00",
     "mode": "us_afterhours",
     "url": "reports/2026-09-03-us-after.html",
@@ -527,15 +536,6 @@
     "mode": "us_premarket",
     "url": "reports/2026-08-25-us-pre.html",
     "summary": "프리장에서 미국 증시는 전반적으로 강세를 보이고 있으며, 특히 기술주와 반도체 관련주가 상승세를 주도하고 있습니다. 다만, 필라델피아 반도체 지수의 하락은 일부 경계감을 나타내고 있습니다. 에너지 섹터의 약세와 유가 하락이 눈에 띕니다.",
-    "kospi_pct": null,
-    "kosdaq_pct": null
-  },
-  {
-    "date": "2026-08-25",
-    "time": "16:00",
-    "mode": "post_close",
-    "url": "reports/2026-08-25-post.html",
-    "summary": "오늘 코스피와 코스닥 지수는 혼조세를 보이며 마감했습니다. 반도체 관련주와 2차전지 섹터가 시장의 주목을 받았습니다.",
     "kospi_pct": null,
     "kosdaq_pct": null
   }
