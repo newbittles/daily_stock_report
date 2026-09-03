@@ -1,5 +1,14 @@
 [
   {
+    "date": "2026-09-04",
+    "time": "06:30",
+    "mode": "us_morning",
+    "url": "reports/2026-09-04-us.html",
+    "summary": "미국 증시는 연준의 금리 인상 가능성 완화 기대감에 힘입어 일제히 상승 마감했습니다. 특히 기술주와 빅테크 기업들이 강세를 보이며 시장을 견인했으며, AI 관련주와 반도체 업종이 주목받았습니다. 금 가격은 3.53% 급등하며 안전 자산 선호 심리를 나",
+    "kospi_pct": null,
+    "kosdaq_pct": null
+  },
+  {
     "date": "2026-09-03",
     "time": "22:40",
     "mode": "us_intraday",
@@ -527,15 +536,6 @@
     "mode": "kr_open",
     "url": "reports/2026-08-26-kr-open.html",
     "summary": "오늘 한국 증시는 전반적으로 약세를 보이고 있으며, 특히 제약 및 건설 업종에서 장 초반 강세를 보였던 종목들이 고점 대비 하락하는 흐름을 나타내고 있습니다. 삼성전자는 보합권에서 소폭 상승하며 시장을 방어하는 모습입니다.",
-    "kospi_pct": null,
-    "kosdaq_pct": null
-  },
-  {
-    "date": "2026-08-26",
-    "time": "08:05",
-    "mode": "kr_premarket",
-    "url": "reports/2026-08-26-kr-pre.html",
-    "summary": "",
     "kospi_pct": null,
     "kosdaq_pct": null
   }
