@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-09-03",
+    "time": "09:15",
+    "mode": "kr_open",
+    "url": "reports/2026-09-03-kr-open.html",
+    "summary": "오늘 한국 증시는 전반적으로 약세를 보이며 하락 흐름을 이어가고 있습니다. 외국인과 기관의 매도세가 지수 하락을 주도하는 가운데, 금호건설은 장 초반 상승세를 보였으나 차익 실현 매물에 밀려 하락 전환하는 모습을 보였습니다. 반면 삼성전자는 보합권을 ",
+    "kospi_pct": null,
+    "kosdaq_pct": null
+  },
+  {
+    "date": "2026-09-03",
     "time": "08:05",
     "mode": "kr_premarket",
     "url": "reports/2026-09-03-kr-pre.html",
@@ -527,15 +536,6 @@
     "mode": "us_afterhours",
     "url": "reports/2026-08-25-us-after.html",
     "summary": "미국 증시는 혼조세를 보이며 마감했습니다. 다우 지수는 소폭 상승했지만, S&P 500과 나스닥은 하락했으며, 특히 필라델피아 반도체 지수는 큰 폭으로 내렸습니다. 빅테크 중에서는 메타, 아마존 등 일부 종목이 상승했으나, 엔비디아, AMD 등 반도체",
-    "kospi_pct": null,
-    "kosdaq_pct": null
-  },
-  {
-    "date": "2026-08-25",
-    "time": "11:40",
-    "mode": "midday",
-    "url": "reports/2026-08-25-midday.html",
-    "summary": "오늘 한국 증시는 장 초반 큰 폭의 하락세를 보였으나, 오후 들어 낙폭을 줄이며 반등하는 흐름을 나타내고 있습니다. 특히 NAVER, SK하이닉스, 삼성전자 등 주요 기술주들이 장중 저점 대비 상당 부분 회복하며 시장 하락을 방어하는 모습을 보였습니다",
     "kospi_pct": null,
     "kosdaq_pct": null
   }
