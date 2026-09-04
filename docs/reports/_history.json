@@ -1,5 +1,14 @@
 [
   {
+    "date": "2026-09-05",
+    "time": "06:30",
+    "mode": "us_morning",
+    "url": "reports/2026-09-05-us.html",
+    "summary": "미국 증시는 혼조세를 보이며 하락 마감했습니다. 반도체 섹터가 강세를 보인 반면, 기술주 전반은 약세를 나타냈습니다. 금리 인상 우려와 주요 기술주들의 하락이 시장 전반에 부담으로 작용했습니다. 금 가격은 소폭 하락했고, WTI 유가도 약보합세를 보였",
+    "kospi_pct": null,
+    "kosdaq_pct": null
+  },
+  {
     "date": "2026-09-04",
     "time": "22:40",
     "mode": "us_intraday",
@@ -527,15 +536,6 @@
     "mode": "kr_open",
     "url": "reports/2026-08-27-kr-open.html",
     "summary": "오늘 한국 증시는 삼성전자의 꾸준한 강세에 힘입어 지수 상승 흐름을 이어가고 있습니다. 다만, 금호건설은 장 초반 상승분을 반납하며 하락 전환했고, 한미약품은 장중 낙폭을 만회하며 반등하는 등 개별 종목별 차별화된 움직임이 나타나고 있습니다.",
-    "kospi_pct": null,
-    "kosdaq_pct": null
-  },
-  {
-    "date": "2026-08-27",
-    "time": "08:05",
-    "mode": "kr_premarket",
-    "url": "reports/2026-08-27-kr-pre.html",
-    "summary": "",
     "kospi_pct": null,
     "kosdaq_pct": null
   }
