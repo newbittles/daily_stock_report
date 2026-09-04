@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-09-04",
+    "time": "16:00",
+    "mode": "post_close",
+    "url": "reports/2026-09-04-post.html",
+    "summary": "코스피는 외국인 순매수에 힘입어 상승 마감했으나, 코스닥은 차익실현 매물에 하락했습니다. 반도체와 이차전지 관련주가 시장을 견인했습니다.",
+    "kospi_pct": null,
+    "kosdaq_pct": null
+  },
+  {
+    "date": "2026-09-04",
     "time": "14:50",
     "mode": "pre_close",
     "url": "reports/2026-09-04-pre.html",
@@ -527,15 +536,6 @@
     "mode": "us_intraday",
     "url": "reports/2026-08-26-us-mid.html",
     "summary": "미국 증시는 혼조세로 마감했습니다. S&P500과 나스닥은 소폭 하락한 반면, 다우 지수는 상승했습니다. PCE 물가 지표 발표 이후 시장의 경계감이 높아졌으며, 기술/IT 및 반도체 섹터는 강보합세를 보였습니다. 금 가격은 상승했으나 유가(WTI)는",
-    "kospi_pct": null,
-    "kosdaq_pct": null
-  },
-  {
-    "date": "2026-08-26",
-    "time": "21:50",
-    "mode": "us_premarket",
-    "url": "reports/2026-08-26-us-pre.html",
-    "summary": "현재 미국 프리장 시장은 혼조세를 보이고 있습니다. 다우 지수 선물은 소폭 상승세를 유지하고 있으나, S&P500과 나스닥 선물은 약보합권에서 움직이며 전반적인 투자 심리는 관망세가 짙습니다. 필라델피아 반도체 지수 선물은 강세를 보이며 기술주 내에서",
     "kospi_pct": null,
     "kosdaq_pct": null
   }
