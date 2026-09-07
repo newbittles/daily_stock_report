@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-09-07",
+    "time": "16:00",
+    "mode": "post_close",
+    "url": "reports/2026-09-07-post.html",
+    "summary": "오늘 코스피는 외국인 매도세에 하락 마감했으며, 반도체 관련주가 시장을 주도했습니다.",
+    "kospi_pct": null,
+    "kosdaq_pct": null
+  },
+  {
+    "date": "2026-09-07",
     "time": "14:50",
     "mode": "pre_close",
     "url": "reports/2026-09-07-pre.html",
@@ -527,15 +536,6 @@
     "mode": "us_premarket",
     "url": "reports/2026-08-27-us-pre.html",
     "summary": "프리장에서 미국 증시는 혼조세를 보이고 있으나, 반도체 섹터의 강세가 두드러집니다. 엔비디아의 호실적 발표 이후 관련주들이 급등하며 기술주 전반에 긍정적인 영향을 미치고 있으며, 이는 AI 붐의 지속 가능성에 대한 기대감을 높이고 있습니다. 다만, 일",
-    "kospi_pct": null,
-    "kosdaq_pct": null
-  },
-  {
-    "date": "2026-08-27",
-    "time": "16:00",
-    "mode": "post_close",
-    "url": "reports/2026-08-27-post.html",
-    "summary": "오늘 코스피는 외국인 순매수세에 힘입어 상승 마감했으나, 코스닥은 차익실현 매물과 일부 기술주 약세로 하락했습니다. 반도체와 이차전지 관련주가 시장을 주도했습니다.",
     "kospi_pct": null,
     "kosdaq_pct": null
   }
