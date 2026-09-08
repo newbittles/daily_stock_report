@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-09-08",
+    "time": "14:50",
+    "mode": "pre_close",
+    "url": "reports/2026-09-08-pre.html",
+    "summary": "코스피는 혼조세, 코스닥은 낙폭을 줄이며 반등 시도 중입니다.",
+    "kospi_pct": null,
+    "kosdaq_pct": null
+  },
+  {
+    "date": "2026-09-08",
     "time": "11:40",
     "mode": "midday",
     "url": "reports/2026-09-08-midday.html",
@@ -527,15 +536,6 @@
     "mode": "kr_open",
     "url": "reports/2026-08-28-kr-open.html",
     "summary": "오늘 한국 증시는 전반적으로 약세를 보이고 있으며, 외국인 및 기관의 매도세가 지수 하락을 주도하는 모습입니다. 다만, 삼성SDI는 장 초반의 하락세를 딛고 반등에 성공하며 강보합으로 전환되었고, 금호건설 역시 저점 대비 회복세를 보이고 있습니다.",
-    "kospi_pct": null,
-    "kosdaq_pct": null
-  },
-  {
-    "date": "2026-08-28",
-    "time": "08:17",
-    "mode": "kr_premarket",
-    "url": "reports/2026-08-28-kr-pre.html",
-    "summary": "",
     "kospi_pct": null,
     "kosdaq_pct": null
   }
