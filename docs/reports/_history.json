@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-09-08",
+    "time": "19:00",
+    "mode": "us_premarket",
+    "url": "reports/2026-09-08-us-pre.html",
+    "summary": "프리장 시장은 유가 상승과 중동 긴장 고조로 인해 전반적으로 약세를 보이고 있으나, 반도체 섹터는 예외적으로 강세를 나타내고 있습니다. 기술주 전반은 혼조세를 보이며, 금리 인하 기대감 약화와 지정학적 리스크가 시장의 주요 부담 요인으로 작용하고 있습",
+    "kospi_pct": null,
+    "kosdaq_pct": null
+  },
+  {
+    "date": "2026-09-08",
     "time": "16:00",
     "mode": "post_close",
     "url": "reports/2026-09-08-post.html",
@@ -527,15 +536,6 @@
     "mode": "us_afterhours",
     "url": "reports/2026-08-28-us-after.html",
     "summary": "미국 증시는 기술주와 반도체주의 강세에 힘입어 전반적으로 상승 마감했습니다. 특히 엔비디아를 필두로 한 AI 관련주들이 시장을 견인했으며, 금 가격은 소폭 상승, 유가는 상승세를 보였습니다.",
-    "kospi_pct": null,
-    "kosdaq_pct": null
-  },
-  {
-    "date": "2026-08-28",
-    "time": "11:40",
-    "mode": "midday",
-    "url": "reports/2026-08-28-midday.html",
-    "summary": "오늘 한국 증시는 전반적으로 약세를 보이고 있으며, 특히 삼성전자가 장중 약세를 지속하며 하락폭을 키우고 있습니다. 반면, 삼성SDI는 장초반 하락세를 딛고 반등에 성공하며 낙폭을 줄이는 모습을 보였고, 금호건설은 장중 꾸준한 강세를 유지하며 상승세를",
     "kospi_pct": null,
     "kosdaq_pct": null
   }
