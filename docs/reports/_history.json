@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-09-08",
+    "time": "22:40",
+    "mode": "us_intraday",
+    "url": "reports/2026-09-08-us-mid.html",
+    "summary": "미국 증시는 혼조세를 보이며 하락 마감했습니다. 특히 다우 지수가 큰 폭으로 하락한 가운데, 필라델피아 반도체 지수는 상승하며 기술주 내에서도 차별화된 흐름을 보였습니다. 금 가격은 상승했고 WTI 유가는 강세를 나타냈습니다.",
+    "kospi_pct": null,
+    "kosdaq_pct": null
+  },
+  {
+    "date": "2026-09-08",
     "time": "21:50",
     "mode": "us_premarket",
     "url": "reports/2026-09-08-us-pre.html",
@@ -527,15 +536,6 @@
     "mode": "pre_close",
     "url": "reports/2026-08-28-pre.html",
     "summary": "코스피는 관망세 속 혼조세를 보이며, 코스닥은 일부 테마 강세로 상승 마감 기대.",
-    "kospi_pct": null,
-    "kosdaq_pct": null
-  },
-  {
-    "date": "2026-08-28",
-    "time": "13:00",
-    "mode": "us_afterhours",
-    "url": "reports/2026-08-28-us-after.html",
-    "summary": "미국 증시는 기술주와 반도체주의 강세에 힘입어 전반적으로 상승 마감했습니다. 특히 엔비디아를 필두로 한 AI 관련주들이 시장을 견인했으며, 금 가격은 소폭 상승, 유가는 상승세를 보였습니다.",
     "kospi_pct": null,
     "kosdaq_pct": null
   }
