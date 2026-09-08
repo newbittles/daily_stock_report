@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-09-09",
+    "time": "08:05",
+    "mode": "kr_premarket",
+    "url": "reports/2026-09-09-kr-pre.html",
+    "summary": "",
+    "kospi_pct": null,
+    "kosdaq_pct": null
+  },
+  {
+    "date": "2026-09-09",
     "time": "06:30",
     "mode": "us_morning",
     "url": "reports/2026-09-09-us.html",
@@ -527,15 +536,6 @@
     "mode": "us_premarket",
     "url": "reports/2026-08-28-us-pre.html",
     "summary": "프리장에서 기술 및 반도체 섹터의 강세가 두드러지며 시장 전반을 견인하고 있습니다. 특히 엔비디아의 급등이 반도체 관련주 전반에 긍정적인 영향을 미치고 있으며, 이는 최근 실적 발표 시즌의 긍정적인 결과와 맞물려 기술주 강세를 뒷받침하고 있습니다. 다",
-    "kospi_pct": null,
-    "kosdaq_pct": null
-  },
-  {
-    "date": "2026-08-28",
-    "time": "16:00",
-    "mode": "post_close",
-    "url": "reports/2026-08-28-post.html",
-    "summary": "오늘 코스피는 외국인 순매수세에 힘입어 상승 마감했으나, 코스닥은 차익실현 매물과 일부 기술주 약세로 하락했습니다. 반도체와 이차전지 관련주가 시장을 주도했습니다.",
     "kospi_pct": null,
     "kosdaq_pct": null
   }
