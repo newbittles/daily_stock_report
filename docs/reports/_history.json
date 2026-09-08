@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-09-08",
+    "time": "11:40",
+    "mode": "midday",
+    "url": "reports/2026-09-08-midday.html",
+    "summary": "오늘 한국 증시는 반도체 업종을 중심으로 강세를 보이며 지수 상승을 견인하고 있습니다. 특히 SK하이닉스와 SK스퀘어가 장중 꾸준한 강세를 이어가며 각각 +4.3%, +4.4% 상승 중이며, 삼성전자 역시 +2.6%의 강세를 기록하고 있습니다. 반면 ",
+    "kospi_pct": null,
+    "kosdaq_pct": null
+  },
+  {
+    "date": "2026-09-08",
     "time": "09:15",
     "mode": "kr_open",
     "url": "reports/2026-09-08-kr-open.html",
@@ -527,15 +536,6 @@
     "mode": "kr_premarket",
     "url": "reports/2026-08-28-kr-pre.html",
     "summary": "",
-    "kospi_pct": null,
-    "kosdaq_pct": null
-  },
-  {
-    "date": "2026-08-28",
-    "time": "06:30",
-    "mode": "us_morning",
-    "url": "reports/2026-08-28-us.html",
-    "summary": "미국 증시는 기술주 강세에 힘입어 전반적으로 상승 마감했습니다. 특히 엔비디아의 호실적 발표와 긍정적인 가이던스가 기술 섹터 전반을 견인했으며, 반도체 업종의 강세가 두드러졌습니다. 금과 유가(WTI) 모두 상승세를 보였습니다.",
     "kospi_pct": null,
     "kosdaq_pct": null
   }
