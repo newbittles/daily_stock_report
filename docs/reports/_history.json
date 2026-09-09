@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-09-09",
+    "time": "19:00",
+    "mode": "us_premarket",
+    "url": "reports/2026-09-09-us-pre.html",
+    "summary": "현재 미국 프리장 시장은 혼조세를 보이고 있습니다. 유가 상승과 지정학적 리스크 우려 속에서 기술주 중심의 나스닥 선물은 약세를, 다우 선물은 더 큰 폭의 하락세를 나타내고 있습니다. 다만, 필라델피아 반도체 지수 선물은 강세를 보이며 일부 업종의 차",
+    "kospi_pct": null,
+    "kosdaq_pct": null
+  },
+  {
+    "date": "2026-09-09",
     "time": "16:00",
     "mode": "post_close",
     "url": "reports/2026-09-09-post.html",
@@ -527,15 +536,6 @@
     "mode": "pre_close",
     "url": "reports/2026-08-31-pre.html",
     "summary": "코스피는 관망세 속 혼조세를 보이며, 코스닥은 일부 테마 강세로 상승 마감 기대.",
-    "kospi_pct": null,
-    "kosdaq_pct": null
-  },
-  {
-    "date": "2026-08-31",
-    "time": "11:40",
-    "mode": "midday",
-    "url": "reports/2026-08-31-midday.html",
-    "summary": "오늘 한국 증시는 장 초반 급락 후 일부 반등하며 낙폭을 줄이는 흐름을 보였습니다. 특히 삼성전자, 삼성전기 등 대형 기술주들이 장중 큰 폭의 하락세를 보이다가 저점 대비 상당 부분 회복하는 모습을 나타냈습니다.",
     "kospi_pct": null,
     "kosdaq_pct": null
   }
