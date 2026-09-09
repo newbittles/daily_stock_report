@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-09-09",
+    "time": "09:15",
+    "mode": "kr_open",
+    "url": "reports/2026-09-09-kr-open.html",
+    "summary": "오늘 한국 증시는 전반적으로 약세를 보이고 있으며, 특히 SK스퀘어는 장중 저점을 기록하며 하락세를 이어가고 있습니다. 반면 SK하이닉스는 꾸준한 강세를 유지하며 지수 하락을 방어하는 모습입니다.",
+    "kospi_pct": null,
+    "kosdaq_pct": null
+  },
+  {
+    "date": "2026-09-09",
     "time": "08:05",
     "mode": "kr_premarket",
     "url": "reports/2026-09-09-kr-pre.html",
@@ -527,15 +536,6 @@
     "mode": "us_intraday",
     "url": "reports/2026-08-28-us-mid.html",
     "summary": "미국 증시는 혼조세를 보이며 혼조세로 마감했습니다. 경기소비재, 2차전지, 에너지 섹터가 상승세를 이끌었으나 반도체 섹터는 하락했습니다. 투자자들은 잭슨홀 연설을 앞두고 관망세를 보였습니다. 금 가격은 상승했으나 유가는 하락했습니다.",
-    "kospi_pct": null,
-    "kosdaq_pct": null
-  },
-  {
-    "date": "2026-08-28",
-    "time": "21:50",
-    "mode": "us_premarket",
-    "url": "reports/2026-08-28-us-pre.html",
-    "summary": "프리장에서 기술 및 반도체 섹터의 강세가 두드러지며 시장 전반을 견인하고 있습니다. 특히 엔비디아의 급등이 반도체 관련주 전반에 긍정적인 영향을 미치고 있으며, 이는 최근 실적 발표 시즌의 긍정적인 결과와 맞물려 기술주 강세를 뒷받침하고 있습니다. 다",
     "kospi_pct": null,
     "kosdaq_pct": null
   }
