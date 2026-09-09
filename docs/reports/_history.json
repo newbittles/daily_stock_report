@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-09-10",
+    "time": "08:05",
+    "mode": "kr_premarket",
+    "url": "reports/2026-09-10-kr-pre.html",
+    "summary": "",
+    "kospi_pct": null,
+    "kosdaq_pct": null
+  },
+  {
+    "date": "2026-09-10",
     "time": "06:31",
     "mode": "us_morning",
     "url": "reports/2026-09-10-us.html",
@@ -527,15 +536,6 @@
     "mode": "us_intraday",
     "url": "reports/2026-08-31-us-mid.html",
     "summary": "미국 증시는 지정학적 긴장 고조와 금리 인상 우려로 하락 마감했습니다. 에너지 섹터가 유가 상승에 힘입어 강세를 보였으나, 반도체 섹터는 큰 폭의 조정을 겪었습니다. 금 가격은 소폭 상승했습니다.",
-    "kospi_pct": null,
-    "kosdaq_pct": null
-  },
-  {
-    "date": "2026-08-31",
-    "time": "21:50",
-    "mode": "us_premarket",
-    "url": "reports/2026-08-31-us-pre.html",
-    "summary": "현재 미국 프리장 시장은 혼조세를 보이고 있습니다. 에너지 섹터가 유가 상승에 힘입어 강세를 보이고 있으며, 반도체 관련주 일부는 상승세를 유지하고 있습니다. 다만, 기술주 전반과 일부 빅테크 종목들은 하락하며 시장 상승을 제한하는 모습입니다. 전반적",
     "kospi_pct": null,
     "kosdaq_pct": null
   }
