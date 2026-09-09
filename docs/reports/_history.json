@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-09-09",
+    "time": "14:50",
+    "mode": "pre_close",
+    "url": "reports/2026-09-09-pre.html",
+    "summary": "코스피는 혼조세, 코스닥은 일부 테마 강세 속 하락 마감 예상",
+    "kospi_pct": null,
+    "kosdaq_pct": null
+  },
+  {
+    "date": "2026-09-09",
     "time": "13:00",
     "mode": "us_afterhours",
     "url": "reports/2026-09-09-us-after.html",
@@ -527,15 +536,6 @@
     "mode": "kr_open",
     "url": "reports/2026-08-31-kr-open.html",
     "summary": "오늘 한국 증시는 전반적으로 약세를 보이며 코스피는 하락세를 이어가고 있습니다. 외국인과 기관의 매도세가 지수 하락을 주도하는 가운데, 삼성전기는 장중 약세를 지속하며 하락폭을 키우고 있습니다. 반면, 삼성전기는 장 초반 큰 폭의 하락세를 보였으나 이",
-    "kospi_pct": null,
-    "kosdaq_pct": null
-  },
-  {
-    "date": "2026-08-31",
-    "time": "08:05",
-    "mode": "kr_premarket",
-    "url": "reports/2026-08-31-kr-pre.html",
-    "summary": "",
     "kospi_pct": null,
     "kosdaq_pct": null
   }
