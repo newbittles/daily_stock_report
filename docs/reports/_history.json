@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-09-11",
+    "time": "08:05",
+    "mode": "kr_premarket",
+    "url": "reports/2026-09-11-kr-pre.html",
+    "summary": "",
+    "kospi_pct": null,
+    "kosdaq_pct": null
+  },
+  {
+    "date": "2026-09-11",
     "time": "07:16",
     "mode": "us_morning",
     "url": "reports/2026-09-11-us.html",
@@ -527,15 +536,6 @@
     "mode": "us_intraday",
     "url": "reports/2026-09-01-us-mid.html",
     "summary": "미국 증시는 전반적으로 하락 마감했으며, 특히 기술주와 반도체 업종의 약세가 두드러졌습니다. 에너지 섹터는 상승했으나 시장 전반의 하락세를 막기에는 역부족이었습니다. 유가는 상승세를 보였습니다.",
-    "kospi_pct": null,
-    "kosdaq_pct": null
-  },
-  {
-    "date": "2026-09-01",
-    "time": "21:50",
-    "mode": "us_premarket",
-    "url": "reports/2026-09-01-us-pre.html",
-    "summary": "현재 미국 프리장 시장은 전반적으로 약세를 보이고 있으며, 특히 기술주와 반도체 섹터의 하락세가 두드러집니다. 유가 상승에 힘입어 에너지 섹터는 강세를 나타내고 있으나, 전반적인 투자 심리는 위축된 모습입니다. 이는 최근 발표된 경제 지표나 기업 실적",
     "kospi_pct": null,
     "kosdaq_pct": null
   }
