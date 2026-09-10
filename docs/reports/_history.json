@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-09-10",
+    "time": "13:00",
+    "mode": "us_afterhours",
+    "url": "reports/2026-09-10-us-after.html",
+    "summary": "미국 증시는 전반적으로 하락세를 보였으나, 반도체 섹터는 강세를 유지했습니다. 특히 메타의 급등이 기술주 전반에 영향을 미쳤으며, 유가 상승이 시장 전반에 부담으로 작용했습니다. 금 가격은 소폭 상승했습니다.",
+    "kospi_pct": null,
+    "kosdaq_pct": null
+  },
+  {
+    "date": "2026-09-10",
     "time": "11:40",
     "mode": "midday",
     "url": "reports/2026-09-10-midday.html",
@@ -527,15 +536,6 @@
     "mode": "kr_open",
     "url": "reports/2026-09-01-kr-open.html",
     "summary": "오늘 한국 증시는 전반적으로 약세를 보이며 하락 흐름을 이어가고 있습니다. 외국인과 기관의 매도세가 지수 하락을 주도하는 가운데, 삼성SDI는 장 초반의 낙폭을 만회하며 현재 소폭 하락으로 전환한 반면, 삼성전기, 삼성전자, 금호건설 등은 장중 고점 ",
-    "kospi_pct": null,
-    "kosdaq_pct": null
-  },
-  {
-    "date": "2026-09-01",
-    "time": "08:05",
-    "mode": "kr_premarket",
-    "url": "reports/2026-09-01-kr-pre.html",
-    "summary": "",
     "kospi_pct": null,
     "kosdaq_pct": null
   }
