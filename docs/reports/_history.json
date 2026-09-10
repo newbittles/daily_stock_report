@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-09-10",
+    "time": "09:15",
+    "mode": "kr_open",
+    "url": "reports/2026-09-10-kr-open.html",
+    "summary": "오늘 한국 증시는 전반적으로 약세를 보이며 하락 흐름을 이어가고 있습니다. 외국인과 기관의 매도세가 지수 하락을 주도하는 가운데, 반도체 관련주들은 혼조세를 나타내고 있습니다. 특히 LG전자는 장 초반 강세를 보였으나 상승폭을 반납하며 현재는 소폭 상",
+    "kospi_pct": null,
+    "kosdaq_pct": null
+  },
+  {
+    "date": "2026-09-10",
     "time": "08:05",
     "mode": "kr_premarket",
     "url": "reports/2026-09-10-kr-pre.html",
@@ -527,15 +536,6 @@
     "mode": "us_morning",
     "url": "reports/2026-09-01-us.html",
     "summary": "미국 증시는 전반적으로 하락 마감했으나, 에너지 섹터의 강세와 일부 빅테크 종목의 상승이 눈에 띄었습니다. 특히 유가 상승과 지정학적 긴장 고조가 시장 전반에 부담으로 작용했습니다. 금 가격은 소폭 상승했습니다.",
-    "kospi_pct": null,
-    "kosdaq_pct": null
-  },
-  {
-    "date": "2026-08-31",
-    "time": "22:40",
-    "mode": "us_intraday",
-    "url": "reports/2026-08-31-us-mid.html",
-    "summary": "미국 증시는 지정학적 긴장 고조와 금리 인상 우려로 하락 마감했습니다. 에너지 섹터가 유가 상승에 힘입어 강세를 보였으나, 반도체 섹터는 큰 폭의 조정을 겪었습니다. 금 가격은 소폭 상승했습니다.",
     "kospi_pct": null,
     "kosdaq_pct": null
   }
