@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-09-10",
+    "time": "16:00",
+    "mode": "post_close",
+    "url": "reports/2026-09-10-post.html",
+    "summary": "오늘 코스피는 외국인 매도세에 하락 마감했으며, 반도체 업종의 부진이 지수 하락을 주도했습니다.",
+    "kospi_pct": null,
+    "kosdaq_pct": null
+  },
+  {
+    "date": "2026-09-10",
     "time": "14:50",
     "mode": "pre_close",
     "url": "reports/2026-09-10-pre.html",
@@ -527,15 +536,6 @@
     "mode": "us_afterhours",
     "url": "reports/2026-09-01-us-after.html",
     "summary": "미국 증시는 전반적으로 하락 마감했으며, 특히 기술주와 반도체 섹터의 약세가 두드러졌습니다. 다만, 테슬라의 강세와 에너지 섹터의 상승은 일부 긍정적인 요인으로 작용했습니다. 금 가격은 하락했으나 유가(WTI)는 상승세를 보였습니다.",
-    "kospi_pct": null,
-    "kosdaq_pct": null
-  },
-  {
-    "date": "2026-09-01",
-    "time": "11:40",
-    "mode": "midday",
-    "url": "reports/2026-09-01-midday.html",
-    "summary": "오늘 한국 증시는 전반적으로 약세를 보이고 있으며, 외국인과 기관의 매도세가 지수 하락을 주도하고 있습니다. 특히 전기전자 업종이 부진한 흐름을 보이고 있으며, 삼성SDI와 삼성전자는 장 초반 하락폭을 일부 만회하며 반등하는 모습을 보였습니다.",
     "kospi_pct": null,
     "kosdaq_pct": null
   }
