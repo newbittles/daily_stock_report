@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-09-10",
+    "time": "11:40",
+    "mode": "midday",
+    "url": "reports/2026-09-10-midday.html",
+    "summary": "오늘 한국 증시는 전반적으로 약세를 보이고 있으며, 특히 반도체 관련주들의 부진이 두드러집니다. SK하이닉스와 SK스퀘어는 장중 저점을 찍고 반등하며 낙폭을 줄이는 모습을 보였으나, 삼성SDI와 삼성전자는 약세 흐름을 이어가고 있습니다. LG전자는 장",
+    "kospi_pct": null,
+    "kosdaq_pct": null
+  },
+  {
+    "date": "2026-09-10",
     "time": "09:15",
     "mode": "kr_open",
     "url": "reports/2026-09-10-kr-open.html",
@@ -527,15 +536,6 @@
     "mode": "kr_premarket",
     "url": "reports/2026-09-01-kr-pre.html",
     "summary": "",
-    "kospi_pct": null,
-    "kosdaq_pct": null
-  },
-  {
-    "date": "2026-09-01",
-    "time": "06:40",
-    "mode": "us_morning",
-    "url": "reports/2026-09-01-us.html",
-    "summary": "미국 증시는 전반적으로 하락 마감했으나, 에너지 섹터의 강세와 일부 빅테크 종목의 상승이 눈에 띄었습니다. 특히 유가 상승과 지정학적 긴장 고조가 시장 전반에 부담으로 작용했습니다. 금 가격은 소폭 상승했습니다.",
     "kospi_pct": null,
     "kosdaq_pct": null
   }
