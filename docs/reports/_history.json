@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-09-11",
+    "time": "14:50",
+    "mode": "pre_close",
+    "url": "reports/2026-09-11-pre.html",
+    "summary": "코스피는 혼조세, 코스닥은 일부 기술주 강세",
+    "kospi_pct": null,
+    "kosdaq_pct": null
+  },
+  {
+    "date": "2026-09-11",
     "time": "13:00",
     "mode": "us_afterhours",
     "url": "reports/2026-09-11-us-after.html",
@@ -527,15 +536,6 @@
     "mode": "us_afterhours",
     "url": "reports/2026-09-02-us-after.html",
     "summary": "미국 증시는 전반적으로 하락 마감했으며, 특히 기술주와 반도체 업종의 약세가 두드러졌습니다. 에너지 섹터는 상승했으나 시장 전반의 하락세를 막지는 못했습니다. 금 가격은 하락한 반면, 유가(WTI)는 큰 폭으로 상승했습니다.",
-    "kospi_pct": null,
-    "kosdaq_pct": null
-  },
-  {
-    "date": "2026-09-02",
-    "time": "11:40",
-    "mode": "midday",
-    "url": "reports/2026-09-02-midday.html",
-    "summary": "오늘 한국 증시는 전반적으로 약세를 보이며 하락 흐름을 이어가고 있습니다. 특히 SK스퀘어와 삼성전자가 장중 약세를 지속하는 가운데, SK이노베이션과 삼성전기는 장 초반의 급락세를 만회하며 반등에 성공하는 모습을 보였습니다. 금호건설은 장중 큰 폭의 ",
     "kospi_pct": null,
     "kosdaq_pct": null
   }
