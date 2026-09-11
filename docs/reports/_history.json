@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-09-11",
+    "time": "22:40",
+    "mode": "us_intraday",
+    "url": "reports/2026-09-11-us-mid.html",
+    "summary": "미국 증시는 전반적으로 상승 마감했으며, 특히 기술주와 반도체 섹터가 강세를 보였습니다. 금리 인상 우려에도 불구하고 시장은 긍정적인 흐름을 이어갔으며, 금 가격은 상승했으나 유가(WTI)는 하락했습니다.",
+    "kospi_pct": null,
+    "kosdaq_pct": null
+  },
+  {
+    "date": "2026-09-11",
     "time": "21:50",
     "mode": "us_premarket",
     "url": "reports/2026-09-11-us-pre.html",
@@ -527,15 +536,6 @@
     "mode": "us_premarket",
     "url": "reports/2026-09-02-us-pre.html",
     "summary": "프리장에서 미국 증시는 혼조세를 보이고 있습니다. 기술주 전반의 약세와 반도체 섹터의 하락이 두드러지지만, 헬스케어와 태양광 등 일부 섹터는 상승세를 유지하며 시장을 지지하고 있습니다. 전반적으로는 매파적 경제 지표와 지정학적 불확실성에 대한 경계감이",
-    "kospi_pct": null,
-    "kosdaq_pct": null
-  },
-  {
-    "date": "2026-09-02",
-    "time": "16:00",
-    "mode": "post_close",
-    "url": "reports/2026-09-02-post.html",
-    "summary": "코스피는 외국인 매도세에 하락 마감했으며, 코스닥은 개인 순매수 유입으로 소폭 상승했습니다. 반도체 업황 둔화 우려와 2차전지 섹터의 차익 실현 매물이 시장 전반의 하락 압력으로 작용했습니다.",
     "kospi_pct": null,
     "kosdaq_pct": null
   }
