@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-09-11",
+    "time": "16:00",
+    "mode": "post_close",
+    "url": "reports/2026-09-11-post.html",
+    "summary": "코스피는 외국인 순매수세에 힘입어 상승 마감했으나, 코스닥은 차익실현 매물 출회로 하락했습니다. 반도체와 2차전지 관련주가 시장을 주도했습니다.",
+    "kospi_pct": null,
+    "kosdaq_pct": null
+  },
+  {
+    "date": "2026-09-11",
     "time": "14:50",
     "mode": "pre_close",
     "url": "reports/2026-09-11-pre.html",
@@ -527,15 +536,6 @@
     "mode": "pre_close",
     "url": "reports/2026-09-02-pre.html",
     "summary": "코스피는 관망세 속 혼조세를 보이며, 코스닥은 일부 테마 강세로 상승 마감 예상.",
-    "kospi_pct": null,
-    "kosdaq_pct": null
-  },
-  {
-    "date": "2026-09-02",
-    "time": "13:00",
-    "mode": "us_afterhours",
-    "url": "reports/2026-09-02-us-after.html",
-    "summary": "미국 증시는 전반적으로 하락 마감했으며, 특히 기술주와 반도체 업종의 약세가 두드러졌습니다. 에너지 섹터는 상승했으나 시장 전반의 하락세를 막지는 못했습니다. 금 가격은 하락한 반면, 유가(WTI)는 큰 폭으로 상승했습니다.",
     "kospi_pct": null,
     "kosdaq_pct": null
   }
