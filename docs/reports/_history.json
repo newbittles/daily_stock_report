@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-09-11",
+    "time": "11:40",
+    "mode": "midday",
+    "url": "reports/2026-09-11-midday.html",
+    "summary": "오늘 한국 증시는 전반적으로 약세를 보이며 하락 흐름을 이어가고 있습니다. 특히 SK스퀘어, SK이노베이션, 삼성전자, SK하이닉스 등 주요 기술주들이 장중 약세를 지속하며 지수 하락을 견인하는 모습입니다. 흥구석유는 장 초반 강세를 보였으나 고점 대",
+    "kospi_pct": null,
+    "kosdaq_pct": null
+  },
+  {
+    "date": "2026-09-11",
     "time": "09:15",
     "mode": "kr_open",
     "url": "reports/2026-09-11-kr-open.html",
@@ -527,15 +536,6 @@
     "mode": "kr_open",
     "url": "reports/2026-09-02-kr-open.html",
     "summary": "오늘 한국 증시는 전반적으로 약세를 보이며 주요 기술주들이 하락세를 이어가고 있습니다. 특히 SK이노베이션과 SK스퀘어는 장중 약세를 지속하며 부진한 흐름을 나타냈습니다. 반면, 삼성전기와 금호건설은 장 초반의 하락세를 만회하며 낙폭을 줄이는 모습을 ",
-    "kospi_pct": null,
-    "kosdaq_pct": null
-  },
-  {
-    "date": "2026-09-02",
-    "time": "08:05",
-    "mode": "kr_premarket",
-    "url": "reports/2026-09-02-kr-pre.html",
-    "summary": "",
     "kospi_pct": null,
     "kosdaq_pct": null
   }
