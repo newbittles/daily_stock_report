@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-09-14",
+    "time": "11:40",
+    "mode": "midday",
+    "url": "reports/2026-09-14-midday.html",
+    "summary": "오늘 한국 증시는 개장 초 하락 출발했으나, 오후 들어 낙폭을 만회하며 혼조세를 보이고 있습니다. 특히 삼화콘덴서는 장중 큰 폭의 하락세를 딛고 반등에 성공하며 강한 회복력을 보여주었습니다.",
+    "kospi_pct": null,
+    "kosdaq_pct": null
+  },
+  {
+    "date": "2026-09-14",
     "time": "09:15",
     "mode": "kr_open",
     "url": "reports/2026-09-14-kr-open.html",
@@ -527,15 +536,6 @@
     "mode": "kr_open",
     "url": "reports/2026-09-03-kr-open.html",
     "summary": "오늘 한국 증시는 전반적으로 약세를 보이며 하락 흐름을 이어가고 있습니다. 외국인과 기관의 매도세가 지수 하락을 주도하는 가운데, 금호건설은 장 초반 상승세를 보였으나 차익 실현 매물에 밀려 하락 전환하는 모습을 보였습니다. 반면 삼성전자는 보합권을 ",
-    "kospi_pct": null,
-    "kosdaq_pct": null
-  },
-  {
-    "date": "2026-09-03",
-    "time": "08:05",
-    "mode": "kr_premarket",
-    "url": "reports/2026-09-03-kr-pre.html",
-    "summary": "",
     "kospi_pct": null,
     "kosdaq_pct": null
   }
