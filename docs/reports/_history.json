@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-09-14",
+    "time": "14:50",
+    "mode": "pre_close",
+    "url": "reports/2026-09-14-pre.html",
+    "summary": "코스피는 혼조세, 코스닥은 개인 매수세에 소폭 상승 중입니다.",
+    "kospi_pct": null,
+    "kosdaq_pct": null
+  },
+  {
+    "date": "2026-09-14",
     "time": "11:40",
     "mode": "midday",
     "url": "reports/2026-09-14-midday.html",
@@ -527,15 +536,6 @@
     "mode": "midday",
     "url": "reports/2026-09-03-midday.html",
     "summary": "오늘 한국 증시는 전반적으로 약세를 보이고 있으며, 외국인과 기관의 매도세가 지수를 끌어내리는 모습입니다. 다만, 삼성전자가 장중 보합권에서 벗어나 상승 전환하며 지수 하락폭을 일부 방어하고 있습니다. 금호건설은 장 초반 큰 폭의 하락세를 보였으나, ",
-    "kospi_pct": null,
-    "kosdaq_pct": null
-  },
-  {
-    "date": "2026-09-03",
-    "time": "09:15",
-    "mode": "kr_open",
-    "url": "reports/2026-09-03-kr-open.html",
-    "summary": "오늘 한국 증시는 전반적으로 약세를 보이며 하락 흐름을 이어가고 있습니다. 외국인과 기관의 매도세가 지수 하락을 주도하는 가운데, 금호건설은 장 초반 상승세를 보였으나 차익 실현 매물에 밀려 하락 전환하는 모습을 보였습니다. 반면 삼성전자는 보합권을 ",
     "kospi_pct": null,
     "kosdaq_pct": null
   }
