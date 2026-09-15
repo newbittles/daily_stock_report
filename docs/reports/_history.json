@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-09-15",
+    "time": "11:40",
+    "mode": "midday",
+    "url": "reports/2026-09-15-midday.html",
+    "summary": "오늘 한국 증시는 전반적으로 약세를 보이고 있으며, 외국인과 기관의 매도세가 지수 하락을 주도하고 있습니다. 특히 삼화콘덴서는 장 초반 강세를 보였으나 차익 실현 매물에 밀리며 상승폭을 반납하는 흐름을 나타냈습니다.",
+    "kospi_pct": null,
+    "kosdaq_pct": null
+  },
+  {
+    "date": "2026-09-15",
     "time": "09:15",
     "mode": "kr_open",
     "url": "reports/2026-09-15-kr-open.html",
@@ -527,15 +536,6 @@
     "mode": "kr_premarket",
     "url": "reports/2026-09-04-kr-pre.html",
     "summary": "",
-    "kospi_pct": null,
-    "kosdaq_pct": null
-  },
-  {
-    "date": "2026-09-04",
-    "time": "06:30",
-    "mode": "us_morning",
-    "url": "reports/2026-09-04-us.html",
-    "summary": "미국 증시는 연준의 금리 인상 가능성 완화 기대감에 힘입어 일제히 상승 마감했습니다. 특히 기술주와 빅테크 기업들이 강세를 보이며 시장을 견인했으며, AI 관련주와 반도체 업종이 주목받았습니다. 금 가격은 3.53% 급등하며 안전 자산 선호 심리를 나",
     "kospi_pct": null,
     "kosdaq_pct": null
   }
