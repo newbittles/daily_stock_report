@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-09-17",
+    "time": "08:05",
+    "mode": "kr_premarket",
+    "url": "reports/2026-09-17-kr-pre.html",
+    "summary": "",
+    "kospi_pct": null,
+    "kosdaq_pct": null
+  },
+  {
+    "date": "2026-09-17",
     "time": "06:31",
     "mode": "us_morning",
     "url": "reports/2026-09-17-us.html",
@@ -527,15 +536,6 @@
     "mode": "midday",
     "url": "reports/2026-09-08-midday.html",
     "summary": "오늘 한국 증시는 반도체 업종을 중심으로 강세를 보이며 지수 상승을 견인하고 있습니다. 특히 SK하이닉스와 SK스퀘어가 장중 꾸준한 강세를 이어가며 각각 +4.3%, +4.4% 상승 중이며, 삼성전자 역시 +2.6%의 강세를 기록하고 있습니다. 반면 ",
-    "kospi_pct": null,
-    "kosdaq_pct": null
-  },
-  {
-    "date": "2026-09-08",
-    "time": "09:15",
-    "mode": "kr_open",
-    "url": "reports/2026-09-08-kr-open.html",
-    "summary": "오늘 한국 증시는 전반적으로 혼조세를 보이고 있으며, 반도체 관련주들이 강세를 이끌고 있습니다. SK하이닉스는 장중 꾸준한 강세를 보이며 상승세를 이어가고 있으나, 삼성전기는 장중 약세를 지속하며 하락폭을 키우고 있습니다.",
     "kospi_pct": null,
     "kosdaq_pct": null
   }
