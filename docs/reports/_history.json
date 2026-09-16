@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-09-16",
+    "time": "11:40",
+    "mode": "midday",
+    "url": "reports/2026-09-16-midday.html",
+    "summary": "오늘 한국 증시는 전반적으로 약세를 보이고 있으나, 반도체 관련주를 중심으로 일부 종목은 강세를 유지하며 지수 하락을 방어하는 모습입니다. 특히 SK하이닉스는 장중 꾸준한 강세를 보이며 상승세를 이어가고 있으며, 삼성전자 또한 보합권에서 상승 전환하며",
+    "kospi_pct": null,
+    "kosdaq_pct": null
+  },
+  {
+    "date": "2026-09-16",
     "time": "09:15",
     "mode": "kr_open",
     "url": "reports/2026-09-16-kr-open.html",
@@ -527,15 +536,6 @@
     "mode": "kr_premarket",
     "url": "reports/2026-09-07-kr-pre.html",
     "summary": "",
-    "kospi_pct": null,
-    "kosdaq_pct": null
-  },
-  {
-    "date": "2026-09-05",
-    "time": "06:30",
-    "mode": "us_morning",
-    "url": "reports/2026-09-05-us.html",
-    "summary": "미국 증시는 혼조세를 보이며 하락 마감했습니다. 반도체 섹터가 강세를 보인 반면, 기술주 전반은 약세를 나타냈습니다. 금리 인상 우려와 주요 기술주들의 하락이 시장 전반에 부담으로 작용했습니다. 금 가격은 소폭 하락했고, WTI 유가도 약보합세를 보였",
     "kospi_pct": null,
     "kosdaq_pct": null
   }
