@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-09-18",
+    "time": "16:00",
+    "mode": "post_close",
+    "url": "reports/2026-09-18-post.html",
+    "summary": "코스피는 외국인 매도세에 하락 마감했으며, 코스닥은 개인 매수세 유입으로 소폭 상승했습니다. 반도체 업황 둔화 우려와 지정학적 리스크가 시장 전반에 부담으로 작용했습니다.",
+    "kospi_pct": null,
+    "kosdaq_pct": null
+  },
+  {
+    "date": "2026-09-18",
     "time": "14:50",
     "mode": "pre_close",
     "url": "reports/2026-09-18-pre.html",
@@ -527,15 +536,6 @@
     "mode": "us_morning",
     "url": "reports/2026-09-10-us.html",
     "summary": "미국 증시는 전반적으로 하락세를 보였으나, 반도체 섹터는 강세를 유지했습니다. 메타와 AMD 등 일부 빅테크 종목의 강세가 두드러졌으며, 유가 급등과 지정학적 긴장 고조가 시장 전반에 부담으로 작용했습니다. 금 가격은 상승했습니다.",
-    "kospi_pct": null,
-    "kosdaq_pct": null
-  },
-  {
-    "date": "2026-09-09",
-    "time": "22:48",
-    "mode": "us_intraday",
-    "url": "reports/2026-09-09-us-mid.html",
-    "summary": "미국 증시는 혼조세를 보이며 나스닥과 다우 지수가 하락 마감했습니다. 빅테크 중에서는 메타와 AMD가 강세를 보였으나, 알파벳과 아마존 등은 하락하며 기술/IT 섹터 전반에 부담을 주었습니다. 유가(WTI)는 3.09% 상승하며 에너지 섹터의 강세를 ",
     "kospi_pct": null,
     "kosdaq_pct": null
   }
