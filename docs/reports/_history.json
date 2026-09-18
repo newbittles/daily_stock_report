@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-09-18",
+    "time": "09:15",
+    "mode": "kr_open",
+    "url": "reports/2026-09-18-kr-open.html",
+    "summary": "오늘 한국 증시는 반도체 업종의 강세에 힘입어 전반적으로 상승 흐름을 보이고 있습니다. 특히 삼성전자와 SK하이닉스가 꾸준한 강세를 유지하며 지수 상승을 견인하고 있습니다. 다만, 삼화콘덴서는 장 초반 강세를 보였으나 고점 대비 일부 밀리는 모습을 나",
+    "kospi_pct": null,
+    "kosdaq_pct": null
+  },
+  {
+    "date": "2026-09-18",
     "time": "08:05",
     "mode": "kr_premarket",
     "url": "reports/2026-09-18-kr-pre.html",
@@ -527,15 +536,6 @@
     "mode": "pre_close",
     "url": "reports/2026-09-09-pre.html",
     "summary": "코스피는 혼조세, 코스닥은 일부 테마 강세 속 하락 마감 예상",
-    "kospi_pct": null,
-    "kosdaq_pct": null
-  },
-  {
-    "date": "2026-09-09",
-    "time": "13:00",
-    "mode": "us_afterhours",
-    "url": "reports/2026-09-09-us-after.html",
-    "summary": "미국 증시는 혼조세를 보이며 마감했습니다. S&P 500과 나스닥은 소폭 하락했으나, 필라델피아 반도체 지수는 강세를 나타냈습니다. 특히 반도체 섹터의 강세가 두드러졌으며, 유가(WTI)는 상승세를 보였습니다.",
     "kospi_pct": null,
     "kosdaq_pct": null
   }
