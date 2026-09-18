@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-09-18",
+    "time": "11:40",
+    "mode": "midday",
+    "url": "reports/2026-09-18-midday.html",
+    "summary": "오늘 한국 증시는 전반적으로 강세를 보이며 상승 흐름을 이어가고 있습니다. 특히 반도체 업종의 강세가 지수 상승을 견인하는 가운데, 삼화콘덴서는 장중 상승폭을 일부 반납하며 변동성을 보였습니다.",
+    "kospi_pct": null,
+    "kosdaq_pct": null
+  },
+  {
+    "date": "2026-09-18",
     "time": "09:15",
     "mode": "kr_open",
     "url": "reports/2026-09-18-kr-open.html",
@@ -527,15 +536,6 @@
     "mode": "post_close",
     "url": "reports/2026-09-09-post.html",
     "summary": "오늘 코스피와 코스닥 지수는 혼조세를 보이며 마감했습니다. 미국 증시의 차익 실현 매물과 국내 기관의 순매도세가 지수 하락을 이끌었으나, 외국인 투자자의 꾸준한 매수세가 낙폭을 제한했습니다.",
-    "kospi_pct": null,
-    "kosdaq_pct": null
-  },
-  {
-    "date": "2026-09-09",
-    "time": "14:50",
-    "mode": "pre_close",
-    "url": "reports/2026-09-09-pre.html",
-    "summary": "코스피는 혼조세, 코스닥은 일부 테마 강세 속 하락 마감 예상",
     "kospi_pct": null,
     "kosdaq_pct": null
   }
