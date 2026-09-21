@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-09-21",
+    "time": "14:50",
+    "mode": "pre_close",
+    "url": "reports/2026-09-21-pre.html",
+    "summary": "코스피는 혼조세, 코스닥은 일부 기술주 강세 보이며 마감 임박",
+    "kospi_pct": null,
+    "kosdaq_pct": null
+  },
+  {
+    "date": "2026-09-21",
     "time": "11:40",
     "mode": "midday",
     "url": "reports/2026-09-21-midday.html",
@@ -527,15 +536,6 @@
     "mode": "us_premarket",
     "url": "reports/2026-09-10-us-pre.html",
     "summary": "프리장에서 미국 증시는 전반적으로 약세를 보이고 있습니다. 특히 기술주와 반도체 섹터의 하락세가 두드러지며 시장 전반의 투자 심리를 위축시키고 있습니다. 다만, 에너지 섹터는 유가 상승에 힘입어 강세를 나타내고 있으며, 헬스케어 및 방산 섹터도 소폭 ",
-    "kospi_pct": null,
-    "kosdaq_pct": null
-  },
-  {
-    "date": "2026-09-10",
-    "time": "16:00",
-    "mode": "post_close",
-    "url": "reports/2026-09-10-post.html",
-    "summary": "오늘 코스피는 외국인 매도세에 하락 마감했으며, 반도체 업종의 부진이 지수 하락을 주도했습니다.",
     "kospi_pct": null,
     "kosdaq_pct": null
   }
