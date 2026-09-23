@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-09-23",
+    "time": "16:00",
+    "mode": "post_close",
+    "url": "reports/2026-09-23-post.html",
+    "summary": "오늘 코스피는 외국인 매도세에 하락 마감했으며, 반도체 업황 둔화 우려와 지정학적 리스크가 시장 전반에 부담으로 작용했습니다.",
+    "kospi_pct": null,
+    "kosdaq_pct": null
+  },
+  {
+    "date": "2026-09-23",
     "time": "14:50",
     "mode": "pre_close",
     "url": "reports/2026-09-23-pre.html",
@@ -527,15 +536,6 @@
     "mode": "us_morning",
     "url": "reports/2026-09-15-us.html",
     "summary": "미국 증시는 전반적으로 하락 마감했으며, 특히 반도체 섹터의 큰 폭 하락이 지수 전반에 부담을 주었습니다. 빅테크 중에서는 넷플릭스, 알파벳, 메타 등이 상승했으나 엔비디아, AMD 등 반도체 관련주는 약세를 보였습니다. 금 가격은 하락했으나 유가(W",
-    "kospi_pct": null,
-    "kosdaq_pct": null
-  },
-  {
-    "date": "2026-09-14",
-    "time": "22:40",
-    "mode": "us_intraday",
-    "url": "reports/2026-09-14-us-mid.html",
-    "summary": "미국 증시는 전반적으로 하락 마감했으며, 특히 반도체 섹터의 큰 폭 하락이 지수 전반에 부담을 주었습니다. 빅테크 중 일부는 상승했으나, 엔비디아 등 주요 반도체 기업들의 약세가 두드러졌습니다. 금 가격은 하락한 반면, 유가(WTI)는 상승세를 보였습",
     "kospi_pct": null,
     "kosdaq_pct": null
   }
