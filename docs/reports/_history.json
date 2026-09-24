@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-09-24",
+    "time": "22:40",
+    "mode": "us_intraday",
+    "url": "reports/2026-09-24-us-mid.html",
+    "summary": "미국 증시는 전반적으로 하락세를 보였으며, 특히 기술주와 반도체 섹터의 약세가 두드러졌습니다. 채권 시장의 불안과 유가 상승이 시장 전반에 부담으로 작용했습니다. 금 가격은 소폭 하락했으나 WTI 유가는 상승세를 기록했습니다.",
+    "kospi_pct": null,
+    "kosdaq_pct": null
+  },
+  {
+    "date": "2026-09-24",
     "time": "21:50",
     "mode": "us_premarket",
     "url": "reports/2026-09-24-us-pre.html",
@@ -527,15 +536,6 @@
     "mode": "post_close",
     "url": "reports/2026-09-15-post.html",
     "summary": "코스피와 코스닥 모두 하락 마감했습니다. 미국 금리 인하 기대감 약화와 외국인 매도세가 지수 하락을 이끌었습니다.",
-    "kospi_pct": null,
-    "kosdaq_pct": null
-  },
-  {
-    "date": "2026-09-15",
-    "time": "14:50",
-    "mode": "pre_close",
-    "url": "reports/2026-09-15-pre.html",
-    "summary": "코스피는 혼조세, 코스닥은 일부 기술주 강세",
     "kospi_pct": null,
     "kosdaq_pct": null
   }
