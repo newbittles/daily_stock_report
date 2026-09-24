@@ -1,5 +1,14 @@
 [
   {
+    "date": "2026-09-25",
+    "time": "06:30",
+    "mode": "us_morning",
+    "url": "reports/2026-09-25-us.html",
+    "summary": "미국 증시는 혼조세를 보이며 마감했습니다. 메타, AMD 등 일부 빅테크와 헬스케어, 에너지 섹터가 강세를 보인 반면, 다우 지수는 하락했습니다. 유가(WTI)는 2.82% 상승하며 시장의 주목을 받았습니다.",
+    "kospi_pct": null,
+    "kosdaq_pct": null
+  },
+  {
     "date": "2026-09-24",
     "time": "22:40",
     "mode": "us_intraday",
@@ -527,15 +536,6 @@
     "mode": "us_premarket",
     "url": "reports/2026-09-15-us-pre.html",
     "summary": "현재 미국 프리장 시장은 혼조세를 보이고 있습니다. 필라델피아반도체 지수의 큰 폭 하락에도 불구하고, 개별 반도체 종목들은 소폭 상승하며 일부 기술주들의 약세를 상쇄하고 있습니다. 유가 상승이 에너지 섹터에 긍정적인 영향을 미치고 있으나, 전반적인 시",
-    "kospi_pct": null,
-    "kosdaq_pct": null
-  },
-  {
-    "date": "2026-09-15",
-    "time": "16:00",
-    "mode": "post_close",
-    "url": "reports/2026-09-15-post.html",
-    "summary": "코스피와 코스닥 모두 하락 마감했습니다. 미국 금리 인하 기대감 약화와 외국인 매도세가 지수 하락을 이끌었습니다.",
     "kospi_pct": null,
     "kosdaq_pct": null
   }
