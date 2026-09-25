@@ -1,5 +1,14 @@
 [
   {
+    "date": "2026-09-26",
+    "time": "06:30",
+    "mode": "us_morning",
+    "url": "reports/2026-09-26-us.html",
+    "summary": "미국 증시는 전반적으로 상승 마감하며 주간 단위 상승세를 이어갔습니다. 특히 기술주와 반도체 섹터가 강세를 보였으며, 이는 성장주가 채권 금리 상승 부담을 일부 상쇄했기 때문입니다. 유가(WTI)는 이란의 호르무즈 해협 재개 가능성 언급에 하락세를 보",
+    "kospi_pct": null,
+    "kosdaq_pct": null
+  },
+  {
     "date": "2026-09-25",
     "time": "22:40",
     "mode": "us_intraday",
@@ -527,15 +536,6 @@
     "mode": "kr_open",
     "url": "reports/2026-09-16-kr-open.html",
     "summary": "오늘 한국 증시는 전반적으로 약세를 보이며 하락 흐름을 이어가고 있습니다. 외국인과 기관의 매도세가 지수 하락을 주도하는 가운데, 반도체 관련주인 삼성전자와 SK하이닉스는 보합권에서 등락을 반복하며 상대적으로 선방하는 모습을 보였습니다. 특히 삼화콘덴",
-    "kospi_pct": null,
-    "kosdaq_pct": null
-  },
-  {
-    "date": "2026-09-16",
-    "time": "08:05",
-    "mode": "kr_premarket",
-    "url": "reports/2026-09-16-kr-pre.html",
-    "summary": "",
     "kospi_pct": null,
     "kosdaq_pct": null
   }
