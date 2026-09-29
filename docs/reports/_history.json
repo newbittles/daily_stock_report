@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-09-29",
+    "time": "14:50",
+    "mode": "pre_close",
+    "url": "reports/2026-09-29-pre.html",
+    "summary": "코스피는 혼조세를 보이며 관망세가 짙어지는 가운데, 일부 테마는 강한 상승세를 이어가고 있습니다.",
+    "kospi_pct": null,
+    "kosdaq_pct": null
+  },
+  {
+    "date": "2026-09-29",
     "time": "13:00",
     "mode": "us_afterhours",
     "url": "reports/2026-09-29-us-after.html",
@@ -527,15 +536,6 @@
     "mode": "midday",
     "url": "reports/2026-09-17-midday.html",
     "summary": "오늘 한국 증시는 장 초반 상승세를 보였으나, 오후 들어 하락 전환하며 약세를 이어가고 있습니다. 외국인과 기관의 매도세가 지수 하락을 주도하는 가운데, 삼화콘덴서와 삼성전자는 장중 상승분을 반납하며 하락 전환하는 모습을 보였습니다.",
-    "kospi_pct": null,
-    "kosdaq_pct": null
-  },
-  {
-    "date": "2026-09-17",
-    "time": "09:15",
-    "mode": "kr_open",
-    "url": "reports/2026-09-17-kr-open.html",
-    "summary": "오늘 한국 증시는 장 초반 상승세를 보였으나 오후 들어 힘이 빠지며 혼조세를 나타내고 있습니다. 특히 삼화콘덴서와 삼성전자는 장중 상승분을 반납하며 하락 전환하거나 약보합세를 보이고 있으며, SK하이닉스는 장 초반부터 약세를 이어가고 있습니다.",
     "kospi_pct": null,
     "kosdaq_pct": null
   }
