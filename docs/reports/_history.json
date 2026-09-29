@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-09-29",
+    "time": "19:00",
+    "mode": "us_premarket",
+    "url": "reports/2026-09-29-us-pre.html",
+    "summary": "프리장에서 미국 증시는 혼조세를 보이고 있습니다. 기술주 중심의 나스닥 선물은 상승세를 이어가는 반면, 다우 지수는 하락하며 대조적인 흐름을 나타내고 있습니다. 반도체 섹터는 약세를 보이고 있으나, 개별 기술주들은 대체로 강세를 유지하며 시장을 지지하",
+    "kospi_pct": null,
+    "kosdaq_pct": null
+  },
+  {
+    "date": "2026-09-29",
     "time": "16:00",
     "mode": "post_close",
     "url": "reports/2026-09-29-post.html",
@@ -527,15 +536,6 @@
     "mode": "pre_close",
     "url": "reports/2026-09-17-pre.html",
     "summary": "코스피는 혼조세, 코스닥은 낙폭 만회하며 소폭 상승 중입니다. 일부 기술주와 바이오 섹터가 시장을 견인하고 있습니다.",
-    "kospi_pct": null,
-    "kosdaq_pct": null
-  },
-  {
-    "date": "2026-09-17",
-    "time": "13:00",
-    "mode": "us_afterhours",
-    "url": "reports/2026-09-17-us-after.html",
-    "summary": "미국 증시는 연준의 금리 인상 및 금리 인상 지속 가능성에 대한 우려로 혼조세를 보였습니다. 다우 지수는 큰 폭으로 하락했지만, 나스닥은 소폭 하락에 그쳤습니다. 반도체 섹터는 강세를 보인 반면, 에너지 및 금융 섹터는 하락했습니다. 금 가격은 상승했",
     "kospi_pct": null,
     "kosdaq_pct": null
   }
