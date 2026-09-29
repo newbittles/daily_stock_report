@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-09-29",
+    "time": "13:00",
+    "mode": "us_afterhours",
+    "url": "reports/2026-09-29-us-after.html",
+    "summary": "미국 증시는 전반적으로 하락 마감했으며, 특히 기술주와 반도체 섹터의 약세가 두드러졌습니다. AI 관련 우려와 금리 상승 압박이 시장 전반에 부담을 주었습니다. 금 가격은 큰 폭으로 하락했으나, 유가는 소폭 상승했습니다.",
+    "kospi_pct": null,
+    "kosdaq_pct": null
+  },
+  {
+    "date": "2026-09-29",
     "time": "11:40",
     "mode": "midday",
     "url": "reports/2026-09-29-midday.html",
@@ -527,15 +536,6 @@
     "mode": "kr_open",
     "url": "reports/2026-09-17-kr-open.html",
     "summary": "오늘 한국 증시는 장 초반 상승세를 보였으나 오후 들어 힘이 빠지며 혼조세를 나타내고 있습니다. 특히 삼화콘덴서와 삼성전자는 장중 상승분을 반납하며 하락 전환하거나 약보합세를 보이고 있으며, SK하이닉스는 장 초반부터 약세를 이어가고 있습니다.",
-    "kospi_pct": null,
-    "kosdaq_pct": null
-  },
-  {
-    "date": "2026-09-17",
-    "time": "08:05",
-    "mode": "kr_premarket",
-    "url": "reports/2026-09-17-kr-pre.html",
-    "summary": "",
     "kospi_pct": null,
     "kosdaq_pct": null
   }
