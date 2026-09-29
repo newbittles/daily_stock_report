@@ -1,5 +1,14 @@
 [
   {
+    "date": "2026-09-30",
+    "time": "06:30",
+    "mode": "us_morning",
+    "url": "reports/2026-09-30-us.html",
+    "summary": "미국 증시는 혼조세를 보이며 마감했습니다. S&P500, 나스닥, 다우 지수는 소폭 하락했으나, 필라델피아 반도체 지수는 강세를 기록했습니다. 반도체 섹터가 주도했으며, 금 가격은 상승했으나 유가는 큰 폭으로 하락했습니다.",
+    "kospi_pct": null,
+    "kosdaq_pct": null
+  },
+  {
     "date": "2026-09-29",
     "time": "22:40",
     "mode": "us_intraday",
@@ -527,15 +536,6 @@
     "mode": "us_premarket",
     "url": "reports/2026-09-17-us-pre.html",
     "summary": "프리장에서 미국 증시는 전반적으로 강세를 보이고 있으며, 특히 기술주와 반도체 섹터가 두드러진 상승세를 나타내고 있습니다. 연준의 금리 인상 결정 이후 인플레이션 우려가 다소 완화되면서 투자 심리가 개선된 것으로 보입니다. 다만, 다우 지수 선물은 하",
-    "kospi_pct": null,
-    "kosdaq_pct": null
-  },
-  {
-    "date": "2026-09-17",
-    "time": "16:00",
-    "mode": "post_close",
-    "url": "reports/2026-09-17-post.html",
-    "summary": "오늘 코스피는 외국인 순매도세에 하락 마감했으며, 반도체 업황 개선 기대감과 정치 테마주가 시장을 주도했습니다.",
     "kospi_pct": null,
     "kosdaq_pct": null
   }
