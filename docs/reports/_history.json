@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-10-01",
+    "time": "13:00",
+    "mode": "us_afterhours",
+    "url": "reports/2026-10-01-us-after.html",
+    "summary": "미국 증시는 혼조세를 보이며 마감했습니다. 나스닥은 기술주 강세에 힘입어 소폭 상승했지만, 다우 지수는 하락폭을 키웠습니다. 반도체 섹터는 보합세를 기록했으며, 유가는 상승했습니다.",
+    "kospi_pct": null,
+    "kosdaq_pct": null
+  },
+  {
+    "date": "2026-10-01",
     "time": "11:40",
     "mode": "midday",
     "url": "reports/2026-10-01-midday.html",
@@ -527,15 +536,6 @@
     "mode": "kr_open",
     "url": "reports/2026-09-21-kr-open.html",
     "summary": "오늘 한국 증시는 장 초반 강세를 보였으나, 일부 대형 기술주들이 상승폭을 반납하며 전반적인 상승 동력이 약화되었습니다. 특히 가온전선은 장중 큰 폭의 상승 후 상당 부분 밀려내리는 모습을 보였으며, 삼성전기는 고점 대비 하락폭을 줄이며 현재 소폭 상",
-    "kospi_pct": null,
-    "kosdaq_pct": null
-  },
-  {
-    "date": "2026-09-21",
-    "time": "08:05",
-    "mode": "kr_premarket",
-    "url": "reports/2026-09-21-kr-pre.html",
-    "summary": "",
     "kospi_pct": null,
     "kosdaq_pct": null
   }
