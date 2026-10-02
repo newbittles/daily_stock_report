@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-10-02",
+    "time": "19:00",
+    "mode": "us_premarket",
+    "url": "reports/2026-10-02-us-pre.html",
+    "summary": "프리장에서 미국 증시는 전반적으로 강세를 보이고 있으며, 특히 기술주와 반도체 섹터가 두드러진 상승세를 나타내고 있습니다. 필라델피아 반도체 지수와 관련 ETF의 강세는 AI 관련 수요 지속에 대한 기대를 반영하는 것으로 보입니다. 유가 하락은 에너지",
+    "kospi_pct": null,
+    "kosdaq_pct": null
+  },
+  {
+    "date": "2026-10-02",
     "time": "16:00",
     "mode": "post_close",
     "url": "reports/2026-10-02-post.html",
@@ -527,15 +536,6 @@
     "mode": "post_close",
     "url": "reports/2026-09-22-post.html",
     "summary": "코스피는 외국인 순매수세에 힘입어 상승 마감했으나, 코스닥은 차익실현 매물 출회로 소폭 하락했습니다. 반도체와 2차전지 관련주가 시장을 견인했습니다.",
-    "kospi_pct": null,
-    "kosdaq_pct": null
-  },
-  {
-    "date": "2026-09-22",
-    "time": "14:50",
-    "mode": "pre_close",
-    "url": "reports/2026-09-22-pre.html",
-    "summary": "코스피는 혼조세, 코스닥은 낙폭을 줄이며 반등 시도 중입니다.",
     "kospi_pct": null,
     "kosdaq_pct": null
   }
