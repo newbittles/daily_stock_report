@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-10-06",
+    "time": "14:50",
+    "mode": "pre_close",
+    "url": "reports/2026-10-06-pre.html",
+    "summary": "국내 증시.",
+    "kospi_pct": null,
+    "kosdaq_pct": null
+  },
+  {
+    "date": "2026-10-06",
     "time": "13:00",
     "mode": "us_afterhours",
     "url": "reports/2026-10-06-us-after.html",
@@ -527,15 +536,6 @@
     "mode": "us_premarket",
     "url": "reports/2026-09-23-us-pre.html",
     "summary": "프리장에서 미국 증시는 혼조세를 보이고 있습니다. 다우 지수 선물은 강세를 유지하는 반면, S&P500과 나스닥 선물은 소폭 하락하며 관망세를 나타내고 있습니다. 필라델피아 반도체 지수 선물은 큰 폭의 상승세를 보이며 시장의 관심을 받고 있으며, 태양",
-    "kospi_pct": null,
-    "kosdaq_pct": null
-  },
-  {
-    "date": "2026-09-23",
-    "time": "16:00",
-    "mode": "post_close",
-    "url": "reports/2026-09-23-post.html",
-    "summary": "오늘 코스피는 외국인 매도세에 하락 마감했으며, 반도체 업황 둔화 우려와 지정학적 리스크가 시장 전반에 부담으로 작용했습니다.",
     "kospi_pct": null,
     "kosdaq_pct": null
   }
