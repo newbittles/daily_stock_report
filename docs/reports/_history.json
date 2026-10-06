@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-10-06",
+    "time": "22:40",
+    "mode": "us_intraday",
+    "url": "reports/2026-10-06-us-mid.html",
+    "summary": "S&P500 7,813(+0.50%) · 나스닥 27,636(+0.58%). 강세 섹터: 2차전지/리튬, 기술/IT, 태양광/신재생.",
+    "kospi_pct": null,
+    "kosdaq_pct": null
+  },
+  {
+    "date": "2026-10-06",
     "time": "21:50",
     "mode": "us_premarket",
     "url": "reports/2026-10-06-us-pre.html",
@@ -527,15 +536,6 @@
     "mode": "us_afterhours",
     "url": "reports/2026-09-24-us-after.html",
     "summary": "미국 증시는 국채 금리 급등으로 인해 전반적으로 하락 마감했습니다. 기술/IT 섹터는 소폭 상승했으나, 반도체 섹터는 하락세를 보였습니다. 금과 유가(WTI) 모두 하락했습니다.",
-    "kospi_pct": null,
-    "kosdaq_pct": null
-  },
-  {
-    "date": "2026-09-24",
-    "time": "07:00",
-    "mode": "us_morning",
-    "url": "reports/2026-09-24-us.html",
-    "summary": "미국 증시는 10년물 국채 금리가 2007년 이후 최고치를 경신하며 전반적으로 하락했습니다. 기술/IT 섹터는 소폭 상승했으나, 반도체 섹터는 약세를 보였고, 에너지 섹터는 상승 마감했습니다. 금과 유가(WTI) 모두 하락세를 나타냈습니다.",
     "kospi_pct": null,
     "kosdaq_pct": null
   }
