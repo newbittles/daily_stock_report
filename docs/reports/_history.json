@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-10-06",
+    "time": "19:00",
+    "mode": "us_premarket",
+    "url": "reports/2026-10-06-us-pre.html",
+    "summary": "S&P500 선물 7,846(+0.15%) · 나스닥 선물 31,420(+0.22%). 강세 섹터: 헬스케어/바이오, 경기소비재, 기술/IT.",
+    "kospi_pct": null,
+    "kosdaq_pct": null
+  },
+  {
+    "date": "2026-10-06",
     "time": "16:00",
     "mode": "post_close",
     "url": "reports/2026-10-06-post.html",
@@ -527,15 +536,6 @@
     "mode": "us_morning",
     "url": "reports/2026-09-24-us.html",
     "summary": "미국 증시는 10년물 국채 금리가 2007년 이후 최고치를 경신하며 전반적으로 하락했습니다. 기술/IT 섹터는 소폭 상승했으나, 반도체 섹터는 약세를 보였고, 에너지 섹터는 상승 마감했습니다. 금과 유가(WTI) 모두 하락세를 나타냈습니다.",
-    "kospi_pct": null,
-    "kosdaq_pct": null
-  },
-  {
-    "date": "2026-09-23",
-    "time": "22:40",
-    "mode": "us_intraday",
-    "url": "reports/2026-09-23-us-mid.html",
-    "summary": "미국 증시는 혼조세를 보이며 하락 마감했습니다. 필라델피아 반도체 지수는 상승했으나, 기술주 전반은 약세를 나타냈습니다. 에너지 섹터는 강세를 보였으며, 유가 하락이 두드러졌습니다.",
     "kospi_pct": null,
     "kosdaq_pct": null
   }
