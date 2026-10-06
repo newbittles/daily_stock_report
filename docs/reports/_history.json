@@ -9,6 +9,15 @@
     "kosdaq_pct": null
   },
   {
+    "date": "2026-10-07",
+    "time": "06:31",
+    "mode": "us_morning",
+    "url": "reports/2026-10-07-us.html",
+    "summary": "S&P500 7,819(+0.58%) · 나스닥 27,600(+0.45%). 강세 섹터: 태양광/신재생, 2차전지/리튬, 경기소비재.",
+    "kospi_pct": null,
+    "kosdaq_pct": null
+  },
+  {
     "date": "2026-10-06",
     "time": "22:40",
     "mode": "us_intraday",
@@ -527,15 +536,6 @@
     "mode": "us_intraday",
     "url": "reports/2026-09-24-us-mid.html",
     "summary": "미국 증시는 전반적으로 하락세를 보였으며, 특히 기술주와 반도체 섹터의 약세가 두드러졌습니다. 채권 시장의 불안과 유가 상승이 시장 전반에 부담으로 작용했습니다. 금 가격은 소폭 하락했으나 WTI 유가는 상승세를 기록했습니다.",
-    "kospi_pct": null,
-    "kosdaq_pct": null
-  },
-  {
-    "date": "2026-09-24",
-    "time": "21:50",
-    "mode": "us_premarket",
-    "url": "reports/2026-09-24-us-pre.html",
-    "summary": "현재 미국 프리장 시장은 전반적으로 약세를 보이고 있으며, 특히 기술주와 반도체 섹터의 하락세가 두드러집니다. 다만, 에너지 섹터는 유가 상승에 힘입어 강세를 나타내고 있습니다. 시장은 전반적인 투자 심리 위축 속에서 개별 이슈에 민감하게 반응하는 모",
     "kospi_pct": null,
     "kosdaq_pct": null
   }
