@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-10-06",
+    "time": "13:00",
+    "mode": "us_afterhours",
+    "url": "reports/2026-10-06-us-after.html",
+    "summary": "S&P500 7,774(+0.66%) · 나스닥 27,477(+1.05%). 강세 섹터: 2차전지/리튬, 에너지, 금융.",
+    "kospi_pct": null,
+    "kosdaq_pct": null
+  },
+  {
+    "date": "2026-10-06",
     "time": "11:40",
     "mode": "midday",
     "url": "reports/2026-10-06-midday.html",
@@ -527,15 +536,6 @@
     "mode": "post_close",
     "url": "reports/2026-09-23-post.html",
     "summary": "오늘 코스피는 외국인 매도세에 하락 마감했으며, 반도체 업황 둔화 우려와 지정학적 리스크가 시장 전반에 부담으로 작용했습니다.",
-    "kospi_pct": null,
-    "kosdaq_pct": null
-  },
-  {
-    "date": "2026-09-23",
-    "time": "14:50",
-    "mode": "pre_close",
-    "url": "reports/2026-09-23-pre.html",
-    "summary": "코스피는 관망세 속 혼조세를 보이며, 코스닥은 일부 테마의 강세로 상승세를 유지하고 있습니다.",
     "kospi_pct": null,
     "kosdaq_pct": null
   }
