@@ -1,5 +1,14 @@
 [
   {
+    "date": "2026-10-08",
+    "time": "06:31",
+    "mode": "us_morning",
+    "url": "reports/2026-10-08-us.html",
+    "summary": "S&P500 7,802(-0.22%) · 나스닥 27,539(-0.22%). 강세 섹터: 헬스케어/바이오, 기술/IT, 경기소비재.",
+    "kospi_pct": null,
+    "kosdaq_pct": null
+  },
+  {
     "date": "2026-10-07",
     "time": "22:40",
     "mode": "us_intraday",
@@ -527,15 +536,6 @@
     "mode": "us_premarket",
     "url": "reports/2026-09-28-us-pre.html",
     "summary": "프리장에서 미국 증시는 혼조세를 보이고 있습니다. 유가 상승과 지정학적 긴장 고조가 부담으로 작용하는 가운데, 반도체 섹터는 엔비디아 강세에 힘입어 일부 상승세를 보이나 전반적인 기술주는 약세를 면치 못하고 있습니다. 투자자들은 에너지 섹터의 움직임과",
-    "kospi_pct": null,
-    "kosdaq_pct": null
-  },
-  {
-    "date": "2026-09-28",
-    "time": "16:00",
-    "mode": "post_close",
-    "url": "reports/2026-09-28-post.html",
-    "summary": "오늘 코스피는 외국인 순매수에 힘입어 상승 마감했으나, 코스닥은 차익실현 매물과 일부 기술주 약세로 하락했습니다. 반도체와 이차전지 관련주가 시장을 주도했습니다.",
     "kospi_pct": null,
     "kosdaq_pct": null
   }
