@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-10-07",
+    "time": "09:15",
+    "mode": "kr_open",
+    "url": "reports/2026-10-07-kr-open.html",
+    "summary": "국내 증시.",
+    "kospi_pct": null,
+    "kosdaq_pct": null
+  },
+  {
+    "date": "2026-10-07",
     "time": "08:06",
     "mode": "kr_premarket",
     "url": "reports/2026-10-07-kr-pre.html",
@@ -527,15 +536,6 @@
     "mode": "us_morning",
     "url": "reports/2026-09-25-us.html",
     "summary": "미국 증시는 혼조세로 마감했습니다. 나스닥과 S&P500은 소폭 상승했으나, 다우 지수는 하락하며 차익 실현 매물이 출회되었습니다. 메타, AMD 등 빅테크 일부 종목의 강세에도 불구하고 반도체 섹터 전반의 약세와 금리 상승 우려가 시장 전반의 상승 ",
-    "kospi_pct": null,
-    "kosdaq_pct": null
-  },
-  {
-    "date": "2026-09-24",
-    "time": "22:40",
-    "mode": "us_intraday",
-    "url": "reports/2026-09-24-us-mid.html",
-    "summary": "미국 증시는 전반적으로 하락세를 보였으며, 특히 기술주와 반도체 섹터의 약세가 두드러졌습니다. 채권 시장의 불안과 유가 상승이 시장 전반에 부담으로 작용했습니다. 금 가격은 소폭 하락했으나 WTI 유가는 상승세를 기록했습니다.",
     "kospi_pct": null,
     "kosdaq_pct": null
   }
