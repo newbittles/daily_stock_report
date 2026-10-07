@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-10-08",
+    "time": "08:05",
+    "mode": "kr_premarket",
+    "url": "reports/2026-10-08-kr-pre.html",
+    "summary": "",
+    "kospi_pct": null,
+    "kosdaq_pct": null
+  },
+  {
+    "date": "2026-10-08",
     "time": "06:31",
     "mode": "us_morning",
     "url": "reports/2026-10-08-us.html",
@@ -527,15 +536,6 @@
     "mode": "us_intraday",
     "url": "reports/2026-09-28-us-mid.html",
     "summary": "미국 증시는 전반적으로 하락 마감했으며, 특히 기술주와 반도체 섹터의 약세가 두드러졌습니다. 지정학적 긴장 고조와 국채 금리 상승이 시장 전반에 부담으로 작용했습니다. 금 가격은 큰 폭으로 하락한 반면, 유가(WTI)는 상승세를 보였습니다.",
-    "kospi_pct": null,
-    "kosdaq_pct": null
-  },
-  {
-    "date": "2026-09-28",
-    "time": "21:51",
-    "mode": "us_premarket",
-    "url": "reports/2026-09-28-us-pre.html",
-    "summary": "프리장에서 미국 증시는 혼조세를 보이고 있습니다. 유가 상승과 지정학적 긴장 고조가 부담으로 작용하는 가운데, 반도체 섹터는 엔비디아 강세에 힘입어 일부 상승세를 보이나 전반적인 기술주는 약세를 면치 못하고 있습니다. 투자자들은 에너지 섹터의 움직임과",
     "kospi_pct": null,
     "kosdaq_pct": null
   }
