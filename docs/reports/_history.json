@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-10-08",
+    "time": "16:00",
+    "mode": "post_close",
+    "url": "reports/2026-10-08-post.html",
+    "summary": "국내 증시.",
+    "kospi_pct": null,
+    "kosdaq_pct": null
+  },
+  {
+    "date": "2026-10-08",
     "time": "14:50",
     "mode": "pre_close",
     "url": "reports/2026-10-08-pre.html",
@@ -527,15 +536,6 @@
     "mode": "us_afterhours",
     "url": "reports/2026-09-29-us-after.html",
     "summary": "미국 증시는 전반적으로 하락 마감했으며, 특히 기술주와 반도체 섹터의 약세가 두드러졌습니다. AI 관련 우려와 금리 상승 압박이 시장 전반에 부담을 주었습니다. 금 가격은 큰 폭으로 하락했으나, 유가는 소폭 상승했습니다.",
-    "kospi_pct": null,
-    "kosdaq_pct": null
-  },
-  {
-    "date": "2026-09-29",
-    "time": "11:40",
-    "mode": "midday",
-    "url": "reports/2026-09-29-midday.html",
-    "summary": "오늘 한국 증시는 전반적으로 약세를 보이며 하락 흐름을 이어가고 있습니다. 외국인과 기관의 매도세가 지수 하락을 주도하는 가운데, 반도체 관련주인 삼성전기가 장 초반 상승세를 보였으나 차익 실현 매물에 밀려 하락 전환하며 현재는 소폭 상승에 그치고 있",
     "kospi_pct": null,
     "kosdaq_pct": null
   }
