@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-10-08",
+    "time": "19:00",
+    "mode": "us_premarket",
+    "url": "reports/2026-10-08-us-pre.html",
+    "summary": "S&P500 선물 7,820(-0.34%) · 나스닥 선물 31,227(-0.42%). 강세 섹터: 에너지, 헬스케어/바이오, 경기소비재.",
+    "kospi_pct": null,
+    "kosdaq_pct": null
+  },
+  {
+    "date": "2026-10-08",
     "time": "16:00",
     "mode": "post_close",
     "url": "reports/2026-10-08-post.html",
@@ -527,15 +536,6 @@
     "mode": "pre_close",
     "url": "reports/2026-09-29-pre.html",
     "summary": "코스피는 혼조세를 보이며 관망세가 짙어지는 가운데, 일부 테마는 강한 상승세를 이어가고 있습니다.",
-    "kospi_pct": null,
-    "kosdaq_pct": null
-  },
-  {
-    "date": "2026-09-29",
-    "time": "13:00",
-    "mode": "us_afterhours",
-    "url": "reports/2026-09-29-us-after.html",
-    "summary": "미국 증시는 전반적으로 하락 마감했으며, 특히 기술주와 반도체 섹터의 약세가 두드러졌습니다. AI 관련 우려와 금리 상승 압박이 시장 전반에 부담을 주었습니다. 금 가격은 큰 폭으로 하락했으나, 유가는 소폭 상승했습니다.",
     "kospi_pct": null,
     "kosdaq_pct": null
   }
