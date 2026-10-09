@@ -1,5 +1,14 @@
 [
   {
+    "date": "2026-10-10",
+    "time": "06:30",
+    "mode": "us_morning",
+    "url": "reports/2026-10-10-us.html",
+    "summary": "S&P500 7,812(+0.59%) · 나스닥 27,366(+0.64%). 강세 섹터: 헬스케어/바이오, 2차전지/리튬, 경기소비재.",
+    "kospi_pct": null,
+    "kosdaq_pct": null
+  },
+  {
     "date": "2026-10-09",
     "time": "22:40",
     "mode": "us_intraday",
@@ -527,15 +536,6 @@
     "mode": "kr_open",
     "url": "reports/2026-09-30-kr-open.html",
     "summary": "오늘 한국 증시는 전반적으로 약세를 보이고 있으며, 외국인과 기관의 매도세가 지수 하락을 주도하고 있습니다. 다만, 반도체 업종은 SK하이닉스를 중심으로 꾸준한 강세를 유지하며 시장 하락을 일부 방어하는 모습입니다. 삼성전기는 장 초반 상승세를 보였으",
-    "kospi_pct": null,
-    "kosdaq_pct": null
-  },
-  {
-    "date": "2026-09-30",
-    "time": "08:05",
-    "mode": "kr_premarket",
-    "url": "reports/2026-09-30-kr-pre.html",
-    "summary": "",
     "kospi_pct": null,
     "kosdaq_pct": null
   }
