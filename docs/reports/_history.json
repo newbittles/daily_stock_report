@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-10-09",
+    "time": "22:40",
+    "mode": "us_intraday",
+    "url": "reports/2026-10-09-us-mid.html",
+    "summary": "S&P500 7,791(+0.33%) · 나스닥 27,332(+0.51%). 강세 섹터: 2차전지/리튬, 헬스케어/바이오, 경기소비재.",
+    "kospi_pct": null,
+    "kosdaq_pct": null
+  },
+  {
+    "date": "2026-10-09",
     "time": "21:50",
     "mode": "us_premarket",
     "url": "reports/2026-10-09-us-pre.html",
@@ -527,15 +536,6 @@
     "mode": "kr_premarket",
     "url": "reports/2026-09-30-kr-pre.html",
     "summary": "",
-    "kospi_pct": null,
-    "kosdaq_pct": null
-  },
-  {
-    "date": "2026-09-30",
-    "time": "06:30",
-    "mode": "us_morning",
-    "url": "reports/2026-09-30-us.html",
-    "summary": "미국 증시는 혼조세를 보이며 마감했습니다. S&P500, 나스닥, 다우 지수는 소폭 하락했으나, 필라델피아 반도체 지수는 강세를 기록했습니다. 반도체 섹터가 주도했으며, 금 가격은 상승했으나 유가는 큰 폭으로 하락했습니다.",
     "kospi_pct": null,
     "kosdaq_pct": null
   }
