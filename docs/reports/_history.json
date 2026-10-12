@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-10-13",
+    "time": "08:05",
+    "mode": "kr_premarket",
+    "url": "reports/2026-10-13-kr-pre.html",
+    "summary": "",
+    "kospi_pct": null,
+    "kosdaq_pct": null
+  },
+  {
+    "date": "2026-10-13",
     "time": "06:30",
     "mode": "us_morning",
     "url": "reports/2026-10-13-us.html",
@@ -527,15 +536,6 @@
     "mode": "kr_open",
     "url": "reports/2026-10-01-kr-open.html",
     "summary": "오늘 한국 증시는 전반적으로 약세를 보이고 있으며, 특히 삼성전기가 장중 큰 폭의 하락세를 이어가고 있습니다. SK하이닉스는 상대적으로 낙폭을 줄이며 약보합권에서 움직이고 있습니다.",
-    "kospi_pct": null,
-    "kosdaq_pct": null
-  },
-  {
-    "date": "2026-10-01",
-    "time": "08:05",
-    "mode": "kr_premarket",
-    "url": "reports/2026-10-01-kr-pre.html",
-    "summary": "",
     "kospi_pct": null,
     "kosdaq_pct": null
   }
