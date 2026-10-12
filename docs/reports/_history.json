@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-10-12",
+    "time": "22:40",
+    "mode": "us_intraday",
+    "url": "reports/2026-10-12-us-mid.html",
+    "summary": "S&P500 7,819(+0.10%) · 나스닥 27,366(-0.00%). 강세 섹터: 에너지, 헬스케어/바이오, 금융.",
+    "kospi_pct": null,
+    "kosdaq_pct": null
+  },
+  {
+    "date": "2026-10-12",
     "time": "21:50",
     "mode": "us_premarket",
     "url": "reports/2026-10-12-us-pre.html",
@@ -527,15 +536,6 @@
     "mode": "us_morning",
     "url": "reports/2026-10-01-us.html",
     "summary": "미국 증시는 혼조세를 보이며 마감했습니다. 기술주 중심의 나스닥은 소폭 상승했으나, 다우지수는 하락폭을 키웠습니다. 반도체 섹터는 강보합세를 유지했으며, 금 가격은 상승, 유가는 강세를 보였습니다.",
-    "kospi_pct": null,
-    "kosdaq_pct": null
-  },
-  {
-    "date": "2026-09-30",
-    "time": "22:40",
-    "mode": "us_intraday",
-    "url": "reports/2026-09-30-us-mid.html",
-    "summary": "미국 증시는 기술주 강세에 힘입어 전반적으로 상승 마감했습니다. 특히 빅테크 기업들의 견조한 흐름이 지수 상승을 이끌었으며, 반도체 섹터도 소폭 강세를 보였습니다. 금과 유가는 각각 상승하며 원자재 시장의 강세를 나타냈습니다.",
     "kospi_pct": null,
     "kosdaq_pct": null
   }
