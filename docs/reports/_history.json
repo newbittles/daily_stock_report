@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-10-14",
+    "time": "08:05",
+    "mode": "kr_premarket",
+    "url": "reports/2026-10-14-kr-pre.html",
+    "summary": "",
+    "kospi_pct": null,
+    "kosdaq_pct": null
+  },
+  {
+    "date": "2026-10-14",
     "time": "06:30",
     "mode": "us_morning",
     "url": "reports/2026-10-14-us.html",
@@ -527,15 +536,6 @@
     "mode": "kr_open",
     "url": "reports/2026-10-02-kr-open.html",
     "summary": "오늘 한국 증시는 전반적으로 약세를 보이며 하락 흐름을 이어가고 있습니다. 외국인과 기관의 매도세가 지수 하락을 이끌고 있으며, 반도체 관련주들이 약세를 면치 못하고 있습니다. 특히 주성엔지니어링은 장 초반 상승세를 보였으나 이내 하락 전환하며 고점 ",
-    "kospi_pct": null,
-    "kosdaq_pct": null
-  },
-  {
-    "date": "2026-10-02",
-    "time": "08:05",
-    "mode": "kr_premarket",
-    "url": "reports/2026-10-02-kr-pre.html",
-    "summary": "",
     "kospi_pct": null,
     "kosdaq_pct": null
   }
