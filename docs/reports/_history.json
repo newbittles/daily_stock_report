@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-10-14",
+    "time": "22:40",
+    "mode": "us_intraday",
+    "url": "reports/2026-10-14-us-mid.html",
+    "summary": "S&P500 7,780(-0.33%) · 나스닥 27,069(-0.50%). 강세 섹터: 헬스케어/바이오, 방산/우주항공, 에너지.",
+    "kospi_pct": null,
+    "kosdaq_pct": null
+  },
+  {
+    "date": "2026-10-14",
     "time": "21:50",
     "mode": "us_premarket",
     "url": "reports/2026-10-14-us-pre.html",
@@ -527,15 +536,6 @@
     "mode": "us_morning",
     "url": "reports/2026-10-03-us.html",
     "summary": "미국 증시는 기술주 강세에 힘입어 전반적으로 상승 마감했습니다. 특히 반도체 섹터가 필라델피아 반도체 지수 상승을 이끌며 두드러진 강세를 보였고, 테슬라를 포함한 주요 빅테크 종목들도 동반 상승했습니다. 금 가격은 하락했으며 유가는 하락세를 보였습니다",
-    "kospi_pct": null,
-    "kosdaq_pct": null
-  },
-  {
-    "date": "2026-10-02",
-    "time": "22:40",
-    "mode": "us_intraday",
-    "url": "reports/2026-10-02-us-mid.html",
-    "summary": "미국 증시는 전반적으로 강세를 보이며 S&P500, 나스닥, 다우 지수가 모두 상승 마감했습니다. 특히 반도체 섹터의 강세가 두드러졌으며, 필라델피아반도체 지수와 SOXL이 큰 폭으로 올랐습니다. 금 가격은 소폭 상승했으나 WTI 유가는 하락했습니다.",
     "kospi_pct": null,
     "kosdaq_pct": null
   }
