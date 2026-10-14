@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-10-14",
+    "time": "11:40",
+    "mode": "midday",
+    "url": "reports/2026-10-14-midday.html",
+    "summary": "국내 증시.",
+    "kospi_pct": null,
+    "kosdaq_pct": null
+  },
+  {
+    "date": "2026-10-14",
     "time": "09:15",
     "mode": "kr_open",
     "url": "reports/2026-10-14-kr-open.html",
@@ -527,15 +536,6 @@
     "mode": "us_afterhours",
     "url": "reports/2026-10-02-us-after.html",
     "summary": "미국 증시는 혼조세로 마감했으나, 반도체 섹터의 강세가 두드러졌습니다. 특히 필라델피아 반도체 지수가 1.59% 상승하며 기술주 전반의 상승을 이끌었습니다. 금 가격은 소폭 상승했으며, WTI 유가는 2.71% 크게 올랐습니다.",
-    "kospi_pct": null,
-    "kosdaq_pct": null
-  },
-  {
-    "date": "2026-10-02",
-    "time": "11:40",
-    "mode": "midday",
-    "url": "reports/2026-10-02-midday.html",
-    "summary": "오늘 한국 증시는 전반적으로 약세를 보이고 있으며, 외국인과 기관의 매도세가 지수 하락을 이끌고 있습니다. 반도체 관련주인 SK하이닉스와 삼성전기는 장중 보합권을 유지하며 큰 변동성을 보이지 않았으나, 주성엔지니어링은 장 초반 상승세를 보이다가 차익 ",
     "kospi_pct": null,
     "kosdaq_pct": null
   }
