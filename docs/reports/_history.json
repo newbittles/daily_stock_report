@@ -1,5 +1,14 @@
 [
   {
+    "date": "2026-10-16",
+    "time": "06:30",
+    "mode": "us_morning",
+    "url": "reports/2026-10-16-us.html",
+    "summary": "S&P500 7,744(+0.33%) · 나스닥 26,713(+0.08%). 강세 섹터: 헬스케어/바이오, 경기소비재, 금융.",
+    "kospi_pct": null,
+    "kosdaq_pct": null
+  },
+  {
     "date": "2026-10-15",
     "time": "22:40",
     "mode": "us_intraday",
@@ -527,15 +536,6 @@
     "mode": "us_premarket",
     "url": "reports/2026-10-06-us-pre.html",
     "summary": "S&P500 선물 7,858(+0.32%) · 나스닥 선물 31,482(+0.42%). 강세 섹터: 2차전지/리튬, 기술/IT, 반도체.",
-    "kospi_pct": null,
-    "kosdaq_pct": null
-  },
-  {
-    "date": "2026-10-06",
-    "time": "16:00",
-    "mode": "post_close",
-    "url": "reports/2026-10-06-post.html",
-    "summary": "국내 증시.",
     "kospi_pct": null,
     "kosdaq_pct": null
   }
