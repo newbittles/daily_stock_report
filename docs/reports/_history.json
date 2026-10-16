@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-10-16",
+    "time": "14:50",
+    "mode": "pre_close",
+    "url": "reports/2026-10-16-pre.html",
+    "summary": "국내 증시.",
+    "kospi_pct": null,
+    "kosdaq_pct": null
+  },
+  {
+    "date": "2026-10-16",
     "time": "13:00",
     "mode": "us_afterhours",
     "url": "reports/2026-10-16-us-after.html",
@@ -526,15 +535,6 @@
     "time": "11:40",
     "mode": "midday",
     "url": "reports/2026-10-07-midday.html",
-    "summary": "국내 증시.",
-    "kospi_pct": null,
-    "kosdaq_pct": null
-  },
-  {
-    "date": "2026-10-07",
-    "time": "09:15",
-    "mode": "kr_open",
-    "url": "reports/2026-10-07-kr-open.html",
     "summary": "국내 증시.",
     "kospi_pct": null,
     "kosdaq_pct": null
