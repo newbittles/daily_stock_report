@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-10-16",
+    "time": "19:01",
+    "mode": "us_premarket",
+    "url": "reports/2026-10-16-us-pre.html",
+    "summary": "S&P500 선물 7,807(+0.03%) · 나스닥 선물 30,153(-0.16%). 강세 섹터: 경기소비재, 방산/우주항공, 헬스케어/바이오.",
+    "kospi_pct": null,
+    "kosdaq_pct": null
+  },
+  {
+    "date": "2026-10-16",
     "time": "16:00",
     "mode": "post_close",
     "url": "reports/2026-10-16-post.html",
@@ -527,15 +536,6 @@
     "mode": "pre_close",
     "url": "reports/2026-10-07-pre.html",
     "summary": "코스피는 관망세 속에서 혼조세를 보이며, 코스닥은 일부 테마의 강세로 상승세를 유지하고 있습니다.",
-    "kospi_pct": null,
-    "kosdaq_pct": null
-  },
-  {
-    "date": "2026-10-07",
-    "time": "13:00",
-    "mode": "us_afterhours",
-    "url": "reports/2026-10-07-us-after.html",
-    "summary": "S&P500 7,819(+0.58%) · 나스닥 27,600(+0.45%). 강세 섹터: 태양광/신재생, 2차전지/리튬, 경기소비재.",
     "kospi_pct": null,
     "kosdaq_pct": null
   }
