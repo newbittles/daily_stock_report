@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-10-16",
+    "time": "22:40",
+    "mode": "us_intraday",
+    "url": "reports/2026-10-16-us-mid.html",
+    "summary": "S&P500 7,739(-0.06%) · 나스닥 26,541(-0.65%). 강세 섹터: 방산/우주항공, 에너지, 금융.",
+    "kospi_pct": null,
+    "kosdaq_pct": null
+  },
+  {
+    "date": "2026-10-16",
     "time": "21:50",
     "mode": "us_premarket",
     "url": "reports/2026-10-16-us-pre.html",
@@ -527,15 +536,6 @@
     "mode": "post_close",
     "url": "reports/2026-10-07-post.html",
     "summary": "국내 증시.",
-    "kospi_pct": null,
-    "kosdaq_pct": null
-  },
-  {
-    "date": "2026-10-07",
-    "time": "14:50",
-    "mode": "pre_close",
-    "url": "reports/2026-10-07-pre.html",
-    "summary": "코스피는 관망세 속에서 혼조세를 보이며, 코스닥은 일부 테마의 강세로 상승세를 유지하고 있습니다.",
     "kospi_pct": null,
     "kosdaq_pct": null
   }
