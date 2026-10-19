@@ -81,6 +81,10 @@ tests/
 8. **기능 완전성 전수 점검 (요청 누락 방지).** 종목/섹션 단위 기능(예: AI요약·배지·뉴스)을 추가할 때는 **영향받는 모든 경로·섹션을 한 번에 전수 확인**한다. 한 섹션만 고치고 끝내지 않는다.
    - 체크: (a) 그 기능이 표시돼야 할 **모든 리포트 모드**(KR pre/post/midday/premarket/open, US morning/premarket/intraday/afterhours)에 들어갔는가? (b) 템플릿이 **렌더하는 모든 종목 리스트(snap.X)**가 데이터 생성 경로(예: `summarize_*_stocks` pools)에 포함됐는가? (렌더 리스트 ↔ 생성 pools 불일치 = 버그. 예: 스크리닝이 `us_screen_ranked`인데 pools엔 `us_screen_groups`만 → AI버튼 누락)
    - 가드: `tests/test_report_ai_coverage.py`(렌더 종목리스트 ⊆ summarize pools 강제) + 일관성 점검 크론(`report_audit`, 평일 14:00). 큰 변경 후 `/code-review` 또는 code-analyzer로 전수 리뷰.
+9. **텔레그램 리포트 = 주요뉴스 브리핑 (2026-10-20 사용자 지시).** 한국장 장중(`midday`)·한국장 마감(`post_close`)·미국장 장전(`us_premarket`)·미국장 마감(`us_morning`) 4종의 텔레그램 본문은 **지수·수급·테마표·종목표를 나열하지 않고 주요뉴스만** 보고한다.
+   - 한 줄 = 사건 꼬리표("테슬라 로드스터 공개", "하이닉스 실적쇼크", "○○ 분할상장" 수준, 기사 제목 통째 X), 3~6개, 원문 링크. AI가 헤드라인에서 고르고 줄이며, AI 실패 시 헤드라인 앞부분을 잘라 쓴다(뉴스 지어내기 금지 — 수집된 헤드라인 밖의 사건을 쓰지 않는다).
+   - 지수·종목·보유종목 등 상세는 웹 '전체 리포트 보기' 링크로만. 웹 리포트 섹션은 이 규칙으로 줄이지 않는다.
+   - 새 정보를 텔레그램에 다시 넣고 싶어지면 이 규칙과 충돌하므로 사용자에게 먼저 묻는다. 원문: `.agent-memory/report-briefing-requirements-verbatim.md`.
 
 ---
 

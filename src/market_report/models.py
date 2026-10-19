@@ -124,6 +124,8 @@ class MarketSnapshot:
     us_weak_sectors: list[dict] = field(default_factory=list)   # 약세 섹터 ETF (하락률순 4)
     us_volume_sectors: list[dict] = field(default_factory=list)  # (deprecated — 강세/약세로 통합)
     us_news: list[dict] = field(default_factory=list)          # 미국 시장 뉴스 헤드라인 [{title, source}]
+    # 텔레그램 주요뉴스 브리핑(2026-10-20) — [{tag, url}] 사건 꼬리표. pick_key_news가 채움.
+    key_news: list[dict] = field(default_factory=list)
     # 미국 종목 스크리닝 (us_morning — A/B/C/D 미국 종목. 한국 top3/screen_picks와 분리)
     us_top3: list[dict] = field(default_factory=list)         # {symbol, name, price, change_pct, sector, reason, cross_signal}
     us_sector_leaders: list[dict] = field(default_factory=list)  # 강세/약세 섹터별 대장주(주요 종목)

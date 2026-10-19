@@ -840,6 +840,43 @@ def _format_kr_morning_summary(snap: MarketSnapshot, *, private: bool = False) -
     return "\n".join(lines)
 
 
+# ─── 주요뉴스 브리핑 (사용자 2026-10-20, CLAUDE.md §5-9) ─────────────────────────
+# 한국장 장중·한국장 마감·미국장 장전·미국장 마감 4종은 지수·종목표 대신 주요뉴스 꼬리표만.
+BRIEFING_MODES = ("midday", "post_close", "us_premarket", "us_morning")
+_BRIEF_TITLE = {
+    "midday": "🟢 *한국장 장중 브리핑*",
+    "post_close": "🔵 *한국장 마감 브리핑*",
+    "us_premarket": "🌅 *미국장 장전 브리핑*",
+    "us_morning": "🌎 *미국장 마감 브리핑*",
+}
+
+
+def _md_text(s: str) -> str:
+    """Markdown 링크 텍스트 안전화 — 대괄호·별표·밑줄이 링크/서식을 깨지 않게."""
+    return (str(s).replace("[", "(").replace("]", ")")
+            .replace("*", "").replace("_", " ").replace("`", ""))
+
+
+def _format_news_briefing(snap: MarketSnapshot, *, private: bool = False) -> str:
+    """📰 주요뉴스 꼬리표만 — 지수·수급·종목 나열 없음. 상세는 웹 링크."""
+    date = snap.generated_at.strftime("%Y-%m-%d %H:%M")
+    lines: list[str] = [f"{_BRIEF_TITLE.get(snap.mode, '📰 *브리핑*')} — {date}", ""]
+    news = getattr(snap, "key_news", None) or []
+    if news:
+        lines.append("📰 *주요뉴스*")
+        for n in news:
+            tag = _md_text(n.get("tag", ""))
+            url = n.get("url") or ""
+            lines.append(f"  · [{tag}]({url})" if url.startswith("http") else f"  · {tag}")
+    else:
+        lines.append("📰 눈에 띄는 주요뉴스 없음")
+    lines.append("")
+    lines.append(f"📄 [전체 리포트 보기]({report_url(snap, owner=private)})")
+    lines.append("")
+    lines.append("_※ 참고용 정보. 투자 판단·책임은 본인._")
+    return "\n".join(lines)
+
+
 async def _wait_pages_built(url: str, timeout: float = 150.0, interval: float = 12.0) -> bool:
     """리포트 웹 URL이 200(GitHub Pages 빌드 완료)될 때까지 대기(#512).
 
@@ -924,6 +961,14 @@ async def send_report(snap: MarketSnapshot) -> bool:
     except Exception as exc:  # noqa: BLE001
         logger.warning("market_map_ensure_failed error=%s", exc)
 
+    # 주요뉴스 브리핑 4종 — 꼬리표가 비어 있으면 여기서 한 번 고른다(모든 발송 경로 공통).
+    if snap.mode in BRIEFING_MODES and not getattr(snap, "key_news", None):
+        try:
+            from src.market_report.analyzer import pick_key_news
+            await pick_key_news(snap)
+        except Exception as exc:  # noqa: BLE001
+            logger.warning("key_news_pick_failed mode=%s error=%s", snap.mode, exc)
+
     # 웹 빌드 완료까지 대기 후 발송 — 발송 직후 클릭 시 404 방지(#512). 실패해도 발송 진행.
     try:
         await _wait_pages_built(report_url(snap))
@@ -959,6 +1004,8 @@ async def send_report(snap: MarketSnapshot) -> bool:
 
 def _build_report_text(snap: MarketSnapshot, *, private: bool) -> str:
     """모드별 텔레그램 본문 생성. private=True(오너)면 보유종목 포함·오너 웹 URL."""
+    if snap.mode in BRIEFING_MODES:  # 주요뉴스 브리핑(사용자 2026-10-20)
+        return _format_news_briefing(snap, private=private)
     if snap.mode in ("us_morning", "us_premarket", "us_intraday", "us_afterhours"):
         return _format_us_morning_summary(snap, private=private)
     if snap.mode in ("kr_premarket", "kr_open"):

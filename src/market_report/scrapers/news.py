@@ -1,7 +1,7 @@
 """네이버 금융 — 시장 뉴스 수집.
 
 엔드포인트:
-- 주요 뉴스:     https://finance.naver.com/news/mainnews.naver
+- 주요 뉴스:     https://m.stock.naver.com/front-api/news/category?category=mainnews (JSON, 2026-10~)
 - 시황·전망:    https://finance.naver.com/news/news_list.naver?mode=LSS2D&section_id=101&section_id2=258
 - 종목 관련:     https://finance.naver.com/item/news_news.naver?code=NNNNNN
 
@@ -9,6 +9,7 @@ selector: dd.articleSubject (제목 + 링크)
 """
 from __future__ import annotations
 
+import json
 import logging
 from urllib.parse import parse_qs, urlparse
 
@@ -21,6 +22,8 @@ logger = logging.getLogger(__name__)
 
 NEWS_URL_BASE = "https://finance.naver.com"
 MAIN_NEWS_URL = f"{NEWS_URL_BASE}/news/mainnews.naver"
+MAIN_NEWS_API = ("https://m.stock.naver.com/front-api/news/category"
+                 "?category=mainnews&pageSize={n}&page=1")
 MARKET_OUTLOOK_URL = f"{NEWS_URL_BASE}/news/news_list.naver?mode=LSS2D&section_id=101&section_id2=258"
 
 
@@ -51,54 +54,38 @@ def _to_article_url(href: str) -> str:
     return _normalize_url(href)
 
 
-async def fetch_market_news(top: int = 15) -> list[NewsItem]:
-    """주요 시장 뉴스 N개 (네이버 금융 메인뉴스)."""
-    html = await fetch(MAIN_NEWS_URL, encoding="euc-kr")
-    soup = BeautifulSoup(html, "lxml")
-
+def _parse_mainnews_api(data: dict, top: int) -> list[NewsItem]:
+    """m.stock.naver.com 주요뉴스 JSON → NewsItem (순수·테스트가능). 제목 중복 제거."""
     items: list[NewsItem] = []
-    seen_titles: set[str] = set()
-
-    for dd in soup.select("dd.articleSubject"):
-        a = dd.find("a")
-        if not a:
+    seen: set[str] = set()
+    for x in (data or {}).get("result") or []:
+        if not isinstance(x, dict):
             continue
-        title = a.get_text(strip=True)
-        if not title or title in seen_titles:
+        title = str(x.get("titleFull") or x.get("title") or "").strip()
+        oid, aid = str(x.get("officeId") or ""), str(x.get("articleId") or "")
+        if not title or title in seen or not (oid and aid):
             continue
-        seen_titles.add(title)
-
-        href = a.get("href", "")
-        url = _to_article_url(href)
-
-        # 매체·시각 정보 (같은 dl 안의 articleSummary 등에서 추출)
-        parent_dl = dd.find_parent("dl")
-        source = ""
-        published_at = ""
-        if parent_dl:
-            summary = parent_dl.find("dd", class_="articleSummary")
-            if summary:
-                # 보통 "한국경제 | 2분 전" 형식
-                press = summary.find("span", class_="press")
-                wdate = summary.find("span", class_="wdate")
-                if press:
-                    source = press.get_text(strip=True)
-                if wdate:
-                    published_at = wdate.get_text(strip=True)
-
-        items.append(
-            NewsItem(
-                title=title,
-                url=url,
-                source=source,
-                published_at=published_at,
-            )
-        )
-
+        seen.add(title)
+        items.append(NewsItem(
+            title=title,
+            url=f"https://n.news.naver.com/article/{oid}/{aid}",
+            source=str(x.get("officeName") or ""),
+            published_at=str(x.get("datetime") or ""),
+        ))
         if len(items) >= top:
             break
-
     return items
+
+
+async def fetch_market_news(top: int = 15) -> list[NewsItem]:
+    """주요 시장 뉴스 N개 — 네이버 증권 주요뉴스.
+
+    2026-10 finance.naver.com/news/mainnews.naver가 stock.naver.com(Next.js SPA)로 리디렉션돼
+    HTML엔 기사가 없다 → 그 페이지가 부르는 JSON API를 직접 호출(2026-10-20 실측 200·15건)."""
+    raw = await fetch(MAIN_NEWS_API.format(n=max(top, 15)),
+                      extra_headers={"Referer": "https://stock.naver.com/news/mainnews",
+                                     "Accept": "application/json"})
+    return _parse_mainnews_api(json.loads(raw), top)
 
 
 async def fetch_market_outlook(top: int = 10) -> list[NewsItem]:

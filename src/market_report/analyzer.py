@@ -15,6 +15,7 @@
 from __future__ import annotations
 
 import json
+import re
 import logging
 from datetime import datetime
 from typing import Any
@@ -1130,3 +1131,131 @@ async def summarize_holdings(snap: MarketSnapshot) -> None:
 
     snap.holdings_summary = _holdings_fallback(rows)
     logger.info("holdings_summary_fallback n=%d", len(rows))
+
+
+# ─── 텔레그램 주요뉴스 브리핑 (사용자 2026-10-20, CLAUDE.md §5-9) ──────────────────
+# "지수말고 … 주요뉴스정도만 — 테슬라 로드스터공개, 하이닉스 실적쇼크, 분할상장 이런정도".
+# 수집된 헤드라인에서만 고른다(환각 방지): AI는 번호와 꼬리표만 돌려주고, 링크는 원본에서 붙인다.
+
+KEY_NEWS_MAX = 6
+_KEY_TAG_MAX = 24        # 꼬리표 최대 글자(넘으면 자름)
+_FALLBACK_TAG_MAX = 30   # AI 실패 시 헤드라인 자르는 길이
+
+
+def _news_candidates(snap: MarketSnapshot) -> list[dict]:
+    """모드별 후보 헤드라인 [{title, url}]. US 모드=us_news(번역본 우선), 그 외=네이버 주요뉴스."""
+    out: list[dict] = []
+    if str(snap.mode).startswith("us_"):
+        for n in (snap.us_news or [])[:15]:
+            t = (n.get("title_ko") or n.get("title") or "").strip()
+            if t:
+                out.append({"title": t, "url": n.get("url", "") or ""})
+    else:
+        for n in (snap.market_news or [])[:15]:
+            t = (getattr(n, "title", "") or "").strip()
+            if t:
+                out.append({"title": t, "url": getattr(n, "url", "") or ""})
+    return out
+
+
+def _clip(s: str, n: int) -> str:
+    s = " ".join(str(s).split())
+    return s if len(s) <= n else s[: n - 1].rstrip() + "…"
+
+
+def _parse_key_news(data: Any, cands: list[dict]) -> list[dict]:
+    """AI 응답 [{"i":번호,"tag":"꼬리표"}] → [{tag, url}]. 범위 밖 번호·빈 꼬리표·중복은 버린다."""
+    items = data.get("items") if isinstance(data, dict) else data
+    if not isinstance(items, list):
+        return []
+    out: list[dict] = []
+    used: set[int] = set()
+    for it in items:
+        if not isinstance(it, dict):
+            continue
+        try:
+            i = int(it.get("i"))
+        except (TypeError, ValueError):
+            continue
+        tag = str(it.get("tag") or "").strip()
+        if not tag or i in used or not (0 <= i < len(cands)):
+            continue
+        used.add(i)
+        out.append({"tag": _clip(tag, _KEY_TAG_MAX), "url": cands[i]["url"]})
+        if len(out) >= KEY_NEWS_MAX:
+            break
+    return out
+
+
+_HEADLINE_NOISE = re.compile(
+    r"\[[^\]]*\]|【[^】]*】|\((?:종합|상보|속보|단독|\d+보)[^)]*\)|[“”\"‘’']")
+
+
+def _clean_headline(t: str) -> str:
+    """말머리·꼬리표([투자360]·(종합)·[2026 국감])와 따옴표 제거."""
+    return " ".join(_HEADLINE_NOISE.sub(" ", t).split()).strip(" …·-")
+
+
+def _bigrams(t: str) -> set[str]:
+    t = "".join(t.split())
+    return {t[i:i + 2] for i in range(len(t) - 1)}
+
+
+# 시장 공통어 — 이 단어만 겹친다고 같은 사건으로 보지 않는다.
+_COMMON_WORDS = {"코스피", "코스닥", "반도체", "반도체주", "증시", "주가", "투자자", "개미들", "외국인"}
+
+
+def _key_words(t: str) -> set[str]:
+    return {w for w in re.findall(r"[가-힣A-Za-z0-9]{3,}", t) if w not in _COMMON_WORDS}
+
+
+def _fallback_key_news(cands: list[dict], n: int = 5) -> list[dict]:
+    """AI 불가 시 — 헤드라인을 다듬어 잘라 쓴다(지어내지 않음).
+
+    같은 사건은 하나만: 글자 2-gram 겹침 25%↑ 또는 3글자↑ 고유어(기업명 등) 공유."""
+    out: list[dict] = []
+    seen: list[tuple[set[str], set[str]]] = []
+    for c in cands:
+        t = _clean_headline(c["title"]) or c["title"]
+        bg, kw = _bigrams(t), _key_words(t)
+        if any((bg and len(bg & b) / len(bg | b) >= 0.25) or (kw & k) for b, k in seen):
+            continue
+        seen.append((bg, kw))
+        out.append({"tag": _clip(t, _FALLBACK_TAG_MAX), "url": c["url"]})
+        if len(out) >= n:
+            break
+    return out
+
+
+async def pick_key_news(snap: MarketSnapshot) -> None:
+    """헤드라인 → 시장을 움직일 주요뉴스 3~6개를 짧은 사건 꼬리표로(snap.key_news).
+
+    1회 배치 호출. 키없음/한도/실패/빈 응답이면 결정론 폴백(헤드라인 자르기)."""
+    cands = _news_candidates(snap)
+    if not cands:
+        snap.key_news = []
+        return
+    settings = get_settings()
+    picked: list[dict] = []
+    if settings.gemini_api_key and not quota_blocked():
+        market = "미국" if str(snap.mode).startswith("us_") else "한국"
+        heads = "\n".join(f"{i}: {c['title']}" for i, c in enumerate(cands))
+        prompt = (
+            f"다음은 {market} 증시 뉴스 헤드라인이다. 주가에 영향을 줄 굵직한 사건 3~6개만 골라, "
+            "각각을 '테슬라 로드스터 공개', '하이닉스 실적쇼크', '○○ 분할상장'처럼 "
+            f"한국어 사건 꼬리표(최대 {_KEY_TAG_MAX - 4}자, 기업명+사건)로 줄여라. "
+            "헤드라인에 없는 내용은 쓰지 마라. 시황 총평·칼럼·광고성 기사는 빼라. 중요한 순서로.\n"
+            'JSON으로만: {"items":[{"i":번호,"tag":"꼬리표"}]}\n\n' + heads
+        )
+        try:
+            client = genai.Client(api_key=settings.gemini_api_key)
+            resp = client.models.generate_content(
+                model=MODEL_NAME, contents=prompt,
+                config=types.GenerateContentConfig(response_mime_type="application/json",
+                                                   temperature=0.2))
+            picked = _parse_key_news(json.loads(resp.text or "{}"), cands)
+            logger.info("key_news_ok mode=%s n=%d", snap.mode, len(picked))
+        except Exception as exc:  # noqa: BLE001
+            _maybe_trip_quota(exc)
+            logger.warning("key_news_failed mode=%s error=%s", snap.mode, exc)
+    snap.key_news = picked or _fallback_key_news(cands)

@@ -39,9 +39,12 @@ DELAY_SESSION = (30.0, 60.0)  # 50개 요청마다
 MAX_RETRY = 3
 
 HARD_STOP_CODES = {429, 423, 503}
+# 🔴 단어 하나짜리('차단'·'robot'·'captcha')는 넣지 않는다 — 정상 페이지 본문·설정 JSON에 흔해
+# 오탐이 난다(2026-07-06 종목페이지 '차단' 오탐 → 상주 프로세스 세션이 석 달간 정지, 2026-10-20 발견).
+# 사람에게 보여 주는 봇감지 '문장'만 쓴다(전역 rules/external-services.md §0-1).
 HARD_STOP_KEYWORDS = (
-    "captcha", "suspicious", "unusual activity",
-    "비정상", "차단", "robot",
+    "unusual traffic", "unusual activity", "are you a robot",
+    "automated queries", "비정상적인 트래픽", "보안문자를 입력",
 )
 
 
@@ -63,6 +66,18 @@ _stats = SessionStats()
 
 def get_stats() -> SessionStats:
     return _stats
+
+
+def reset_session() -> None:
+    """새 리포트 런 시작 시 세션 상태 초기화.
+
+    상주 스케줄러(run_forever)에서 한 번 걸린 HARD STOP이 프로세스 수명 내내 남아 이후 모든
+    리포트의 스크래핑이 막히던 문제(2026-10-20) 방지. 같은 런 안에서는 정지가 그대로 유지된다
+    (자동 재시도 아님 — 다음 정규 스케줄에서만 새로 시도)."""
+    global _stats
+    if _stats.halted:
+        logger.warning("http_session_reset — 이전 런 HARD STOP 해제 (reason=%s)", _stats.halt_reason)
+    _stats = SessionStats()
 
 
 def _is_hard_stop(resp: httpx.Response) -> tuple[bool, str]:

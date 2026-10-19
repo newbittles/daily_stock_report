@@ -29,6 +29,8 @@ logger = logging.getLogger(__name__)
 async def collect_snapshot(mode: ReportMode) -> MarketSnapshot:
     """모든 스크래퍼를 병렬 호출해 시장 스냅샷 구성."""
     logger.info("snapshot_collect_start mode=%s", mode)
+    from src.market_report.http import reset_session
+    reset_session()  # 직전 런 HARD STOP이 상주 프로세스에 남지 않게(2026-10-20)
 
     # 종목순위는 ETF/ETN/우선주가 상위를 다수 차지 → 넉넉히 받아 필터 후 자름
     results = await asyncio.gather(
@@ -99,6 +101,8 @@ async def collect_us_snapshot() -> MarketSnapshot:
         fetch_us_bigtech, fetch_us_indices, fetch_us_news, fetch_us_sectors,
     )
     logger.info("us_snapshot_collect_start")
+    from src.market_report.http import reset_session
+    reset_session()  # 직전 런 HARD STOP이 상주 프로세스에 남지 않게(2026-10-20)
     idx, bt, sec, news = await asyncio.gather(
         fetch_us_indices(), fetch_us_bigtech(), fetch_us_sectors(), fetch_us_news(10),
         return_exceptions=True,
