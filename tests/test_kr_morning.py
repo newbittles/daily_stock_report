@@ -36,6 +36,29 @@ def test_premarket_summary_new_sections_and_no_kr_index() -> None:
     assert "프리장 AI요약 제거" not in txt              # AI요약 미표시
 
 
+def test_premarket_top5_price_change_not_pct() -> None:
+    """2026-10-20 사용자 '퍼센트말고 가격으로' — NXT Top5는 가격(전일 KRX 종가 대비 원 변동)."""
+    s = MarketSnapshot(mode="kr_premarket", generated_at=datetime(2026, 10, 20, 8, 5))
+    s.overtime_gainers = [{"ticker": "093370", "name": "후성", "nxt_price": 9_870,
+                           "reg_close": 9_670, "overtime_pct": 2.07}]
+    s.overtime_losers = [{"ticker": "000000", "name": "롯데에너지머티리얼즈", "nxt_price": 31_050,
+                          "reg_close": 31_500, "overtime_pct": -1.43}]
+    txt = _format_kr_morning_summary(s)
+    assert "후성](" in txt and ") 9,870원(▲200)" in txt          # 짧은 이름 → 한 줄
+    assert "\n    31,050원(▼450)" in txt                          # 긴 이름 → 가격은 다음 줄
+    assert "+2.1%" not in txt and "-1.4%" not in txt
+
+
+def test_won_change_snaps_to_tick() -> None:
+    """등락률 역산 오차(소수 둘째 자리 절삭)를 호가단위로 흡수해 정확한 원 변동폭."""
+    from src.market_report.telegram_notify import _arrow, _won_change
+    assert _won_change(412_500, -0.84) == -3_500      # 50만 미만 호가 500
+    assert _won_change(4_985, 1.32) == 65             # 5천 미만 호가 5
+    assert _won_change(594_000, None, 592_000) == 2_000  # 기준가 있으면 그대로
+    assert _won_change(0, 1.0) is None
+    assert _arrow(0) == "0" and _arrow(-1_250) == "▼1,250"
+
+
 def test_kr_open_info_diet_overnight_and_linebreaks() -> None:
     """장초(09:15) 정보 다이어트(2026-06-14):
     KO1 미국 야간 = 선물·기타 M7 빼고 테슬라·마이크론·SOXL·EWY만,
@@ -57,10 +80,14 @@ def test_kr_open_info_diet_overnight_and_linebreaks() -> None:
         "extra": [{"symbol": "MU", "name": "마이크론", "change_pct": 1.5,
                    "session_pct": 0.2, "session_label": "애프터"}],
     }
-    s.prev_top3_status = [{"ticker": "005930", "name": "삼성전자",
-                           "today_pct": 1.3, "return_pct": 4.2}]
+    s.us_overnight["m7"][0]["price"] = 432.10
+    s.prev_top3_status = [{"ticker": "005930", "name": "삼성전자", "rec_price": 58_500,
+                           "cur_price": 61_000, "today_pct": 1.33, "return_pct": 4.27}]
     s.prev_top3_date = "2026-06-13"
-    s.prev_candidates_status = [{"ticker": "000660", "name": "SK하이닉스", "today_pct": 2.0}]
+    s.prev_candidates_status = [{"ticker": "000660", "name": "SK하이닉스",
+                                 "cur_price": 594_000, "today_pct": 0.34},
+                                {"ticker": "006400", "name": "삼성SDI",
+                                 "cur_price": 592_000, "today_pct": None}]
     s.prev_candidates_date = "2026-06-13"
     txt = _format_kr_morning_summary(s)
     # KO1: 선물 제외, 기타 M7(애플) 제외, 테슬라·마이크론·SOXL·EWY만
@@ -68,11 +95,14 @@ def test_kr_open_info_diet_overnight_and_linebreaks() -> None:
     assert "애플" not in txt
     assert "테슬라" in txt and "마이크론" in txt
     assert "SOXL" in txt and "EWY" in txt
-    # KO2: 전일 Top3 — 종목명 아래 줄에 '상승률:' 접두
-    assert "상승률: 시초 +1.3% (추천가대비 +4.2%)" in txt
-    # KO3: 종가베팅 — 종목명/시초 줄바꿈 분리
+    # 2026-10-20: 퍼센트 대신 가격(변동) — 등락률 역산값을 호가단위에 맞춰 정확한 원 단위로
+    assert "61,000원(▲800)" in txt
+    assert "    └ 추천가 58,500원 대비 ▲2,500" in txt
     assert "🎯 *전일 종가베팅 시초*" in txt
-    assert "    시초 +2.0%" in txt
+    assert "594,000원(▲2,000)" in txt
+    assert "시초 미체결" in txt               # today_pct=None → 전일종가를 오늘 가격처럼 쓰지 않는다
+    assert "테슬라 $432.10(▲8.89)" in txt     # 미국 종목도 달러 가격(변동)
+    assert "%)" not in txt.split("🏆")[1]     # Top3·종가베팅 칸에 퍼센트 없음
 
 
 def test_candidate_persist_and_find_prev(tmp_path) -> None:

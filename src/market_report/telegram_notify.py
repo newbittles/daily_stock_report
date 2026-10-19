@@ -5,6 +5,8 @@
 from __future__ import annotations
 
 import logging
+import re
+import unicodedata
 
 from telegram import Bot
 
@@ -76,6 +78,75 @@ def _us_name(name: str, symbol: str) -> str:
     return f"{name}({symbol}·{mk})" if mk else f"{name}({symbol})"
 
 
+# ─── 종목 가격(변동) 표기 — 퍼센트 대신 가격·원 단위 변동폭(사용자 2026-10-20) ─────────
+# "퍼센트말고 가격으로 표시해 / 모든 종목리포트 가격(변동) / 모바일 길이 최적화"
+_KRX_TICKS = ((2_000, 1), (5_000, 5), (20_000, 10), (50_000, 50), (200_000, 100), (500_000, 500))
+# 아이폰 텔레그램 기본 글자 크기에서 한 줄에 들어가는 폭(한글=2, 그 밖=1).
+# 추정 — 2026-10-20 스크린샷에서 '    상승률: NXT -0.8% (추천가대비 -0.3%)'(약 40)가 말풍선 끝 직전까지 참.
+_MOBILE_WIDTH = 40
+_MD_LINK_RE = re.compile(r"\[([^\]]*)\]\([^)]*\)")
+
+
+def _krx_tick(price: float) -> int:
+    """KRX 호가단위(2023-01 개편, 코스피·코스닥 공통)."""
+    for lim, tick in _KRX_TICKS:
+        if price < lim:
+            return tick
+    return 1_000
+
+
+def _won_change(price: float, pct: float | None = None, prev: float | None = None) -> float | None:
+    """원 단위 전일 대비 변동폭. prev(기준가)가 있으면 정확값, 없으면 등락률로 역산 후 호가단위로 맞춤.
+
+    등락률이 소수 둘째 자리로 잘려 와서 역산값은 수십 원 어긋날 수 있다 → 기준가를 호가단위에 붙이면
+    오차(가격×0.005%)가 호가단위 절반보다 작아 정확값으로 돌아온다."""
+    if not price:
+        return None
+    if prev:
+        return price - prev
+    if pct is None:
+        return None
+    base = price / (1 + pct / 100)
+    tick = _krx_tick(base)
+    return price - round(base / tick) * tick
+
+
+def _arrow(chg: float, *, usd: bool = False) -> str:
+    """변동폭 → '▲1,350' / '▼1,350' / '0'."""
+    amt = f"{abs(chg):,.2f}" if usd else f"{abs(round(chg)):,.0f}"
+    if (usd and abs(chg) < 0.005) or (not usd and round(chg) == 0):
+        return "0"
+    return f"{'▲' if chg > 0 else '▼'}{amt}"
+
+
+def _won_px(price: float, chg: float | None) -> str:
+    """'41,250원(▲1,350)'. 변동폭을 모르면 가격만."""
+    s = f"{price:,.0f}원"
+    return f"{s}({_arrow(chg)})" if chg is not None else s
+
+
+def _usd_px(price: float, pct: float | None) -> str:
+    """'$432.10(▼5.20)' — 미국 종목. 변동폭은 등락률로 역산(센트 단위라 오차 무시 가능)."""
+    s = f"${price:,.2f}"
+    if pct is None or not price:
+        return s
+    return f"{s}({_arrow(price - price / (1 + pct / 100), usd=True)})"
+
+
+def _disp_width(s: str) -> int:
+    """화면 폭 — 마크다운 링크는 보이는 글자만, 한글·전각·▲▼=2."""
+    vis = _MD_LINK_RE.sub(r"\1", s).replace("*", "").replace("_", "")
+    return sum(2 if unicodedata.east_asian_width(c) in ("W", "F", "A") else 1 for c in vis)
+
+
+def _stock_lines(head: str, tail: str, *, bullet: str = "  · ", indent: str = "    ") -> list[str]:
+    """종목 한 개 — 한 줄에 들어가면 '· 이름(시장) 가격(변동)', 넘치면 이름/가격 두 줄."""
+    one = f"{bullet}{head} {tail}"
+    if _disp_width(one) <= _MOBILE_WIDTH:
+        return [one]
+    return [f"{bullet}{head}", f"{indent}{tail}"]
+
+
 def _format_strategy_holdings(snap: MarketSnapshot, *, private: bool = False) -> list[str]:
     """Top3 (+ private=True면 보유종목) 요약. 보유종목은 오너 전용(사용자 2026-06-14).
 
@@ -89,10 +160,10 @@ def _format_strategy_holdings(snap: MarketSnapshot, *, private: bool = False) ->
     if getattr(snap, "top3", None):
         lines.append("🏆 *오늘의 추천 Top 3*")
         for i, t in enumerate(snap.top3, 1):
-            sign = "+" if t.get("change_pct", 0) >= 0 else ""
+            px = _won_px(t["price"], _won_change(t["price"], t.get("change_pct", 0)))
             mc = f" · 시총 {t['marcap_str']}" if t.get("marcap_str") else ""
-            lines.append(f"{i}. {_naver_link(t['name'], t['ticker'])} "
-                         f"{t['price']:,.0f}원 ({sign}{t.get('change_pct', 0):.1f}%){mc}")
+            lines.extend(_stock_lines(_naver_link(t["name"], t["ticker"]), px + mc,
+                                      bullet=f"{i}. ", indent="   "))
             lines.append(f"   └ {t['reason']}")
             if t.get("supply_str"):
                 lines.append(f"   💰 {t['supply_str']}")
@@ -152,15 +223,24 @@ def _format_index_regime_warn(snap: MarketSnapshot) -> list[str]:
     ]
 
 
-def _overnight_quote_line(q: dict) -> str:
-    """미국 야간 종목 한 줄 — 마감 등락 + (프리장/애프터 등락) 병기(#503).
+def _overnight_quote_lines(q: dict) -> list[str]:
+    """미국 야간 종목 — 마감 가격(변동) + (프리장/애프터 가격(변동)) 병기(#503, 2026-10-20 가격 표기).
 
-    예: '엔비디아 마감 -6.2% · 프리장 +2.0%'. 세션 등락 없으면(장중/결측) 마감만."""
-    s = f"{q['name']} 마감 {q['change_pct']:+.1f}%"
+    예: '엔비디아 $180.20(▼11.90) · 프리장 $183.80(▲3.60)'. 폭이 넘치면 세션을 다음 줄로.
+    세션 등락 없으면(장중/결측) 마감만."""
+    price = q.get("price") or 0
+    if not price:  # 가격 결측(폴백 경로) — 등락률만이라도
+        head = f"{q['name']} 마감 {q['change_pct']:+.1f}%"
+    else:
+        head = f"{q['name']} {_usd_px(price, q.get('change_pct'))}"
     sp, sl = q.get("session_pct"), q.get("session_label")
-    if sp is not None and sl:
-        s += f" · {sl} {sp:+.1f}%"
-    return s
+    if sp is None or not sl:
+        return [f"  {head}"]
+    if price:
+        sess = f"{sl} {_usd_px(price * (1 + sp / 100), sp)}"
+    else:
+        sess = f"{sl} {sp:+.1f}%"
+    return _stock_lines(head, f"· {sess}", bullet="  ", indent="    ")
 
 
 def _format_us_overnight(
@@ -190,11 +270,11 @@ def _format_us_overnight(
         for f in fut:
             lines.append(f"  {f['name']} {f['change_pct']:+.2f}%")
     for q in m7:
-        lines.append(f"  {_overnight_quote_line(q)}")
+        lines.extend(_overnight_quote_lines(q))
     for q in extra:  # 마이크론 등 — 개별종목(M7 외, 2026-06-14)
-        lines.append(f"  {_overnight_quote_line(q)}")
+        lines.extend(_overnight_quote_lines(q))
     for e in etf:  # SOXL/EWY — M7 아래 별도(#485)
-        lines.append(f"  {_overnight_quote_line(e)}")
+        lines.extend(_overnight_quote_lines(e))
     lines.append("")
     return lines
 
@@ -418,11 +498,11 @@ def _format_candidate_picks(snap: MarketSnapshot) -> list[str]:
         return []
     lines = ["🎯 *종가베팅 후보 5선* (점수기반·Top3 제외)"]
     for i, p in enumerate(picks, 1):
-        chg = p.get("change_pct", 0) or 0
-        sign = "+" if chg >= 0 else ""
+        price = p.get("price", 0) or 0
+        px = _won_px(price, _won_change(price, p.get("change_pct", 0) or 0))
         strat = f" [{'·'.join(p.get('strategies') or [])}]" if p.get("strategies") else ""
-        lines.append(f"{i}. {_naver_link(p.get('name', ''), str(p.get('ticker', '')))} "
-                     f"{p.get('price', 0):,.0f}원 ({sign}{chg:.1f}%){strat}")
+        lines.extend(_stock_lines(_naver_link(p.get("name", ""), str(p.get("ticker", ""))),
+                                  px + strat, bullet=f"{i}. ", indent="   "))
         rat = p.get("rationale") or p.get("reason")
         if rat:
             lines.append(f"   └ {rat}")
@@ -784,39 +864,45 @@ def _format_kr_morning_summary(snap: MarketSnapshot, *, private: bool = False) -
                 lines.append(f"  · {t['name']} ({t['count']}종목·평균 {avg:+.1f}%)"
                              + (f" — {stocks}" if stocks else ""))
             lines.append("")
-        # NXT 프리장 상승 Top5
-        if snap.overtime_gainers:
-            lines.append("🚀 *NXT 프리장 상승 Top5*")
-            for g in snap.overtime_gainers[:5]:
-                lines.append(f"  · {_naver_link(g.get('name', ''), g.get('ticker', ''))} "
-                             f"{g.get('overtime_pct', 0):+.1f}%")
-            lines.append("")
-        # NXT 프리장 하락 Top5
-        if snap.overtime_losers:
-            lines.append("📉 *NXT 프리장 하락 Top5*")
-            for g in snap.overtime_losers[:5]:
-                lines.append(f"  · {_naver_link(g.get('name', ''), g.get('ticker', ''))} "
-                             f"{g.get('overtime_pct', 0):+.1f}%")
+        # NXT 프리장 상승/하락 Top5 — 가격(전일 KRX 종가 대비 변동폭), 2026-10-20 퍼센트→가격
+        for key, head in (("overtime_gainers", "🚀 *NXT 프리장 상승 Top5*"),
+                          ("overtime_losers", "📉 *NXT 프리장 하락 Top5*")):
+            rows = getattr(snap, key, None) or []
+            if not rows:
+                continue
+            lines.append(head)
+            for g in rows[:5]:
+                price = g.get("nxt_price", 0) or 0
+                chg = _won_change(price, g.get("overtime_pct"), g.get("reg_close"))
+                lines.extend(_stock_lines(_naver_link(g.get("name", ""), g.get("ticker", "")),
+                                          _won_px(price, chg)))
             lines.append("")
     elif snap.top_gainers:
         lines.append("🚀 *시초 상승률 상위*")
         for g in snap.top_gainers[:5]:
-            lines.append(f"  · {_naver_link(g.name, g.ticker)} {g.price:,.0f}원 (+{g.change_pct:.1f}%)")
+            chg = abs(g.change) if g.change_pct >= 0 else -abs(g.change)
+            lines.extend(_stock_lines(_naver_link(g.name, g.ticker), _won_px(g.price, chg)))
         lines.append("")
-    # 프리장(08:0x)은 정규장 시초가 아직 없어 NXT 프리장 시세 기준(#469). 미체결은 '—'.
+    # 프리장(08:0x)은 정규장 시초가 아직 없어 NXT 프리장 시세 기준(#469). 미체결은 'NXT 미체결'.
     px_label = "NXT" if snap.mode == "kr_premarket" else "시초"
 
-    def _tp(t: dict) -> str:
+    def _tpx(t: dict) -> str:
+        """오늘 가격(변동). today_pct=None(NXT 미체결)이면 cur_price가 전일종가라 가격을 쓰지 않는다."""
         tp = t.get("today_pct")
-        return f"{tp:+.1f}%" if tp is not None else "—"
+        if tp is None:
+            return f"{px_label} 미체결"
+        cur = t.get("cur_price", 0) or 0
+        if not cur:  # 가격 결측 — 등락률이라도
+            return f"{px_label} {tp:+.1f}%"
+        return _won_px(cur, _won_change(cur, tp))
 
     if snap.prev_top3_status:
         lines.append(f"🏆 *전일 추천 Top3 {px_label}* ({snap.prev_top3_date[5:]})")
         for t in snap.prev_top3_status:
-            # KO2(2026-06-14): 종목명 한 줄, 시초·추천가대비는 한 줄 아래 '상승률:' 접두로(가시성).
-            lines.append(f"  · {_naver_link(t['name'], t['ticker'])}")
-            lines.append(f"    상승률: {px_label} {_tp(t)} "
-                         f"(추천가대비 {t.get('return_pct', 0):+.1f}%)")
+            lines.extend(_stock_lines(_naver_link(t["name"], t["ticker"]), _tpx(t)))
+            rec, cur = t.get("rec_price", 0) or 0, t.get("cur_price", 0) or 0
+            if rec and cur:
+                lines.append(f"    └ 추천가 {rec:,.0f}원 대비 {_arrow(cur - rec)}")
             fl = _flow_line(t)  # 장초(09:15) 분봉 추세(#473) — 프리장은 흐름 없어 미표기
             if fl:
                 lines.append(fl)
@@ -824,9 +910,7 @@ def _format_kr_morning_summary(snap: MarketSnapshot, *, private: bool = False) -
     if snap.prev_candidates_status:
         lines.append(f"🎯 *전일 종가베팅 {px_label}* ({snap.prev_candidates_date[5:]})")
         for t in snap.prev_candidates_status:
-            # KO3(2026-06-14): 글자 안 잘리게 종목명/시초를 줄바꿈 분리.
-            lines.append(f"  · {_naver_link(t['name'], t['ticker'])}")
-            lines.append(f"    {px_label} {_tp(t)}")
+            lines.extend(_stock_lines(_naver_link(t["name"], t["ticker"]), _tpx(t)))
             fl = _flow_line(t)
             if fl:
                 lines.append(fl)
