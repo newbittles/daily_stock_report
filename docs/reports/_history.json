@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-10-22",
+    "time": "08:05",
+    "mode": "kr_premarket",
+    "url": "reports/2026-10-22-kr-pre.html",
+    "summary": "",
+    "kospi_pct": 0.0,
+    "kosdaq_pct": 0.0
+  },
+  {
+    "date": "2026-10-22",
     "time": "06:30",
     "mode": "us_morning",
     "url": "reports/2026-10-22-us.html",
@@ -527,15 +536,6 @@
     "mode": "us_afterhours",
     "url": "reports/2026-10-13-us-after.html",
     "summary": "S&P500 7,807(-0.06%) · 나스닥 27,246(-0.44%). 강세 섹터: 에너지, 헬스케어/바이오, 금융.",
-    "kospi_pct": null,
-    "kosdaq_pct": null
-  },
-  {
-    "date": "2026-10-13",
-    "time": "11:40",
-    "mode": "midday",
-    "url": "reports/2026-10-13-midday.html",
-    "summary": "국내 증시.",
     "kospi_pct": null,
     "kosdaq_pct": null
   }
