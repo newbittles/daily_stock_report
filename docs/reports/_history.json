@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-10-23",
+    "time": "08:05",
+    "mode": "kr_premarket",
+    "url": "reports/2026-10-23-kr-pre.html",
+    "summary": "",
+    "kospi_pct": 0.0,
+    "kosdaq_pct": 0.0
+  },
+  {
+    "date": "2026-10-23",
     "time": "06:30",
     "mode": "us_morning",
     "url": "reports/2026-10-23-us.html",
@@ -527,15 +536,6 @@
     "mode": "us_afterhours",
     "url": "reports/2026-10-14-us-after.html",
     "summary": "S&P500 7,805(-0.02%) · 나스닥 27,204(-0.15%). 강세 섹터: 태양광/신재생, 에너지, 경기소비재.",
-    "kospi_pct": null,
-    "kosdaq_pct": null
-  },
-  {
-    "date": "2026-10-14",
-    "time": "11:40",
-    "mode": "midday",
-    "url": "reports/2026-10-14-midday.html",
-    "summary": "국내 증시.",
     "kospi_pct": null,
     "kosdaq_pct": null
   }
