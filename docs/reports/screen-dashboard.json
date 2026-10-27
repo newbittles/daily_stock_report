@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-10-26T16:41:46.098585",
-  "date_str": "2026-10-26",
+  "generated_at": "2026-10-27T16:41:41.806217",
+  "date_str": "2026-10-27",
   "strategies": [
     "A. 수렴 후 대세상승 시작",
     "B. 주도주 20일선 눌림목",
@@ -9,23 +9,60 @@
   ],
   "by_strategy": {
     "A. 수렴 후 대세상승 시작": {
+      "20261027": [
+        {
+          "ticker": "411080",
+          "name": "샌즈랩",
+          "reason": "수렴대 위로 상승전환 (수렴 5.6%) / 120선 위 (+49.2%) · MACD[0선위,상승]; 거래대금 606억 (OK)",
+          "endstage": false,
+          "price": 8060.0
+        },
+        {
+          "ticker": "053800",
+          "name": "안랩",
+          "reason": "수렴대 위로 상승전환 (수렴 4.8%) / 120선 위 (+48.4%) · MACD[0선위,상승]; 거래대금 248억 (OK)",
+          "endstage": false,
+          "price": 92700.0
+        },
+        {
+          "ticker": "307180",
+          "name": "아이엘",
+          "reason": "수렴대 위로 상승전환 (수렴 2.7%) / 120선 위 (+3.6%) · MACD[GC,상승]; 거래대금 42억 (OK)",
+          "endstage": false,
+          "price": 5980.0
+        },
+        {
+          "ticker": "0010F0",
+          "name": "보원케미칼",
+          "reason": "수렴대 위로 상승전환 (수렴 3.0%) / 120선 위 (+12.1%) · MACD[0선위,상승]; 거래대금 118억 (OK)",
+          "endstage": false,
+          "price": 3280.0
+        },
+        {
+          "ticker": "092870",
+          "name": "엑시콘",
+          "reason": "수렴대 위로 상승전환 (수렴 1.3%) / 120선 위 (+97.3%) · MACD[0선위,상승]; 거래대금 331억 (OK)",
+          "endstage": false,
+          "price": 58000.0
+        },
+        {
+          "ticker": "425420",
+          "name": "티에프이",
+          "reason": "수렴대 위로 상승전환 (수렴 3.6%) / 120선 위 (+50.9%) · MACD[GC,0선위,상승]; 거래대금 364억 (OK)",
+          "endstage": false,
+          "price": 75600.0
+        }
+      ],
       "20261023": [
         {
-          "ticker": "003780",
-          "name": "진양산업",
-          "reason": "수렴대 위로 상승전환 (수렴 5.3%) / 120선 위 (+20.7%) · MACD[GC,0선위,상승]; 거래대금 251억 (OK)",
+          "ticker": "425420",
+          "name": "티에프이",
+          "reason": "수렴대 위로 상승전환 (수렴 3.6%) / 120선 위 (+29.9%) · MACD[0선위,상승]; 거래대금 133억 (OK)",
           "endstage": false,
-          "price": 5490.0
+          "price": 65000.0
         }
       ],
       "20261022": [
-        {
-          "ticker": "065450",
-          "name": "빅텍",
-          "reason": "수렴대 위로 상승전환 (수렴 5.7%) / 120선 위 (+10.6%) · MACD[0선돌파,GC,0선위,상승]; 거래대금 1211억 (OK)",
-          "endstage": false,
-          "price": 3750.0
-        },
         {
           "ticker": "028050",
           "name": "삼성E&A",
@@ -60,67 +97,37 @@
           "endstage": false,
           "price": 561000.0
         }
-      ],
-      "20261008": [
-        {
-          "ticker": "006400",
-          "name": "삼성SDI",
-          "reason": "수렴대 위로 상승전환 (수렴 2.6%) / 120선 위 (+7.1%) · MACD[GC,0선위,상승]; 거래대금 3910억 (OK)",
-          "endstage": false,
-          "price": 569000.0
-        }
       ]
     },
     "B. 주도주 20일선 눌림목": {
+      "20261027": [
+        {
+          "ticker": "354320",
+          "name": "알멕",
+          "reason": "급등 (10일 +65%) / 20일선 위 (+14.0%, 60선기울기 +16.4%) / 단기눌림 (5일선 -4.4%, 5일고점 -20.4%); 거래대금 363억 (OK)",
+          "endstage": false,
+          "price": 61300.0
+        }
+      ],
       "20261026": [
         {
-          "ticker": "419050",
-          "name": "삼기에너지솔루션즈",
-          "reason": "급등 (10일 +41%) / 20일선 위 (+9.3%, 60선기울기 +9.8%) / 단기눌림 (5일선 -3.0%, 5일고점 -14.2%); 거래대금 259억 (OK)",
+          "ticker": "354320",
+          "name": "알멕",
+          "reason": "급등 (10일 +65%) / 20일선 위 (+3.2%, 60선기울기 +16.4%) / 단기눌림 (5일선 -14.1%, 5일고점 -29.2%); 거래대금 218억 (OK)",
           "endstage": false,
-          "price": 2330.0
+          "price": 54500.0
         }
       ],
       "20261023": [
         {
-          "ticker": "419050",
-          "name": "삼기에너지솔루션즈",
-          "reason": "급등 (10일 +41%) / 20일선 위 (+7.6%, 60선기울기 +9.4%) / 단기눌림 (5일선 -8.9%, 5일고점 -18.1%); 거래대금 71억 (OK)",
+          "ticker": "092870",
+          "name": "엑시콘",
+          "reason": "급등 (10일 +57%) / 20일선 위 (+1.4%, 60선기울기 +22.8%) / 단기눌림 (5일선 -0.2%, 5일고점 -10.8%); 거래대금 182억 (OK)",
           "endstage": false,
-          "price": 2255.0
-        },
-        {
-          "ticker": "328130",
-          "name": "루닛",
-          "reason": "급등 (10일 +31%) / 20일선 위 (+0.1%, 60선기울기 +3.3%) / 단기눌림 (5일선 -5.4%, 5일고점 -15.1%); 거래대금 59억 (OK)",
-          "endstage": false,
-          "price": 11300.0
-        }
-      ],
-      "20261022": [
-        {
-          "ticker": "419050",
-          "name": "삼기에너지솔루션즈",
-          "reason": "급등 (10일 +48%) / 20일선 위 (+13.7%, 60선기울기 +9.2%) / 단기눌림 (5일선 -4.6%, 5일고점 -15.1%); 거래대금 105억 (OK)",
-          "endstage": false,
-          "price": 2340.0
-        },
-        {
-          "ticker": "328130",
-          "name": "루닛",
-          "reason": "급등 (10일 +31%) / 20일선 위 (+0.3%, 60선기울기 +3.1%) / 단기눌림 (5일선 -6.5%, 5일고점 -15.3%); 거래대금 67억 (OK)",
-          "endstage": false,
-          "price": 11270.0
+          "price": 51300.0
         }
       ],
       "20261021": [
-        {
-          "ticker": "328130",
-          "name": "루닛",
-          "reason": "급등 (10일 +31%) / 20일선 위 (+3.5%, 60선기울기 +3.0%) / 단기눌림 (5일선 -4.1%, 5일고점 -13.5%); 거래대금 129억 (OK)",
-          "endstage": false,
-          "price": 11510.0
-        },
         {
           "ticker": "006400",
           "name": "삼성SDI",
@@ -131,6 +138,13 @@
       ],
       "20261020": [
         {
+          "ticker": "092870",
+          "name": "엑시콘",
+          "reason": "급등 (10일 +57%) / 20일선 위 (+3.3%, 60선기울기 +24.9%) / 단기눌림 (5일선 -1.4%, 5일고점 -13.2%); 거래대금 148억 (OK)",
+          "endstage": false,
+          "price": 49900.0
+        },
+        {
           "ticker": "006400",
           "name": "삼성SDI",
           "reason": "급등 (10일 +18%) / 20일선 위 (+2.0%, 60선기울기 +4.7%) / 단기눌림 (5일선 -1.0%, 5일고점 -7.3%); 거래대금 3918억 (OK)",
@@ -138,7 +152,62 @@
           "price": 556000.0
         }
       ],
+      "20261019": [
+        {
+          "ticker": "053800",
+          "name": "안랩",
+          "reason": "급등 (10일 +28%) / 20일선 위 (+11.9%, 60선기울기 +8.4%) / 단기눌림 (5일선 -0.8%, 5일고점 -6.7%); 거래대금 144억 (OK)",
+          "endstage": false,
+          "price": 86800.0
+        }
+      ],
+      "20261016": [
+        {
+          "ticker": "354320",
+          "name": "알멕",
+          "reason": "급등 (10일 +50%) / 20일선 위 (+15.3%, 60선기울기 +12.4%) / 단기눌림 (5일선 -5.0%, 5일고점 -12.8%); 거래대금 56억 (OK)",
+          "endstage": false,
+          "price": 51800.0
+        },
+        {
+          "ticker": "0010F0",
+          "name": "보원케미칼",
+          "reason": "급등 (10일 +48%) / 20일선 위 (+12.2%, 60선기울기 +6.8%) / 단기눌림 (5일선 -3.6%, 5일고점 -19.3%); 거래대금 72억 (OK)",
+          "endstage": false,
+          "price": 3220.0
+        }
+      ],
+      "20261015": [
+        {
+          "ticker": "354320",
+          "name": "알멕",
+          "reason": "급등 (10일 +53%) / 20일선 위 (+9.7%, 60선기울기 +11.8%) / 단기눌림 (5일선 -12.7%, 5일고점 -18.3%); 거래대금 86억 (OK)",
+          "endstage": false,
+          "price": 48550.0
+        }
+      ],
       "20261014": [
+        {
+          "ticker": "354320",
+          "name": "알멕",
+          "reason": "급등 (10일 +58%) / 20일선 위 (+25.1%, 60선기울기 +11.2%) / 단기눌림 (5일선 -1.5%, 5일고점 -7.7%); 거래대금 106억 (OK)",
+          "endstage": false,
+          "price": 54800.0
+        },
+        {
+          "ticker": "411080",
+          "name": "샌즈랩",
+          "reason": "급등 (10일 +54%) / 20일선 위 (+6.9%, 60선기울기 +12.5%) / 단기눌림 (5일선 -2.5%, 5일고점 -23.5%); 거래대금 68억 (OK)",
+          "endstage": false,
+          "price": 7390.0
+        },
+        {
+          "ticker": "092870",
+          "name": "엑시콘",
+          "reason": "급등 (10일 +29%) / 20일선 위 (+14.5%, 60선기울기 +26.5%) / 단기눌림 (5일선 -6.8%, 5일고점 -14.4%); 거래대금 294억 (OK)",
+          "endstage": false,
+          "price": 50600.0
+        },
         {
           "ticker": "036930",
           "name": "주성엔지니어링",
@@ -147,7 +216,51 @@
           "price": 240500.0
         }
       ],
+      "20261013": [
+        {
+          "ticker": "411080",
+          "name": "샌즈랩",
+          "reason": "급등 (10일 +57%) / 20일선 위 (+9.0%, 60선기울기 +12.0%) / 단기눌림 (5일선 -6.8%, 5일고점 -23.8%); 거래대금 272억 (OK)",
+          "endstage": false,
+          "price": 7360.0
+        },
+        {
+          "ticker": "425420",
+          "name": "티에프이",
+          "reason": "급등 (10일 +29%) / 20일선 위 (+0.8%, 60선기울기 +10.9%) / 단기눌림 (5일선 -3.4%, 5일고점 -13.0%); 거래대금 71억 (OK)",
+          "endstage": false,
+          "price": 62400.0
+        }
+      ],
       "20261012": [
+        {
+          "ticker": "069540",
+          "name": "빛과전자",
+          "reason": "급등 (10일 +56%) / 20일선 위 (+2.8%, 60선기울기 +14.4%) / 단기눌림 (5일선 -8.6%, 5일고점 -27.2%); 거래대금 441억 (OK)",
+          "endstage": false,
+          "price": 4360.0
+        },
+        {
+          "ticker": "411080",
+          "name": "샌즈랩",
+          "reason": "급등 (10일 +57%) / 20일선 위 (+8.0%, 60선기울기 +11.6%) / 단기눌림 (5일선 -8.7%, 5일고점 -26.2%); 거래대금 139억 (OK)",
+          "endstage": false,
+          "price": 7130.0
+        },
+        {
+          "ticker": "053800",
+          "name": "안랩",
+          "reason": "급등 (10일 +31%) / 20일선 위 (+10.5%, 60선기울기 +6.9%) / 단기눌림 (5일선 -1.8%, 5일고점 -16.2%); 거래대금 132억 (OK)",
+          "endstage": false,
+          "price": 78000.0
+        },
+        {
+          "ticker": "425420",
+          "name": "티에프이",
+          "reason": "급등 (10일 +26%) / 20일선 위 (+2.9%, 60선기울기 +10.8%) / 단기눌림 (5일선 -4.9%, 5일고점 -17.6%); 거래대금 68억 (OK)",
+          "endstage": false,
+          "price": 63200.0
+        },
         {
           "ticker": "036930",
           "name": "주성엔지니어링",
@@ -158,45 +271,40 @@
       ]
     },
     "C. 대세 정배열 추세추종": {
-      "20261026": [
+      "20261027": [
         {
-          "ticker": "241690",
-          "name": "유니테크노",
-          "reason": "대세 정배열 + 신고가 (-2.6%, 60선+29%); 거래대금 306억 (OK)",
+          "ticker": "028050",
+          "name": "삼성E&A",
+          "reason": "대세 정배열 + 신고가 (-3.0%, 60선+28%); 거래대금 2852억 (OK)",
           "endstage": false,
-          "price": 3350.0
-        },
-        {
-          "ticker": "328130",
-          "name": "루닛",
-          "reason": "대세 정배열 + 신고가 (+0.0%, 60선+45%); 거래대금 614억 (OK)",
-          "endstage": false,
-          "price": 14690.0
+          "price": 62000.0
         }
       ],
-      "20261023": [
+      "20261026": [
         {
-          "ticker": "003780",
-          "name": "진양산업",
-          "reason": "대세 정배열 + 신고가 (+0.0%, 60선+35%); 거래대금 251억 (OK)",
+          "ticker": "028050",
+          "name": "삼성E&A",
+          "reason": "대세 정배열 + 신고가 (-2.4%, 60선+24%); 거래대금 3389억 (OK)",
           "endstage": false,
-          "price": 5490.0
+          "price": 59800.0
+        }
+      ],
+      "20261021": [
+        {
+          "ticker": "354320",
+          "name": "알멕",
+          "reason": "대세 정배열 + 신고가 (-0.9%, 60선+75%); 거래대금 149억 (OK)",
+          "endstage": false,
+          "price": 64200.0
         }
       ],
       "20261019": [
         {
-          "ticker": "419050",
-          "name": "삼기에너지솔루션즈",
-          "reason": "대세 정배열 + 신고가 (-2.2%, 60선+63%); 거래대금 1490억 (OK)",
+          "ticker": "354320",
+          "name": "알멕",
+          "reason": "대세 정배열 + 신고가 (-2.9%, 60선+76%); 거래대금 269억 (OK)",
           "endstage": false,
-          "price": 2695.0
-        },
-        {
-          "ticker": "328130",
-          "name": "루닛",
-          "reason": "대세 정배열 + 신고가 (-1.1%, 60선+31%); 거래대금 205억 (OK)",
-          "endstage": false,
-          "price": 12990.0
+          "price": 62600.0
         },
         {
           "ticker": "006400",
@@ -215,83 +323,52 @@
           "price": 591000.0
         }
       ],
-      "20261008": [
+      "20261013": [
         {
-          "ticker": "419050",
-          "name": "삼기에너지솔루션즈",
-          "reason": "대세 정배열 + 신고가 (+0.0%, 60선+46%); 거래대금 571억 (OK)",
+          "ticker": "354320",
+          "name": "알멕",
+          "reason": "대세 정배열 + 신고가 (-0.2%, 60선+76%); 거래대금 89억 (OK)",
           "endstage": false,
-          "price": 2305.0
+          "price": 59300.0
+        },
+        {
+          "ticker": "092870",
+          "name": "엑시콘",
+          "reason": "대세 정배열 + 신고가 (-1.9%, 60선+109%); 거래대금 289억 (OK)",
+          "endstage": false,
+          "price": 58000.0
+        }
+      ],
+      "20261012": [
+        {
+          "ticker": "354320",
+          "name": "알멕",
+          "reason": "대세 정배열 + 신고가 (-2.2%, 60선+75%); 거래대금 91억 (OK)",
+          "endstage": false,
+          "price": 58100.0
         }
       ]
     },
     "D. 추세 반전": {
-      "20261026": [
-        {
-          "ticker": "241690",
-          "name": "유니테크노",
-          "reason": "추세 반전 (일목구름 위, 5>20, MACD+, 20>60); 거래대금 306억 (OK)",
-          "endstage": false,
-          "price": 3350.0
-        },
-        {
-          "ticker": "065450",
-          "name": "빅텍",
-          "reason": "추세 반전 (일목구름 위, 5>20, MACD+, 20>60); 거래대금 254억 (OK)",
-          "endstage": false,
-          "price": 3050.0
-        },
-        {
-          "ticker": "003780",
-          "name": "진양산업",
-          "reason": "추세 반전 (일목구름 위, 5>20, MACD+, 20>60); 거래대금 401억 (OK)",
-          "endstage": false,
-          "price": 5410.0
-        },
-        {
-          "ticker": "458350",
-          "name": "에스팀",
-          "reason": "추세 반전 (일목구름 위, 5>20, MACD+, 20<60(초입)); 거래대금 274억 (OK)",
-          "endstage": false,
-          "price": 4315.0
-        },
+      "20261027": [
         {
           "ticker": "028050",
           "name": "삼성E&A",
-          "reason": "추세 반전 (일목구름 위, 5>20, MACD+, 20>60); 거래대금 3248억 (OK)",
+          "reason": "추세 반전 (일목구름 위, 5>20, MACD+, 20>60); 거래대금 2852억 (OK)",
           "endstage": false,
-          "price": 59400.0
+          "price": 62000.0
+        }
+      ],
+      "20261026": [
+        {
+          "ticker": "028050",
+          "name": "삼성E&A",
+          "reason": "추세 반전 (일목구름 위, 5>20, MACD+, 20>60); 거래대금 3389억 (OK)",
+          "endstage": false,
+          "price": 59800.0
         }
       ],
       "20261023": [
-        {
-          "ticker": "419050",
-          "name": "삼기에너지솔루션즈",
-          "reason": "추세 반전 (일목구름 위, 5>20, MACD+, 20>60); 거래대금 71억 (OK)",
-          "endstage": false,
-          "price": 2255.0
-        },
-        {
-          "ticker": "241690",
-          "name": "유니테크노",
-          "reason": "추세 반전 (일목구름 위, 5>20, MACD+, 20<60(초입)); 거래대금 94억 (OK)",
-          "endstage": false,
-          "price": 2760.0
-        },
-        {
-          "ticker": "065450",
-          "name": "빅텍",
-          "reason": "추세 반전 (일목구름 위, 5>20, MACD+, 20>60); 거래대금 1697억 (OK)",
-          "endstage": false,
-          "price": 3810.0
-        },
-        {
-          "ticker": "003780",
-          "name": "진양산업",
-          "reason": "추세 반전 (일목구름 위, 5>20, MACD+, 20>60); 거래대금 251억 (OK)",
-          "endstage": false,
-          "price": 5490.0
-        },
         {
           "ticker": "028050",
           "name": "삼성E&A",
@@ -300,435 +377,338 @@
           "price": 59800.0
         }
       ],
-      "20261022": [
-        {
-          "ticker": "419050",
-          "name": "삼기에너지솔루션즈",
-          "reason": "추세 반전 (일목구름 위, 5>20, MACD+, 20>60); 거래대금 105억 (OK)",
-          "endstage": false,
-          "price": 2340.0
-        },
-        {
-          "ticker": "065450",
-          "name": "빅텍",
-          "reason": "추세 반전 (일목구름 위, 5>20, MACD+, 20>60); 거래대금 1211억 (OK)",
-          "endstage": false,
-          "price": 3750.0
-        },
-        {
-          "ticker": "458350",
-          "name": "에스팀",
-          "reason": "추세 반전 (일목구름 위, 5>20, MACD+, 20<60(초입)); 거래대금 44억 (OK)",
-          "endstage": false,
-          "price": 4190.0
-        }
-      ],
-      "20261021": [
-        {
-          "ticker": "419050",
-          "name": "삼기에너지솔루션즈",
-          "reason": "추세 반전 (일목구름 위, 5>20, MACD+, 20>60); 거래대금 178억 (OK)",
-          "endstage": false,
-          "price": 2540.0
-        },
-        {
-          "ticker": "065450",
-          "name": "빅텍",
-          "reason": "추세 반전 (일목구름 위, 5>20, MACD+, 20>60); 거래대금 154억 (OK)",
-          "endstage": false,
-          "price": 3090.0
-        },
-        {
-          "ticker": "328130",
-          "name": "루닛",
-          "reason": "추세 반전 (일목구름 위, 5>20, MACD+, 20>60); 거래대금 129억 (OK)",
-          "endstage": false,
-          "price": 11510.0
-        },
-        {
-          "ticker": "458350",
-          "name": "에스팀",
-          "reason": "추세 반전 (일목구름 위, 5>20, MACD+, 20<60(초입)); 거래대금 345억 (OK)",
-          "endstage": false,
-          "price": 4260.0
-        }
-      ],
       "20261020": [
         {
-          "ticker": "419050",
-          "name": "삼기에너지솔루션즈",
-          "reason": "추세 반전 (일목구름 위, 5>20, MACD+, 20>60); 거래대금 341억 (OK)",
+          "ticker": "0010F0",
+          "name": "보원케미칼",
+          "reason": "추세 반전 (일목구름 위, 5>20, MACD+, 20>60); 거래대금 98억 (OK)",
           "endstage": false,
-          "price": 2540.0
-        },
-        {
-          "ticker": "241690",
-          "name": "유니테크노",
-          "reason": "추세 반전 (일목구름 위, 5>20, MACD+, 20<60(초입)); 거래대금 141억 (OK)",
-          "endstage": false,
-          "price": 2720.0
-        },
-        {
-          "ticker": "328130",
-          "name": "루닛",
-          "reason": "추세 반전 (일목구름 위, 5>20, MACD+, 20>60); 거래대금 113억 (OK)",
-          "endstage": false,
-          "price": 12660.0
-        },
-        {
-          "ticker": "458350",
-          "name": "에스팀",
-          "reason": "추세 반전 (일목구름 위, 5>20, MACD+, 20<60(초입)); 거래대금 38억 (OK)",
-          "endstage": false,
-          "price": 3795.0
+          "price": 3480.0
         }
       ],
       "20261019": [
         {
-          "ticker": "419050",
-          "name": "삼기에너지솔루션즈",
-          "reason": "추세 반전 (일목구름 위, 5>20, MACD+, 20>60); 거래대금 1490억 (OK)",
+          "ticker": "0010F0",
+          "name": "보원케미칼",
+          "reason": "추세 반전 (일목구름 위, 5>20, MACD+, 20>60); 거래대금 218억 (OK)",
           "endstage": false,
-          "price": 2695.0
-        },
-        {
-          "ticker": "328130",
-          "name": "루닛",
-          "reason": "추세 반전 (일목구름 위, 5>20, MACD+, 20>60); 거래대금 205억 (OK)",
-          "endstage": false,
-          "price": 12990.0
+          "price": 3500.0
         }
       ],
       "20261016": [
         {
-          "ticker": "328130",
-          "name": "루닛",
-          "reason": "추세 반전 (일목구름 위, 5>20, MACD+, 20>60); 거래대금 140억 (OK)",
+          "ticker": "0010F0",
+          "name": "보원케미칼",
+          "reason": "추세 반전 (일목구름 위, 5>20, MACD+, 20>60); 거래대금 72억 (OK)",
           "endstage": false,
-          "price": 11840.0
+          "price": 3220.0
         }
       ],
-      "20261015": [
+      "20261013": [
         {
-          "ticker": "328130",
-          "name": "루닛",
-          "reason": "추세 반전 (일목구름 위, 5>20, MACD+, 20>60); 거래대금 98억 (OK)",
+          "ticker": "053800",
+          "name": "안랩",
+          "reason": "추세 반전 (일목구름 위, 5>20, MACD+, 20>60); 거래대금 433억 (OK)",
           "endstage": false,
-          "price": 11040.0
-        }
-      ],
-      "20261014": [
-        {
-          "ticker": "328130",
-          "name": "루닛",
-          "reason": "추세 반전 (일목구름 위, 5>20, MACD+, 20>60); 거래대금 154억 (OK)",
-          "endstage": false,
-          "price": 11720.0
+          "price": 86200.0
         }
       ],
       "20261012": [
         {
-          "ticker": "419050",
-          "name": "삼기에너지솔루션즈",
-          "reason": "추세 반전 (일목구름 위, 5>20, MACD+, 20>60); 거래대금 379억 (OK)",
+          "ticker": "053800",
+          "name": "안랩",
+          "reason": "추세 반전 (일목구름 위, 5>20, MACD+, 20>60); 거래대금 132억 (OK)",
           "endstage": false,
-          "price": 2295.0
-        }
-      ],
-      "20261008": [
-        {
-          "ticker": "419050",
-          "name": "삼기에너지솔루션즈",
-          "reason": "추세 반전 (일목구름 위, 5>20, MACD+, 20>60); 거래대금 571억 (OK)",
-          "endstage": false,
-          "price": 2305.0
+          "price": 78000.0
         }
       ]
     }
   },
   "charts": {
-    "003780": "charts_interactive/2026-10-26-003780.html",
-    "006400": "charts_interactive/2026-10-26-006400.html",
-    "028050": "charts_interactive/2026-10-26-028050.html",
-    "036930": "charts_interactive/2026-10-26-036930.html",
-    "065450": "charts_interactive/2026-10-26-065450.html",
-    "241690": "charts_interactive/2026-10-26-241690.html",
-    "328130": "charts_interactive/2026-10-26-328130.html",
-    "419050": "charts_interactive/2026-10-26-419050.html",
-    "458350": "charts_interactive/2026-10-26-458350.html"
+    "0010F0": "charts_interactive/2026-10-27-0010F0.html",
+    "006400": "charts_interactive/2026-10-27-006400.html",
+    "028050": "charts_interactive/2026-10-27-028050.html",
+    "036930": "charts_interactive/2026-10-27-036930.html",
+    "053800": "charts_interactive/2026-10-27-053800.html",
+    "069540": "charts_interactive/2026-10-27-069540.html",
+    "092870": "charts_interactive/2026-10-27-092870.html",
+    "307180": "charts_interactive/2026-10-27-307180.html",
+    "354320": "charts_interactive/2026-10-27-354320.html",
+    "411080": "charts_interactive/2026-10-27-411080.html",
+    "425420": "charts_interactive/2026-10-27-425420.html"
   },
   "market": {
     "new_highs": [],
     "sectors_up": [
       {
-        "code": "0503",
-        "name": "VKOSPI",
-        "index": 52.46,
-        "change_pct": 0.79,
-        "volume": 0
-      },
-      {
-        "code": "0025",
-        "name": "보험",
-        "index": 41627.93,
-        "change_pct": -0.44,
-        "volume": 3895
-      },
-      {
-        "code": "0016",
-        "name": "유통",
-        "index": 516.97,
-        "change_pct": -0.69,
-        "volume": 8459
-      },
-      {
-        "code": "0029",
-        "name": "IT 서비스",
-        "index": 1033.09,
-        "change_pct": -0.82,
-        "volume": 5214
-      },
-      {
         "code": "0013",
         "name": "전기·전자",
-        "index": 86427.81,
-        "change_pct": -0.96,
-        "volume": 31443
+        "index": 90296.15,
+        "change_pct": 4.48,
+        "volume": 41832
       },
       {
-        "code": "0019",
-        "name": "운송·창고",
-        "index": 1940.31,
-        "change_pct": -0.98,
-        "volume": 8468
+        "code": "0014",
+        "name": "의료·정밀기기",
+        "index": 1878.14,
+        "change_pct": 4.3,
+        "volume": 1393
+      },
+      {
+        "code": "0027",
+        "name": "제조",
+        "index": 16538.44,
+        "change_pct": 3.52,
+        "volume": 106382
+      },
+      {
+        "code": "2283",
+        "name": "코스피 200 기후변화지수",
+        "index": 3908.31,
+        "change_pct": 3.48,
+        "volume": 93164
+      },
+      {
+        "code": "2180",
+        "name": "코스피 200 ESG 지수",
+        "index": 1168.03,
+        "change_pct": 3.42,
+        "volume": 72932
+      },
+      {
+        "code": "0002",
+        "name": "대형주",
+        "index": 6122.07,
+        "change_pct": 3.29,
+        "volume": 71671
       }
     ],
     "sectors_down": [
       {
-        "code": "0014",
-        "name": "의료·정밀기기",
-        "index": 1800.74,
-        "change_pct": -5.88,
-        "volume": 1138
-      },
-      {
-        "code": "0011",
-        "name": "금속",
-        "index": 5167.04,
-        "change_pct": -3.51,
-        "volume": 22155
-      },
-      {
-        "code": "0026",
-        "name": "일반서비스",
-        "index": 1334.08,
-        "change_pct": -3.48,
-        "volume": 7687
-      },
-      {
-        "code": "0012",
-        "name": "기계·장비",
-        "index": 2299.04,
-        "change_pct": -3.16,
-        "volume": 7375
-      },
-      {
-        "code": "0006",
-        "name": "섬유·의류",
-        "index": 206.08,
+        "code": "0009",
+        "name": "제약",
+        "index": 14971.91,
         "change_pct": -3.01,
-        "volume": 5083
+        "volume": 4175
       },
       {
-        "code": "0015",
-        "name": "운송장비·부품",
-        "index": 3539.5,
-        "change_pct": -2.96,
-        "volume": 13200
+        "code": "0503",
+        "name": "VKOSPI",
+        "index": 51.33,
+        "change_pct": -2.15,
+        "volume": 0
+      },
+      {
+        "code": "0030",
+        "name": "오락·문화",
+        "index": 811.34,
+        "change_pct": -1.79,
+        "volume": 1423
+      },
+      {
+        "code": "0005",
+        "name": "음식료·담배",
+        "index": 4667.07,
+        "change_pct": -0.39,
+        "volume": 1924
+      },
+      {
+        "code": "0020",
+        "name": "통신",
+        "index": 515.96,
+        "change_pct": -0.35,
+        "volume": 2421
+      },
+      {
+        "code": "0017",
+        "name": "전기·가스",
+        "index": 904.01,
+        "change_pct": -0.03,
+        "volume": 1920
       }
     ],
     "foreign_buy": [
       {
+        "ticker": "005930",
+        "name": "삼성전자",
+        "price": 222000.0,
+        "change_pct": 4.23,
+        "net_qty": 1197000,
+        "frgn_net_value": 265734,
+        "orgn_net_value": 148296
+      },
+      {
+        "ticker": "009150",
+        "name": "삼성전기",
+        "price": 1205000.0,
+        "change_pct": 7.78,
+        "net_qty": 45000,
+        "frgn_net_value": 54225,
+        "orgn_net_value": 30125
+      },
+      {
+        "ticker": "000660",
+        "name": "SK하이닉스",
+        "price": 1347000.0,
+        "change_pct": 5.65,
+        "net_qty": 28000,
+        "frgn_net_value": 37716,
+        "orgn_net_value": 226296
+      },
+      {
         "ticker": "028050",
         "name": "삼성E&A",
-        "price": 59400.0,
-        "change_pct": -0.67,
-        "net_qty": 558000,
-        "frgn_net_value": 33145,
-        "orgn_net_value": 5168
+        "price": 61900.0,
+        "change_pct": 3.51,
+        "net_qty": 406000,
+        "frgn_net_value": 25131,
+        "orgn_net_value": -1548
       },
       {
         "ticker": "079550",
         "name": "LIG디펜스앤에어로스페이스",
-        "price": 423000.0,
-        "change_pct": -11.04,
-        "net_qty": 50000,
-        "frgn_net_value": 21150,
-        "orgn_net_value": -19458
+        "price": 441500.0,
+        "change_pct": 2.91,
+        "net_qty": 55000,
+        "frgn_net_value": 24283,
+        "orgn_net_value": -883
       },
       {
-        "ticker": "000150",
-        "name": "두산",
-        "price": 899000.0,
-        "change_pct": -6.74,
-        "net_qty": 17000,
-        "frgn_net_value": 15283,
-        "orgn_net_value": -899
+        "ticker": "105560",
+        "name": "KB금융",
+        "price": 147300.0,
+        "change_pct": 0.07,
+        "net_qty": 164000,
+        "frgn_net_value": 24157,
+        "orgn_net_value": -9575
       },
       {
-        "ticker": "005935",
-        "name": "삼성전자우",
-        "price": 164500.0,
-        "change_pct": -2.03,
-        "net_qty": 83000,
-        "frgn_net_value": 13654,
-        "orgn_net_value": -13654
-      },
-      {
-        "ticker": "047810",
-        "name": "한국항공우주",
-        "price": 97000.0,
-        "change_pct": -5.09,
-        "net_qty": 85000,
-        "frgn_net_value": 8245,
-        "orgn_net_value": -776
-      },
-      {
-        "ticker": "010140",
-        "name": "삼성중공업",
-        "price": 16200.0,
-        "change_pct": -3.74,
-        "net_qty": 414000,
-        "frgn_net_value": 6707,
-        "orgn_net_value": -1782
-      },
-      {
-        "ticker": "064350",
-        "name": "현대로템",
-        "price": 78200.0,
-        "change_pct": -5.44,
-        "net_qty": 80000,
-        "frgn_net_value": 6256,
+        "ticker": "298040",
+        "name": "효성중공업",
+        "price": 1914000.0,
+        "change_pct": 3.29,
+        "net_qty": 9000,
+        "frgn_net_value": 17226,
         "orgn_net_value": 0
       },
       {
-        "ticker": "222800",
-        "name": "심텍",
-        "price": 105900.0,
-        "change_pct": -6.7,
-        "net_qty": 59000,
-        "frgn_net_value": 6248,
-        "orgn_net_value": -424
+        "ticker": "034020",
+        "name": "두산에너빌리티",
+        "price": 58900.0,
+        "change_pct": 2.26,
+        "net_qty": 232000,
+        "frgn_net_value": 13665,
+        "orgn_net_value": -5419
       },
       {
-        "ticker": "035420",
-        "name": "NAVER",
-        "price": 173100.0,
-        "change_pct": -0.29,
-        "net_qty": 35000,
-        "frgn_net_value": 6059,
-        "orgn_net_value": 1212
+        "ticker": "267260",
+        "name": "HD현대일렉트릭",
+        "price": 449000.0,
+        "change_pct": 0.45,
+        "net_qty": 27000,
+        "frgn_net_value": 12123,
+        "orgn_net_value": -4939
       },
       {
-        "ticker": "006400",
-        "name": "삼성SDI",
-        "price": 482500.0,
-        "change_pct": -1.63,
-        "net_qty": 12000,
-        "frgn_net_value": 5790,
-        "orgn_net_value": 4343
+        "ticker": "402340",
+        "name": "SK스퀘어",
+        "price": 834000.0,
+        "change_pct": 8.45,
+        "net_qty": 14000,
+        "frgn_net_value": 11676,
+        "orgn_net_value": 19182
       }
     ],
     "inst_buy": [
       {
         "ticker": "000660",
         "name": "SK하이닉스",
-        "price": 1278000.0,
-        "change_pct": 0.08,
-        "net_qty": 122000,
-        "frgn_net_value": -205758,
-        "orgn_net_value": 155916
+        "price": 1347000.0,
+        "change_pct": 5.65,
+        "net_qty": 168000,
+        "frgn_net_value": 37716,
+        "orgn_net_value": 226296
       },
       {
         "ticker": "005930",
         "name": "삼성전자",
-        "price": 213000.0,
-        "change_pct": -1.16,
-        "net_qty": 220000,
-        "frgn_net_value": -187866,
-        "orgn_net_value": 46860
+        "price": 222000.0,
+        "change_pct": 4.23,
+        "net_qty": 668000,
+        "frgn_net_value": 265734,
+        "orgn_net_value": 148296
       },
       {
-        "ticker": "018260",
-        "name": "삼성에스디에스",
-        "price": 212500.0,
-        "change_pct": -0.47,
-        "net_qty": 73000,
-        "frgn_net_value": -32513,
-        "orgn_net_value": 15513
+        "ticker": "009150",
+        "name": "삼성전기",
+        "price": 1205000.0,
+        "change_pct": 7.78,
+        "net_qty": 25000,
+        "frgn_net_value": 54225,
+        "orgn_net_value": 30125
+      },
+      {
+        "ticker": "006400",
+        "name": "삼성SDI",
+        "price": 505000.0,
+        "change_pct": 4.45,
+        "net_qty": 52000,
+        "frgn_net_value": 9595,
+        "orgn_net_value": 26260
       },
       {
         "ticker": "402340",
         "name": "SK스퀘어",
-        "price": 771000.0,
-        "change_pct": -0.52,
-        "net_qty": 20000,
-        "frgn_net_value": -1542,
-        "orgn_net_value": 15420
-      },
-      {
-        "ticker": "064400",
-        "name": "LG씨엔에스",
-        "price": 73300.0,
-        "change_pct": 0.69,
-        "net_qty": 147000,
-        "frgn_net_value": -11142,
-        "orgn_net_value": 10775
+        "price": 834000.0,
+        "change_pct": 8.45,
+        "net_qty": 23000,
+        "frgn_net_value": 11676,
+        "orgn_net_value": 19182
       },
       {
         "ticker": "032830",
         "name": "삼성생명",
-        "price": 246500.0,
-        "change_pct": 0.61,
+        "price": 254500.0,
+        "change_pct": 3.25,
+        "net_qty": 39000,
+        "frgn_net_value": -18070,
+        "orgn_net_value": 9926
+      },
+      {
+        "ticker": "028260",
+        "name": "삼성물산",
+        "price": 301000.0,
+        "change_pct": 3.08,
         "net_qty": 30000,
-        "frgn_net_value": -17255,
-        "orgn_net_value": 7395
+        "frgn_net_value": 1806,
+        "orgn_net_value": 9030
       },
       {
-        "ticker": "096770",
-        "name": "SK이노베이션",
-        "price": 136300.0,
-        "change_pct": -1.3,
-        "net_qty": 52000,
-        "frgn_net_value": -5997,
-        "orgn_net_value": 7088
+        "ticker": "042700",
+        "name": "한미반도체",
+        "price": 190600.0,
+        "change_pct": 3.59,
+        "net_qty": 38000,
+        "frgn_net_value": -10674,
+        "orgn_net_value": 7243
       },
       {
-        "ticker": "108490",
-        "name": "로보티즈",
-        "price": 246500.0,
-        "change_pct": 9.56,
-        "net_qty": 28000,
-        "frgn_net_value": 3451,
-        "orgn_net_value": 6902
+        "ticker": "089970",
+        "name": "브이엠",
+        "price": 42750.0,
+        "change_pct": 10.18,
+        "net_qty": 152000,
+        "frgn_net_value": 2907,
+        "orgn_net_value": 6498
       },
       {
-        "ticker": "028050",
-        "name": "삼성E&A",
-        "price": 59400.0,
-        "change_pct": -0.67,
-        "net_qty": 87000,
-        "frgn_net_value": 33145,
-        "orgn_net_value": 5168
-      },
-      {
-        "ticker": "086790",
-        "name": "하나금융지주",
-        "price": 112500.0,
-        "change_pct": -3.27,
-        "net_qty": 41000,
-        "frgn_net_value": -2138,
-        "orgn_net_value": 4613
+        "ticker": "098460",
+        "name": "고영",
+        "price": 29800.0,
+        "change_pct": 6.43,
+        "net_qty": 216000,
+        "frgn_net_value": -864,
+        "orgn_net_value": 6437
       }
     ]
   }
