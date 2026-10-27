@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-10-27",
+    "time": "22:40",
+    "mode": "us_intraday",
+    "url": "reports/2026-10-27-us-mid.html",
+    "summary": "S&P500 7,707(+0.40%) · 나스닥 26,370(+0.77%). 강세 섹터: 반도체, 태양광/신재생, 2차전지/리튬.",
+    "kospi_pct": null,
+    "kosdaq_pct": null
+  },
+  {
+    "date": "2026-10-27",
     "time": "21:50",
     "mode": "us_premarket",
     "url": "reports/2026-10-27-us-pre.html",
@@ -527,15 +536,6 @@
     "mode": "kr_premarket",
     "url": "reports/2026-10-19-kr-pre.html",
     "summary": "",
-    "kospi_pct": null,
-    "kosdaq_pct": null
-  },
-  {
-    "date": "2026-10-17",
-    "time": "07:00",
-    "mode": "us_morning",
-    "url": "reports/2026-10-17-us.html",
-    "summary": "S&P500 7,659(-1.09%) · 나스닥 26,140(-2.15%). 강세 섹터: 에너지, 방산/우주항공, 금융.",
     "kospi_pct": null,
     "kosdaq_pct": null
   }
