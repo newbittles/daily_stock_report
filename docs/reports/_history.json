@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-10-27",
+    "time": "13:00",
+    "mode": "us_afterhours",
+    "url": "reports/2026-10-27-us-after.html",
+    "summary": "S&P500 7,677(+0.70%) · 나스닥 26,169(+0.82%). 강세 섹터: 반도체, 방산/우주항공, 기술/IT.",
+    "kospi_pct": null,
+    "kosdaq_pct": null
+  },
+  {
+    "date": "2026-10-27",
     "time": "11:40",
     "mode": "midday",
     "url": "reports/2026-10-27-midday.html",
@@ -526,15 +535,6 @@
     "time": "16:00",
     "mode": "post_close",
     "url": "reports/2026-10-16-post.html",
-    "summary": "국내 증시.",
-    "kospi_pct": null,
-    "kosdaq_pct": null
-  },
-  {
-    "date": "2026-10-16",
-    "time": "14:50",
-    "mode": "pre_close",
-    "url": "reports/2026-10-16-pre.html",
     "summary": "국내 증시.",
     "kospi_pct": null,
     "kosdaq_pct": null
