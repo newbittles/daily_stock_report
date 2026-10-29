@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-10-29",
+    "time": "09:15",
+    "mode": "kr_open",
+    "url": "reports/2026-10-29-kr-open.html",
+    "summary": "코스피 0.0(+0.00%) · 코스닥 0.0(+0.00%).",
+    "kospi_pct": 0.0,
+    "kosdaq_pct": 0.0
+  },
+  {
+    "date": "2026-10-29",
     "time": "08:05",
     "mode": "kr_premarket",
     "url": "reports/2026-10-29-kr-pre.html",
@@ -529,14 +538,5 @@
     "summary": "코스피 0.0(+0.00%) · 코스닥 0.0(+0.00%).",
     "kospi_pct": 0.0,
     "kosdaq_pct": 0.0
-  },
-  {
-    "date": "2026-10-20",
-    "time": "13:00",
-    "mode": "us_afterhours",
-    "url": "reports/2026-10-20-us-after.html",
-    "summary": "S&P500 7,691(+0.41%) · 나스닥 26,431(+1.11%). 강세 섹터: 경기소비재, 반도체, 기술/IT.",
-    "kospi_pct": null,
-    "kosdaq_pct": null
   }
 ]
