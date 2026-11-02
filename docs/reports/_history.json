@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-11-02",
+    "time": "16:00",
+    "mode": "post_close",
+    "url": "reports/2026-11-02-post.html",
+    "summary": "코스피 0.0(+0.00%) · 코스닥 0.0(+0.00%).",
+    "kospi_pct": 0.0,
+    "kosdaq_pct": 0.0
+  },
+  {
+    "date": "2026-11-02",
     "time": "14:50",
     "mode": "pre_close",
     "url": "reports/2026-11-02-pre.html",
@@ -527,15 +536,6 @@
     "mode": "us_intraday",
     "url": "reports/2026-10-22-us-mid.html",
     "summary": "S&P500 7,696(-0.79%) · 나스닥 26,320(-1.43%). 강세 섹터: 금융, 헬스케어/바이오, 에너지.",
-    "kospi_pct": null,
-    "kosdaq_pct": null
-  },
-  {
-    "date": "2026-10-22",
-    "time": "21:50",
-    "mode": "us_premarket",
-    "url": "reports/2026-10-22-us-pre.html",
-    "summary": "S&P500 선물 7,728(-0.30%) · 나스닥 선물 29,524(-0.35%). 강세 섹터: 태양광/신재생, 에너지, 헬스케어/바이오.",
     "kospi_pct": null,
     "kosdaq_pct": null
   }
