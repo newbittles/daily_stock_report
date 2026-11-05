@@ -29,9 +29,9 @@ def test_format_us_overnight_close_and_session_split() -> None:
     out = "\n".join(_format_us_overnight(snap))
     assert "나스닥 선물 +0.68%" in out
     # 2026-10-20: 퍼센트 대신 달러 가격(변동). 폭이 넘치면 세션은 다음 줄.
-    assert "엔비디아 $205.10(▼13.56)" in out and "· 프리장 $209.20(▲4.10)" in out
-    assert "애플 $307.30(▼3.42)" in out and "애플 $307.30(▼3.42) ·" not in out  # 세션 없으면 마감만
-    assert "SOXL(반도체 3X) $182.50(▼80.09)" in out and "· 프리장 $195.2" in out
+    assert "엔비디아 $205.10(▼13.56 -6.2%)" in out and "· 프리장 $209.20(▲4.10 +2.0%)" in out
+    assert "애플 $307.30(▼3.42 -1.1%)" in out and "애플 $307.30(▼3.42 -1.1%) ·" not in out  # 세션 없으면 마감만
+    assert "SOXL(반도체 3X) $182.50(▼80.09 -30.5%)" in out and "· 프리장 $195.2" in out
 
 
 def test_format_us_overnight_excludes_futures_for_premarket() -> None:
@@ -45,7 +45,7 @@ def test_format_us_overnight_excludes_futures_for_premarket() -> None:
     }
     out = "\n".join(_format_us_overnight(snap, include_futures=False))
     assert "나스닥 선물" not in out          # 선물 제외
-    assert "엔비디아 $205.10(▼13.56)" in out and "· 프리장 $209.20(▲4.10)" in out
+    assert "엔비디아 $205.10(▼13.56 -6.2%)" in out and "· 프리장 $209.20(▲4.10 +2.0%)" in out
 
 
 async def test_collect_sector_leaders_appends_soxl(monkeypatch) -> None:
@@ -126,7 +126,7 @@ def test_us_morning_shows_ewy() -> None:
     snap.ewy = {"name": "EWY(한국 MSCI ETF)", "price": 175.19, "change_pct": -14.11,
                 "session_pct": 0.5, "session_label": "애프터", "date": "2026-06-05"}
     msg = _format_us_morning_summary(snap)
-    assert "EWY" in msg and "마감 -14.11%" in msg and "애프터 +0.50%" in msg  # 병기(#507)
+    assert "EWY" in msg and "$175.19(▼" in msg and "-14.1%)" in msg and "애프터 $" in msg and "+0.5%)" in msg  # 병기(#507)
 
 
 def test_us_morning_no_ewy_when_absent() -> None:

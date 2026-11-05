@@ -93,8 +93,8 @@ def test_format_midday_has_all_sections():
     assert "오전장" in msg                                        # AI 코멘트
     assert "핫 종목" in msg and "두산로보틱스" in msg             # 핫 종목
     assert "전날 추천 Top3 현황" in msg
-    assert "추천가대비 +6.2%" in msg and "오늘 +3.1%" in msg      # 둘 다 표기
-    assert "추천가대비 -1.0%" in msg and "오늘 -0.5%" in msg
+    assert "추천가대비 +6.2%" in msg and "177,000원(▲5,300 +3.1%)" in msg  # 가격·변동률 + 추천가대비
+    assert "추천가대비 -1.0%" in msg and "475,200원(▼2,300 -0.5%)" in msg
 
 
 def test_format_midday_info_diet_km1_km3():

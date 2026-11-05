@@ -44,9 +44,9 @@ def test_premarket_top5_price_change_not_pct() -> None:
     s.overtime_losers = [{"ticker": "000000", "name": "롯데에너지머티리얼즈", "nxt_price": 31_050,
                           "reg_close": 31_500, "overtime_pct": -1.43}]
     txt = _format_kr_morning_summary(s)
-    assert "후성](" in txt and ") 9,870원(▲200)" in txt          # 짧은 이름 → 한 줄
-    assert "\n    31,050원(▼450)" in txt                          # 긴 이름 → 가격은 다음 줄
-    assert "+2.1%" not in txt and "-1.4%" not in txt
+    assert "후성](" in txt and ") 9,870원(▲200 +" in txt          # 짧은 이름 → 한 줄
+    assert "\n    31,050원(▼450 -1.4%)" in txt                    # 긴 이름 → 가격은 다음 줄
+    assert "+2.1%)" in txt and "-1.4%)" in txt                    # 2026-11-05: 가격+변동률 둘 다
 
 
 def test_won_change_snaps_to_tick() -> None:
@@ -96,13 +96,13 @@ def test_kr_open_info_diet_overnight_and_linebreaks() -> None:
     assert "테슬라" in txt and "마이크론" in txt
     assert "SOXL" in txt and "EWY" in txt
     # 2026-10-20: 퍼센트 대신 가격(변동) — 등락률 역산값을 호가단위에 맞춰 정확한 원 단위로
-    assert "61,000원(▲800)" in txt
+    assert "61,000원(▲800 +" in txt
     assert "    └ 추천가 58,500원 대비 ▲2,500" in txt
     assert "🎯 *전일 종가베팅 시초*" in txt
-    assert "594,000원(▲2,000)" in txt
+    assert "594,000원(▲2,000 +" in txt
     assert "시초 미체결" in txt               # today_pct=None → 전일종가를 오늘 가격처럼 쓰지 않는다
-    assert "테슬라 $432.10(▲8.89)" in txt     # 미국 종목도 달러 가격(변동)
-    assert "%)" not in txt.split("🏆")[1]     # Top3·종가베팅 칸에 퍼센트 없음
+    assert "테슬라 $432.10(▲8.89 +2.1%)" in txt  # 미국 종목도 달러 가격(변동·변동률)
+    assert "%)" in txt.split("🏆")[1]         # 2026-11-05: Top3·종가베팅도 변동률 병기
 
 
 def test_candidate_persist_and_find_prev(tmp_path) -> None:

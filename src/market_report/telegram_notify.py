@@ -120,17 +120,30 @@ def _arrow(chg: float, *, usd: bool = False) -> str:
 
 
 def _won_px(price: float, chg: float | None) -> str:
-    """'41,250원(▲1,350)'. 변동폭을 모르면 가격만."""
+    """'41,250원(▲1,350 +3.4%)' — 가격·변동폭·변동률(사용자 2026-11-05). 변동폭을 모르면 가격만."""
     s = f"{price:,.0f}원"
-    return f"{s}({_arrow(chg)})" if chg is not None else s
+    if chg is None:
+        return s
+    base = price - chg
+    pct = f" {chg / base * 100:+.1f}%" if base else ""
+    return f"{s}({_arrow(chg)}{pct})"
 
 
 def _usd_px(price: float, pct: float | None) -> str:
-    """'$432.10(▼5.20)' — 미국 종목. 변동폭은 등락률로 역산(센트 단위라 오차 무시 가능)."""
+    """'$432.10(▼5.20 -1.2%)' — 미국 종목, 달러. 변동폭은 등락률로 역산(센트 단위라 오차 무시 가능)."""
     s = f"${price:,.2f}"
     if pct is None or not price:
         return s
-    return f"{s}({_arrow(price - price / (1 + pct / 100), usd=True)})"
+    return f"{s}({_arrow(price - price / (1 + pct / 100), usd=True)} {pct:+.1f}%)"
+
+
+def _px(price: float | None, pct: float | None, ticker: str) -> str:
+    """종목코드 6자리=한국(원), 그 밖=미국(달러). 가격 결측이면 등락률만."""
+    if not price:
+        return f"{pct:+.1f}%" if pct is not None else ""
+    if str(ticker).isdigit():
+        return _won_px(price, _won_change(price, pct))
+    return _usd_px(price, pct)
 
 
 def _disp_width(s: str) -> int:
@@ -188,10 +201,11 @@ def _format_holdings(snap: MarketSnapshot) -> list[str]:
         lines.append(f"🤖 {snap.holdings_summary}")
     for h in snap.holdings_status:
         em = _STATE_EMOJI.get(h.get("state", "UNKNOWN"), "•")
-        sign = "+" if h.get("profit_rate", 0) >= 0 else ""
         badge = cross_badge(h.get("cross_signal"))
-        lines.append(f"  {em} {_naver_link(h['name'], h['ticker'])} "
-                     f"({sign}{h.get('profit_rate', 0):.1f}%){badge} — {h['reason']}")
+        px = _px(h.get("price"), h.get("today_pct"), h["ticker"])
+        lines.extend(_stock_lines(f"{em} {_naver_link(h['name'], h['ticker'])}", px,
+                                  bullet="  ", indent="    "))
+        lines.append(f"    수익 {h.get('profit_rate', 0):+.1f}%{badge} — {h['reason']}")
     lines.append("")
     return lines
 
@@ -424,12 +438,8 @@ def _format_e_picks(snap: MarketSnapshot) -> list[str]:
     for p in e[:7]:
         nm = p.get("name", "")
         tk = str(p.get("ticker") or p.get("symbol") or "")
-        chg = p.get("change_pct", 0) or 0
-        sign = "+" if chg >= 0 else ""
-        if tk.isdigit():  # KR
-            head = f"{_naver_link(nm, tk)} {p.get('price', 0):,.0f}원"
-        else:             # US
-            head = f"{_us_name(nm, tk)} ${p.get('price', 0):,.2f}"
+        px = _px(p.get("price"), p.get("change_pct", 0) or 0, tk)
+        head = _naver_link(nm, tk) if tk.isdigit() else _us_name(nm, tk)
         # 2단계 등급: 지수RSI<35 OR 공포탐욕≤25 → 🔥강 / 아니면 개별(시장 양호) (사용자 #330/#331/#339)
         _fg = p.get("fg_score")
         _fgs = f"·공포탐욕{_fg}" if _fg is not None else ""
@@ -439,7 +449,8 @@ def _format_e_picks(snap: MarketSnapshot) -> list[str]:
             badge = f" (개별·지수RSI{p['market_rsi']}{_fgs})"
         else:
             badge = ""
-        lines.append(f"  · {head} ({sign}{chg:.1f}%) RSI{p.get('rsi', 0):.0f}{badge}")
+        lines.extend(_stock_lines(head, px))
+        lines.append(f"    RSI{p.get('rsi', 0):.0f}{badge}")
         det = _pick_detail_line(p)
         if det:
             lines.append(det)
@@ -459,13 +470,8 @@ def _format_surge_picks(snap: MarketSnapshot) -> list[str]:
     for p in sp[:5]:
         nm = p.get("name", "")
         tk = str(p.get("ticker") or p.get("symbol") or "")
-        chg = p.get("change_pct", 0) or 0
-        sign = "+" if chg >= 0 else ""
-        if tk.isdigit():
-            head = f"{_naver_link(nm, tk)} {p.get('price', 0):,.0f}원"
-        else:
-            head = f"{_us_name(nm, tk)} ${p.get('price', 0):,.2f}"
-        lines.append(f"  · {head} ({sign}{chg:.1f}%)")
+        head = _naver_link(nm, tk) if tk.isdigit() else _us_name(nm, tk)
+        lines.extend(_stock_lines(head, _px(p.get("price"), p.get("change_pct", 0) or 0, tk)))
         det = _pick_detail_line(p)
         if det:
             lines.append(det)
@@ -572,8 +578,9 @@ def _format_post_summary(snap: MarketSnapshot, *, private: bool = False) -> str:
         lines.append("🌙 *시간외(NXT) 상위 상승률* (정규장 종가 대비)")
         for g in ot[:7]:
             # MC1(2026-06-14): 모바일 가시성 — 종목명/시세 줄바꿈 분리(앞 요구와 동일)
-            lines.append(f"  · {_naver_link(g['name'], g['ticker'])}")
-            lines.append(f"    {g.get('nxt_price', 0):,.0f}원 (+{g.get('overtime_pct', 0):.1f}%)")
+            price = g.get("nxt_price", 0) or 0
+            chg = _won_change(price, g.get("overtime_pct"), g.get("reg_close"))
+            lines.extend(_stock_lines(_naver_link(g["name"], g["ticker"]), _won_px(price, chg)))
         lines.append("")
 
     lines.extend(_format_e_picks(snap))       # 🩹 E 과매도 반등 후보
@@ -604,10 +611,9 @@ def _format_hot_stocks(hot: list[dict]) -> list[str]:
 
     lines: list[str] = ["🔥 *핫 종목* (상승률 상위)"]
     for h in hot:
-        sign = "+" if h.get("change_pct", 0) >= 0 else ""
-        # KM4(2026-06-14): 모바일 가시성 — 종목명/시세를 줄바꿈 분리(이름 옆 시장라벨로 길어짐 방지).
-        lines.append(f"  · {_naver_link(h['name'], h['ticker'])}")
-        lines.append(f"    {h['price']:,.0f}원 ({sign}{h.get('change_pct', 0):.1f}%)")
+        # KM4(2026-06-14): 모바일 가시성 — 넘치면 종목명/시세 줄바꿈 분리.
+        lines.extend(_stock_lines(_naver_link(h["name"], h["ticker"]),
+                                  _px(h["price"], h.get("change_pct", 0), h["ticker"])))
         # 거래대금 금액 (전일대비:%)
         amt = h.get("tv_today")
         if amt:
@@ -678,8 +684,8 @@ def _format_midday_summary(snap: MarketSnapshot, *, private: bool = False) -> st
     elif snap.top_gainers:  # 폴백(수집 실패 시 상승률 상위)
         lines.append("🔥 *핫 종목* (상승률 상위)")
         for s in snap.top_gainers[:5]:
-            lines.append(f"  · {_naver_link(s.name, s.ticker)} "
-                         f"{s.price:,.0f}원 (+{s.change_pct:.1f}%)")
+            lines.extend(_stock_lines(_naver_link(s.name, s.ticker),
+                                      _px(s.price, s.change_pct, s.ticker)))
         lines.append("")
 
     # 전날 추천 Top3 현황 (추천가 대비 + 오늘 등락 둘 다)
@@ -690,12 +696,10 @@ def _format_midday_summary(snap: MarketSnapshot, *, private: bool = False) -> st
             head += f" ({d[5:]} 추천)"
         lines.append(head)
         for t in snap.prev_top3_status:
-            rp = t.get("return_pct", 0.0)
-            tp = t.get("today_pct") or 0.0  # None=미산출(프리장 NXT 미체결) 방어
-            rs = "+" if rp >= 0 else ""
-            ts = "+" if tp >= 0 else ""
-            lines.append(f"  · {_naver_link(t['name'], t['ticker'])} "
-                         f"추천가대비 {rs}{rp:.1f}% (오늘 {ts}{tp:.1f}%)")
+            tp = t.get("today_pct")  # None=미산출(NXT 미체결) — 가격 대신 '—'
+            px = _px(t.get("cur_price"), tp, t["ticker"]) if tp is not None else "—"
+            lines.extend(_stock_lines(_naver_link(t["name"], t["ticker"]), px))
+            lines.append(f"    └ 추천가대비 {t.get('return_pct', 0.0):+.1f}%")
             fl = _flow_line(t)  # 장중 분봉 추세(#474)
             if fl:
                 lines.append(fl)
@@ -710,10 +714,8 @@ def _format_midday_summary(snap: MarketSnapshot, *, private: bool = False) -> st
         lines.append(head)
         for t in snap.prev_candidates_status:
             tp = t.get("today_pct")
-            ts = f"오늘 {tp:+.1f}%" if tp is not None else "—"
-            # KM5(2026-06-14): 종목명/등락을 줄바꿈 분리(모바일 가시성).
-            lines.append(f"  · {_naver_link(t['name'], t['ticker'])}")
-            lines.append(f"    {ts}")
+            px = _px(t.get("cur_price"), tp, t["ticker"]) if tp is not None else "—"
+            lines.extend(_stock_lines(_naver_link(t["name"], t["ticker"]), px))
             fl = _flow_line(t)
             if fl:
                 lines.append(fl)
@@ -723,10 +725,10 @@ def _format_midday_summary(snap: MarketSnapshot, *, private: bool = False) -> st
     if private and getattr(snap, "holdings_status", None):
         lines.append("📋 *보유종목 장중 추세*")
         for h in snap.holdings_status:
-            pr = h.get("profit_rate", 0.0)
             badge = cross_badge(h.get("cross_signal"))
-            lines.append(f"  · {_naver_link(h['name'], h['ticker'])} "
-                         f"({pr:+.1f}%){badge}")
+            lines.extend(_stock_lines(_naver_link(h["name"], h["ticker"]),
+                                      _px(h.get("price"), h.get("today_pct"), h["ticker"])))
+            lines.append(f"    수익 {h.get('profit_rate', 0.0):+.1f}%{badge}")
             fl = _flow_line(h)
             if fl:
                 lines.append(fl)
@@ -769,9 +771,10 @@ def _format_us_morning_summary(snap: MarketSnapshot, *, private: bool = False) -
             lines.append(f"🛢 WTI ${snap.wti['value']:,.1f} ({snap.wti['change_pct']:+.1f}%)")
         ewy = getattr(snap, "ewy", None)  # 🇰🇷 한국 추종 ETF — 마감·애프터 병기(#479/#507)
         if ewy:
-            el = f"🇰🇷 {ewy['name']} ${ewy['price']:,.2f} 마감 {ewy['change_pct']:+.2f}%"
-            if ewy.get("session_pct") is not None and ewy.get("session_label"):
-                el += f" · {ewy['session_label']} {ewy['session_pct']:+.2f}%"
+            el = f"🇰🇷 {ewy['name']} {_usd_px(ewy['price'], ewy['change_pct'])}"
+            sp = ewy.get("session_pct")
+            if sp is not None and ewy.get("session_label"):
+                el += f" · {ewy['session_label']} {_usd_px(ewy['price'] * (1 + sp / 100), sp)}"
             lines.append(el)
         lines.append("")
 
@@ -826,9 +829,9 @@ def _format_us_morning_summary(snap: MarketSnapshot, *, private: bool = False) -
     if snap.mode == "us_premarket" and getattr(snap, "us_premarket_top", None):
         lines.append("🚀 *프리장 급등 TOP5* (ABCD 통과 종목 중)")
         for t in snap.us_premarket_top[:5]:
-            sign = "+" if t.get("change_pct", 0) >= 0 else ""
             nm = t.get("name") or t.get("symbol", "")
-            lines.append(f"  · {_us_name(nm, t.get('symbol', ''))} {sign}{t.get('change_pct', 0):.1f}%")
+            px = _px(t.get("premkt_price") or t.get("price"), t.get("change_pct", 0), t.get("symbol", ""))
+            lines.extend(_stock_lines(_us_name(nm, t.get("symbol", "")), px))
         lines.append("")
 
     # 종목 상세(주요종목·관심테마·Top3·스크리닝)는 텔레그램에서 생략 → 웹 링크로(사용자 2026-06-04).

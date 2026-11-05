@@ -43,7 +43,7 @@ def test_post_summary_shows_overtime_section() -> None:
     assert "시간외(NXT) 상위 상승률" in msg
     assert "에이" in msg and "+10.0%" in msg
     # MC1(2026-06-14): 종목명/시세 줄바꿈 분리 — 시세는 들여쓰기된 별도 줄
-    assert "    11,000원 (+10.0%)" in msg
+    assert "11,000원(▲1,000 +10.0%)" in msg
 
 
 def test_post_summary_no_overtime_when_empty() -> None:
