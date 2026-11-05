@@ -12,11 +12,8 @@ import logging
 import random
 import re
 from datetime import date
-from io import StringIO
 from pathlib import Path
 
-import pandas as pd
-from bs4 import BeautifulSoup
 
 from src.market_report.http import fetch
 from src.market_report.models import ThemeRank
@@ -31,84 +28,50 @@ _DETAIL_STOCK_PATTERN = re.compile(r'/item/main\.naver\?code=(\d{6})">([^<]+)</a
 _THEME_MAP_CACHE = Path(__file__).resolve().parent.parent.parent.parent / "data" / "theme_map_cache.json"
 
 
+THEME_API = "https://m.stock.naver.com/api/stocks/theme"
+
+
+def parse_mobile_themes(data: dict) -> list[tuple[int, str, float]]:
+    """모바일 테마 목록 JSON → [(no, 이름, 등락률)] (순수·테스트가능). 비테마는 뺀다."""
+    out: list[tuple[int, str, float]] = []
+    for g in data.get("groups") or []:
+        name = str(g.get("name") or "").strip()
+        if not name or _is_nontheme(name):  # 계절/비테마(제습기·에어컨·독감 등) 강세테마 제외
+            continue
+        try:
+            out.append((int(g["no"]), name, float(str(g.get("changeRate", "0")).replace(",", ""))))
+        except (KeyError, ValueError):
+            continue
+    return out
+
+
 async def fetch_top_themes(top: int = 10) -> list[ThemeRank]:
-    """등락률 상위 테마 N개 + 각 테마의 주도주(Top 3)."""
-    html = await fetch(THEME_URL, encoding="euc-kr")
+    """등락률 상위 테마 N개 + 각 테마의 주도주(Top 3).
 
-    # 테마 테이블 파싱
+    2026-11-05: 데스크톱 theme.naver 가 Next.js 로 바뀌어(표 없음 → html5lib 오류로 0건) 모바일 JSON 으로 전환."""
     try:
-        tables = pd.read_html(StringIO(html))
-        # 가장 큰 테이블이 테마 시세표
-        main = max(tables, key=lambda t: len(t))
-        main = main.dropna(how="all")
-
-        # 테마명·등락률·상승종목수·하락종목수·주도주 컬럼이 보통 포함
-        # 컬럼 수는 페이지마다 다를 수 있으므로 가변 처리
-    except Exception as exc:
+        raw = await fetch(f"{THEME_API}?page=1&pageSize={top + 10}", encoding="utf-8")
+        metas = parse_mobile_themes(json.loads(raw))[:top]
+    except Exception as exc:  # noqa: BLE001
         logger.warning("theme_table_failed error=%s", exc)
         return []
 
-    # 테마명+번호 추출 (HTML에서 순서대로)
-    theme_matches = _THEME_LINK_PATTERN.findall(html)
-    # 중복 제거 (등장 순서 유지)
-    seen = set()
-    theme_meta = []
-    for no, name in theme_matches:
-        if no not in seen:
-            seen.add(no)
-            theme_meta.append((no, name.strip()))
-
-    # 주도주는 BeautifulSoup으로 더 자세히 추출
-    soup = BeautifulSoup(html, "lxml")
-    rows = soup.select("table.type_1 tr")
-
     results: list[ThemeRank] = []
-    for i, row in enumerate(rows):
-        if i >= len(theme_meta) + 5:  # 헤더 여유분
-            break
-        cells = row.find_all("td")
-        if len(cells) < 4:
-            continue
-
-        # 테마명 셀 (대개 첫번째 또는 두번째 td)
-        name_link = row.select_one('a[href*="theme&no="]')
-        if not name_link:
-            continue
-        theme_name = name_link.get_text(strip=True)
-        if _is_nontheme(theme_name):  # 계절/비테마(제습기·에어컨·독감 등) 강세테마 제외
-            continue
-
-        # 등락률 추출 (텍스트에서 % 포함된 값 찾기)
-        change_pct = 0.0
-        for cell in cells:
-            t = cell.get_text(strip=True)
-            m = re.search(r"([+-]?\d+\.\d+)%", t)
-            if m:
-                change_pct = float(m.group(1))
-                break
-
-        # 주도주: 같은 행의 다른 a 태그 (item/main.naver?code= 형식)
-        stock_links = row.select('a[href*="item/main.naver"]')
-        leading = [a.get_text(strip=True) for a in stock_links[:3]]
-
-        results.append(
-            ThemeRank(
-                rank=len(results) + 1,
-                name=theme_name,
-                change_pct=change_pct,
-                leading_stocks=leading,
-            )
-        )
-
-        if len(results) >= top:
-            break
+    for no, name, pct in metas:
+        leading: list[str] = []
+        await asyncio.sleep(random.uniform(0.3, 0.9))  # §6 랜덤 딜레이
+        try:
+            d = json.loads(await fetch(f"{THEME_API}/{no}?page=1&pageSize=3", encoding="utf-8"))
+            leading = [str(x.get("stockName", "")).strip() for x in (d.get("stocks") or [])[:3]]
+        except Exception as exc:  # noqa: BLE001 — 주도주 없이도 테마는 쓴다
+            logger.debug("theme_detail_failed no=%s error=%s", no, exc)
+        results.append(ThemeRank(rank=0, name=name, change_pct=pct, leading_stocks=leading))
 
     # 등락률 절댓값 내림차순으로 정렬 (강세·약세 모두 노출)
     results.sort(key=lambda t: abs(t.change_pct), reverse=True)
     for i, t in enumerate(results, 1):
         t.rank = i
-
-    return results[:top]
+    return results
 
 
 async def build_ticker_theme_map(max_themes: int = 25) -> dict[str, str]:
