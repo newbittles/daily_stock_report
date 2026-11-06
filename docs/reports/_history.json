@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-11-06",
+    "time": "14:50",
+    "mode": "pre_close",
+    "url": "reports/2026-11-06-pre.html",
+    "summary": "코스피 5,119.2(-4.91%) · 코스닥 653.8(-3.63%). 강세 테마: 통신, 인터넷 대표주, 렌터카.",
+    "kospi_pct": -4.91,
+    "kosdaq_pct": -3.63
+  },
+  {
+    "date": "2026-11-06",
     "time": "13:00",
     "mode": "us_afterhours",
     "url": "reports/2026-11-06-us-after.html",
@@ -527,15 +536,6 @@
     "mode": "us_intraday",
     "url": "reports/2026-10-28-us-mid.html",
     "summary": "S&P500 7,732(+0.12%) · 나스닥 26,539(+0.24%). 강세 섹터: 헬스케어/바이오, 반도체, 기술/IT.",
-    "kospi_pct": null,
-    "kosdaq_pct": null
-  },
-  {
-    "date": "2026-10-28",
-    "time": "21:50",
-    "mode": "us_premarket",
-    "url": "reports/2026-10-28-us-pre.html",
-    "summary": "S&P500 선물 7,774(+0.14%) · 나스닥 선물 29,914(-0.06%). 강세 섹터: 반도체, 에너지, 기술/IT.",
     "kospi_pct": null,
     "kosdaq_pct": null
   }
