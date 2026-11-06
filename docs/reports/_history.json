@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-11-06",
+    "time": "09:15",
+    "mode": "kr_open",
+    "url": "reports/2026-11-06-kr-open.html",
+    "summary": "코스피 4,923.5(-8.55%) · 코스닥 631.4(-6.93%). 강세 테마: 리츠(REITs), 주류업(주정, 에탄올 등), 출산장려정책.",
+    "kospi_pct": -8.55,
+    "kosdaq_pct": -6.93
+  },
+  {
+    "date": "2026-11-06",
     "time": "08:05",
     "mode": "kr_premarket",
     "url": "reports/2026-11-06-kr-pre.html",
@@ -529,14 +538,5 @@
     "summary": "코스피 0.0(+0.00%) · 코스닥 0.0(+0.00%).",
     "kospi_pct": 0.0,
     "kosdaq_pct": 0.0
-  },
-  {
-    "date": "2026-10-28",
-    "time": "13:00",
-    "mode": "us_afterhours",
-    "url": "reports/2026-10-28-us-after.html",
-    "summary": "S&P500 7,723(+0.60%) · 나스닥 26,478(+1.18%). 강세 섹터: 반도체, 태양광/신재생, 2차전지/리튬.",
-    "kospi_pct": null,
-    "kosdaq_pct": null
   }
 ]
