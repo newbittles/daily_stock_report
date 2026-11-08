@@ -14,6 +14,8 @@ dependencies = [
     "apscheduler>=3.10.0",
     "PyQt5>=5.15",
     "pykiwoom>=0.1.5",
+    # 1.4.1 은 .news 가 "YAHOO! FINANCE IS CURRENTLY DOWN" 으로 실패(2026-11 실측) — 1.8.0 에서 정상
+    "yfinance>=1.8.0",
 ]
 
 [project.optional-dependencies]
