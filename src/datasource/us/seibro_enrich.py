@@ -45,17 +45,16 @@ def cached(isin: str) -> dict:
 
 def _ai_resolve(items: dict[str, str]) -> dict[str, dict]:
     """{isin: 영문명} → {isin: {ticker, ko}} Gemini 일괄. 실패 시 {}."""
+    from src.analysis.ai_client import has_ai_key, make_client
     from src.config.settings import get_settings
 
     s = get_settings()
-    if not getattr(s, "gemini_api_key", "") or not items:
+    if not has_ai_key(s) or not items:
         return {}
     try:
         import re
 
-        from google import genai
-
-        client = genai.Client(api_key=s.gemini_api_key)
+        client = make_client(s)
         lines = "\n".join(f"{i}\t{nm}" for i, nm in items.items())
         prompt = (
             "다음은 미국 상장 ETF/주식의 ISIN과 영문명이다. 각각 (1)미국 거래 티커 (2)한국 투자자용 한국어명을 알려줘.\n"

@@ -20,9 +20,9 @@ import logging
 from datetime import datetime
 from typing import Any
 
-from google import genai
 from google.genai import types
 
+from src.analysis.ai_client import has_ai_key, make_client
 from src.config.settings import get_settings
 from src.market_report.models import MarketSnapshot, ReportMode
 
@@ -339,7 +339,7 @@ async def summarize_midday(snap: MarketSnapshot) -> str:
     """
     settings = get_settings()
     fallback = _fallback_summary(snap)
-    if not settings.gemini_api_key or quota_blocked():
+    if not has_ai_key(settings) or quota_blocked():
         return fallback
 
     context = _build_snapshot_context(snap) + _intraday_flow_context(snap)
@@ -352,7 +352,7 @@ async def summarize_midday(snap: MarketSnapshot) -> str:
         f"{context}"
     )
     try:
-        client = genai.Client(api_key=settings.gemini_api_key)
+        client = make_client(settings)
         resp = client.models.generate_content(
             model=MODEL_NAME, contents=prompt,
             config=types.GenerateContentConfig(temperature=0.3),
@@ -370,7 +370,7 @@ async def analyze(snap: MarketSnapshot) -> MarketSnapshot:
     실패 시 빈 요약·후보로 채워서 반환 (리포트 자체는 발송 가능하도록).
     """
     settings = get_settings()
-    if not settings.gemini_api_key or quota_blocked():  # 키없음/한도소진 → 결정론 폴백(사용자 2026-06-10)
+    if not has_ai_key(settings) or quota_blocked():  # 키없음/한도소진 → 결정론 폴백(사용자 2026-06-10)
         snap.summary = _fallback_summary(snap)
         snap.why_moved = ""
         snap.theme_commentary = ""
@@ -395,7 +395,7 @@ async def analyze(snap: MarketSnapshot) -> MarketSnapshot:
     import asyncio
     import random
 
-    client = genai.Client(api_key=settings.gemini_api_key)
+    client = make_client(settings)
     data: dict[str, Any] | None = None
     last_exc: Exception | None = None
 
@@ -501,13 +501,13 @@ async def annotate_closing_bets(snap: MarketSnapshot) -> None:
         p.setdefault("theme_peers", [])
 
     settings = get_settings()
-    if not settings.gemini_api_key or quota_blocked():
+    if not has_ai_key(settings) or quota_blocked():
         return  # 폴백 주석 유지
 
     context = _build_snapshot_context(snap)
     prompt = _closing_bet_annotate_prompt(picks, context)
     try:
-        client = genai.Client(api_key=settings.gemini_api_key)
+        client = make_client(settings)
         resp = client.models.generate_content(
             model=MODEL_NAME, contents=prompt,
             config=types.GenerateContentConfig(
@@ -628,7 +628,7 @@ async def summarize_stocks(
     import random
 
     settings = get_settings()
-    if not settings.gemini_api_key or quota_blocked():
+    if not has_ai_key(settings) or quota_blocked():
         return
 
     # 요약 대상 풀(기본 + 추가). put-back도 동일 풀을 재사용해 일관성 유지.
@@ -744,7 +744,7 @@ async def summarize_stocks(
         '{"종목코드": "🏢 회사 주요사업 한 줄\\n왜 올랐는지(또는 왜 하락했는지) 1~2문장\\n📰 호재뉴스: …\\n📋 공시: …", ...}'
     )
 
-    client = genai.Client(api_key=settings.gemini_api_key)
+    client = make_client(settings)
     data: dict[str, Any] | None = None
     for attempt in range(3):
         try:
@@ -794,7 +794,7 @@ async def summarize_us_stocks(snap: MarketSnapshot) -> None:
     import random
 
     settings = get_settings()
-    if not settings.gemini_api_key or quota_blocked():
+    if not has_ai_key(settings) or quota_blocked():
         return
 
     pools: list[list[dict]] = [
@@ -864,7 +864,7 @@ async def summarize_us_stocks(snap: MarketSnapshot) -> None:
         '{"심볼": "🏢 회사 주요사업 한 줄\\n왜 올랐는지/하락했는지 1~2문장\\n📰 호재/악재: …", ...}'
     )
 
-    client = genai.Client(api_key=settings.gemini_api_key)
+    client = make_client(settings)
     data: dict[str, Any] | None = None
     for attempt in range(3):
         try:
@@ -920,7 +920,7 @@ async def translate_us_news(snap: MarketSnapshot) -> None:
     비용 최소화: 헤드라인 일괄 1회 호출(flash-lite). 키없음/한도/실패 시 생략(원문 영어 표시)."""
     settings = get_settings()
     news = snap.us_news or []
-    if not settings.gemini_api_key or quota_blocked() or not news:
+    if not has_ai_key(settings) or quota_blocked() or not news:
         return
     items = "\n".join(f"{i}: {n.get('title', '')}" for i, n in enumerate(news[:15]) if n.get("title"))
     if not items:
@@ -928,7 +928,7 @@ async def translate_us_news(snap: MarketSnapshot) -> None:
     prompt = ("다음 미국 증시 뉴스 헤드라인을 자연스러운 한국어로 번역하라(고유명사·티커는 유지). "
               'JSON으로만: {"0":"번역",...}.\n\n' + items)
     try:
-        client = genai.Client(api_key=settings.gemini_api_key)
+        client = make_client(settings)
         resp = client.models.generate_content(
             model=MODEL_NAME, contents=prompt,
             config=types.GenerateContentConfig(response_mime_type="application/json", temperature=0.2))
@@ -977,7 +977,7 @@ async def summarize_flows(snap: MarketSnapshot) -> None:
     snap.flows_summary = " · ".join(lines[:4])  # 기본 = 결정론 팩트(외인·기관 우선)
 
     settings = get_settings()
-    if not settings.gemini_api_key or quota_blocked() or not fact_blob:
+    if not has_ai_key(settings) or quota_blocked() or not fact_blob:
         return
     prompt = (
         "다음은 최근 거래일 한국 증시 투자자별 순매수(억원, +매수/−매도) 데이터다.\n"
@@ -987,7 +987,7 @@ async def summarize_flows(snap: MarketSnapshot) -> None:
         f"{fact_blob}"
     )
     try:
-        client = genai.Client(api_key=settings.gemini_api_key)
+        client = make_client(settings)
         resp = client.models.generate_content(
             model=MODEL_NAME, contents=prompt,
             config=types.GenerateContentConfig(temperature=0.3))
@@ -1009,7 +1009,7 @@ async def summarize_themes(snap: MarketSnapshot) -> None:
     import random
 
     settings = get_settings()
-    if not settings.gemini_api_key or quota_blocked() or not snap.top_themes:
+    if not has_ai_key(settings) or quota_blocked() or not snap.top_themes:
         return
 
     targets = snap.top_themes[:6]
@@ -1028,7 +1028,7 @@ async def summarize_themes(snap: MarketSnapshot) -> None:
         '반드시 JSON으로만 답하라: {"테마명": "왜 강세인지 1~2문장", ...}'
     )
 
-    client = genai.Client(api_key=settings.gemini_api_key)
+    client = make_client(settings)
     data: dict[str, Any] | None = None
     for attempt in range(3):
         try:
@@ -1089,7 +1089,7 @@ async def summarize_holdings(snap: MarketSnapshot) -> None:
         return
 
     settings = get_settings()
-    if not settings.gemini_api_key or quota_blocked():
+    if not has_ai_key(settings) or quota_blocked():
         snap.holdings_summary = _holdings_fallback(rows)
         return
 
@@ -1109,7 +1109,7 @@ async def summarize_holdings(snap: MarketSnapshot) -> None:
         '반드시 JSON으로만 답하라: {"summary": "2~3문장 종합 코멘트"}'
     )
 
-    client = genai.Client(api_key=settings.gemini_api_key)
+    client = make_client(settings)
     for attempt in range(3):
         try:
             if attempt > 0:
@@ -1237,7 +1237,7 @@ async def pick_key_news(snap: MarketSnapshot) -> None:
         return
     settings = get_settings()
     picked: list[dict] = []
-    if settings.gemini_api_key and not quota_blocked():
+    if has_ai_key(settings) and not quota_blocked():
         market = "미국" if str(snap.mode).startswith("us_") else "한국"
         heads = "\n".join(f"{i}: {c['title']}" for i, c in enumerate(cands))
         prompt = (
@@ -1248,7 +1248,7 @@ async def pick_key_news(snap: MarketSnapshot) -> None:
             'JSON으로만: {"items":[{"i":번호,"tag":"꼬리표"}]}\n\n' + heads
         )
         try:
-            client = genai.Client(api_key=settings.gemini_api_key)
+            client = make_client(settings)
             resp = client.models.generate_content(
                 model=MODEL_NAME, contents=prompt,
                 config=types.GenerateContentConfig(response_mime_type="application/json",

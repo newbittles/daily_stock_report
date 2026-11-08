@@ -66,18 +66,17 @@ def _fetch_naver_ko(ticker: str) -> str:
 
 def _ai_translate(name_map: dict[str, str]) -> dict[str, str]:
     """영문 미국 종목명 → 한국어(음역/번역) AI 일괄. {ticker: 영문} → {ticker: 한국어}. 실패 시 {}."""
+    from src.analysis.ai_client import has_ai_key, make_client
     from src.config.settings import get_settings
 
     s = get_settings()
-    if not getattr(s, "gemini_api_key", "") or not name_map:
+    if not has_ai_key(s) or not name_map:
         return {}
     try:
         import json
         import re
 
-        from google import genai
-
-        client = genai.Client(api_key=s.gemini_api_key)
+        client = make_client(s)
         items = "\n".join(f"{t}: {nm}" for t, nm in name_map.items())
         prompt = (
             "다음 미국 주식 종목의 영문명을 한국 투자자가 쓰는 한국어 표기로 음역/번역해줘.\n"

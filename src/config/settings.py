@@ -34,6 +34,8 @@ class Settings(BaseSettings):
     # Google Gemini
     gemini_api_key: str
     ai_daily_call_limit: int = 100
+    # Kie(api.kie.ai) — 있으면 Gemini 대신 Kie 로 AI 호출(Gemini 크레딧 소진 대체, 2026-11-08).
+    kie_api_key: str = ""
 
     # DART 전자공시 OpenAPI (opendart.fss.or.kr) — 종목별 최근 공시 조회(AI요약 호재/공시 유무).
     # 무료 키(읽기전용 공개데이터). 미설정이면 빈 문자열 → 공시 '확인 불가'로 표기(뉴스만 반영).
