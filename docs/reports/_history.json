@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-11-09",
+    "time": "23:40",
+    "mode": "us_intraday",
+    "url": "reports/2026-11-09-us-mid.html",
+    "summary": "금일 미국 증시는 지난주 하락에 따른 반등세와 유가 하락 속에 다우(+1.23%), S&P500(+1.35%), 나스닥(+1.61%) 등 3대 지수가 일제히 상승 마감했습니다. 반도체(+3.65%)와 경기소비재(+3.31%) 섹터가 상승을 주도한 가운",
+    "kospi_pct": null,
+    "kosdaq_pct": null
+  },
+  {
+    "date": "2026-11-09",
     "time": "21:50",
     "mode": "us_premarket",
     "url": "reports/2026-11-09-us-pre.html",
@@ -529,14 +538,5 @@
     "summary": "",
     "kospi_pct": 0.0,
     "kosdaq_pct": 0.0
-  },
-  {
-    "date": "2026-10-30",
-    "time": "06:30",
-    "mode": "us_morning",
-    "url": "reports/2026-10-30-us.html",
-    "summary": "S&P500 7,720(-0.30%) · 나스닥 26,185(-1.38%). 강세 섹터: 방산/우주항공, 헬스케어/바이오, 금융.",
-    "kospi_pct": null,
-    "kosdaq_pct": null
   }
 ]
