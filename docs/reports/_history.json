@@ -1,5 +1,14 @@
 [
   {
+    "date": "2026-11-10",
+    "time": "06:30",
+    "mode": "us_morning",
+    "url": "reports/2026-11-10-us.html",
+    "summary": "금일 미국 증시는 국제유가 급락으로 인한 인플레이션 우려 완화와 기술주 반등에 힘입어 나스닥(+2.74%), S&P500(+2.35%), 다우(+2.15%) 등 3대 지수가 일제히 폭등 마감했습니다. 엔비디아(-4.27%)의 단기 조정에도 불구하고 A",
+    "kospi_pct": null,
+    "kosdaq_pct": null
+  },
+  {
     "date": "2026-11-09",
     "time": "23:40",
     "mode": "us_intraday",
@@ -527,15 +536,6 @@
     "mode": "kr_open",
     "url": "reports/2026-10-30-kr-open.html",
     "summary": "코스피 0.0(+0.00%) · 코스닥 0.0(+0.00%).",
-    "kospi_pct": 0.0,
-    "kosdaq_pct": 0.0
-  },
-  {
-    "date": "2026-10-30",
-    "time": "08:05",
-    "mode": "kr_premarket",
-    "url": "reports/2026-10-30-kr-pre.html",
-    "summary": "",
     "kospi_pct": 0.0,
     "kosdaq_pct": 0.0
   }
