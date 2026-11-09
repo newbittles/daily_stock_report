@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-11-09",
+    "time": "09:15",
+    "mode": "kr_open",
+    "url": "reports/2026-11-09-kr-open.html",
+    "summary": "현재 코스피(-0.30%)와 코스닥(-0.77%)이 동반 약세를 보이는 가운데, 딥페이크·코로나19·보안 관련 테마가 장중 상대적 강세를 나타내고 있습니다. 장중 궤적을 보면 삼성전기가 저점(-4.1%)을 찍은 뒤 약세를 지속해 현재 -2.8%를 기록",
+    "kospi_pct": -0.3,
+    "kosdaq_pct": -0.77
+  },
+  {
+    "date": "2026-11-09",
     "time": "08:05",
     "mode": "kr_premarket",
     "url": "reports/2026-11-09-kr-pre.html",
@@ -529,14 +538,5 @@
     "summary": "코스피 0.0(+0.00%) · 코스닥 0.0(+0.00%).",
     "kospi_pct": 0.0,
     "kosdaq_pct": 0.0
-  },
-  {
-    "date": "2026-10-29",
-    "time": "13:00",
-    "mode": "us_afterhours",
-    "url": "reports/2026-10-29-us-after.html",
-    "summary": "S&P500 7,744(+0.28%) · 나스닥 26,550(+0.27%). 강세 섹터: 반도체, 기술/IT, 방산/우주항공.",
-    "kospi_pct": null,
-    "kosdaq_pct": null
   }
 ]
