@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-11-10",
+    "time": "16:00",
+    "mode": "post_close",
+    "url": "reports/2026-11-10-post.html",
+    "summary": "오늘 국내 증시는 유가 급락에 따른 인플레이션 우려 완화와 미국 반도체주 강세 영향으로 코스피(+4.39%)와 코스닥(+4.48%) 모두 대폭 상승 마감했습니다. 반도체 대표주와 항공/저가 항공사(LCC), 건설주 등이 시장 상승을 이끌었습니다.",
+    "kospi_pct": 4.39,
+    "kosdaq_pct": 4.48
+  },
+  {
+    "date": "2026-11-10",
     "time": "14:50",
     "mode": "pre_close",
     "url": "reports/2026-11-10-pre.html",
@@ -527,15 +536,6 @@
     "mode": "us_intraday",
     "url": "reports/2026-10-30-us-mid.html",
     "summary": "S&P500 7,632(-1.16%) · 나스닥 25,613(-2.20%). 강세 섹터: 에너지, 헬스케어/바이오, 금융.",
-    "kospi_pct": null,
-    "kosdaq_pct": null
-  },
-  {
-    "date": "2026-10-30",
-    "time": "21:50",
-    "mode": "us_premarket",
-    "url": "reports/2026-10-30-us-pre.html",
-    "summary": "S&P500 선물 7,672(-0.10%) · 나스닥 선물 28,804(-0.50%). 강세 섹터: 헬스케어/바이오, 에너지, 금융.",
     "kospi_pct": null,
     "kosdaq_pct": null
   }
