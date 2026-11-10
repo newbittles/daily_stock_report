@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-11-10",
+    "time": "23:40",
+    "mode": "us_intraday",
+    "url": "reports/2026-11-10-us-mid.html",
+    "summary": "금일 미국 증시는 예상보다 높게 발표된 10월 소비자물가지수(CPI)로 인해 연준의 금리 인상 가능성이 부각되며 S&P500(-0.41%), 나스닥(-0.54%), 다우(-0.23%) 등 3대 지수가 일제히 하락했습니다. 방산과 금융 섹터만 소폭 상승",
+    "kospi_pct": null,
+    "kosdaq_pct": null
+  },
+  {
+    "date": "2026-11-10",
     "time": "21:50",
     "mode": "us_premarket",
     "url": "reports/2026-11-10-us-pre.html",
@@ -529,14 +538,5 @@
     "summary": "",
     "kospi_pct": 0.0,
     "kosdaq_pct": 0.0
-  },
-  {
-    "date": "2026-10-31",
-    "time": "06:30",
-    "mode": "us_morning",
-    "url": "reports/2026-10-31-us.html",
-    "summary": "S&P500 7,580(-1.82%) · 나스닥 25,437(-2.86%). 강세 섹터: 에너지, 헬스케어/바이오, 경기소비재.",
-    "kospi_pct": null,
-    "kosdaq_pct": null
   }
 ]
