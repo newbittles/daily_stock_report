@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-11-10",
+    "time": "14:50",
+    "mode": "pre_close",
+    "url": "reports/2026-11-10-pre.html",
+    "summary": "과매도 인식과 반도체 투심 회복에 힘입어 코스피와 코스닥 양 시장에 매수 사이드카가 발동되며 4% 대의 강력한 폭등세를 기록하고 있습니다.",
+    "kospi_pct": 4.76,
+    "kosdaq_pct": 4.69
+  },
+  {
+    "date": "2026-11-10",
     "time": "13:00",
     "mode": "us_afterhours",
     "url": "reports/2026-11-10-us-after.html",
@@ -529,14 +538,5 @@
     "summary": "S&P500 선물 7,672(-0.10%) · 나스닥 선물 28,804(-0.50%). 강세 섹터: 헬스케어/바이오, 에너지, 금융.",
     "kospi_pct": null,
     "kosdaq_pct": null
-  },
-  {
-    "date": "2026-10-30",
-    "time": "16:00",
-    "mode": "post_close",
-    "url": "reports/2026-10-30-post.html",
-    "summary": "코스피 0.0(+0.00%) · 코스닥 0.0(+0.00%).",
-    "kospi_pct": 0.0,
-    "kosdaq_pct": 0.0
   }
 ]
