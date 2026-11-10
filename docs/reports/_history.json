@@ -1,5 +1,14 @@
 [
   {
+    "date": "2026-11-11",
+    "time": "06:30",
+    "mode": "us_morning",
+    "url": "reports/2026-11-11-us.html",
+    "summary": "미국 증시는 예상치를 상회한 CPI 발표에 따른 연준의 금리 인상 가능성 부각과 엔비디아(-5.47%)를 비롯한 기술주 약세 여파로 다우(-0.30%), S&P500(-0.38%), 나스닥(-0.74%) 등 주요 지수가 일제히 하락 마감했습니다. 방산",
+    "kospi_pct": null,
+    "kosdaq_pct": null
+  },
+  {
     "date": "2026-11-10",
     "time": "23:40",
     "mode": "us_intraday",
@@ -527,15 +536,6 @@
     "mode": "kr_open",
     "url": "reports/2026-11-02-kr-open.html",
     "summary": "코스피 0.0(+0.00%) · 코스닥 0.0(+0.00%).",
-    "kospi_pct": 0.0,
-    "kosdaq_pct": 0.0
-  },
-  {
-    "date": "2026-11-02",
-    "time": "08:05",
-    "mode": "kr_premarket",
-    "url": "reports/2026-11-02-kr-pre.html",
-    "summary": "",
     "kospi_pct": 0.0,
     "kosdaq_pct": 0.0
   }
