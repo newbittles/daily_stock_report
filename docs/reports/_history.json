@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-11-10",
+    "time": "19:00",
+    "mode": "us_premarket",
+    "url": "reports/2026-11-10-us-pre.html",
+    "summary": "현재 미국 증시 프리장은 핵심 인플레이션 데이터 발표를 앞두고 관망세가 형성된 가운데 S&P500 선물(+0.03%)과 나스닥 선물(+0.11%)이 소폭 상승하며 혼조세를 보이고 있습니다. 엔비디아(+1.82%) 등 일부 빅테크 종목과 2차전지/리튬(",
+    "kospi_pct": null,
+    "kosdaq_pct": null
+  },
+  {
+    "date": "2026-11-10",
     "time": "16:00",
     "mode": "post_close",
     "url": "reports/2026-11-10-post.html",
@@ -527,15 +536,6 @@
     "mode": "us_morning",
     "url": "reports/2026-10-31-us.html",
     "summary": "S&P500 7,580(-1.82%) · 나스닥 25,437(-2.86%). 강세 섹터: 에너지, 헬스케어/바이오, 경기소비재.",
-    "kospi_pct": null,
-    "kosdaq_pct": null
-  },
-  {
-    "date": "2026-10-30",
-    "time": "22:40",
-    "mode": "us_intraday",
-    "url": "reports/2026-10-30-us-mid.html",
-    "summary": "S&P500 7,632(-1.16%) · 나스닥 25,613(-2.20%). 강세 섹터: 에너지, 헬스케어/바이오, 금융.",
     "kospi_pct": null,
     "kosdaq_pct": null
   }
