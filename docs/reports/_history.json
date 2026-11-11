@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-11-11",
+    "time": "16:00",
+    "mode": "post_close",
+    "url": "reports/2026-11-11-post.html",
+    "summary": "오늘 국내 증시는 글로벌 AI 기업 코어위브의 긍정적 실적에 힘입어 반도체 대장주와 AI 테마 전반이 급등하며 코스피(+2.60%)와 코스닥(+5.62%) 모두 큰 폭으로 상승 마감했습니다.",
+    "kospi_pct": 2.6,
+    "kosdaq_pct": 5.62
+  },
+  {
+    "date": "2026-11-11",
     "time": "14:50",
     "mode": "pre_close",
     "url": "reports/2026-11-11-pre.html",
@@ -527,15 +536,6 @@
     "mode": "us_morning",
     "url": "reports/2026-11-03-us.html",
     "summary": "S&P500 7,541(-0.51%) · 나스닥 25,164(-1.07%). 강세 섹터: 태양광/신재생, 경기소비재, 방산/우주항공.",
-    "kospi_pct": null,
-    "kosdaq_pct": null
-  },
-  {
-    "date": "2026-11-02",
-    "time": "23:40",
-    "mode": "us_intraday",
-    "url": "reports/2026-11-02-us-mid.html",
-    "summary": "S&P500 7,617(+0.47%) · 나스닥 25,636(+0.77%). 강세 섹터: 태양광/신재생, 경기소비재, 방산/우주항공.",
     "kospi_pct": null,
     "kosdaq_pct": null
   }
