@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-11-11",
+    "time": "19:00",
+    "mode": "us_premarket",
+    "url": "reports/2026-11-11-us-pre.html",
+    "summary": "코어위브(CoreWeave)의 실적 전망 호조와 골드만삭스의 반도체 과매도 진단에 힘입어 나스닥 선물이 상승하며 프리장 기술주 중심의 반등 시도가 나타나고 있습니다. 엔비디아(-5.47%)의 급락세로 종목별 차별화가 심화되는 가운데 2차전지(+3.07",
+    "kospi_pct": null,
+    "kosdaq_pct": null
+  },
+  {
+    "date": "2026-11-11",
     "time": "16:00",
     "mode": "post_close",
     "url": "reports/2026-11-11-post.html",
@@ -529,14 +538,5 @@
     "summary": "",
     "kospi_pct": 0.0,
     "kosdaq_pct": 0.0
-  },
-  {
-    "date": "2026-11-03",
-    "time": "06:30",
-    "mode": "us_morning",
-    "url": "reports/2026-11-03-us.html",
-    "summary": "S&P500 7,541(-0.51%) · 나스닥 25,164(-1.07%). 강세 섹터: 태양광/신재생, 경기소비재, 방산/우주항공.",
-    "kospi_pct": null,
-    "kosdaq_pct": null
   }
 ]
