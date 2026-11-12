@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-11-12",
+    "time": "16:00",
+    "mode": "post_close",
+    "url": "reports/2026-11-12-post.html",
+    "summary": "금일 국내 증시는 옵션만기일을 맞아 롤러코스터 장세를 보인 끝에 KOSPI(-0.61%)와 KOSDAQ(-1.22%) 모두 하락 마감했습니다. 반도체 대형주 간 차별화 속에 음원/음반, CCTV, AI 테마 등 개별 모멘텀 보유 테마가 강세를 나타냈습",
+    "kospi_pct": -0.61,
+    "kosdaq_pct": -1.22
+  },
+  {
+    "date": "2026-11-12",
     "time": "14:50",
     "mode": "pre_close",
     "url": "reports/2026-11-12-pre.html",
@@ -527,15 +536,6 @@
     "mode": "us_morning",
     "url": "reports/2026-11-04-us.html",
     "summary": "S&P500 7,569(+0.36%) · 나스닥 25,372(+0.83%). 강세 섹터: 태양광/신재생, 반도체, 기술/IT.",
-    "kospi_pct": null,
-    "kosdaq_pct": null
-  },
-  {
-    "date": "2026-11-03",
-    "time": "23:40",
-    "mode": "us_intraday",
-    "url": "reports/2026-11-03-us-mid.html",
-    "summary": "S&P500 7,559(+0.22%) · 나스닥 25,318(+0.59%). 강세 섹터: 반도체, 태양광/신재생, 기술/IT.",
     "kospi_pct": null,
     "kosdaq_pct": null
   }
