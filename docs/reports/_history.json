@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-11-12",
+    "time": "14:50",
+    "mode": "pre_close",
+    "url": "reports/2026-11-12-pre.html",
+    "summary": "코스피와 코스닥이 동반 약세를 보이는 가운데 음원/음반, AI 챗봇, 조선 테마 중심의 개별 재료 장세가 펼쳐지고 있습니다.",
+    "kospi_pct": -1.05,
+    "kosdaq_pct": -2.37
+  },
+  {
+    "date": "2026-11-12",
     "time": "13:00",
     "mode": "us_afterhours",
     "url": "reports/2026-11-12-us-after.html",
@@ -527,15 +536,6 @@
     "mode": "us_intraday",
     "url": "reports/2026-11-03-us-mid.html",
     "summary": "S&P500 7,559(+0.22%) · 나스닥 25,318(+0.59%). 강세 섹터: 반도체, 태양광/신재생, 기술/IT.",
-    "kospi_pct": null,
-    "kosdaq_pct": null
-  },
-  {
-    "date": "2026-11-03",
-    "time": "21:50",
-    "mode": "us_premarket",
-    "url": "reports/2026-11-03-us-pre.html",
-    "summary": "S&P500 선물 7,572(+0.10%) · 나스닥 선물 28,231(+0.37%). 강세 섹터: 반도체, 2차전지/리튬, 에너지.",
     "kospi_pct": null,
     "kosdaq_pct": null
   }
