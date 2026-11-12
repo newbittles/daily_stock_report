@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-11-12",
+    "time": "09:15",
+    "mode": "kr_open",
+    "url": "reports/2026-11-12-kr-open.html",
+    "summary": "코스피 5,362.0(-0.25%) · 코스닥 699.2(-0.83%). 강세 테마: AI 챗봇(챗GPT 등), CCTV＆DVR, 음원/음반.",
+    "kospi_pct": -0.25,
+    "kosdaq_pct": -0.83
+  },
+  {
+    "date": "2026-11-12",
     "time": "08:05",
     "mode": "kr_premarket",
     "url": "reports/2026-11-12-kr-pre.html",
@@ -529,14 +538,5 @@
     "summary": "코스피 0.0(+0.00%) · 코스닥 0.0(+0.00%).",
     "kospi_pct": 0.0,
     "kosdaq_pct": 0.0
-  },
-  {
-    "date": "2026-11-03",
-    "time": "13:00",
-    "mode": "us_afterhours",
-    "url": "reports/2026-11-03-us-after.html",
-    "summary": "S&P500 7,541(-0.51%) · 나스닥 25,164(-1.07%). 강세 섹터: 태양광/신재생, 경기소비재, 방산/우주항공.",
-    "kospi_pct": null,
-    "kosdaq_pct": null
   }
 ]
