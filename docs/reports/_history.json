@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-11-12",
+    "time": "23:40",
+    "mode": "us_intraday",
+    "url": "reports/2026-11-12-us-mid.html",
+    "summary": "금일 미국 증시는 젠슨 황 CEO 사임 소식에 엔비디아가 7.70% 급락하며 기술주와 반도체 업종이 약세를 보인 영향으로 나스닥(-0.48%)과 S&P500(-0.30%)이 하락 마감한 반면 다우 지수(+0.01%)는 소폭 상승 마감했습니다. 엔비디아",
+    "kospi_pct": null,
+    "kosdaq_pct": null
+  },
+  {
+    "date": "2026-11-12",
     "time": "21:50",
     "mode": "us_premarket",
     "url": "reports/2026-11-12-us-pre.html",
@@ -527,15 +536,6 @@
     "mode": "kr_open",
     "url": "reports/2026-11-04-kr-open.html",
     "summary": "코스피 0.0(+0.00%) · 코스닥 0.0(+0.00%).",
-    "kospi_pct": 0.0,
-    "kosdaq_pct": 0.0
-  },
-  {
-    "date": "2026-11-04",
-    "time": "08:05",
-    "mode": "kr_premarket",
-    "url": "reports/2026-11-04-kr-pre.html",
-    "summary": "",
     "kospi_pct": 0.0,
     "kosdaq_pct": 0.0
   }
