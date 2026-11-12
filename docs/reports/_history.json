@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-11-12",
+    "time": "11:40",
+    "mode": "midday",
+    "url": "reports/2026-11-12-midday.html",
+    "summary": "오늘 장중 국내 증시는 삼성전자와 SK하이닉스 등 대형 반도체주 및 반도체 기판·소캠(SOCAMM) 테마의 상승세에 힘입어 코스피가 1% 넘게 오르는 반면 코스닥은 소폭 내림세를 보이고 있습니다. 주요 종목의 장중 궤적을 보면 셀트리온이 장 초반 +2",
+    "kospi_pct": 1.31,
+    "kosdaq_pct": -0.16
+  },
+  {
+    "date": "2026-11-12",
     "time": "09:15",
     "mode": "kr_open",
     "url": "reports/2026-11-12-kr-open.html",
@@ -526,15 +535,6 @@
     "time": "16:00",
     "mode": "post_close",
     "url": "reports/2026-11-03-post.html",
-    "summary": "코스피 0.0(+0.00%) · 코스닥 0.0(+0.00%).",
-    "kospi_pct": 0.0,
-    "kosdaq_pct": 0.0
-  },
-  {
-    "date": "2026-11-03",
-    "time": "14:50",
-    "mode": "pre_close",
-    "url": "reports/2026-11-03-pre.html",
     "summary": "코스피 0.0(+0.00%) · 코스닥 0.0(+0.00%).",
     "kospi_pct": 0.0,
     "kosdaq_pct": 0.0
