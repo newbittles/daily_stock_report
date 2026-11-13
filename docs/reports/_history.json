@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-11-13",
+    "time": "19:00",
+    "mode": "us_premarket",
+    "url": "reports/2026-11-13-us-pre.html",
+    "summary": "현재 미국 증시 프리장은 투자자들의 인플레이션 데이터 발표 대기 심리와 기술주 내 엇갈린 흐름 속에 주요 지수 선물이 소폭 약세를 나타내고 있습니다. 엔비디아(+2.14%)를 비롯한 일부 빅테크 종목은 상승세를 유지하고 있으나, 마이크로소프트(-2.4",
+    "kospi_pct": null,
+    "kosdaq_pct": null
+  },
+  {
+    "date": "2026-11-13",
     "time": "16:00",
     "mode": "post_close",
     "url": "reports/2026-11-13-post.html",
@@ -529,14 +538,5 @@
     "summary": "",
     "kospi_pct": 0.0,
     "kosdaq_pct": 0.0
-  },
-  {
-    "date": "2026-11-05",
-    "time": "06:30",
-    "mode": "us_morning",
-    "url": "reports/2026-11-05-us.html",
-    "summary": "S&P500 7,689(+1.58%) · 나스닥 25,737(+1.44%). 강세 섹터: 태양광/신재생, 경기소비재, 금융.",
-    "kospi_pct": null,
-    "kosdaq_pct": null
   }
 ]
