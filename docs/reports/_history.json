@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-11-13",
+    "time": "09:15",
+    "mode": "kr_open",
+    "url": "reports/2026-11-13-kr-open.html",
+    "summary": "오늘 국내 증시는 젠슨 황 사임 여파 등 뉴욕증시 하락 악재에도 불구하고 삼성전자, SK하이닉스 등 반도체 대형주의 반등에 힘입어 코스피(+2.81%)와 코스닥(+2.78%) 모두 강한 상승세를 나타내고 있습니다. 특히 뉴로모픽 반도체, 온디바이스 A",
+    "kospi_pct": 2.81,
+    "kosdaq_pct": 2.78
+  },
+  {
+    "date": "2026-11-13",
     "time": "08:05",
     "mode": "kr_premarket",
     "url": "reports/2026-11-13-kr-pre.html",
@@ -529,14 +538,5 @@
     "summary": "코스피 0.0(+0.00%) · 코스닥 0.0(+0.00%).",
     "kospi_pct": 0.0,
     "kosdaq_pct": 0.0
-  },
-  {
-    "date": "2026-11-04",
-    "time": "13:00",
-    "mode": "us_afterhours",
-    "url": "reports/2026-11-04-us-after.html",
-    "summary": "S&P500 7,569(+0.36%) · 나스닥 25,372(+0.83%). 강세 섹터: 태양광/신재생, 반도체, 기술/IT.",
-    "kospi_pct": null,
-    "kosdaq_pct": null
   }
 ]
