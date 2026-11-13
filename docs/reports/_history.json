@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-11-13",
+    "time": "11:40",
+    "mode": "midday",
+    "url": "reports/2026-11-13-midday.html",
+    "summary": "오늘 증시는 엔비디아 관련 리스크의 선반영 인식 속에 뉴로모픽·온디바이스 AI 등 반도체 관련 테마가 강세를 보이며 코스피와 코스닥 모두 대폭 상승 중입니다. 주요 종목 중 SK하이닉스는 개장 직후 +5.0%까지 급등했으나 이후 상승 폭을 반납하며 현",
+    "kospi_pct": 1.76,
+    "kosdaq_pct": 3.53
+  },
+  {
+    "date": "2026-11-13",
     "time": "09:15",
     "mode": "kr_open",
     "url": "reports/2026-11-13-kr-open.html",
@@ -526,15 +535,6 @@
     "time": "16:00",
     "mode": "post_close",
     "url": "reports/2026-11-04-post.html",
-    "summary": "코스피 0.0(+0.00%) · 코스닥 0.0(+0.00%).",
-    "kospi_pct": 0.0,
-    "kosdaq_pct": 0.0
-  },
-  {
-    "date": "2026-11-04",
-    "time": "14:50",
-    "mode": "pre_close",
-    "url": "reports/2026-11-04-pre.html",
     "summary": "코스피 0.0(+0.00%) · 코스닥 0.0(+0.00%).",
     "kospi_pct": 0.0,
     "kosdaq_pct": 0.0
