@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-11-13",
+    "time": "23:40",
+    "mode": "us_intraday",
+    "url": "reports/2026-11-13-us-mid.html",
+    "summary": "금일 미국 증시는 다우 지수가 52,403.10(+0.20%) 상승한 반면 나스닥은 25,310.18(-0.21%) 하락하고 S&P 500은 7,591.51(-0.00%) 보합세를 보이며 혼조세로 마감했습니다. 금융(+0.65%) 섹터와 넷플릭스(+1",
+    "kospi_pct": null,
+    "kosdaq_pct": null
+  },
+  {
+    "date": "2026-11-13",
     "time": "21:50",
     "mode": "us_premarket",
     "url": "reports/2026-11-13-us-pre.html",
@@ -527,15 +536,6 @@
     "mode": "kr_open",
     "url": "reports/2026-11-05-kr-open.html",
     "summary": "코스피 0.0(+0.00%) · 코스닥 0.0(+0.00%).",
-    "kospi_pct": 0.0,
-    "kosdaq_pct": 0.0
-  },
-  {
-    "date": "2026-11-05",
-    "time": "08:05",
-    "mode": "kr_premarket",
-    "url": "reports/2026-11-05-kr-pre.html",
-    "summary": "",
     "kospi_pct": 0.0,
     "kosdaq_pct": 0.0
   }
