@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-11-13",
+    "time": "14:50",
+    "mode": "pre_close",
+    "url": "reports/2026-11-13-pre.html",
+    "summary": "코스피 5,295.8(-0.88%) · 코스닥 702.1(+0.80%). 강세 테마: 퓨리오사AI, 뉴로모픽 반도체, CXL(컴퓨트익스프레스링크).",
+    "kospi_pct": -0.88,
+    "kosdaq_pct": 0.8
+  },
+  {
+    "date": "2026-11-13",
     "time": "13:00",
     "mode": "us_afterhours",
     "url": "reports/2026-11-13-us-after.html",
@@ -527,15 +536,6 @@
     "mode": "us_intraday",
     "url": "reports/2026-11-04-us-mid.html",
     "summary": "S&P500 7,681(+1.49%) · 나스닥 25,814(+1.77%). 강세 섹터: 태양광/신재생, 경기소비재, 2차전지/리튬.",
-    "kospi_pct": null,
-    "kosdaq_pct": null
-  },
-  {
-    "date": "2026-11-04",
-    "time": "21:50",
-    "mode": "us_premarket",
-    "url": "reports/2026-11-04-us-pre.html",
-    "summary": "S&P500 선물 7,666(+1.78%) · 나스닥 선물 28,426(+1.72%). 강세 섹터: 태양광/신재생, 2차전지/리튬, 헬스케어/바이오.",
     "kospi_pct": null,
     "kosdaq_pct": null
   }
