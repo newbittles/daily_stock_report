@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-11-17",
+    "time": "08:05",
+    "mode": "kr_premarket",
+    "url": "reports/2026-11-17-kr-pre.html",
+    "summary": "",
+    "kospi_pct": 0.0,
+    "kosdaq_pct": 0.0
+  },
+  {
+    "date": "2026-11-17",
     "time": "06:30",
     "mode": "us_morning",
     "url": "reports/2026-11-17-us.html",
@@ -529,14 +538,5 @@
     "summary": "코스피 5,176.6(-3.85%) · 코스닥 654.2(-3.57%). 강세 테마: 렌터카, 영화, 농업.",
     "kospi_pct": -3.85,
     "kosdaq_pct": -3.57
-  },
-  {
-    "date": "2026-11-06",
-    "time": "09:15",
-    "mode": "kr_open",
-    "url": "reports/2026-11-06-kr-open.html",
-    "summary": "코스피 4,923.5(-8.55%) · 코스닥 631.4(-6.93%). 강세 테마: 리츠(REITs), 주류업(주정, 에탄올 등), 출산장려정책.",
-    "kospi_pct": -8.55,
-    "kosdaq_pct": -6.93
   }
 ]
