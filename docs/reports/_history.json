@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-11-16",
+    "time": "19:00",
+    "mode": "us_premarket",
+    "url": "reports/2026-11-16-us-pre.html",
+    "summary": "현재 프리장 시장은 엔비디아 실적 발표를 앞두고 반도체 섹터(-3.64%)와 기술주 중심의 경계감이 커지며 나스닥 선물(-0.15%)이 약보합세를 보이고 있습니다. 반면 마이크로소프트(+0.54%), 애플(+0.50%), 넷플릭스(+1.05%) 등 일",
+    "kospi_pct": null,
+    "kosdaq_pct": null
+  },
+  {
+    "date": "2026-11-16",
     "time": "16:00",
     "mode": "post_close",
     "url": "reports/2026-11-16-post.html",
@@ -527,15 +536,6 @@
     "mode": "us_morning",
     "url": "reports/2026-11-06-us.html",
     "summary": "S&P500 7,354(-4.36%) · 나스닥 24,315(-5.52%). 강세 섹터: 헬스케어/바이오, 2차전지/리튬, 금융.",
-    "kospi_pct": null,
-    "kosdaq_pct": null
-  },
-  {
-    "date": "2026-11-05",
-    "time": "23:40",
-    "mode": "us_intraday",
-    "url": "reports/2026-11-05-us-mid.html",
-    "summary": "S&P500 7,625(-0.84%) · 나스닥 25,265(-1.84%). 강세 섹터: 에너지, 2차전지/리튬, 금융.",
     "kospi_pct": null,
     "kosdaq_pct": null
   }
