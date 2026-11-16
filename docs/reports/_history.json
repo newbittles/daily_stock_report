@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-11-16",
+    "time": "23:40",
+    "mode": "us_intraday",
+    "url": "reports/2026-11-16-us-mid.html",
+    "summary": "뉴욕증시는 주요 AI 기업들의 실적 발표를 앞두고 반도체 및 기술주 중심으로 약세를 보이며 다우(-0.13%), S&P500(-0.80%), 나스닥(-1.29%) 등 3대 지수가 일제히 하락 마감했습니다. 필라델피아 반도체 지수가 -3.88% 급락하는",
+    "kospi_pct": null,
+    "kosdaq_pct": null
+  },
+  {
+    "date": "2026-11-16",
     "time": "21:50",
     "mode": "us_premarket",
     "url": "reports/2026-11-16-us-pre.html",
@@ -529,14 +538,5 @@
     "summary": "",
     "kospi_pct": 0.0,
     "kosdaq_pct": 0.0
-  },
-  {
-    "date": "2026-11-06",
-    "time": "06:30",
-    "mode": "us_morning",
-    "url": "reports/2026-11-06-us.html",
-    "summary": "S&P500 7,354(-4.36%) · 나스닥 24,315(-5.52%). 강세 섹터: 헬스케어/바이오, 2차전지/리튬, 금융.",
-    "kospi_pct": null,
-    "kosdaq_pct": null
   }
 ]
