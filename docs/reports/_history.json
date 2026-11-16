@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-11-16",
+    "time": "16:00",
+    "mode": "post_close",
+    "url": "reports/2026-11-16-post.html",
+    "summary": "금일 코스피는 외국인의 거센 매도 폭탄과 반도체 대형주 급락 영향으로 3.59% 하락한 5,100.50선에 턱걸이했으며, 코스닥 역시 4.86% 폭락하며 장을 마감했습니다.",
+    "kospi_pct": -3.59,
+    "kosdaq_pct": -4.86
+  },
+  {
+    "date": "2026-11-16",
     "time": "14:50",
     "mode": "pre_close",
     "url": "reports/2026-11-16-pre.html",
@@ -527,15 +536,6 @@
     "mode": "us_intraday",
     "url": "reports/2026-11-05-us-mid.html",
     "summary": "S&P500 7,625(-0.84%) · 나스닥 25,265(-1.84%). 강세 섹터: 에너지, 2차전지/리튬, 금융.",
-    "kospi_pct": null,
-    "kosdaq_pct": null
-  },
-  {
-    "date": "2026-11-05",
-    "time": "21:50",
-    "mode": "us_premarket",
-    "url": "reports/2026-11-05-us-pre.html",
-    "summary": "S&P500 선물 7,723(+0.26%) · 나스닥 선물 28,331(+0.23%). 강세 섹터: 2차전지/리튬, 태양광/신재생, 금융.",
     "kospi_pct": null,
     "kosdaq_pct": null
   }
