@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-11-17",
+    "time": "16:00",
+    "mode": "post_close",
+    "url": "reports/2026-11-17-post.html",
+    "summary": "오늘 코스피는 외국인의 1.4조 원 대규모 순매도 속에 2.59% 하락하며 9개월 만에 5,000선이 무너진 4,968.48에 마감했고, 코스닥 역시 2.34% 하락했습니다.",
+    "kospi_pct": -2.59,
+    "kosdaq_pct": -2.34
+  },
+  {
+    "date": "2026-11-17",
     "time": "14:50",
     "mode": "pre_close",
     "url": "reports/2026-11-17-pre.html",
@@ -527,15 +536,6 @@
     "mode": "us_intraday",
     "url": "reports/2026-11-06-us-mid.html",
     "summary": "S&P500 7,398(+0.57%) · 나스닥 24,684(+1.47%). 강세 섹터: 반도체, 기술/IT, 태양광/신재생.",
-    "kospi_pct": null,
-    "kosdaq_pct": null
-  },
-  {
-    "date": "2026-11-06",
-    "time": "21:50",
-    "mode": "us_premarket",
-    "url": "reports/2026-11-06-us-pre.html",
-    "summary": "S&P500 선물 7,401(+0.14%) · 나스닥 선물 27,178(+0.58%). 강세 섹터: 반도체, 기술/IT, 태양광/신재생.",
     "kospi_pct": null,
     "kosdaq_pct": null
   }
