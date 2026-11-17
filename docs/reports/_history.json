@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-11-17",
+    "time": "23:40",
+    "mode": "us_intraday",
+    "url": "reports/2026-11-17-us-mid.html",
+    "summary": "미국 증시는 엔비디아 실적 발표를 앞둔 경계감과 깜짝 소매판매 발표 등의 영향으로 다우(-0.64%), S&P500(-0.28%), 나스닥(-0.13%) 주요 지수가 일제히 하락 마감했습니다. 대형 IT 기술주가 대체로 약세를 보인 가운데 에너지(+1",
+    "kospi_pct": null,
+    "kosdaq_pct": null
+  },
+  {
+    "date": "2026-11-17",
     "time": "21:50",
     "mode": "us_premarket",
     "url": "reports/2026-11-17-us-pre.html",
@@ -529,14 +538,5 @@
     "summary": "",
     "kospi_pct": 0.0,
     "kosdaq_pct": 0.0
-  },
-  {
-    "date": "2026-11-07",
-    "time": "06:30",
-    "mode": "us_morning",
-    "url": "reports/2026-11-07-us.html",
-    "summary": "S&P500 7,377(+0.31%) · 나스닥 24,579(+1.09%). 강세 섹터: 반도체, 태양광/신재생, 기술/IT.",
-    "kospi_pct": null,
-    "kosdaq_pct": null
   }
 ]
