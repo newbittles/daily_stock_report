@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-11-17",
+    "time": "19:00",
+    "mode": "us_premarket",
+    "url": "reports/2026-11-17-us-pre.html",
+    "summary": "현재 프리장 시장은 엔비디아 실적 발표를 앞둔 극심한 경계감과 미국의 AI 칩 규제 강화 소식 여파로 기술주 중심의 약세 분위기가 이어지고 있습니다. 나스닥 선물(-0.76%)과 S&P500 선물(-0.39%)이 일제히 하락 중이며 2차전지, 방산, ",
+    "kospi_pct": null,
+    "kosdaq_pct": null
+  },
+  {
+    "date": "2026-11-17",
     "time": "16:00",
     "mode": "post_close",
     "url": "reports/2026-11-17-post.html",
@@ -527,15 +536,6 @@
     "mode": "us_morning",
     "url": "reports/2026-11-07-us.html",
     "summary": "S&P500 7,377(+0.31%) · 나스닥 24,579(+1.09%). 강세 섹터: 반도체, 태양광/신재생, 기술/IT.",
-    "kospi_pct": null,
-    "kosdaq_pct": null
-  },
-  {
-    "date": "2026-11-06",
-    "time": "23:40",
-    "mode": "us_intraday",
-    "url": "reports/2026-11-06-us-mid.html",
-    "summary": "S&P500 7,398(+0.57%) · 나스닥 24,684(+1.47%). 강세 섹터: 반도체, 기술/IT, 태양광/신재생.",
     "kospi_pct": null,
     "kosdaq_pct": null
   }
