@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-11-18",
+    "time": "14:50",
+    "mode": "pre_close",
+    "url": "reports/2026-11-18-pre.html",
+    "summary": "코스피와 코스닥 지수가 모두 1.7% 대 급등하며 반도체와 로봇 관련 테마를 중심으로 강렬한 반등세를 보이고 있습니다.",
+    "kospi_pct": 1.77,
+    "kosdaq_pct": 1.78
+  },
+  {
+    "date": "2026-11-18",
     "time": "13:00",
     "mode": "us_afterhours",
     "url": "reports/2026-11-18-us-after.html",
@@ -527,15 +536,6 @@
     "mode": "us_intraday",
     "url": "reports/2026-11-09-us-mid.html",
     "summary": "금일 미국 증시는 지난주 하락에 따른 반등세와 유가 하락 속에 다우(+1.23%), S&P500(+1.35%), 나스닥(+1.61%) 등 3대 지수가 일제히 상승 마감했습니다. 반도체(+3.65%)와 경기소비재(+3.31%) 섹터가 상승을 주도한 가운",
-    "kospi_pct": null,
-    "kosdaq_pct": null
-  },
-  {
-    "date": "2026-11-09",
-    "time": "21:50",
-    "mode": "us_premarket",
-    "url": "reports/2026-11-09-us-pre.html",
-    "summary": "금일 미국 증시 개장 전 프리장은 나스닥 선물(+0.19%)과 S&P500 선물(+0.12%)이 소폭 상승하며 태양광/신재생(+1.96%), 경기소비재(+1.33%), 반도체(+1.22%) 섹터를 중심으로 견조한 흐름을 보이고 있습니다. 엔비디아가 C",
     "kospi_pct": null,
     "kosdaq_pct": null
   }
