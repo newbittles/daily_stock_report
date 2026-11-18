@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-11-19",
+    "time": "08:05",
+    "mode": "kr_premarket",
+    "url": "reports/2026-11-19-kr-pre.html",
+    "summary": "",
+    "kospi_pct": 0.0,
+    "kosdaq_pct": 0.0
+  },
+  {
+    "date": "2026-11-19",
     "time": "06:30",
     "mode": "us_morning",
     "url": "reports/2026-11-19-us.html",
@@ -529,14 +538,5 @@
     "summary": "간밤 미국 증시는 기술주 중심의 강한 저가 매수세 유입에 힘입어 다우(+2.15%), S&P500(+2.35%), 나스닥(+2.74%) 등 3대 지수가 일제히 급등했습니다. 필라델피아 반도체 지수가 +6.85% 폭등하며 반도체 및 기술/IT 업종이 시",
     "kospi_pct": null,
     "kosdaq_pct": null
-  },
-  {
-    "date": "2026-11-10",
-    "time": "11:40",
-    "mode": "midday",
-    "url": "reports/2026-11-10-midday.html",
-    "summary": "코스피 5,235.6(+4.32%) · 코스닥 664.1(+3.94%). 강세 테마: 항공/저가 항공사(LCC), 고체산화물 연료전지(SOFC), 전선.",
-    "kospi_pct": 4.32,
-    "kosdaq_pct": 3.94
   }
 ]
