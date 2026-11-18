@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-11-18",
+    "time": "23:40",
+    "mode": "us_intraday",
+    "url": "reports/2026-11-18-us-mid.html",
+    "summary": "금일 미국 증시는 엔비디아 실적 우려 완화 속에 나스닥(+0.31%)은 상승했으나 다우(-0.45%)와 S&P500(-0.02%)은 혼조세를 보이며 마감했습니다. 경기소비재(+1.06%) 업종이 지수를 지지한 반면 에너지(-2.34%)와 반도체(-1.",
+    "kospi_pct": null,
+    "kosdaq_pct": null
+  },
+  {
+    "date": "2026-11-18",
     "time": "21:50",
     "mode": "us_premarket",
     "url": "reports/2026-11-18-us-pre.html",
@@ -529,14 +538,5 @@
     "summary": "코스피 5,298.6(+5.57%) · 코스닥 667.2(+4.42%). 강세 테마: 전선, 광통신(광케이블/광섬유 등), 반도체 기판(FC-BGA/PCB/MLB 등).",
     "kospi_pct": 5.57,
     "kosdaq_pct": 4.42
-  },
-  {
-    "date": "2026-11-10",
-    "time": "08:05",
-    "mode": "kr_premarket",
-    "url": "reports/2026-11-10-kr-pre.html",
-    "summary": "",
-    "kospi_pct": 0.0,
-    "kosdaq_pct": 0.0
   }
 ]
