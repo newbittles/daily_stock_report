@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-11-19",
+    "time": "19:00",
+    "mode": "us_premarket",
+    "url": "reports/2026-11-19-us-pre.html",
+    "summary": "현재 프리장은 다우 지수의 직전 정규장 하락(-1.11%)에도 불구하고 나스닥 선물(+0.96%)과 S&P 500 선물(+0.51%)이 상승하며 기술주 중심의 반등 분위기를 형성하고 있습니다. 반도체(+3.14%)와 기술/IT(+2.17%) 섹터가 프",
+    "kospi_pct": null,
+    "kosdaq_pct": null
+  },
+  {
+    "date": "2026-11-19",
     "time": "16:00",
     "mode": "post_close",
     "url": "reports/2026-11-19-post.html",
@@ -529,14 +538,5 @@
     "summary": "",
     "kospi_pct": 0.0,
     "kosdaq_pct": 0.0
-  },
-  {
-    "date": "2026-11-11",
-    "time": "06:30",
-    "mode": "us_morning",
-    "url": "reports/2026-11-11-us.html",
-    "summary": "미국 증시는 예상치를 상회한 CPI 발표에 따른 연준의 금리 인상 가능성 부각과 엔비디아(-5.47%)를 비롯한 기술주 약세 여파로 다우(-0.30%), S&P500(-0.38%), 나스닥(-0.74%) 등 주요 지수가 일제히 하락 마감했습니다. 방산",
-    "kospi_pct": null,
-    "kosdaq_pct": null
   }
 ]
