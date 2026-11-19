@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-11-19",
+    "time": "14:50",
+    "mode": "pre_close",
+    "url": "reports/2026-11-19-pre.html",
+    "summary": "코스피 5,068.2(+0.01%) · 코스닥 666.8(+0.60%). 강세 테마: 여행, 영상콘텐츠, 홈쇼핑.",
+    "kospi_pct": 0.01,
+    "kosdaq_pct": 0.6
+  },
+  {
+    "date": "2026-11-19",
     "time": "13:00",
     "mode": "us_afterhours",
     "url": "reports/2026-11-19-us-after.html",
@@ -527,15 +536,6 @@
     "mode": "us_intraday",
     "url": "reports/2026-11-10-us-mid.html",
     "summary": "금일 미국 증시는 예상보다 높게 발표된 10월 소비자물가지수(CPI)로 인해 연준의 금리 인상 가능성이 부각되며 S&P500(-0.41%), 나스닥(-0.54%), 다우(-0.23%) 등 3대 지수가 일제히 하락했습니다. 방산과 금융 섹터만 소폭 상승",
-    "kospi_pct": null,
-    "kosdaq_pct": null
-  },
-  {
-    "date": "2026-11-10",
-    "time": "21:50",
-    "mode": "us_premarket",
-    "url": "reports/2026-11-10-us-pre.html",
-    "summary": "현재 프리장 시장은 핵심 인플레이션(CPI) 지표 발표를 앞두고 연준 인사들의 매파적 발언이 더해지며 S&P500 선물(-0.06%)과 나스닥 선물(-0.17%)이 약보합세를 보이는 등 관망세가 짙은 분위기입니다. 금융(+0.81%)과 헬스케어(+0.",
     "kospi_pct": null,
     "kosdaq_pct": null
   }
