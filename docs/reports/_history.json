@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-11-19",
+    "time": "23:40",
+    "mode": "us_intraday",
+    "url": "reports/2026-11-19-us-mid.html",
+    "summary": "금일 미국 증시는 앤스로픽(Anthropic) 상장에 대한 기대감으로 AI 투자 심리가 부활하며 나스닥(+1.50%)과 S&P500(+0.74%)이 상승한 반면, 다우 지수(-0.05%)는 소폭 하락 마감했습니다. 앤스로픽 IPO 뉴스를 계기로 반도체",
+    "kospi_pct": null,
+    "kosdaq_pct": null
+  },
+  {
+    "date": "2026-11-19",
     "time": "21:50",
     "mode": "us_premarket",
     "url": "reports/2026-11-19-us-pre.html",
@@ -529,14 +538,5 @@
     "summary": "코스피 5,246.5(+0.14%) · 코스닥 684.1(+2.47%). 강세 테마: 카지노, 피팅(관이음쇠)/밸브, 반도체 기판(FC-BGA/PCB/MLB 등).",
     "kospi_pct": 0.14,
     "kosdaq_pct": 2.47
-  },
-  {
-    "date": "2026-11-11",
-    "time": "08:05",
-    "mode": "kr_premarket",
-    "url": "reports/2026-11-11-kr-pre.html",
-    "summary": "",
-    "kospi_pct": 0.0,
-    "kosdaq_pct": 0.0
   }
 ]
