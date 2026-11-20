@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-11-20",
+    "time": "23:40",
+    "mode": "us_intraday",
+    "url": "reports/2026-11-20-us-mid.html",
+    "summary": "금일 미국 증시는 다우 지수가 49,312.11(+0.44%)로 상승 마감했으나, AI 관련 우려 심화로 나스닥(-1.36%), S&P500(-0.47%), 필라델피아반도체(-4.11%) 지수는 큰 폭으로 하락하며 혼조세를 보였습니다. 헬스케어(+0.",
+    "kospi_pct": null,
+    "kosdaq_pct": null
+  },
+  {
+    "date": "2026-11-20",
     "time": "21:50",
     "mode": "us_premarket",
     "url": "reports/2026-11-20-us-pre.html",
@@ -529,14 +538,5 @@
     "summary": "코스피 5,362.0(-0.25%) · 코스닥 699.2(-0.83%). 강세 테마: AI 챗봇(챗GPT 등), CCTV＆DVR, 음원/음반.",
     "kospi_pct": -0.25,
     "kosdaq_pct": -0.83
-  },
-  {
-    "date": "2026-11-12",
-    "time": "08:05",
-    "mode": "kr_premarket",
-    "url": "reports/2026-11-12-kr-pre.html",
-    "summary": "",
-    "kospi_pct": 0.0,
-    "kosdaq_pct": 0.0
   }
 ]
