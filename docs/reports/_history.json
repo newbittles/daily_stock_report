@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-11-20",
+    "time": "13:00",
+    "mode": "us_afterhours",
+    "url": "reports/2026-11-20-us-after.html",
+    "summary": "S&P500 7,176(-2.02%) · 나스닥 23,879(-2.25%). 강세 섹터: 에너지, 금융, 방산/우주항공.",
+    "kospi_pct": null,
+    "kosdaq_pct": null
+  },
+  {
+    "date": "2026-11-20",
     "time": "11:40",
     "mode": "midday",
     "url": "reports/2026-11-20-midday.html",
@@ -529,14 +538,5 @@
     "summary": "금일 미국 개장 전 프리장 시장은 나스닥 선물(+0.69%)과 S&P500 선물(+0.32%)이 상승세를 타며 반도체 및 IT 기술주 중심으로 강한 반등 분위기를 형성하고 있습니다. 그동안 과도하게 하락했던 AI 및 반도체 섹터로 저가 매수세가 대거 ",
     "kospi_pct": null,
     "kosdaq_pct": null
-  },
-  {
-    "date": "2026-11-11",
-    "time": "16:00",
-    "mode": "post_close",
-    "url": "reports/2026-11-11-post.html",
-    "summary": "오늘 국내 증시는 글로벌 AI 기업 코어위브의 긍정적 실적에 힘입어 반도체 대장주와 AI 테마 전반이 급등하며 코스피(+2.60%)와 코스닥(+5.62%) 모두 큰 폭으로 상승 마감했습니다.",
-    "kospi_pct": 2.6,
-    "kosdaq_pct": 5.62
   }
 ]
