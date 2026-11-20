@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-11-20",
+    "time": "14:50",
+    "mode": "pre_close",
+    "url": "reports/2026-11-20-pre.html",
+    "summary": "코스피 4,848.4(-5.63%) · 코스닥 644.1(-5.95%). 강세 테마: 겨울, 항공/저가 항공사(LCC), 음식료업종.",
+    "kospi_pct": -5.63,
+    "kosdaq_pct": -5.95
+  },
+  {
+    "date": "2026-11-20",
     "time": "13:00",
     "mode": "us_afterhours",
     "url": "reports/2026-11-20-us-after.html",
@@ -527,15 +536,6 @@
     "mode": "us_intraday",
     "url": "reports/2026-11-11-us-mid.html",
     "summary": "금일 미국 증시는 필라델피아 반도체 지수(+4.18%)의 폭등과 기술주 반등에 힘입어 나스닥(+1.55%)과 S&P500(+0.89%)이 상승한 반면, 다우 지수(-0.11%)는 소폭 하락 마감했습니다. 골드만삭스의 반도체 업종 과매도 분석과 코어위브",
-    "kospi_pct": null,
-    "kosdaq_pct": null
-  },
-  {
-    "date": "2026-11-11",
-    "time": "21:50",
-    "mode": "us_premarket",
-    "url": "reports/2026-11-11-us-pre.html",
-    "summary": "금일 미국 개장 전 프리장 시장은 나스닥 선물(+0.69%)과 S&P500 선물(+0.32%)이 상승세를 타며 반도체 및 IT 기술주 중심으로 강한 반등 분위기를 형성하고 있습니다. 그동안 과도하게 하락했던 AI 및 반도체 섹터로 저가 매수세가 대거 ",
     "kospi_pct": null,
     "kosdaq_pct": null
   }
