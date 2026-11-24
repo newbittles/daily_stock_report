@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-11-24",
+    "time": "13:00",
+    "mode": "us_afterhours",
+    "url": "reports/2026-11-24-us-after.html",
+    "summary": "S&P500 7,237(+4.73%) · 나스닥 24,090(+6.51%). 강세 섹터: 반도체, 기술/IT, 2차전지/리튬.",
+    "kospi_pct": null,
+    "kosdaq_pct": null
+  },
+  {
+    "date": "2026-11-24",
     "time": "11:40",
     "mode": "midday",
     "url": "reports/2026-11-24-midday.html",
@@ -529,14 +538,5 @@
     "summary": "코스피 5,290.5(-0.98%) · 코스닥 699.7(+0.45%). 강세 테마: 퓨리오사AI, 뉴로모픽 반도체, CXL(컴퓨트익스프레스링크).",
     "kospi_pct": -0.98,
     "kosdaq_pct": 0.45
-  },
-  {
-    "date": "2026-11-13",
-    "time": "14:50",
-    "mode": "pre_close",
-    "url": "reports/2026-11-13-pre.html",
-    "summary": "코스피 5,295.8(-0.88%) · 코스닥 702.1(+0.80%). 강세 테마: 퓨리오사AI, 뉴로모픽 반도체, CXL(컴퓨트익스프레스링크).",
-    "kospi_pct": -0.88,
-    "kosdaq_pct": 0.8
   }
 ]
