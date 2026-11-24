@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-11-24",
+    "time": "23:40",
+    "mode": "us_intraday",
+    "url": "reports/2026-11-24-us-mid.html",
+    "summary": "금일 미국 증시는 엔비디아(-5.60%)와 AMD(-7.43%) 등 주요 반도체 종목들의 약세로 필라델피아 반도체 지수가 -6.69% 급락하면서 나스닥(-1.81%)과 S&P500(-1.02%) 지수가 하락 마감했습니다. 시장 전반에서 AI 관련 기술",
+    "kospi_pct": null,
+    "kosdaq_pct": null
+  },
+  {
+    "date": "2026-11-24",
     "time": "21:50",
     "mode": "us_premarket",
     "url": "reports/2026-11-24-us-pre.html",
@@ -529,14 +538,5 @@
     "summary": "",
     "kospi_pct": 0.0,
     "kosdaq_pct": 0.0
-  },
-  {
-    "date": "2026-11-14",
-    "time": "06:30",
-    "mode": "us_morning",
-    "url": "reports/2026-11-14-us.html",
-    "summary": "S&P500 7,562(-0.40%) · 나스닥 25,136(-0.91%). 강세 섹터: 에너지, 금융, 헬스케어/바이오.",
-    "kospi_pct": null,
-    "kosdaq_pct": null
   }
 ]
