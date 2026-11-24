@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-11-24",
+    "time": "19:00",
+    "mode": "us_premarket",
+    "url": "reports/2026-11-24-us-pre.html",
+    "summary": "미국 프리장 시장은 나스닥 선물(-0.94%)과 S&P500 선물(-0.48%)이 하락하며 반도체 및 대형 기술주 중심으로 차익 실현 매물이 출회되는 약세 분위기를 보이고 있습니다. 직전 정규장의 폭등 이후 반도체(-3.30%) 섹터가 조정을 받는 반",
+    "kospi_pct": null,
+    "kosdaq_pct": null
+  },
+  {
+    "date": "2026-11-24",
     "time": "16:00",
     "mode": "post_close",
     "url": "reports/2026-11-24-post.html",
@@ -527,15 +536,6 @@
     "mode": "us_morning",
     "url": "reports/2026-11-14-us.html",
     "summary": "S&P500 7,562(-0.40%) · 나스닥 25,136(-0.91%). 강세 섹터: 에너지, 금융, 헬스케어/바이오.",
-    "kospi_pct": null,
-    "kosdaq_pct": null
-  },
-  {
-    "date": "2026-11-13",
-    "time": "23:40",
-    "mode": "us_intraday",
-    "url": "reports/2026-11-13-us-mid.html",
-    "summary": "금일 미국 증시는 다우 지수가 52,403.10(+0.20%) 상승한 반면 나스닥은 25,310.18(-0.21%) 하락하고 S&P 500은 7,591.51(-0.00%) 보합세를 보이며 혼조세로 마감했습니다. 금융(+0.65%) 섹터와 넷플릭스(+1",
     "kospi_pct": null,
     "kosdaq_pct": null
   }
