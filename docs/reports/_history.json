@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-11-25",
+    "time": "23:40",
+    "mode": "us_intraday",
+    "url": "reports/2026-11-25-us-mid.html",
+    "summary": "S&P500 7,004(-2.76%) · 나스닥 22,792(-3.97%). 강세 섹터: 에너지, 금융, 헬스케어/바이오.",
+    "kospi_pct": null,
+    "kosdaq_pct": null
+  },
+  {
+    "date": "2026-11-25",
     "time": "21:50",
     "mode": "us_premarket",
     "url": "reports/2026-11-25-us-pre.html",
@@ -529,14 +538,5 @@
     "summary": "미국 증시 급락과 주요 반도체주 경계감의 여파로 코스피(-1.39%)와 코스닥(-0.67%)이 동반 약세를 보이는 가운데, 캐릭터상품·유심·남북경협 등 일부 개별 테마만 제한적인 강세를 나타내고 있습니다. \n\n주요 종목 중 SK하이닉스는 장 개장 직후",
     "kospi_pct": -1.39,
     "kosdaq_pct": -0.67
-  },
-  {
-    "date": "2026-11-17",
-    "time": "08:05",
-    "mode": "kr_premarket",
-    "url": "reports/2026-11-17-kr-pre.html",
-    "summary": "",
-    "kospi_pct": 0.0,
-    "kosdaq_pct": 0.0
   }
 ]
