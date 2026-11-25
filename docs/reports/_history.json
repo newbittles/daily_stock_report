@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-11-25",
+    "time": "19:00",
+    "mode": "us_premarket",
+    "url": "reports/2026-11-25-us-pre.html",
+    "summary": "S&P500 선물 7,106(-0.88%) · 나스닥 선물 25,604(-1.38%). 강세 섹터: 헬스케어/바이오, 에너지, 금융.",
+    "kospi_pct": null,
+    "kosdaq_pct": null
+  },
+  {
+    "date": "2026-11-25",
     "time": "16:00",
     "mode": "post_close",
     "url": "reports/2026-11-25-post.html",
@@ -529,14 +538,5 @@
     "summary": "",
     "kospi_pct": 0.0,
     "kosdaq_pct": 0.0
-  },
-  {
-    "date": "2026-11-17",
-    "time": "06:30",
-    "mode": "us_morning",
-    "url": "reports/2026-11-17-us.html",
-    "summary": "엔비디아 실적 발표와 앤트로픽 IPO를 앞둔 AI 경계감 속에 다우(-1.41%), S&P500(-1.92%), 나스닥(-2.49%) 등 미 3대 지수가 일제히 급락했으며, 필라델피아 반도체 지수(-5.28%)를 필두로 기술·반도체 섹터가 하락을 주도",
-    "kospi_pct": null,
-    "kosdaq_pct": null
   }
 ]
