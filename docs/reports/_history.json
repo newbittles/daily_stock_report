@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-11-25",
+    "time": "14:50",
+    "mode": "pre_close",
+    "url": "reports/2026-11-25-pre.html",
+    "summary": "코스피 4,691.7(-6.28%) · 코스닥 647.0(-2.83%). 강세 테마: 홈쇼핑, 마이데이터, 보안주(정보).",
+    "kospi_pct": -6.28,
+    "kosdaq_pct": -2.83
+  },
+  {
+    "date": "2026-11-25",
     "time": "13:00",
     "mode": "us_afterhours",
     "url": "reports/2026-11-25-us-after.html",
@@ -527,15 +536,6 @@
     "mode": "us_intraday",
     "url": "reports/2026-11-16-us-mid.html",
     "summary": "뉴욕증시는 주요 AI 기업들의 실적 발표를 앞두고 반도체 및 기술주 중심으로 약세를 보이며 다우(-0.13%), S&P500(-0.80%), 나스닥(-1.29%) 등 3대 지수가 일제히 하락 마감했습니다. 필라델피아 반도체 지수가 -3.88% 급락하는",
-    "kospi_pct": null,
-    "kosdaq_pct": null
-  },
-  {
-    "date": "2026-11-16",
-    "time": "21:50",
-    "mode": "us_premarket",
-    "url": "reports/2026-11-16-us-pre.html",
-    "summary": "현재 프리장 시장은 엔비디아 실적 발표를 앞둔 경계감과 금리 우려가 부각되며 나스닥 선물(-0.63%)과 S&P500 선물(-0.29%) 중심으로 약세를 보이고 있습니다. 반도체(-3.88%)와 IT 섹터의 급락이 지수를 끌어내리는 반면, 헬스케어(+",
     "kospi_pct": null,
     "kosdaq_pct": null
   }
