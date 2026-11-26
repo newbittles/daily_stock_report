@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-11-27",
+    "time": "08:05",
+    "mode": "kr_premarket",
+    "url": "reports/2026-11-27-kr-pre.html",
+    "summary": "",
+    "kospi_pct": 0.0,
+    "kosdaq_pct": 0.0
+  },
+  {
+    "date": "2026-11-27",
     "time": "07:00",
     "mode": "us_morning",
     "url": "reports/2026-11-27-us.html",
@@ -529,14 +538,5 @@
     "summary": "엔비디아의 실적 서프라이즈 훈풍에 힘입어 코스피(+2.96%)와 코스닥(+2.05%)이 동반 급등하는 가운데, 반도체 대표주와 광통신·보안·MLCC 등 관련 테마 전반이 강세를 이끌고 있습니다. 장중 주요 종목 흐름에서는 삼성전기가 개장 직후(09:0",
     "kospi_pct": 2.96,
     "kosdaq_pct": 2.05
-  },
-  {
-    "date": "2026-11-18",
-    "time": "08:05",
-    "mode": "kr_premarket",
-    "url": "reports/2026-11-18-kr-pre.html",
-    "summary": "",
-    "kospi_pct": 0.0,
-    "kosdaq_pct": 0.0
   }
 ]
