@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-11-27",
+    "time": "13:00",
+    "mode": "us_afterhours",
+    "url": "reports/2026-11-27-us-after.html",
+    "summary": "S&P500 7,183(-0.25%) · 나스닥 23,586(-0.62%). 강세 섹터: 태양광/신재생, 방산/우주항공, 에너지.",
+    "kospi_pct": null,
+    "kosdaq_pct": null
+  },
+  {
+    "date": "2026-11-27",
     "time": "11:40",
     "mode": "midday",
     "url": "reports/2026-11-27-midday.html",
@@ -529,14 +538,5 @@
     "summary": "코스피와 코스닥 지수가 모두 1.7% 대 급등하며 반도체와 로봇 관련 테마를 중심으로 강렬한 반등세를 보이고 있습니다.",
     "kospi_pct": 1.77,
     "kosdaq_pct": 1.78
-  },
-  {
-    "date": "2026-11-18",
-    "time": "13:00",
-    "mode": "us_afterhours",
-    "url": "reports/2026-11-18-us-after.html",
-    "summary": "미국 증시는 엔비디아 실적 발표를 앞둔 경계감 속에 다우(-1.64%, 50,759.42), S&P500(-1.03%, 7,340.53), 나스닥(-0.74%, 24,328.38)이 일제히 하락 마감했으나, 필라델피아 반도체 지수는 0.34% 상승한 ",
-    "kospi_pct": null,
-    "kosdaq_pct": null
   }
 ]
