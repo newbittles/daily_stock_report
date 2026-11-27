@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-11-27",
+    "time": "23:40",
+    "mode": "us_intraday",
+    "url": "reports/2026-11-27-us-mid.html",
+    "summary": "S&P500 7,232(+0.69%) · 나스닥 23,772(+0.81%). 강세 섹터: 태양광/신재생, 2차전지/리튬, 에너지.",
+    "kospi_pct": null,
+    "kosdaq_pct": null
+  },
+  {
+    "date": "2026-11-27",
     "time": "21:50",
     "mode": "us_premarket",
     "url": "reports/2026-11-27-us-pre.html",
@@ -527,15 +536,6 @@
     "mode": "us_morning",
     "url": "reports/2026-11-19-us.html",
     "summary": "금일 미국 증시는 연준 의사록 공개에 따른 금리 인상 우려와 엔비디아 실적 관련 위험 선호 심리 위축으로 다우(-1.32%)와 S&P500(-0.50%)을 중심으로 하락 마감했습니다. 경기소비재(+0.98%) 섹터와 브로드컴(+2.93%), 아마존(+",
-    "kospi_pct": null,
-    "kosdaq_pct": null
-  },
-  {
-    "date": "2026-11-18",
-    "time": "23:40",
-    "mode": "us_intraday",
-    "url": "reports/2026-11-18-us-mid.html",
-    "summary": "금일 미국 증시는 엔비디아 실적 우려 완화 속에 나스닥(+0.31%)은 상승했으나 다우(-0.45%)와 S&P500(-0.02%)은 혼조세를 보이며 마감했습니다. 경기소비재(+1.06%) 업종이 지수를 지지한 반면 에너지(-2.34%)와 반도체(-1.",
     "kospi_pct": null,
     "kosdaq_pct": null
   }
