@@ -1,5 +1,14 @@
 [
   {
+    "date": "2026-11-28",
+    "time": "06:30",
+    "mode": "us_morning",
+    "url": "reports/2026-11-28-us.html",
+    "summary": "S&P500 7,297(+1.60%) · 나스닥 24,130(+2.31%). 강세 섹터: 태양광/신재생, 반도체, 2차전지/리튬.",
+    "kospi_pct": null,
+    "kosdaq_pct": null
+  },
+  {
     "date": "2026-11-27",
     "time": "23:40",
     "mode": "us_intraday",
@@ -529,14 +538,5 @@
     "summary": "",
     "kospi_pct": 0.0,
     "kosdaq_pct": 0.0
-  },
-  {
-    "date": "2026-11-19",
-    "time": "06:30",
-    "mode": "us_morning",
-    "url": "reports/2026-11-19-us.html",
-    "summary": "금일 미국 증시는 연준 의사록 공개에 따른 금리 인상 우려와 엔비디아 실적 관련 위험 선호 심리 위축으로 다우(-1.32%)와 S&P500(-0.50%)을 중심으로 하락 마감했습니다. 경기소비재(+0.98%) 섹터와 브로드컴(+2.93%), 아마존(+",
-    "kospi_pct": null,
-    "kosdaq_pct": null
   }
 ]
